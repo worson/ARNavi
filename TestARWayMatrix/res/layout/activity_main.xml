@@ -1,0 +1,48 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <FrameLayout 
+        android:id="@+id/matrix_view_container"
+        android:layout_width="500dp"
+        android:layout_height="250dp"
+        ></FrameLayout>
+    <LinearLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="260dp"
+        android:layout_marginRight="5dp"
+        android:background="@android:color/holo_blue_bright"
+        >
+        <Button 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="掉头重现(路线覆盖)"
+            android:onClick="diaotouTest"
+            />
+        <Button 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="大回环重现(路线覆盖)"
+            android:onClick="dahuihuanTest"
+            />
+        <Button 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="错乱重现(路线错乱--Hud)"
+            android:onClick="cuoluanHudProject"
+            />
+        <Button 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="错乱重现(路线错乱--Text)"
+            android:onClick="cuoluanTest"
+            />
+    </LinearLayout>
+
+</RelativeLayout>
