@@ -6,42 +6,56 @@
 
     <FrameLayout 
         android:id="@+id/matrix_view_container"
-        android:layout_width="500dp"
-        android:layout_height="250dp"
+		android:layout_width="500dp"
+        android:layout_height="230dp" 
         ></FrameLayout>
     <LinearLayout 
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="260dp"
-        android:layout_marginRight="5dp"
-        android:background="@android:color/holo_blue_bright"
+        android:layout_marginTop="230dp"
         >
         <Button 
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="掉头重现(路线覆盖)"
             android:onClick="diaotouTest"
             />
         <Button 
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="大回环重现(路线覆盖)"
             android:onClick="dahuihuanTest"
             />
         <Button 
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="绘制Path版"
+            android:onClick="drawPath"
+            />
+        <Button 
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="错乱重现(路线错乱--Hud)"
             android:onClick="cuoluanHudProject"
             />
         <Button 
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="错乱重现(路线错乱--Text)"
             android:onClick="cuoluanTest"
+            />
+        <Button 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="testCreateBitmap"
+            android:onClick="testCreateBitmap"
+            />
+        <Button 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="继续"
+            android:onClick="pauseOrPlay"
             />
     </LinearLayout>
 
