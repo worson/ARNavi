@@ -45,8 +45,8 @@ public class MusicBean extends SuperBean {
 
     public MusicBean setMusicStatus(MusicStatus musicStatus) {
         this.mMusicStatus = musicStatus;
-        this.mLastTime = System.currentTimeMillis();
         this.mStartTime = System.currentTimeMillis();
+        this.mLastTime = this.mStartTime;
         return this;
     }
 
@@ -60,9 +60,11 @@ public class MusicBean extends SuperBean {
      * @return last time of animation
      */
     public long getLastTime() {
-        long lastTime = this.mLastTime;
-        this.mLastTime = System.currentTimeMillis();
-        return lastTime;
+        return this.mLastTime;
+    }
+
+    public void setLastTime(long lastTime) {
+        this.mLastTime = lastTime;
     }
 
     public long getStartTime(){

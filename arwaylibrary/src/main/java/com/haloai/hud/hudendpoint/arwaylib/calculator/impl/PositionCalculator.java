@@ -26,50 +26,50 @@ public class PositionCalculator extends SuperCalculator<PositionResult, Position
         if (positionFactor.mReverse) {
             if (offsetTimeTotal <= positionFactor.mDuration / 2) {
                 positionResult.mOffsetPosition.x =
-                        (int)MathUtils.getOffsetValue(
+                        (int)(Math.round(MathUtils.getOffsetValue(
                                 positionFactor.mFromPosition.x,
                                 positionFactor.mToPosition.x,
                                 offsetTime,
-                                positionFactor.mDuration / 2,
-                                positionResult.mOffsetPosition.x);
+                                positionFactor.mDuration / 2
+                                )));
                 positionResult.mOffsetPosition.y =
-                        (int) MathUtils.getOffsetValue(
+                        (int) Math.round(MathUtils.getOffsetValue(
                                 positionFactor.mFromPosition.y,
                                 positionFactor.mToPosition.y,
                                 offsetTime,
-                                positionFactor.mDuration / 2,
-                                positionResult.mOffsetPosition.y);
+                                positionFactor.mDuration / 2
+                                ));
             } else {
                 positionResult.mOffsetPosition.x =
-                        (int) MathUtils.getOffsetValue(
+                        (int) Math.round(MathUtils.getOffsetValue(
                                 positionFactor.mToPosition.x,
                                 positionFactor.mFromPosition.x,
                                 offsetTime - positionFactor.mDuration / 2,
-                                positionFactor.mDuration / 2,
-                                positionResult.mOffsetPosition.x);
+                                positionFactor.mDuration / 2
+                                ));
                 positionResult.mOffsetPosition.y =
-                        (int) MathUtils.getOffsetValue(
+                        (int) Math.round(MathUtils.getOffsetValue(
                                 positionFactor.mToPosition.y,
                                 positionFactor.mFromPosition.y,
                                 offsetTime - positionFactor.mDuration / 2,
-                                positionFactor.mDuration / 2,
-                                positionResult.mOffsetPosition.y);
+                                positionFactor.mDuration / 2
+                                ));
             }
         } else {
             positionResult.mOffsetPosition.x =
-                    (int) MathUtils.getOffsetValue(
+                    (int) Math.round(MathUtils.getOffsetValue(
                             positionFactor.mFromPosition.x,
                             positionFactor.mToPosition.x,
                             offsetTime,
-                            positionFactor.mDuration,
-                            positionResult.mOffsetPosition.x);
+                            positionFactor.mDuration
+                            ));
             positionResult.mOffsetPosition.y =
-                    (int) MathUtils.getOffsetValue(
+                    (int) Math.round(MathUtils.getOffsetValue(
                             positionFactor.mFromPosition.y,
                             positionFactor.mToPosition.y,
                             offsetTime,
-                            positionFactor.mDuration,
-                            positionResult.mOffsetPosition.y);
+                            positionFactor.mDuration
+                            ));
         }
 
         return positionResult;

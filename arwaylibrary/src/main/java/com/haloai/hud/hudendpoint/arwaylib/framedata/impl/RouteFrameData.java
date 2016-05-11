@@ -18,4 +18,9 @@ public class RouteFrameData extends SuperFrameData {
     public static RouteFrameData getInstance() {
         return mRouteFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }

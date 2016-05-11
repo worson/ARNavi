@@ -5,7 +5,11 @@ import android.content.Context;
 import com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARWaySurfaceView;
 
 /**
- * Created by 龙 on 2016/4/29.
+ * author       : 龙;
+ * date         : 2016/5/5;
+ * email        : helong@haloai.com;
+ * package_name : com.haloai.hud.hudendpoint.arwaylib.arway;
+ * project_name : hudlauncher;
  */
 public class ARWayFactory {
     public enum ARWayType {

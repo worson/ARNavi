@@ -10,17 +10,27 @@ import android.graphics.Point;
  * project_name : hudlauncher;
  */
 public class ScaleFactor extends SuperFactor {
-    public float mFromScala = 1f;
-    public float mLastScala = 1f;
-    public float mToScala   = 1f;
+    public double mFromWidthScala = 1f;
+    public double mLastWidthScala = 1f;
+    public double mToWidthScala   = 1f;
 
-    public ScaleFactor(long startTime,long lastTime, long duration, float fromScala, float toScala, float lastScala, Point position, boolean reverse) {
+    public double mFromHeightScala = 1f;
+    public double mLastHeightScala = 1f;
+    public double mToHeightScala   = 1f;
+
+    public ScaleFactor(long startTime, long lastTime, long duration,
+                       double fromWidthScala, double toWidthScala, double lastWidthScala,
+                       double fromHeightScala, double toHeightScala, double lastHeightScala,
+                       Point position, boolean reverse) {
         this.mStartTime = startTime;
         this.mLastTime = lastTime;
         this.mDuration = duration;
-        this.mFromScala = fromScala;
-        this.mToScala = toScala;
-        this.mLastScala = lastScala;
+        this.mFromWidthScala = fromWidthScala;
+        this.mToWidthScala = toWidthScala;
+        this.mLastWidthScala = lastWidthScala;
+        this.mFromHeightScala = fromHeightScala;
+        this.mToHeightScala = toHeightScala;
+        this.mLastHeightScala = lastHeightScala;
         this.mReverse = reverse;
         this.mFromPosition = position;
     }

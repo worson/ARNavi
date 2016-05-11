@@ -19,4 +19,9 @@ public class ExitFrameData extends SuperFrameData {
     public static ExitFrameData getInstance() {
         return mExitFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }

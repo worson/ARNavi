@@ -21,33 +21,31 @@ public class ScaleCalculator extends SuperCalculator<ScaleResult, ScaleFactor> {
         long offsetTime =  currentTime - scalaFactor.mLastTime;
         if (offsetTimeTotal >= scalaFactor.mDuration) {
             scalaResult.mIsOver = true;
-            offsetTime = scalaFactor.mDuration;
         }
         if (scalaFactor.mReverse) {
             if (offsetTimeTotal <= scalaFactor.mDuration / 2) {
-                /*scalaResult.mOffsetScala = scalaFactor.mFromScala + (scalaFactor.mToScala - scalaFactor.mFromScala)
-                        * (offsetTime / (scalaFactor.mDuration / 2));*/
-                scalaResult.mOffsetScala = (float) (scalaFactor.mFromScala + MathUtils.getOffsetValue(
-                        scalaFactor.mFromScala, scalaFactor.mToScala, offsetTime, scalaFactor.mDuration/2,scalaFactor.mLastScala));
+                scalaResult.mOffsetWidthScala =  (MathUtils.getOffsetValue(
+                        scalaFactor.mFromWidthScala, scalaFactor.mToWidthScala,
+                        offsetTime, scalaFactor.mDuration/2));
+                scalaResult.mOffsetHeightScala =  (MathUtils.getOffsetValue(
+                        scalaFactor.mFromHeightScala, scalaFactor.mToHeightScala,
+                        offsetTime, scalaFactor.mDuration/2));
             } else {
-                /*scalaResult.mOffsetScala = scalaFactor.mFromScala + (scalaFactor.mToScala - scalaFactor.mFromScala)
-                        * (1 - offsetTime / (scalaFactor.mDuration / 2));*/
-                scalaResult.mOffsetScala = (float) (scalaFactor.mFromScala + MathUtils.getOffsetValue(
-                        scalaFactor.mToScala, scalaFactor.mFromScala, offsetTime-scalaFactor.mDuration/2, scalaFactor.mDuration/2,scalaFactor.mLastScala));
+                scalaResult.mOffsetWidthScala =  (MathUtils.getOffsetValue(
+                        scalaFactor.mToWidthScala, scalaFactor.mFromWidthScala,
+                        offsetTime-scalaFactor.mDuration/2, scalaFactor.mDuration/2));
+                scalaResult.mOffsetHeightScala =  (MathUtils.getOffsetValue(
+                        scalaFactor.mToHeightScala, scalaFactor.mFromHeightScala,
+                        offsetTime-scalaFactor.mDuration/2, scalaFactor.mDuration/2));
             }
         } else {
-            /*scalaResult.mOffsetScala = scalaFactor.mFromScala + (scalaFactor.mToScala - scalaFactor.mFromScala)
-                    * (offsetTime / scalaFactor.mDuration);*/
-            scalaResult.mOffsetScala = (float)(scalaFactor.mFromScala +  MathUtils.getOffsetValue(
-                    scalaFactor.mFromScala, scalaFactor.mToScala, offsetTime, scalaFactor.mDuration,scalaFactor.mLastScala));
+            scalaResult.mOffsetWidthScala = (MathUtils.getOffsetValue(
+                    scalaFactor.mFromWidthScala, scalaFactor.mToWidthScala, offsetTime, scalaFactor.mDuration));
+            scalaResult.mOffsetHeightScala = (MathUtils.getOffsetValue(
+                    scalaFactor.mFromHeightScala, scalaFactor.mToHeightScala, offsetTime, scalaFactor.mDuration));
         }
-        scalaResult.mOffsetWidthScala = scalaResult.mOffsetScala;
-        scalaResult.mOffsetHeightScala = scalaResult.mOffsetScala;
-        scalaResult.mWidthScala += scalaResult.mOffsetScala;
-        scalaResult.mHeightScala += scalaResult.mOffsetScala;
-        //TODO 计算有问题
-        scalaResult.mOffsetPosition.x = (int)(((scalaResult.mOffsetScala - 1) / 2 * scalaFactor.mFromPosition.x));
-        scalaResult.mOffsetPosition.y = (int)(((scalaResult.mOffsetScala - 1) / 2 * scalaFactor.mFromPosition.y));
+        scalaResult.mWidthScala = scalaFactor.mLastWidthScala + scalaResult.mOffsetWidthScala;
+        scalaResult.mHeightScala = scalaFactor.mLastHeightScala + scalaResult.mOffsetHeightScala;
         return scalaResult;
     }
 

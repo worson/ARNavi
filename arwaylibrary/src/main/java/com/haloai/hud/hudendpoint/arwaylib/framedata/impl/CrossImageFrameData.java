@@ -18,4 +18,9 @@ public class CrossImageFrameData extends SuperFrameData {
     public static CrossImageFrameData getInstance() {
         return mCrossImageFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }

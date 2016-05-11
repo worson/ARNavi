@@ -2,17 +2,20 @@ package com.haloai.hud.hudendpoint.arwaylib.framedata;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.PositionFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.ScaleFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.AlphaCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.PositionCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RotateCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RouteCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.ScaleCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.PositionResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.ScaleResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
 
@@ -131,7 +134,7 @@ public class FrameDataFactory {
                 musicFrameData.setImage(BitmapFactory.decodeResource(context.getResources(), R.drawable.greenline_music_play));
                 break;
             case PLAYING:
-                musicFrameData.setImage(BitmapFactory.decodeResource(context.getResources(), R.drawable.red));
+                musicFrameData.setImage(BitmapFactory.decodeResource(context.getResources(), R.drawable.greenline_music_play));
                 updateMusicFrameData = false;
                 break;
             case UNPLAYING:
@@ -142,20 +145,26 @@ public class FrameDataFactory {
 
         if (updateMusicFrameData) {
 
-            /*//position animation
+            //position animation
             PositionFactor positionFactor = new PositionFactor(
-                    musicBean.getStartTime(), musicBean.getLastTime(), musicBean.getDuration(), musicFrameData.getPosition(), new Point(200, 200),null, false);
+                    musicBean.getStartTime(), musicBean.getLastTime(), musicBean.getDuration(), musicFrameData.getAnimStartPosition(), new Point(400, 400), false);
             PositionResult positionResult = mPositionCalculator.calculate(positionFactor);
-            musicFrameData.updateWithPosition(positionResult);*/
+            musicFrameData.updateWithPosition(positionResult);
 
             //scala animation
             ScaleFactor scalaFactor = new ScaleFactor(
-                    musicBean.getStartTime(),musicBean.getLastTime(), musicBean.getDuration(), 1f, 2f,musicFrameData.getScala(), musicFrameData.getPosition(), false);
+                    musicBean.getStartTime(), musicBean.getLastTime(), musicBean.getDuration(),
+                    1f, 2f, musicFrameData.getWidthScala(),
+                    1f, 2f, musicFrameData.getHeightScala(),
+                    musicFrameData.getPosition(), false);
             ScaleResult scalaResult = mScalaCalculator.calculate(scalaFactor);
             musicFrameData.updateWithScala(scalaResult);
 
+            musicBean.setLastTime(System.currentTimeMillis());
+
             //if animation is over,set the music current status with playing or unplaying.
             if (scalaResult.mIsOver) {
+                musicFrameData.animOver();
                 if (musicBean.getMusicStatus() == MusicBean.MusicStatus.STOP) {
                     musicBean.setMusicStatus(MusicBean.MusicStatus.UNPLAYING);
                 } else {

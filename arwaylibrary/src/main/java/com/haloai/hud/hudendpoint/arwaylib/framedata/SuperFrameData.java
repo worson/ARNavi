@@ -34,4 +34,17 @@ public abstract class SuperFrameData {
         return paint;
     }
 
+    protected Point mAnimStartPosition = new Point();
+    public void setAnimStartPosition(int x,int y){
+        this.mAnimStartPosition.x = x;
+        this.mAnimStartPosition.y = y;
+    }
+    public Point getAnimStartPosition(){
+        return this.mAnimStartPosition;
+    }
+
+    /**
+     * 在相关元素的动画结束时调用该方法进行数据重置等相关操作
+     */
+    public abstract void animOver();
 }

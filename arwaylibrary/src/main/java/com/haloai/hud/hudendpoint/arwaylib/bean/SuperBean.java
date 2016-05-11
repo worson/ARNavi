@@ -1,9 +1,11 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean;
 
 /**
- * Created by 龙 on 2016/4/28.
- *
- * Every bean class use
+ * author       : 龙;
+ * date         : 2016/5/5;
+ * email        : helong@haloai.com;
+ * package_name : com.haloai.hud.hudendpoint.arwaylib.bean;
+ * project_name : hudlauncher;
  */
 public abstract class SuperBean {
     /**

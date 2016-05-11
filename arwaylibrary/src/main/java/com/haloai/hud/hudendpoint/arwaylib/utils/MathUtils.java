@@ -1,6 +1,8 @@
 package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 
+import com.haloai.hud.utils.HaloLogger;
+
 /**
  * author       : 龙;
  * date         : 2016/5/6;
@@ -9,8 +11,9 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
  * project_name : hudlauncher;
  */
 public class MathUtils {
-    public static <VALUE_TYPE extends Number> double getOffsetValue(VALUE_TYPE from, VALUE_TYPE to, long timeOffset, long duration,double lastValue){
+    public static <VALUE_TYPE extends Number> double getOffsetValue(VALUE_TYPE from, VALUE_TYPE to, long timeOffset, long duration){
         double offsetValue = ((to.doubleValue() - from.doubleValue())*(1.0*timeOffset/duration));
-        return offsetValue-lastValue;
+        HaloLogger.logE("position__","from:"+from.doubleValue()+",to:"+to.doubleValue()+",time_offset:"+timeOffset);
+        return offsetValue;
     }
 }

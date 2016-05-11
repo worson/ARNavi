@@ -35,4 +35,9 @@ public class IconFrameData extends SuperFrameData {
         }
         return iconFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }

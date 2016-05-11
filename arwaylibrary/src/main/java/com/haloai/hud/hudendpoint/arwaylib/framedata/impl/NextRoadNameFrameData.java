@@ -18,4 +18,9 @@ public class NextRoadNameFrameData extends SuperFrameData {
     public static NextRoadNameFrameData getInstance() {
         return mNextRoadNameFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }

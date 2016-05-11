@@ -8,9 +8,8 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
  * project_name : hudlauncher;
  */
 public class ScaleResult extends SuperResult {
-    public float mOffsetScala       = 0f;
-    public float mOffsetWidthScala  = 0f;
-    public float mOffsetHeightScala = 0f;
-    public float mWidthScala        = 0f;
-    public float mHeightScala       = 0f;
+    public double mOffsetWidthScala  = 0f;
+    public double mOffsetHeightScala = 0f;
+    public double mWidthScala        = 0f;
+    public double mHeightScala       = 0f;
 }

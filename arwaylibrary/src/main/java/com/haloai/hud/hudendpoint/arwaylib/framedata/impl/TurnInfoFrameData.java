@@ -18,4 +18,9 @@ public class TurnInfoFrameData extends SuperFrameData {
     public static TurnInfoFrameData getInstance() {
         return mTurnInfoFrameData;
     }
+
+    @Override
+    public void animOver() {
+
+    }
 }
