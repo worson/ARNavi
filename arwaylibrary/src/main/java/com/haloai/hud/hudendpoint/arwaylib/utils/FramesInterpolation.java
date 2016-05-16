@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.test;
+package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 import android.util.Log;
 

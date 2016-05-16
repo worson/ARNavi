@@ -12,6 +12,8 @@ import android.view.View;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.WayFrameData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +30,12 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
     private boolean           mIsRunning         = false;
     private HudwayFlushThread mHudwayFlushThread = null;
     private boolean           mIsPause           = false;
-    private Context           mContext            = null;
+    private Context           mContext           = null;
 
     public ARWaySurfaceView(Context context) {
         super(context);
 
-        this.mContext=context;
+        this.mContext = context;
 
         SurfaceHolder holder = this.getHolder();
         this.setZOrderOnTop(true);
@@ -58,14 +60,14 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
     public void start() {
         if (mDrawList.size() <= 0) {
             //warning:this order is draw order.
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.CROSS_IMAGE));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.ROUTE));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.CROSS_IMAGE));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.WAY));
             mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NEXT_ROAD_NAME));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.TURN_INFO));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.SATELLITE));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NETWORK));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.MUSIC));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.EXIT));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.TURN_INFO));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.SATELLITE));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NETWORK));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.MUSIC));
+            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.EXIT));
         }
         mIsRunning = true;
     }
@@ -101,6 +103,8 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mHudwayFlushThread = new HudwayFlushThread(surfaceHolder);
         mIsRunning = true;
         mHudwayFlushThread.start();
+
+        ((WayFrameData)FrameDataFactory.getFrameData2Update(FrameDataFactory.FrameDataType.WAY)).initDrawLine(this.getWidth(), this.getHeight());
     }
 
     @Override
@@ -115,7 +119,10 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
     class HudwayFlushThread extends Thread {
         private SurfaceHolder surfaceHolder;
-        private Canvas can = null;
+        private Canvas can       = null;
+        private long   startTime = 0;
+        private long   endTime   = 0;
+        private static final long FPS_TIME = 30;
 
         public HudwayFlushThread(SurfaceHolder surfaceHolder) {
             this.surfaceHolder = surfaceHolder;
@@ -127,16 +134,22 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 if (!mIsPause) {
                     can = surfaceHolder.lockCanvas(null);
                     synchronized (surfaceHolder) {
+                        startTime = System.currentTimeMillis();
                         can.drawColor(Color.BLACK);
                         for (DrawObject drawObject : mDrawList) {
-                            drawObject.doDraw(mContext,can);
+                            can.save();
+                            drawObject.doDraw(mContext, can);
+                            can.restore();
                         }
+                        endTime = System.currentTimeMillis();
                     }
-                    SystemClock.sleep(30);
+                    if(FPS_TIME > endTime - startTime) {
+                        SystemClock.sleep(FPS_TIME - (endTime - startTime));
+                    }
                     if (can != null) {
                         surfaceHolder.unlockCanvasAndPost(can);
                     }
-                }else {
+                } else {
                     SystemClock.sleep(300);
                 }
             }

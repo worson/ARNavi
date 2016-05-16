@@ -8,4 +8,5 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
  * project_name : hudlauncher;
  */
 public class AlphaResult extends SuperResult {
+    public double mOffsetAlpha = 0f;
 }

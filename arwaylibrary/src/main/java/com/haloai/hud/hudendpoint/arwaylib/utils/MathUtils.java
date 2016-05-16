@@ -16,4 +16,16 @@ public class MathUtils {
         HaloLogger.logE("position__","from:"+from.doubleValue()+",to:"+to.doubleValue()+",time_offset:"+timeOffset);
         return offsetValue;
     }
+
+    public static int formatAsEvenNumber(int number) {
+        if (IsOddNumber(number)) {
+            return number - 1;
+        } else {
+            return number;
+        }
+    }
+
+    private static boolean IsOddNumber(int n) {
+        return n % 2 != 0;
+    }
 }

@@ -22,12 +22,13 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 根据传入的坐标集合绘制HUDWay路线 通过当前位置实时更新路线 bitmap size 2000*2000 显示路线长1KM ~ 2KM
+ * 根据传入的坐标集合绘制HUDWay路线 通过当前位置实时更新路线
  *
  * @author 龙
  */
@@ -58,17 +59,19 @@ public class HUDWayBitmapFactory {
     private int INSIDE_LINE_WIDTH  = 0;//310;
     private int CIRCLE_LINE_WIDTH  = 0;//45;
 
-    private int        mCurrentIndex           = 1;
-    private float      mCurPoint2NextPointDist = 0f;
-    private Projection mProjection             = null;
-    private Context    mContext                = null;
-    private Path       mRectPath               = new Path();
-    private Paint      mPaint4CrossImageCanvas = new Paint();
-    private Paint      mPaintFilterBitmapColor = new Paint();
-    private Bitmap     mCrossImage             = null;
-    private Bitmap     mCrossImageTarget       = null;
-    //0~255
-
+    private int              mCurrentIndex             = 1;
+    private float            mCurPoint2NextPointDist   = 0f;
+    private Projection       mProjection               = null;
+    private Context          mContext                  = null;
+    private Path             mRectPath                 = new Path();
+    private Paint            mPaint4CrossImageCanvas   = new Paint();
+    private Paint            mPaintFilterBitmapColor   = new Paint();
+    private Bitmap           mCrossImage               = null;
+    private Bitmap           mCrossImageTarget         = null;
+    private AMapNaviLocation mCrossImageLastLatLng     = null;
+    private int              mCrossImageRetainDistance = 0;
+    //已经走过的距离(距离初始路口放大图)
+    private float            mCrossImageDist           = 0f;
 
     public HUDWayBitmapFactory(Context context, Projection projection) {
         this.mContext = context;
@@ -147,6 +150,9 @@ public class HUDWayBitmapFactory {
         this.mTempPoints.clear();
         this.mRectPath.reset();
         this.mCurrentIndex = 1;
+        this.mCrossImageLastLatLng = null;
+        this.mCrossImageRetainDistance = 0;
+        this.mCrossImageDist = 0;
     }
 
     /**
@@ -158,7 +164,8 @@ public class HUDWayBitmapFactory {
      * @param crossImage         cross image to draw
      * @param realStartPoint     real point in screen without error
      */
-    public void drawHudway(Canvas can, AMapNaviLocation location, boolean mayBeErrorLocation, Bitmap crossImage, HudwayView.PointWithFloat realStartPoint) {
+    public void drawHudway(Canvas can, AMapNaviLocation location, boolean mayBeErrorLocation,
+                           Bitmap crossImage, int retainDistance, HudwayView.PointWithDouble realStartPoint) {
 
         //if location is null.
         if (location == null) {
@@ -172,7 +179,7 @@ public class HUDWayBitmapFactory {
         currentPoints.remove(0);
         currentPoints.add(0, new Point((int) Math.rint(realStartPoint.x), (int) Math.rint(realStartPoint.y)));
 
-        /*//TODO 测试观察处于哪个方向位置的点会显示错乱
+        /*//TODO 测试观察处于哪些大概位置的点会显示错乱
         Point point = currentPoints.get(0);
         currentPoints.clear();
         currentPoints.add(point);
@@ -201,7 +208,7 @@ public class HUDWayBitmapFactory {
         //create a bitmap to draw
         Bitmap hudwayBitmap = Bitmap.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, Bitmap.Config.ARGB_4444);
 
-        //create a paint and set attribute
+        //create a mPaint and set attribute
         Paint paint = new Paint();
         Canvas canvas = new Canvas(hudwayBitmap);
         paint.setColor(Color.BLACK);
@@ -250,9 +257,9 @@ public class HUDWayBitmapFactory {
             Point tempPoint = new Point();
             if (pointsXY[i * 2 + 1] > firstPoint.y + TOLERATE_VALUE) {
                 //TODO 计算得到的舍弃点的补偿点的坐标在某些情况下有问题（去深圳湾的掉头时，补偿点会画到屏幕右侧）
-//                tempPoint.y = firstPoint.y;
-//                tempPoint.x = (int) (tempPoint.y*(pointsXY[i*2]+pointsXY[i*2-2])/(pointsXY[i*2+1]+pointsXY[i*2-1]));
-//                mTempPoints.add(tempPoint);
+                //                tempPoint.y = firstPoint.y;
+                //                tempPoint.x = (int) (tempPoint.y*(pointsXY[i*2]+pointsXY[i*2-2])/(pointsXY[i*2+1]+pointsXY[i*2-1]));
+                //                mTempPoints.add(tempPoint);
                 break;
             } else {
                 tempPoint.x = (int) pointsXY[i * 2];
@@ -260,6 +267,9 @@ public class HUDWayBitmapFactory {
                 mTempPoints.add(tempPoint);
             }
         }
+
+        HaloLogger.logE("route_result___", mTempPoints + "");
+
         pointsXY = new float[mTempPoints.size() * 2];
         for (int i = 0; i < mTempPoints.size(); i++) {
             pointsXY[i * 2] = mTempPoints.get(i).x;
@@ -268,7 +278,7 @@ public class HUDWayBitmapFactory {
 
         // here we must be 3D turn around first ,and rotate the path second.
         // first:3D turn around and set matrix
-        setRotateMatrix4Canvas(pointsXY[0],pointsXY[1],-100.0f,50f, canvas);
+        setRotateMatrix4Canvas(pointsXY[0], pointsXY[1], -100.0f, 50f, canvas);
 
         /*// second:Calculate degrees and rotate path with it.
         float degrees = 0f;
@@ -389,6 +399,10 @@ public class HUDWayBitmapFactory {
             return;
         }
 
+        //TODO TEST Do not to draw route when cross image is showed.
+        /*if(crossImage!=null){
+            paint.setColor(Color.BLACK);
+        }*/
         // draw outside line
         canvas.drawPath(basePath, paint);
 
@@ -401,37 +415,45 @@ public class HUDWayBitmapFactory {
         canvas.drawPaint(mPaintFilterBitmapColor);
 
         //draw red line
-//		paint.setColor(Color.RED);
-//		canvas.drawPath(redPointPath, paint);
+        //		mPaint.setColor(Color.RED);
+        //		canvas.drawPath(redPointPath, mPaint);
 
         // draw inside line
-//      paint.setStrokeWidth(INSIDE_LINE_WIDTH);
-//      paint.setColor(Color.BLACK);
-//      canvas.drawPath(basePath, paint);
+        //      mPaint.setStrokeWidth(INSIDE_LINE_WIDTH);
+        //      mPaint.setColor(Color.BLACK);
+        //      canvas.drawPath(basePath, mPaint);
 
         //TODO draw rectPath to see real road rect
         /*if (!mRectPath.isEmpty()) {
-            paint.setColor(Color.RED);
-            paint.setStrokeWidth(10);
-            canvas.drawPath(mRectPath, paint);
+            mPaint.setColor(Color.RED);
+            mPaint.setStrokeWidth(10);
+            canvas.drawPath(mRectPath, mPaint);
         }*/
 
         /*// draw can move point
-        paint.setColor(Color.RED);
-		paint.setStyle(Paint.Style.FILL);
-		paint.setStrokeWidth(CIRCLE_LINE_WIDTH);
-		canvas.drawPath(circlePath,paint);*/
+        mPaint.setColor(Color.RED);
+		mPaint.setStyle(Paint.Style.FILL);
+		mPaint.setStrokeWidth(CIRCLE_LINE_WIDTH);
+		canvas.drawPath(circlePath,mPaint);*/
 
         //draw cross image
         if (crossImage != null) {
+            if (mCrossImageLastLatLng == null) {
+                mCrossImageLastLatLng = location;
+                mCrossImageRetainDistance = retainDistance;
+            }
+            //offsetHeight表示图片要往下移动的量(px)
+            int offsetHeight = 0;
+            if (location != mCrossImageLastLatLng) {
+                //TODO 这里计算的都是直线距离,但是这两个点之间的道路并不一定是直线,因此这样计算是有问题的
+                mCrossImageDist += AMapUtils.calculateLineDistance(naviLatLng2LatLng(mCrossImageLastLatLng.getCoord()), naviLatLng2LatLng(location.getCoord()));
+                offsetHeight = (int) (mCrossImageDist / mCrossImageRetainDistance * BITMAP_HEIGHT / 2);
+                mCrossImageLastLatLng = location;
+            }
             if (crossImage != mCrossImage) {
+                mCrossImageLastLatLng = null;
+                mCrossImageDist = 0;
                 mCrossImage = crossImage;
-                /*//create bitmap with our width and height
-                Bitmap target = Bitmap.createBitmap(MIDDLE_LINE_WIDTH, MIDDLE_LINE_WIDTH, crossImage.getConfig());
-                Canvas temp_canvas = new Canvas(target);
-                temp_canvas.drawBitmap(crossImage, null, new Rect(0, 0, target.getWidth(), target.getHeight()), null);
-
-                canvas.drawBitmap(cutBitmap(target, pointsXY), 0, 0, null);*/
                 mCrossImageTarget = Bitmap.createBitmap(BITMAP_WIDTH, BITMAP_HEIGHT, crossImage.getConfig());
                 Canvas temp_canvas = new Canvas(mCrossImageTarget);
                 temp_canvas.drawBitmap(crossImage, null,
@@ -439,10 +461,18 @@ public class HUDWayBitmapFactory {
                                        mPaint4CrossImageCanvas);
             }
             can.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG));
-            setRotateMatrix4Canvas(pointsXY[0],pointsXY[1],0f,50f,can);
-            can.drawBitmap(mCrossImageTarget, null,
-                           new Rect((int) (-3.5 * BITMAP_WIDTH), (int) (-6.5 * BITMAP_HEIGHT),
-                                    (int) (4.5 * BITMAP_WIDTH), (int) (BITMAP_HEIGHT)), null);
+            setRotateMatrix4Canvas(pointsXY[0], pointsXY[1], 0f, 50f, can);
+            //            if(offsetHeight!=0){
+            //                mCrossImageTarget = DrawUtils.centerSquareScaleBitmap(mCrossImageTarget,6*BITMAP_WIDTH);
+            //            }
+            can.drawBitmap(mCrossImageTarget,
+                           //根据当前路口放大图和相对于路口放大图刚出现时的位置差对路口放大图进行截取--offsetHeight就是被截取部分的高度
+                           new Rect(0, 0, BITMAP_WIDTH, BITMAP_HEIGHT - offsetHeight),
+                           new Rect((int) (-3.5 * BITMAP_WIDTH), (int) (-6.5 * BITMAP_HEIGHT) + offsetHeight,
+                                    (int) (4.5 * BITMAP_WIDTH), BITMAP_HEIGHT), null);
+        } else if (mCrossImageLastLatLng != null) {
+            mCrossImageLastLatLng = null;
+            mCrossImageDist = 0;
         }
 
         Matrix initMatrix = new Matrix();
@@ -454,21 +484,22 @@ public class HUDWayBitmapFactory {
 
     /**
      * set matrix to canvas with rotate and translate.
+     *
      * @param translateX
      * @param translateY
      * @param offsetX
      * @param rotateXDegrees
      * @param canvas
      */
-    private void setRotateMatrix4Canvas(float translateX,float translateY,float offsetX,float rotateXDegrees, Canvas canvas) {
+    private void setRotateMatrix4Canvas(float translateX, float translateY, float offsetX, float rotateXDegrees, Canvas canvas) {
         final Camera camera = new Camera();
         @SuppressWarnings("deprecation")
         final Matrix matrix = canvas.getMatrix();
         // save the camera status for restore
         camera.save();
         // around X rotate N degrees
-//		camera.rotateX(50);
-//		camera.translate(0.0f, -100f, 0.0f);
+        //		camera.rotateX(50);
+        //		camera.translate(0.0f, -100f, 0.0f);
         camera.rotateX(rotateXDegrees);
         camera.translate(0.0f, offsetX, 0.0f);
         //x = -500 则为摄像头向右移动

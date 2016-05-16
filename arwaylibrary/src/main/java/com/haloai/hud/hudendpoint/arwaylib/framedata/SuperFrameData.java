@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.framedata;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 
@@ -29,9 +30,14 @@ public abstract class SuperFrameData {
         return this.mPosition;
     }
 
-    protected Paint paint = null;
+    protected Paint mPaint = new Paint();
     public Paint getPaint() {
-        return paint;
+        return this.mPaint;
+    }
+
+    protected Matrix mMatrix = new Matrix();
+    public Matrix getMatrix(){
+        return this.mMatrix;
     }
 
     protected Point mAnimStartPosition = new Point();

@@ -11,7 +11,7 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
  * email        : helong@haloai.com;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.calculator.impl;
  * project_name : hudlauncher;
- * note         : is move to ,not move by.
+ * note         : is move to or move by.
  */
 public class PositionCalculator extends SuperCalculator<PositionResult, PositionFactor> {
     @Override
@@ -23,56 +23,72 @@ public class PositionCalculator extends SuperCalculator<PositionResult, Position
         if (offsetTimeTotal >= positionFactor.mDuration) {
             positionResult.mIsOver = true;
         }
-        if (positionFactor.mReverse) {
-            if (offsetTimeTotal <= positionFactor.mDuration / 2) {
+        //move to
+        if (positionFactor.mPositionType == PositionFactor.PositionType.MOVE_TO) {
+            move(positionResult, positionFactor.mReverse, positionFactor.mDuration,
+                 positionFactor.mFromPosition.x, positionFactor.mToPosition.x,
+                 positionFactor.mFromPosition.y, positionFactor.mToPosition.y,
+                 offsetTime, offsetTimeTotal);
+        } else {
+            //move by
+            move(positionResult, positionFactor.mReverse, positionFactor.mDuration,
+                 0, positionFactor.mXValue,
+                 0, positionFactor.mYValue,
+                 offsetTime, offsetTimeTotal);
+        }
+
+        return positionResult;
+    }
+
+    private void move(PositionResult positionResult, boolean reverse, long duration, int from_x, int to_x, int from_y, int to_y, long offsetTime, long offsetTimeTotal) {
+        if (reverse) {
+            if (offsetTimeTotal <= duration / 2) {
                 positionResult.mOffsetPosition.x =
-                        (int)(Math.round(MathUtils.getOffsetValue(
-                                positionFactor.mFromPosition.x,
-                                positionFactor.mToPosition.x,
+                        (int) (Math.round(MathUtils.getOffsetValue(
+                                from_x,
+                                to_x,
                                 offsetTime,
-                                positionFactor.mDuration / 2
-                                )));
+                                duration / 2
+                        )));
                 positionResult.mOffsetPosition.y =
                         (int) Math.round(MathUtils.getOffsetValue(
-                                positionFactor.mFromPosition.y,
-                                positionFactor.mToPosition.y,
+                                from_y,
+                                to_y,
                                 offsetTime,
-                                positionFactor.mDuration / 2
-                                ));
+                                duration / 2
+                        ));
             } else {
                 positionResult.mOffsetPosition.x =
                         (int) Math.round(MathUtils.getOffsetValue(
-                                positionFactor.mToPosition.x,
-                                positionFactor.mFromPosition.x,
-                                offsetTime - positionFactor.mDuration / 2,
-                                positionFactor.mDuration / 2
-                                ));
+                                to_x,
+                                from_x,
+                                offsetTime,
+                                duration / 2
+                        ));
                 positionResult.mOffsetPosition.y =
                         (int) Math.round(MathUtils.getOffsetValue(
-                                positionFactor.mToPosition.y,
-                                positionFactor.mFromPosition.y,
-                                offsetTime - positionFactor.mDuration / 2,
-                                positionFactor.mDuration / 2
-                                ));
+                                to_y,
+                                from_y,
+                                offsetTime,
+                                duration / 2
+                        ));
             }
         } else {
             positionResult.mOffsetPosition.x =
                     (int) Math.round(MathUtils.getOffsetValue(
-                            positionFactor.mFromPosition.x,
-                            positionFactor.mToPosition.x,
+                            from_x,
+                            to_x,
                             offsetTime,
-                            positionFactor.mDuration
-                            ));
+                            duration
+                    ));
             positionResult.mOffsetPosition.y =
                     (int) Math.round(MathUtils.getOffsetValue(
-                            positionFactor.mFromPosition.y,
-                            positionFactor.mToPosition.y,
+                            from_y,
+                            to_y,
                             offsetTime,
-                            positionFactor.mDuration
-                            ));
+                            duration
+                    ));
         }
-
-        return positionResult;
     }
 
     private static PositionCalculator mPositionFactor = new PositionCalculator();

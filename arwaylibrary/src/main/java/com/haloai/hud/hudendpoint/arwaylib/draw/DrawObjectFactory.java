@@ -5,7 +5,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawExit;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawIcon;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawMusic;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawNextRoadName;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawRoute;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawWay;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawTurnInfo;
 
 /**
@@ -21,7 +21,7 @@ public class DrawObjectFactory {
         EXIT,
         MUSIC,
         NEXT_ROAD_NAME,
-        ROUTE,
+        WAY,
         TURN_INFO,
         SATELLITE,
         NETWORK
@@ -41,8 +41,8 @@ public class DrawObjectFactory {
             case NEXT_ROAD_NAME:
                 drawObject = DrawNextRoadName.getInstance();
                 break;
-            case ROUTE:
-                drawObject = DrawRoute.getInstance();
+            case WAY:
+                drawObject = DrawWay.getInstance();
                 break;
             case TURN_INFO:
                 drawObject = DrawTurnInfo.getInstance();

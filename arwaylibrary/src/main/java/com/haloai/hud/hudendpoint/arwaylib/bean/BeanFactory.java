@@ -1,9 +1,10 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean;
 
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.ExitBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 
 /**
@@ -15,11 +16,12 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
  */
 public class BeanFactory {
     public enum BeanType {
-        NAVIGATION,
+        ROUTE,
         SATELLITE,
         MUSIC,
         NETWORK,
-        EXIT
+        EXIT,
+        COMMON
     }
 
     /**
@@ -27,20 +29,21 @@ public class BeanFactory {
      */
     private static boolean mIsInited = false;
 
-    private static NaviBean      mNaviBean      = null;
+    private static RouteBean     mRouteBean     = null;
     private static SatelliteBean mSatelliteBean = null;
     private static MusicBean     mMusicBean     = null;
     private static ExitBean      mExitBean      = null;
     private static NetworkBean   mNetworkBean   = null;
+    private static CommonBean    mCommonBean    = null;
 
     public static SuperBean getBean(BeanType beanType) {
-        if(!mIsInited) {
+        if (!mIsInited) {
             init();
         }
         SuperBean hudBean = null;
         switch (beanType) {
-            case NAVIGATION:
-                hudBean = mNaviBean;
+            case ROUTE:
+                hudBean = mRouteBean;
                 break;
             case SATELLITE:
                 hudBean = mSatelliteBean;
@@ -54,6 +57,9 @@ public class BeanFactory {
             case NETWORK:
                 hudBean = mNetworkBean;
                 break;
+            case COMMON:
+                hudBean = mCommonBean;
+                break;
             default:
                 throw new RuntimeException("bean type is error or missing break.");
         }
@@ -61,12 +67,13 @@ public class BeanFactory {
     }
 
     private static void init() {
-        synchronized (BeanFactory.class){
-            mNaviBean = new NaviBean();
+        synchronized (BeanFactory.class) {
+            mRouteBean = new RouteBean();
             mSatelliteBean = new SatelliteBean();
             mMusicBean = new MusicBean();
             mExitBean = new ExitBean();
             mNetworkBean = new NetworkBean();
+            mCommonBean = new CommonBean();
             mIsInited = true;
         }
     }

@@ -8,4 +8,16 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.factor;
  * project_name : hudlauncher;
  */
 public class AlphaFactor extends SuperFactor {
+    public float mFromAlpha    = 0f;
+    public float mToAlpha      = 0f;
+    public float mCurrentAlpha = 0f;
+    public AlphaFactor(long startTime, long lastTime, long duration, float fromAlpha, float toAlpha, float curAlpha, boolean reverse) {
+        this.mStartTime = startTime;
+        this.mLastTime = lastTime;
+        this.mDuration = duration;
+        this.mReverse = reverse;
+        this.mFromAlpha = fromAlpha;
+        this.mToAlpha = toAlpha;
+        this.mCurrentAlpha = curAlpha;
+    }
 }

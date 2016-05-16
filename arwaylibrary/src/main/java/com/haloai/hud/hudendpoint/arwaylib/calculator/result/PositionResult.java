@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
 
+import android.graphics.Point;
+
 /**
  * author       : 龙;
  * date         : 2016/5/6;
@@ -8,5 +10,5 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
  * project_name : hudlauncher;
  */
 public class PositionResult extends SuperResult {
-
+    public Point mOffsetPosition = new Point();
 }

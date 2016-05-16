@@ -1,16 +1,19 @@
 package com.haloai.hud.hudendpoint.arwaylib;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.View;
 
 import com.amap.api.maps.Projection;
+import com.amap.api.navi.model.AMapNaviLocation;
+import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.ExitBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 
 /**
@@ -25,7 +28,6 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
  */
 public class ARWayController {
     private static IARWay     mARWay      = null;
-    private static Projection mProjection = null;
     private static Context    mContext    = null;
 
     /**
@@ -34,9 +36,8 @@ public class ARWayController {
      *
      * @return view
      */
-    public static View getARWayAndInit(Context context, Projection projection) {
+    public static View getARWayAndInit(Context context) {
         mContext = context;
-        mProjection = projection;
         if (mARWay == null) {
             mARWay = ARWayFactory.getARWay(context, ARWayFactory.ARWayType.SURFACE_VIEW);
         }
@@ -78,14 +79,62 @@ public class ARWayController {
 
     /***
      * the class for update data about navigation.
-     * NaviBeanUpdater class is a packing class for NaviBean.
+     * RouteBeanUpdater class is a packing class for RouteBean.
      */
-    public static class NaviBeanUpdater {
-        private static NaviBean mNaviBean = (NaviBean) BeanFactory.getBean(BeanFactory.BeanType.NAVIGATION);
+    public static class RouteBeanUpdater {
+        private static RouteBean mRouteBean = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
 
-        public static NaviBean setIsShow(boolean isShow) {
+        public static RouteBean setIsShow(boolean isShow) {
             synchronized (ARWayController.class) {
-                return (NaviBean) mNaviBean.setIsShow(isShow);
+                return (RouteBean) mRouteBean.setIsShow(isShow);
+            }
+        }
+
+        public static RouteBean setProjection(Projection projection) {
+            synchronized (ARWayController.class) {
+                return  mRouteBean.setProjection(projection);
+            }
+        }
+
+        public static RouteBean setPath(AMapNaviPath AMapNaviPath) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setPath(AMapNaviPath);
+            }
+        }
+
+        public static RouteBean setCanDrawHudway(boolean canDrawHudway) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setCanDrawHudway(canDrawHudway);
+            }
+        }
+
+        public static RouteBean setCrossImage(Bitmap crossImage) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setCrossImage(crossImage);
+            }
+        }
+
+        public static RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setCurrentLocation(currentLocation);
+            }
+        }
+
+        public static RouteBean setCurrentPoint(int currentPoint) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setCurrentPoint(currentPoint);
+            }
+        }
+
+        public static RouteBean setCurrentStep(int currentStep) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setCurrentStep(currentStep);
+            }
+        }
+
+        public static RouteBean setNextRoadName(String nextRoadName){
+            synchronized (ARWayController.class) {
+                return mRouteBean.setNextRoadName(nextRoadName);
             }
         }
     }

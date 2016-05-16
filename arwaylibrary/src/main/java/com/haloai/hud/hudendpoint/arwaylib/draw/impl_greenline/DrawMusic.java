@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline;
 import android.content.Context;
 import android.graphics.Canvas;
 
+import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
@@ -25,14 +26,17 @@ public class DrawMusic extends DrawObject {
     }
     @Override
     public void doDraw(Context context,Canvas canvas) {
-        MusicFrameData musicFrameData = (MusicFrameData) FrameDataFactory.getFrameDataForDraw(
-                context, FrameDataFactory.FrameDataType.MUSIC);
-        if(musicFrameData.getImage()==null){
-            return;
+        if(BeanFactory.getBean(BeanFactory.BeanType.MUSIC).isShow()) {
+            MusicFrameData musicFrameData = (MusicFrameData) FrameDataFactory.getFrameDataForDraw(
+                    context, FrameDataFactory.FrameDataType.MUSIC);
+            if (musicFrameData.getImage() == null) {
+                return;
+            }
+            canvas.setMatrix(musicFrameData.getMatrix());
+            canvas.drawBitmap(musicFrameData.getImage(), null,
+                              musicFrameData.getDrawRect(), musicFrameData.getPaint());
+            HaloLogger.logE("position:", musicFrameData.getDrawRect().left + "," + musicFrameData.getDrawRect().top + ","
+                    + musicFrameData.getDrawRect().right + "," + musicFrameData.getDrawRect().bottom);
         }
-        canvas.drawBitmap(musicFrameData.getImage(), null,
-                          musicFrameData.getDrawRect(), musicFrameData.getPaint());
-        HaloLogger.logE("position:",musicFrameData.getDrawRect().left+","+musicFrameData.getDrawRect().top+","
-                +musicFrameData.getDrawRect().right+","+musicFrameData.getDrawRect().bottom);
     }
 }

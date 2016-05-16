@@ -33,10 +33,10 @@ public class ScaleCalculator extends SuperCalculator<ScaleResult, ScaleFactor> {
             } else {
                 scalaResult.mOffsetWidthScala =  (MathUtils.getOffsetValue(
                         scalaFactor.mToWidthScala, scalaFactor.mFromWidthScala,
-                        offsetTime-scalaFactor.mDuration/2, scalaFactor.mDuration/2));
+                        offsetTime, scalaFactor.mDuration/2));
                 scalaResult.mOffsetHeightScala =  (MathUtils.getOffsetValue(
                         scalaFactor.mToHeightScala, scalaFactor.mFromHeightScala,
-                        offsetTime-scalaFactor.mDuration/2, scalaFactor.mDuration/2));
+                        offsetTime, scalaFactor.mDuration/2));
             }
         } else {
             scalaResult.mOffsetWidthScala = (MathUtils.getOffsetValue(

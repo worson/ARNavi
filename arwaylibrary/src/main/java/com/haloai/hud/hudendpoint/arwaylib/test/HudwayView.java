@@ -22,6 +22,7 @@ import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.utils.FramesInterpolation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +53,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
     private FramesInterpolation<Integer> mCurStepRetainDistanceInterpolation = null;
     private Bitmap                       mCrossImage                         = null;
     private HudwayFlushThread            mHudwayFlushThread                  = null;
-    private PointWithFloat               mRealPointInScreen                  = new PointWithFloat(0, 0);
+    private PointWithDouble              mRealPointInScreen                  = new PointWithDouble(0, 0);
 
     private boolean mCanDrawHudway         = false;
     private int     mCurrent               = -1;
@@ -85,6 +86,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
     private float newAngle                               = 0f;//= 0; CAMERA_ROTATEX_MIN_ANGLE;
     private float newZAxis                               = 0f;//= 0; CAMERA_Z_AXIS_MAX;
     private float newYAxis                               = 0f;//200.0f;
+    private int   mRetainDistance                        = 0;
 
     /**
      * 构造函数
@@ -139,8 +141,9 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
      *
      * @param crossImage
      */
-    public void setCrossImage(Bitmap crossImage) {
+    public void setCrossImage(Bitmap crossImage, int retainDistance) {
         mCrossImage = crossImage;
+        mRetainDistance = retainDistance;
     }
 
     //draw thread
@@ -192,7 +195,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             }
             canvas.save();
-//			repeatCount = repeatCount+1;
+            //			repeatCount = repeatCount+1;
             mFakerCurrentLocation = getFakerLocation();
             if (mFakerCurrentLocation == null) {
                 return;
@@ -251,8 +254,8 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
                 //newYAxis = -100f;
                 CAMERA_ROTATEX_SET_LOOP = 0;
             }*/
-//			mHudwayFactory.updateCameraInfo(newAngle,newZAxis,newYAxis);
-            mHudwayFactory.drawHudway(canvas, mFakerCurrentLocation, mIsErrorLocation, mCrossImage, mRealPointInScreen);
+            //			mHudwayFactory.updateCameraInfo(newAngle,newZAxis,newYAxis);
+            mHudwayFactory.drawHudway(canvas, mFakerCurrentLocation, mIsErrorLocation, mCrossImage,mRetainDistance, mRealPointInScreen);
             canvas.restore();
         }
     }
@@ -296,24 +299,24 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
             mRealPointInScreen.x = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * mCurrent / mPreviousFramesCounter));
             mRealPointInScreen.y = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * mCurrent / mPreviousFramesCounter));
             Point point = new Point((int) mRealPointInScreen.x, (int) mRealPointInScreen.y);
-//			Point startPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex - 1)));
-//			Point endPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex)));
-//			if(!startPoint.equals(endPoint)){
-//				Log.e("projection", "prePoint"+point+"");
-//				Log.e("projection", "startPoint"+startPoint+"");
-//				Log.e("projection", "endPoint"+endPoint+"");
-//				point = PointsLines.projection(startPoint,endPoint,point);
-//				Log.e("projection", "proPoint"+point+"");
-//				Log.e("projection", "==============================");
-//				if(!PointsLines.isPointInLine(startPoint, endPoint, point) && mCurrentIndex + 1 < mPathLatLngs.size()){
-//					NaviLatLng startLatLng = mPathLatLngs.get(mCurrentIndex-1+1);
-//					NaviLatLng endLatLng = mPathLatLngs.get(mCurrentIndex+1);
-//					startPoint = mProjection.toScreenLocation(new LatLng(startLatLng.getLatitude(),startLatLng.getLongitude()));
-//					endPoint = mProjection.toScreenLocation(new LatLng(endLatLng.getLatitude(),endLatLng.getLongitude()));
-//					point = PointsLines.projection(startPoint, endPoint, point);
-//					Log.e("currentIndex", "currentIndex + 1:"+(mCurrentIndex +1));
-//				}
-//			}
+            //			Point startPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex - 1)));
+            //			Point endPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex)));
+            //			if(!startPoint.equals(endPoint)){
+            //				Log.e("projection", "prePoint"+point+"");
+            //				Log.e("projection", "startPoint"+startPoint+"");
+            //				Log.e("projection", "endPoint"+endPoint+"");
+            //				point = PointsLines.projection(startPoint,endPoint,point);
+            //				Log.e("projection", "proPoint"+point+"");
+            //				Log.e("projection", "==============================");
+            //				if(!PointsLines.isPointInLine(startPoint, endPoint, point) && mCurrentIndex + 1 < mPathLatLngs.size()){
+            //					NaviLatLng startLatLng = mPathLatLngs.get(mCurrentIndex-1+1);
+            //					NaviLatLng endLatLng = mPathLatLngs.get(mCurrentIndex+1);
+            //					startPoint = mProjection.toScreenLocation(new LatLng(startLatLng.getLatitude(),startLatLng.getLongitude()));
+            //					endPoint = mProjection.toScreenLocation(new LatLng(endLatLng.getLatitude(),endLatLng.getLongitude()));
+            //					point = PointsLines.projection(startPoint, endPoint, point);
+            //					Log.e("currentIndex", "currentIndex + 1:"+(mCurrentIndex +1));
+            //				}
+            //			}
             AMapNaviLocation location = new AMapNaviLocation();
 
             location.setCoord(latLng2NaviLatLng(mProjection.fromScreenLocation(point)));
@@ -327,11 +330,11 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
      * 自定义点类
      * 使用double型来减少误差
      */
-    public class PointWithFloat {
+    public class PointWithDouble {
         double x;
         double y;
 
-        public PointWithFloat(double x, double y) {
+        public PointWithDouble(double x, double y) {
             this.x = x;
             this.y = y;
         }
@@ -342,18 +345,18 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-//	private long updateFpsTime(long time) {
-//		long div = 1000;
-//		long fps_time = 0;
-//		for(long i=25 ; i<=35 ; i++){
-//			long temp = time - time/i*i;
-//			if(div > temp){
-//				fps_time = i;
-//				div = temp;
-//			}
-//		}
-//		return fps_time;
-//	}
+    //	private long updateFpsTime(long time) {
+    //		long div = 1000;
+    //		long fps_time = 0;
+    //		for(long i=25 ; i<=35 ; i++){
+    //			long temp = time - time/i*i;
+    //			if(div > temp){
+    //				fps_time = i;
+    //				div = temp;
+    //			}
+    //		}
+    //		return fps_time;
+    //	}
 
     private float getDegree(int new_point_x, int new_point_y, int ori_point_x, int ori_point_y) {
         float degrees = 0f;
@@ -393,7 +396,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
         }
         return degrees;
 
-//		return 360 - amapViewDegrees + selfCarDegrees;
+        //		return 360 - amapViewDegrees + selfCarDegrees;
     }
 
     /**
@@ -464,18 +467,19 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
         this.mCurrentIndex = 1;
         this.mCurrentDistance = 0;
         this.mRealPointInScreen.init();
+        this.mRetainDistance=0;
     }
 
     public void setCurrentLocation(AMapNaviLocation location) {
-//		Point point = mProjection.toScreenLocation(naviLatLng2LatLng(location.getCoord()));
-//		Point startPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex - 1)));
-//		Point endPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex)));
-//		if(!startPoint.equals(endPoint)){
-//			point = PointsLines.projection(startPoint, endPoint, point);
-//		}
-//		LatLng latLng = mProjection.fromScreenLocation(point);
-//		mCurrentLocation = new AMapNaviLocation();
-//		mCurrentLocation.setCoord(latLng2NaviLatLng(latLng));
+        //		Point point = mProjection.toScreenLocation(naviLatLng2LatLng(location.getCoord()));
+        //		Point startPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex - 1)));
+        //		Point endPoint = mProjection.toScreenLocation(naviLatLng2LatLng(mPathLatLngs.get(mCurrentIndex)));
+        //		if(!startPoint.equals(endPoint)){
+        //			point = PointsLines.projection(startPoint, endPoint, point);
+        //		}
+        //		LatLng latLng = mProjection.fromScreenLocation(point);
+        //		mCurrentLocation = new AMapNaviLocation();
+        //		mCurrentLocation.setCoord(latLng2NaviLatLng(latLng));
         mCurrentLocation = location;
         if (mCurrentDistance < CORRECTING_DISTANCE) {
             if (mPreLocation != null) {
