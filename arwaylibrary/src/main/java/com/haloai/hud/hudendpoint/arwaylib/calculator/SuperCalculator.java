@@ -12,4 +12,6 @@ public abstract class SuperCalculator<CALCULATOR_RESULT,CALCULATOR_FACTOR> {
      * full the frameData with data which calculator`s result.
      */
     public abstract CALCULATOR_RESULT calculate(CALCULATOR_FACTOR factor);
+
+    public abstract void reset();
 }

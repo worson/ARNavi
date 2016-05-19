@@ -132,9 +132,9 @@ public class ARWayController {
             }
         }
 
-        public static RouteBean setNextRoadName(String nextRoadName){
+        public static RouteBean setNextRoadName(String nextRoadName, RouteBean.NextRoadType nextRoadType){
             synchronized (ARWayController.class) {
-                return mRouteBean.setNextRoadName(nextRoadName);
+                return mRouteBean.setNextRoadNameAndType(nextRoadName,nextRoadType);
             }
         }
     }

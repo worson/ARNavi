@@ -27,14 +27,14 @@ public class DrawWay extends DrawObject {
     @Override
     public void doDraw(Context context, Canvas canvas) {
         if (BeanFactory.getBean(BeanFactory.BeanType.ROUTE).isShow()) {
-            WayFrameData routeFrameData = (WayFrameData) FrameDataFactory.getFrameDataForDraw(
+            WayFrameData wayFrameData = (WayFrameData) FrameDataFactory.getFrameDataForDraw(
                     context, FrameDataFactory.FrameDataType.WAY);
-            if (routeFrameData.getImage() == null) {
+            if (wayFrameData.getImage() == null) {
                 return;
             }
 
-
-            canvas.drawBitmap(routeFrameData.getImage(), 0, 0, routeFrameData.getPaint());
+//            canvas.drawBitmap(wayFrameData.getImage(), wayFrameData.getSrcRect(), wayFrameData.getDestRect(), null);
+            canvas.drawBitmap(wayFrameData.getImage(), 0,0, null);
         }
     }
 }

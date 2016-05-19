@@ -3,7 +3,9 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
 import android.graphics.Point;
 
 import com.amap.api.maps.Projection;
+import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +25,12 @@ public class RouteResult {
     public boolean          mHasNextRoadName    = false;
     public String           mNextRoadName       = null;
 
-    public         Projection  mProjection           = null;
-    public         NaviLatLng  mNextRoadNamePosition = null;
-    private static RouteResult mRouteResult          = new RouteResult();
+    public         Projection             mProjection           = null;
+    public         NaviLatLng             mNextRoadNamePosition = null;
+    private static RouteResult            mRouteResult          = new RouteResult();
+    public         AMapNaviLocation       mStartLocation        = null;
+    public         AMapNaviLocation       mFakeLocation         = null;
+    public         RouteBean.NextRoadType mNextRoadType         = null;
 
     private RouteResult() {}
 
@@ -41,6 +46,9 @@ public class RouteResult {
         mCurrentLatLngs.clear();
         mNextRoadNamePosition = null;
         mNextRoadName = null;
+        mNextRoadType = null;
         mProjection = null;
+        mStartLocation = null;
+        mFakeLocation = null;
     }
 }

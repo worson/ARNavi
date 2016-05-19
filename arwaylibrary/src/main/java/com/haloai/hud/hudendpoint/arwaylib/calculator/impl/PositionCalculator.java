@@ -98,4 +98,8 @@ public class PositionCalculator extends SuperCalculator<PositionResult, Position
     public static PositionCalculator getInstance() {
         return mPositionFactor;
     }
+
+    @Override
+    public void reset() {
+    }
 }

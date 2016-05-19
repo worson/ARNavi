@@ -10,6 +10,7 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -41,13 +42,20 @@ public class RouteBean extends SuperBean {
 
     private boolean mMayBeErrorLocation = true;
 
-    private boolean mCanDrawHudway   = false;
-    private int     mCurrentPoint    = 0;
-    private int     mCurrentStep     = 0;
-    private int     mCurrentDistance = 0;
-    private double  mRealStartPointX = 0f;
-    private double  mRealStartPointY = 0f;
-    private String  mNextRoadName    = null;
+    private boolean      mCanDrawHudway   = false;
+    private int          mCurrentPoint    = 0;
+    private int          mCurrentStep     = 0;
+    private int          mCurrentDistance = 0;
+    private double       mRealStartPointX = 0f;
+    private double       mRealStartPointY = 0f;
+    private String       mNextRoadName    = null;
+    private NextRoadType mNextRoadType    = null;
+
+    public enum NextRoadType {
+        LEFT,
+        BACK,
+        RIGHT
+    }
 
     /**
      * without mCanDrawHudway
@@ -63,6 +71,7 @@ public class RouteBean extends SuperBean {
         mCurrentDistance = 0;
         mMayBeErrorLocation = true;
         mNextRoadName = null;
+        mNextRoadType = null;
         mPathLatLngs.clear();
         mCroodsInSteps.clear();
         mRoadNameLatLngs.clear();
@@ -89,8 +98,9 @@ public class RouteBean extends SuperBean {
     }
 
     public RouteBean setPath(AMapNaviPath AMapNaviPath) {
-        mAMapNaviPath = AMapNaviPath;
         reset();
+        CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.ROUTE).reset();
+        mAMapNaviPath = AMapNaviPath;
         List<AMapNaviStep> naviStepList = AMapNaviPath.getSteps();
         for (int i = 0; i < naviStepList.size(); i++) {
             mCroodsInSteps.add(naviStepList.get(i).getCoords().size());
@@ -100,11 +110,11 @@ public class RouteBean extends SuperBean {
             mPathLatLngs.addAll(aMapNaviStep.getCoords());
 
             for (AMapNaviLink link : aMapNaviStep.getLinks()) {
-                if(mRoadNameLatLngs.containsKey(link.getRoadName())) {
+                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
                     List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
                     value.addAll(link.getCoords());
                     mRoadNameLatLngs.put(link.getRoadName(), value);
-                }else{
+                } else {
                     mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
                 }
             }
@@ -190,8 +200,9 @@ public class RouteBean extends SuperBean {
         return mRealStartPointY;
     }
 
-    public RouteBean setNextRoadName(String nextRoadName) {
+    public RouteBean setNextRoadNameAndType(String nextRoadName, NextRoadType nextRoadType) {
         mNextRoadName = nextRoadName;
+        mNextRoadType = nextRoadType;
         return this;
     }
 
@@ -199,7 +210,11 @@ public class RouteBean extends SuperBean {
         return mNextRoadName;
     }
 
-    public Map<String, List<NaviLatLng>> getRoadNameLatLngs(){
+    public NextRoadType getNextRoadType(){
+        return mNextRoadType;
+    }
+
+    public Map<String, List<NaviLatLng>> getRoadNameLatLngs() {
         return mRoadNameLatLngs;
     }
 }

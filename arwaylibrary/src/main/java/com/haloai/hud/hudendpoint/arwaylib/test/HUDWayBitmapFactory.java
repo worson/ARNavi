@@ -445,7 +445,6 @@ public class HUDWayBitmapFactory {
             //offsetHeight表示图片要往下移动的量(px)
             int offsetHeight = 0;
             if (location != mCrossImageLastLatLng) {
-                //TODO 这里计算的都是直线距离,但是这两个点之间的道路并不一定是直线,因此这样计算是有问题的
                 mCrossImageDist += AMapUtils.calculateLineDistance(naviLatLng2LatLng(mCrossImageLastLatLng.getCoord()), naviLatLng2LatLng(location.getCoord()));
                 offsetHeight = (int) (mCrossImageDist / mCrossImageRetainDistance * BITMAP_HEIGHT / 2);
                 mCrossImageLastLatLng = location;

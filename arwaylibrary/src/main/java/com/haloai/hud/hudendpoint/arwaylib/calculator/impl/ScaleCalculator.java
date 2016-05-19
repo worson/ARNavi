@@ -54,4 +54,9 @@ public class ScaleCalculator extends SuperCalculator<ScaleResult, ScaleFactor> {
     public static ScaleCalculator getInstance() {
         return mScalaFactor;
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

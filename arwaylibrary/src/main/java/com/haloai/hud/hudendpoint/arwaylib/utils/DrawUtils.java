@@ -42,21 +42,22 @@ public class DrawUtils {
      * set matrix to canvas with rotate and translate.
      * @param translateX
      * @param translateY
-     * @param offsetX
+     * @param offsetY
      * @param rotateXDegrees
      * @param canvas
      */
-    public static void setRotateMatrix4Canvas(float translateX,float translateY,float offsetX,float rotateXDegrees, Canvas canvas) {
+    public static void setRotateMatrix4Canvas(float translateX,float translateY,float offsetY,float rotateXDegrees, Canvas canvas) {
         final Camera camera = new Camera();
-        @SuppressWarnings("deprecation")
-        final Matrix matrix = canvas.getMatrix();
+//        @SuppressWarnings("deprecation")
+//        final Matrix matrix = canvas.getMatrix();
+        final Matrix matrix = new Matrix();
         // save the camera status for restore
         camera.save();
         // around X rotate N degrees
         //		camera.rotateX(50);
         //		camera.translate(0.0f, -100f, 0.0f);
         camera.rotateX(rotateXDegrees);
-        camera.translate(0.0f, offsetX, 0.0f);
+        camera.translate(0.0f, offsetY, 0.0f);
         //x = -500 则为摄像头向右移动
         //y = 200 则为摄像头向下移动
         //z = 500 则为摄像头向高处移动
