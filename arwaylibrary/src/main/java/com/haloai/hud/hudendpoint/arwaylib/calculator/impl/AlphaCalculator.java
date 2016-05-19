@@ -42,4 +42,9 @@ public class AlphaCalculator extends SuperCalculator<AlphaResult, AlphaFactor> {
     public static AlphaCalculator getInstance() {
         return mAlphaFactor;
     }
+
+    @Override
+    public void reset() {
+
+    }
 }

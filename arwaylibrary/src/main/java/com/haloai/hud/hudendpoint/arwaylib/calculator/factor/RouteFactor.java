@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.factor;
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class RouteFactor {
     public Projection                    mProjection         = null;
     public String                        mNextRoadName       = null;
     public Map<String, List<NaviLatLng>> mRoadNameLatLngs    = null;
+    public RouteBean.NextRoadType        mNextRoadType       = null;
 
     private static RouteFactor mRouteFactor = new RouteFactor();
 
@@ -40,7 +42,7 @@ public class RouteFactor {
         return mRouteFactor;
     }
 
-    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation startLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection, String nextRoadName, Map<String, List<NaviLatLng>> roadNameLatLngs) {
+    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation startLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs) {
         mCanDraw = canDraw;
         mMayBeErrorLocation = mayBeErrorLocation;
         mCurrentPoint = currentPoint;
@@ -50,6 +52,7 @@ public class RouteFactor {
         mCroodsInSteps = croodsInSteps;
         mProjection = projection;
         mNextRoadName = nextRoadName;
+        mNextRoadType=nextRoadType;
         mRoadNameLatLngs = roadNameLatLngs;
     }
 }
