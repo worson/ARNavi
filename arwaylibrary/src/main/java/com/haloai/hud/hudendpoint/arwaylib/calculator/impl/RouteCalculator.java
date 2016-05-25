@@ -71,33 +71,20 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
         //if we can draw , and current location is a useful location.
         if (routeResult.mCanDraw = routeFactor.mCanDraw && !(routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation)
-<<<<<<< HEAD
                 && routeFactor.mPreLocation != null) {
             routeResult.mProjection = routeFactor.mProjection;
             this.mFakerCurrentLocation = getFakerLocation(routeFactor.mPreLocation, routeFactor.mProjection);
             if (this.mFakerCurrentLocation != null) {
                 // full points in list
                 fullPointsAndLatLngs(this.mFakerCurrentLocation,this.mPrePreLocation,
-=======
-                && routeFactor.mStartLocation != null) {
-            routeResult.mProjection = routeFactor.mProjection;
-            this.mFakerCurrentLocation = getFakerLocation(routeFactor.mStartLocation, routeFactor.mProjection);
-            if (this.mFakerCurrentLocation != null) {
-                // full points in list
-                fullPointsAndLatLngs(this.mFakerCurrentLocation/*routeFactor.mStartLocation*/,
->>>>>>> master
                                      routeFactor.mPathLatLngs, routeFactor.mCroodsInSteps,
                                      routeFactor.mProjection, routeFactor.mCurrentPoint,
                                      routeFactor.mCurrentStep, routeResult.mCurrentPoints,
                                      routeResult.mCurrentLatLngs
                 );
 
-<<<<<<< HEAD
 //                routeResult.mPreLocation = routeFactor.mPreLocation;
                 routeResult.mPrePreLocation = this.mPrePreLocation;
-=======
-                routeResult.mStartLocation = routeFactor.mStartLocation;
->>>>>>> master
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
 
                 // if currentPoints is null or it`s size is zero , return routeResult.
