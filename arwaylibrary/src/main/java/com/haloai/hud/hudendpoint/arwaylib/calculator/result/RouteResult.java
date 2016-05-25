@@ -28,7 +28,11 @@ public class RouteResult {
     public         Projection             mProjection           = null;
     public         NaviLatLng             mNextRoadNamePosition = null;
     private static RouteResult            mRouteResult          = new RouteResult();
+<<<<<<< HEAD
     public         AMapNaviLocation       mPrePreLocation       = null;
+=======
+    public         AMapNaviLocation       mStartLocation        = null;
+>>>>>>> master
     public         AMapNaviLocation       mFakeLocation         = null;
     public         RouteBean.NextRoadType mNextRoadType         = null;
 
@@ -48,7 +52,11 @@ public class RouteResult {
         mNextRoadName = null;
         mNextRoadType = null;
         mProjection = null;
+<<<<<<< HEAD
         mPrePreLocation = null;
+=======
+        mStartLocation = null;
+>>>>>>> master
         mFakeLocation = null;
     }
 }
