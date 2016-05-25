@@ -170,7 +170,7 @@ public class FrameDataFactory {
         RouteFactor routeFactor = RouteFactor.getInstance();
         routeFactor.init(mRouteBean.isCanDrawHudway(), mRouteBean.isMayBeErrorLocation(),
                          mRouteBean.getCurrentPoint(), mRouteBean.getCurrentStep(),
-                         mRouteBean.getCurrentLocation(), mRouteBean.getPathLatLngs(),
+                         mRouteBean.getPreLocation(), mRouteBean.getPathLatLngs(),
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
                          mRouteBean.getRoadNameLatLngs());

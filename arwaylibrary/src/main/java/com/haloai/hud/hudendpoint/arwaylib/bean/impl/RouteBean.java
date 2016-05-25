@@ -54,6 +54,7 @@ public class RouteBean extends SuperBean {
     public enum NextRoadType {
         LEFT,
         BACK,
+        NONE,
         RIGHT
     }
 
@@ -143,6 +144,10 @@ public class RouteBean extends SuperBean {
 
     public AMapNaviLocation getCurrentLocation() {
         return mCurrentLocation;
+    }
+
+    public AMapNaviLocation getPreLocation(){
+        return mPreLocation;
     }
 
     public RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {

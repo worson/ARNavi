@@ -255,7 +255,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
                 CAMERA_ROTATEX_SET_LOOP = 0;
             }*/
             //			mHudwayFactory.updateCameraInfo(newAngle,newZAxis,newYAxis);
-            mHudwayFactory.drawHudway(canvas, mFakerCurrentLocation, mIsErrorLocation, mCrossImage,mRetainDistance, mRealPointInScreen);
+            mHudwayFactory.drawHudway(canvas, mFakerCurrentLocation, mIsErrorLocation, mCrossImage, mRetainDistance, mRealPointInScreen);
             canvas.restore();
         }
     }
@@ -276,7 +276,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
             return null;
         }
         mCurrentFramesCounter++;
-        //if mPreLocation is null , so this is the first step to draw
+        //if mPrePreLocation is null , so this is the first step to draw
         if (mPreLocation == null) {
             mPreLocation = mCurrentLocation;
             mCurrent = 1;
@@ -285,13 +285,19 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
             mCurrentFramesCounter = 0;
         } else if (mPreLocation != mCurrentLocation) {
             mPrePreLocation = mFakerCurrentLocation == null ? mPreLocation : mFakerCurrentLocation;
+            //TODO test
+            //mPrePreLocation = mPrePreLocation;
             mPreLocation = mCurrentLocation;
             mCurrent = 1;
 
             mPreviousFramesCounter = mCurrentFramesCounter;
             mCurrentFramesCounter = 0;
         }
-        if (mPreviousFramesCounter != 0 && mCurrent <= mPreviousFramesCounter) {
+
+        //if the pre and prepre is a same latlng , return pre or prepre.
+        if (mPrePreLocation == mPreLocation) {
+            return mPreLocation;
+        } else if (mPreviousFramesCounter != 0 && mCurrent <= mPreviousFramesCounter) {
             Point prePrePoint = mProjection.toScreenLocation(
                     naviLatLng2LatLng(mPrePreLocation.getCoord()));
             Point prePoint = mProjection.toScreenLocation(
@@ -467,7 +473,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
         this.mCurrentIndex = 1;
         this.mCurrentDistance = 0;
         this.mRealPointInScreen.init();
-        this.mRetainDistance=0;
+        this.mRetainDistance = 0;
     }
 
     public void setCurrentLocation(AMapNaviLocation location) {

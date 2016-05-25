@@ -25,7 +25,7 @@ public class RouteFactor {
     public boolean                       mMayBeErrorLocation = true;
     public int                           mCurrentPoint       = 0;
     public int                           mCurrentStep        = 0;
-    public AMapNaviLocation              mStartLocation      = null;
+    public AMapNaviLocation              mPreLocation        = null;
     public List<NaviLatLng>              mPathLatLngs        = null;
     public List<Integer>                 mCroodsInSteps      = null;
     public Projection                    mProjection         = null;
@@ -42,12 +42,12 @@ public class RouteFactor {
         return mRouteFactor;
     }
 
-    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation startLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs) {
+    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation preLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs) {
         mCanDraw = canDraw;
         mMayBeErrorLocation = mayBeErrorLocation;
         mCurrentPoint = currentPoint;
         mCurrentStep = currentStep;
-        mStartLocation = startLocation;
+        mPreLocation = preLocation;
         mPathLatLngs = pathLatLngs;
         mCroodsInSteps = croodsInSteps;
         mProjection = projection;

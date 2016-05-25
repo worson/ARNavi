@@ -65,25 +65,26 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
         //RouteFactor:
         //canDraw , maybeErrorLocation , currentDist,currentPoint,currentStep
-        //mStartLocation , mPathLatLngs, mCroodsInStep.
+        //mPrePreLocation , mPathLatLngs, mCroodsInStep.
 
         //fullPointsAndLatLngs + handle points
 
         //if we can draw , and current location is a useful location.
         if (routeResult.mCanDraw = routeFactor.mCanDraw && !(routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation)
-                && routeFactor.mStartLocation != null) {
+                && routeFactor.mPreLocation != null) {
             routeResult.mProjection = routeFactor.mProjection;
-            this.mFakerCurrentLocation = getFakerLocation(routeFactor.mStartLocation, routeFactor.mProjection);
+            this.mFakerCurrentLocation = getFakerLocation(routeFactor.mPreLocation, routeFactor.mProjection);
             if (this.mFakerCurrentLocation != null) {
                 // full points in list
-                fullPointsAndLatLngs(this.mFakerCurrentLocation/*routeFactor.mStartLocation*/,
+                fullPointsAndLatLngs(this.mFakerCurrentLocation,this.mPrePreLocation,
                                      routeFactor.mPathLatLngs, routeFactor.mCroodsInSteps,
                                      routeFactor.mProjection, routeFactor.mCurrentPoint,
                                      routeFactor.mCurrentStep, routeResult.mCurrentPoints,
                                      routeResult.mCurrentLatLngs
                 );
 
-                routeResult.mStartLocation = routeFactor.mStartLocation;
+//                routeResult.mPreLocation = routeFactor.mPreLocation;
+                routeResult.mPrePreLocation = this.mPrePreLocation;
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
 
                 // if currentPoints is null or it`s size is zero , return routeResult.
@@ -108,9 +109,6 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                     }
                 }
 
-                //handle offset height
-
-
                 //create next road name and position.
                 routeResult.mHasNextRoadName = routeFactor.mNextRoadName != null && routeFactor.mNextRoadName.length() != 0;
                 if (routeResult.mHasNextRoadName) {
@@ -133,19 +131,19 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         return routeResult;
     }
 
-    private void fullPointsAndLatLngs(AMapNaviLocation aMapNaviLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection,
+    private void fullPointsAndLatLngs(AMapNaviLocation fakerLocation, AMapNaviLocation prePreLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection,
                                       int currentPoint, int currentStep, List<Point> points, List<NaviLatLng> currentLatLngs) {
-        NaviLatLng currentLatLng = aMapNaviLocation.getCoord();
-        if (currentLatLng == null || pathLatLngs == null || pathLatLngs.size() <= 0) {
+        NaviLatLng prePreLatLng = prePreLocation.getCoord();
+        if (prePreLatLng == null || pathLatLngs == null || pathLatLngs.size() <= 0) {
             return;
         }
         float totalLength = 0;
         points.clear();
         currentLatLngs.clear();
         Point currentScreenPoint = projection
-                .toScreenLocation(DrawUtils.naviLatLng2LatLng(currentLatLng));
+                .toScreenLocation(DrawUtils.naviLatLng2LatLng(prePreLatLng));
         points.add(currentScreenPoint);
-        currentLatLngs.add(currentLatLng);
+        currentLatLngs.add(prePreLatLng);
 
         //get current next point`s index in path
         this.mCurrentIndex = getCurrentIndex(pathLatLngs, croodsInSteps, currentPoint, currentStep);
@@ -161,7 +159,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 }
                 float curPoint2NextPointDist = AMapUtils
                         .calculateLineDistance(
-                                DrawUtils.naviLatLng2LatLng(currentLatLng),
+                                DrawUtils.naviLatLng2LatLng(fakerLocation.getCoord()),
                                 DrawUtils.naviLatLng2LatLng(pathLatLngs.get(i)));
                 distance = curPoint2NextPointDist;
                 totalLength += curPoint2NextPointDist;
@@ -185,7 +183,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 Point prePoint = null;
                 if (i == mCurrentIndex) {
                     prePoint = projection
-                            .toScreenLocation(DrawUtils.naviLatLng2LatLng(currentLatLng));
+                            .toScreenLocation(DrawUtils.naviLatLng2LatLng(fakerLocation.getCoord()));
                 } else {
                     prePoint = projection
                             .toScreenLocation(DrawUtils.naviLatLng2LatLng(pathLatLngs.get(i - 1)));
@@ -227,7 +225,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             return null;
         }
         mCurrentFramesCounter++;
-        //if mPreLocation is null , so this is the first step to draw
+        //if mPrePreLocation is null , so this is the first step to draw
         if (mPreLocation == null) {
             mPreLocation = currentLocation;
             mCurrent = 1;

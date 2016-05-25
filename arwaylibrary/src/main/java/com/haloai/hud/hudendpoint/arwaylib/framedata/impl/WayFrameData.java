@@ -16,6 +16,7 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +29,17 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class WayFrameData extends SuperFrameData {
-    private static final int   X               = 100;
-    private static final int   Y               = 100;
-    private static final int   MAGNIFIED_TIME  = 8;
+    private static final int    X                  = 100;
+    private static final int    Y                  = 100;
+    private static final int    MAGNIFIED_TIME     = 8;
     //路线错乱的容忍值当点的Y坐标大于起始点的Y坐标+TOLERATE_VALUE,代表绘制该点可能会出现错乱的情况
-    private static final int   TOLERATE_VALUE  = 70;
-    private static final float NOT_DRAW_TEXT_X = 50;
-    private static final float NOT_DRAW_TEXT_Y = 270;
-    private static final float CIRCLE_INTERVAL = 1000f;
-    private static final float CIRCLE_RADIUS   = 20f;
+    private static final int    TOLERATE_VALUE     = 70;
+    private static final float  NOT_DRAW_TEXT_X    = 50;
+    private static final float  NOT_DRAW_TEXT_Y    = 270;
+    private static final float  CIRCLE_INTERVAL    = 1000f;
+    private static final float  CIRCLE_RADIUS      = 20f;
+    //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
+    private static final double ADD_POINT_INTERVAL = 100f;
 
     private int IMAGE_WIDTH        = 0;
     private int IMAGE_HEIGHT       = 0;
@@ -45,6 +48,7 @@ public class WayFrameData extends SuperFrameData {
     private int INSIDE_LINE_WIDTH  = 0;
 
     private List<Point> mTempPoints             = new ArrayList<Point>();
+    private List<Point> mOffsetPoints           = new ArrayList<Point>();
     //此paint可以将Route中的黑色去掉变为透明
     private Paint       mPaintBitmapColorFilter = new Paint();
     private Rect        mSrcRect                = new Rect();
@@ -103,57 +107,60 @@ public class WayFrameData extends SuperFrameData {
             mPaint.setColor(Color.BLACK);
             canvas.drawPaint(mPaint);
 
-            mPaint.setStrokeWidth(OUTSIDE_LINE_WIDTH);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setAntiAlias(true);
-            mPaint.setColor(Color.WHITE);
 
-            float[] pointsXY = new float[routeResult.mCurrentPoints.size() * 2];
-            // get the points x and y
-            for (int i = 0; i < pointsXY.length; i++) {
-                if (i % 2 == 0) {
-                    pointsXY[i] = routeResult.mCurrentPoints.get(i / 2).x;
-                } else {
-                    pointsXY[i] = routeResult.mCurrentPoints.get(i / 2).y;
-                }
+            float offsetHeight = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord())).y -
+                    routeResult.mCurrentPoints.get(0).y;
+            float offsetWidth = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord())).x -
+                    routeResult.mCurrentPoints.get(0).x;
+            for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
+                routeResult.mCurrentPoints.get(i).x -= offsetWidth;
+                routeResult.mCurrentPoints.get(i).y -= offsetHeight;
             }
 
-            // move to screen center , here set 1120-130,1120 is the center
-            float offsetX = this.IMAGE_WIDTH / 2 - pointsXY[0];
-            float offsetY = this.IMAGE_HEIGHT - pointsXY[1];
-            for (int i = 0; i < pointsXY.length; i++) {
-                pointsXY[i] = i % 2 == 0 ? pointsXY[i] + offsetX : pointsXY[i] + offsetY;
+            // move to screen center
+            float offsetX = this.IMAGE_WIDTH / 2 - routeResult.mCurrentPoints.get(0).x;
+            float offsetY = this.IMAGE_HEIGHT - routeResult.mCurrentPoints.get(0).y;
+            for (int i = 0; i < routeResult.mCurrentPoints.size(); i++) {
+                Point temp_point = routeResult.mCurrentPoints.get(i);
+                temp_point.x += offsetX;
+                temp_point.y += offsetY;
             }
 
-            // save this distance point to point, 2~1, 3~2 .....
-            // offsetXY 中的元素是前后两个屏幕点的XY方向上的偏移量
-            float[] offsetXY = new float[pointsXY.length - 2];
-            for (int i = 0; i < offsetXY.length; i++) {
-                offsetXY[i] = pointsXY[i + 2] - pointsXY[i];
+            // get offset with current and next point.
+            mOffsetPoints.clear();
+            for (int i = 0; i < routeResult.mCurrentPoints.size() - 1; i++) {
+                Point offset_point = new Point();
+                offset_point.x = routeResult.mCurrentPoints.get(i + 1).x - routeResult.mCurrentPoints.get(i).x;
+                offset_point.y = routeResult.mCurrentPoints.get(i + 1).y - routeResult.mCurrentPoints.get(i).y;
+                mOffsetPoints.add(offset_point);
             }
 
             // Magnified N times
             // start point is constant，another points will change
-            for (int i = 2; i < pointsXY.length; i++) {
-                pointsXY[i] = pointsXY[i - 2] + offsetXY[i - 2] * MAGNIFIED_TIME;
+            for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
+                Point temp_point = routeResult.mCurrentPoints.get(i);
+                Point pre_point = routeResult.mCurrentPoints.get(i - 1);
+                Point offset_point = mOffsetPoints.get(i - 1);
+                temp_point.x = pre_point.x + offset_point.x * MAGNIFIED_TIME;
+                temp_point.y = pre_point.y + offset_point.y * MAGNIFIED_TIME;
             }
 
             //remove the point in list if it may be error to draw
-            Point firstPoint = new Point((int) pointsXY[0], (int) pointsXY[1]);
+            Point firstPoint = routeResult.mCurrentPoints.get(0);
             mTempPoints.clear();
             mTempPoints.add(firstPoint);
             Point tempPoint = null;
-            for (int i = 1; i < pointsXY.length / 2; i++) {
-                tempPoint = new Point();
-                if (pointsXY[i * 2 + 1] > firstPoint.y + TOLERATE_VALUE) {
+            for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
+                tempPoint = routeResult.mCurrentPoints.get(i);
+                if (tempPoint.y > firstPoint.y + TOLERATE_VALUE) {
                     //TODO 计算得到的舍弃点的补偿点的坐标在某些情况下有问题（去深圳湾的掉头时，补偿点会画到屏幕右侧）,因此此处暂时没有使用补偿点
                     //                tempPoint.y = firstPoint.y;
                     //                tempPoint.x = (int) (tempPoint.y*(pointsXY[i*2]+pointsXY[i*2-2])/(pointsXY[i*2+1]+pointsXY[i*2-1]));
                     //                mTempPoints.add(tempPoint);
                     break;
                 } else {
-                    tempPoint.x = (int) pointsXY[i * 2];
-                    tempPoint.y = (int) pointsXY[i * 2 + 1];
                     mTempPoints.add(tempPoint);
                 }
             }
@@ -162,23 +169,88 @@ public class WayFrameData extends SuperFrameData {
                 return;
             }
 
-            pointsXY = new float[mTempPoints.size() * 2];
-            for (int i = 0; i < mTempPoints.size(); i++) {
-                pointsXY[i * 2] = mTempPoints.get(i).x;
-                pointsXY[i * 2 + 1] = mTempPoints.get(i).y;
-            }
-
-            // here we must be 3D turn around first ,and rotate the path second.
+            // here we must be 3D turn around first ,and rotate the path second(Now we do not to rotate).
             // first:3D turn around and set matrix
-            DrawUtils.setRotateMatrix4Canvas(pointsXY[0], pointsXY[1], -50f, 50f, canvas);
+            Point first_point = mTempPoints.get(0);
+            DrawUtils.setRotateMatrix4Canvas(first_point.x, first_point.y, -100f, 50f, canvas);
+
+
+            //竖直情况下,纵向移动量(offsetHeight -- px)
+            /*float offsetDiv = (1 -
+                    AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                    DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))
+                            /
+                            AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                            DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()))
+            );*/
+
+            //            float offsetHeight = (offsetDiv/2 * (mTempPoints.get(1).y - mTempPoints.get(0).y));
+            //                                                                               DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord())));
 
             // draw the path(outside,inside,circle)
             Path basePath = new Path();
-
-            basePath.moveTo(pointsXY[0], pointsXY[1]);
-            for (int i = 0; i < pointsXY.length / 2 - 1; i++) {
-                basePath.lineTo(pointsXY[(i + 1) * 2], pointsXY[(i + 1) * 2 + 1]);
+            basePath.moveTo(first_point.x, first_point.y);
+            Point test_point = null;
+            for (int i = 1; i < mTempPoints.size(); i++) {
+                //例如刚开始时从p1,到p2,到p3
+                Point temp_point = mTempPoints.get(i);
+                //move
+                //                temp_point.y -= offsetHeight;
+                /*if(temp_point.y >= first_point.y + TOLERATE_VALUE){
+                    break;
+                }
+                if (i != mTempPoints.size() - 1) {
+                    //不是最后一个点,创建该点左右两个点作为lineTo点,当前点作为queato的控制点
+                    //TODO 关键在于以下两个点如何获取,通过当前点和其前一个后一个三个点
+                    Point pre_point = null;
+                    if(test_point!=null){
+                        pre_point = test_point;
+                        test_point = null;
+                    }else {
+                        if (i != 1) {
+                            pre_point = mTempPoints.get(i - 1);
+                        } else {
+                            pre_point = first_point;
+                        }
+                    }
+                    Point next_point = mTempPoints.get(i + 1);
+                    Point left_point = new Point();
+                    Point right_point = new Point();
+                    double pre_temp_distance = MathUtils.calculateDistance(pre_point, temp_point);
+                    if (pre_temp_distance <= ADD_POINT_INTERVAL) {
+                        left_point = pre_point;
+                    } else {
+                        double div = ADD_POINT_INTERVAL / pre_temp_distance;
+                        left_point.x = (int) (temp_point.x + div * (pre_point.x - temp_point.x));
+                        left_point.y = (int) (temp_point.y + div * (pre_point.y - temp_point.y));
+                    }
+                    double next_temp_distance = MathUtils.calculateDistance(next_point, temp_point);
+                    if (next_temp_distance <= ADD_POINT_INTERVAL) {
+                        right_point = next_point;
+                    } else {
+                        double div = ADD_POINT_INTERVAL / next_temp_distance;
+                        right_point.x = (int) (temp_point.x + div * (next_point.x - temp_point.x));
+                        right_point.y = (int) (temp_point.y + div * (next_point.y - temp_point.y));
+                    }
+                    basePath.lineTo(left_point.x, left_point.y);
+                    basePath.quadTo(temp_point.x, temp_point.y, right_point.x, right_point.y);
+                    //right_point == next_point or right_point != next_point
+                    if(right_point == next_point){
+                        //如果当前贝塞尔曲线的尾点就是下一个点,那么直接跳过下一个点即可.
+                        i++;
+                    }else{
+                        //如果当前贝塞尔曲线的尾点还没到下一个点的位置,此时下一个点的贝塞尔绘制不能简单的执行
+                        //而是受限于right点.
+                        test_point = right_point;
+                    }
+                } else {
+                    //到达最后一个点
+                    basePath.lineTo(temp_point.x, temp_point.y);
+                }*/
+                basePath.lineTo(temp_point.x, temp_point.y);
             }
+
+            HaloLogger.logE("points_temp:", mTempPoints + "");
 
             Path circlePath = new Path();
             //上两个点之间间隔的剩余值,如果小于circle_interval,那么就是该值,如果大于,就是与circle_interval的差值
@@ -188,7 +260,7 @@ public class WayFrameData extends SuperFrameData {
             //value为最后两个点之间的距离
             Point last_pre_point = mTempPoints.get(tempPointsSize - 2);
             Point last_point = mTempPoints.get(tempPointsSize - 1);
-            double value = MathUtils.calculateDistance(last_point,last_pre_point);
+            double value = MathUtils.calculateDistance(last_point, last_pre_point);
             Point remove_point = null;
             Point add_point = null;
             if (value % CIRCLE_INTERVAL == 0) {
@@ -198,14 +270,14 @@ public class WayFrameData extends SuperFrameData {
                 value = value / CIRCLE_INTERVAL;
                 if (value >= 1.0) {
                     //如果大于1.0,则在N.0处取一个点;
-                    double decimal = value - (int)(value);
-                    double scala = (value-decimal)/value;
-                    float distX =last_pre_point.x - last_point.x;
-                    float distY =last_pre_point.y - last_point.y;
-                    add_point = new Point((int)(last_pre_point.x+distX*scala),(int)(last_pre_point.y+distY*scala));
+                    double decimal = value - (int) (value);
+                    double scala = (value - decimal) / value;
+                    float distX = last_pre_point.x - last_point.x;
+                    float distY = last_pre_point.y - last_point.y;
+                    add_point = new Point((int) (last_pre_point.x + distX * scala), (int) (last_pre_point.y + distY * scala));
                 } else {
                     //如果小于1.0,则舍弃该点
-                    remove_point = mTempPoints.remove(tempPointsSize-1);
+                    remove_point = mTempPoints.remove(tempPointsSize - 1);
                 }
             }
 
@@ -236,18 +308,20 @@ public class WayFrameData extends SuperFrameData {
                     offsetDistance += distance;
                 }
             }
-            if(add_point!=null){
+            if (add_point != null) {
                 mTempPoints.remove(add_point);
             }
-            if(remove_point!=null){
+            if (remove_point != null) {
                 mTempPoints.add(remove_point);
             }
 
-            // set corner path for right angle(直角)
-            CornerPathEffect cornerPathEffect = new CornerPathEffect(20);
+            // set corner path for right angle(直角) 300-平滑程度
+            CornerPathEffect cornerPathEffect = new CornerPathEffect(300);
             mPaint.setPathEffect(cornerPathEffect);
 
             // draw outside line
+            mPaint.setStrokeWidth(OUTSIDE_LINE_WIDTH);
+            mPaint.setColor(Color.WHITE);
             canvas.drawPath(basePath, mPaint);
 
             // draw inside line
@@ -255,15 +329,16 @@ public class WayFrameData extends SuperFrameData {
             mPaint.setColor(Color.BLACK);
             canvas.drawPath(basePath, mPaint);
 
-            // draw white circle
+            // draw white circle path
             mPaint.setStyle(Paint.Style.FILL);
             mPaint.setColor(Color.WHITE);
             canvas.drawPath(circlePath, mPaint);
 
-            //delete black color
+            //delete black color background
             canvas.drawPaint(mPaintBitmapColorFilter);
 
             //draw next road name
+            Matrix final_matrix = canvas.getMatrix();
             int nextRoadIndex = -1;
             for (int i = 0; i < mTempPoints.size() - 1 && i < routeResult.mCurrentLatLngs.size() - 1; i++) {
                 //TODO index out of bound ,because mCurrentLatLngs.size is less one than mCurrentPoints.size.
@@ -283,12 +358,11 @@ public class WayFrameData extends SuperFrameData {
                 nextRoadPoint2.x = (int) (1500 / distance_12 * dist_x + nextRoadPoint1.x);
                 nextRoadPoint2.y = (int) (1500 / distance_12 * dist_y + nextRoadPoint1.y);
 
-                Matrix final_matrix = canvas.getMatrix();
                 Matrix init_matrix = new Matrix();
                 canvas.setMatrix(init_matrix);
                 float[] xy_1 = new float[2];
                 float[] xy_2 = new float[2];
-                //-100,将文字向左移动,-400将文字向上移动
+                //-500将文字向上移动
                 final_matrix.mapPoints(xy_1, new float[]{nextRoadPoint1.x, nextRoadPoint1.y - 500});
                 final_matrix.mapPoints(xy_2, new float[]{nextRoadPoint2.x, nextRoadPoint2.y - 500});
                 Path text_path = new Path();
@@ -325,27 +399,44 @@ public class WayFrameData extends SuperFrameData {
 
             mPaint.reset();
 
-            //            //update src rect and dest rect
-            //            int offsetHeight = (int)
-            //                    (
-            //                            (1-
-            //                            AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)/*routeResult.mStartLocation.getCoord()*/),
-            //                                                    DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))
-            //                            /
-            //                            AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)),
-            //                                                    DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
-            //                            )
-            //                            *
-            //                            (routeResult.mCurrentPoints.get(1).y-routeResult.mCurrentPoints.get(0).y)
-            //                    );
-            //
-            //            HaloLogger.logE("offset_height","fake_distance:"+AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mStartLocation.getCoord()),
-            //                                                                               DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord())));
-            //            HaloLogger.logE("offset_height","next_distance:"+AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mStartLocation.getCoord()),
-            //                                                                                             DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1))));
-            //            HaloLogger.logE("offset_height","offset_height:"+offsetHeight);
-            //            mSrcRect.set(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT + offsetHeight);
-            //            mDestRect.set(0, 0 - offsetHeight, IMAGE_WIDTH, IMAGE_HEIGHT);
+            /*//update src rect and dest rect
+            //TODO 这部分代码有问题
+            Point startPoint = new Point(mTempPoints.get(0).x, mTempPoints.get(0).y);
+            float[] startXY = new float[2];
+            final_matrix.mapPoints(startXY, new float[]{startPoint.x, startPoint.y});
+            startPoint.x = (int) startXY[0];
+            startPoint.y = (int) startXY[1];
+
+            Point secondPoint = new Point(mTempPoints.get(1).x, mTempPoints.get(1).y);
+            float[] secondXY = new float[2];
+            final_matrix.mapPoints(secondXY, new float[]{secondPoint.x, secondPoint.y});
+            secondPoint.x = (int) secondXY[0];
+            secondPoint.y = (int) secondXY[1];
+
+            float offsetDiv = (1 -
+                    AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                    DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))
+                            /
+                            AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                            DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()))
+            );
+            int fakerX = mTempPoints.get(0).x + (int) (offsetDiv * (mTempPoints.get(1).x - mTempPoints.get(0).x));
+            int fakerY = mTempPoints.get(0).y + (int) (offsetDiv * (mTempPoints.get(1).y - mTempPoints.get(0).y));
+            float[] fakerXY = new float[2];
+            final_matrix.mapPoints(fakerXY,new float[]{fakerX,fakerY});
+            Point fakerPoint = new Point((int)fakerXY[0],(int)fakerXY[1]);
+
+            int offsetHeight = fakerPoint.y - startPoint.y;
+            mSrcRect.set(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT + offsetHeight);
+            mDestRect.set(0, 0 - offsetHeight, IMAGE_WIDTH, IMAGE_HEIGHT);
+            HaloLogger.logE("src_des_rect:", "distance:" + (secondPoint.y - startPoint.y));
+            HaloLogger.logE("src_des_rect:", "src:" + 0 + "," + 0 + "," + IMAGE_WIDTH + "," + (IMAGE_HEIGHT + offsetHeight));
+            HaloLogger.logE("src_des_rect:", "des:" + 0 + "," + (0 - offsetHeight) + "," + IMAGE_WIDTH + "," + IMAGE_HEIGHT);
+            HaloLogger.logE("src_des_rect:", "fake_dist:" + (AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                                                             DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))));
+            HaloLogger.logE("src_des_rect:", "start_dist:" + (AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
+                                                                                              DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()))));
+            */
         }
     }
 
