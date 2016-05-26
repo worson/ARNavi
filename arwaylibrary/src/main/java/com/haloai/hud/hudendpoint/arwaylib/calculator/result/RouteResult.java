@@ -31,6 +31,9 @@ public class RouteResult {
     public         AMapNaviLocation       mPrePreLocation       = null;
     public         AMapNaviLocation       mFakeLocation         = null;
     public         RouteBean.NextRoadType mNextRoadType         = null;
+    public         double                 mFakerPointX          = 0f;
+    public         double                 mFakerPointY          = 0f;
+    public         int                    mCurrentIndex         = 0;
 
     private RouteResult() {}
 
@@ -50,5 +53,8 @@ public class RouteResult {
         mProjection = null;
         mPrePreLocation = null;
         mFakeLocation = null;
+        mFakerPointX = 0f;
+        mFakerPointY = 0f;
+        mCurrentIndex=0;
     }
 }

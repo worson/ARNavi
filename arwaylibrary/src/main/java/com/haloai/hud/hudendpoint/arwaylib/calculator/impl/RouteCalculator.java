@@ -32,8 +32,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     private int    mCurrentFramesCounter  = 0;
     private long   mPreviousFramesCounter = 0l;
     private int    mCurrent               = -1;
-    private double mRealStartPointX       = 0f;
-    private double mRealStartPointY       = 0f;
+    private double mFakerPointX           = 0f;
+    private double mFakerPointY           = 0f;
     private int    mCurrentIndex          = 1;
 
     private static RouteCalculator mRouteCalculator = new RouteCalculator();
@@ -53,8 +53,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         mCurrentFramesCounter = 0;
         mPreviousFramesCounter = 0l;
         mCurrent = -1;
-        mRealStartPointX = 0f;
-        mRealStartPointY = 0f;
+        mFakerPointX = 0f;
+        mFakerPointY = 0f;
         mCurrentIndex = 1;
     }
 
@@ -71,7 +71,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
         //if we can draw , and current location is a useful location.
         if (routeResult.mCanDraw = routeFactor.mCanDraw && !(routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation)
-                && routeFactor.mPreLocation != null) {
+                && routeFactor.mPreLocation != null && mCurrentIndex>=1) {
             routeResult.mProjection = routeFactor.mProjection;
             this.mFakerCurrentLocation = getFakerLocation(routeFactor.mPreLocation, routeFactor.mProjection);
             if (this.mFakerCurrentLocation != null) {
@@ -86,6 +86,9 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 //                routeResult.mPreLocation = routeFactor.mPreLocation;
                 routeResult.mPrePreLocation = this.mPrePreLocation;
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
+                routeResult.mFakerPointX = this.mFakerPointX;
+                routeResult.mFakerPointY = this.mFakerPointY;
+                routeResult.mCurrentIndex = this.mCurrentIndex;
 
                 // if currentPoints is null or it`s size is zero , return routeResult.
                 if (routeResult.mCurrentPoints == null || routeResult.mCurrentPoints.size() <= 1) {
@@ -95,9 +98,10 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
                 // The first point in list may be have some little error,so we could not use it.
                 // We should be use realStartPoint as first point.
-                routeResult.mCurrentPoints.remove(0);
-                routeResult.mCurrentPoints.add(0, new Point(
-                        (int) Math.rint(this.mRealStartPointX), (int) Math.rint(this.mRealStartPointY)));
+                //TODO helong fix
+//                routeResult.mCurrentPoints.remove(0);
+//                routeResult.mCurrentPoints.add(0, new Point(
+//                        (int) Math.rint(this.mFakerPointX), (int) Math.rint(this.mFakerPointY)));
 
                 //if the point1 is look like point2 , remove it.
                 for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
@@ -108,9 +112,6 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                         i--;
                     }
                 }
-
-                //handle offset height
-
 
                 //create next road name and position.
                 routeResult.mHasNextRoadName = routeFactor.mNextRoadName != null && routeFactor.mNextRoadName.length() != 0;
@@ -143,8 +144,13 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         float totalLength = 0;
         points.clear();
         currentLatLngs.clear();
+//        Point currentScreenPoint = projection
+//                .toScreenLocation(DrawUtils.naviLatLng2LatLng(prePreLatLng));
+//      points.add(currentScreenPoint);
+//      currentLatLngs.add(prePreLatLng);
+        //TODO helong fix
         Point currentScreenPoint = projection
-                .toScreenLocation(DrawUtils.naviLatLng2LatLng(prePreLatLng));
+                .toScreenLocation(DrawUtils.naviLatLng2LatLng(pathLatLngs.get(mCurrentIndex-1)));
         points.add(currentScreenPoint);
         currentLatLngs.add(prePreLatLng);
 
@@ -248,9 +254,9 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                     DrawUtils.naviLatLng2LatLng(mPrePreLocation.getCoord()));
             Point prePoint = projection.toScreenLocation(
                     DrawUtils.naviLatLng2LatLng(mPreLocation.getCoord()));
-            this.mRealStartPointX = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * mCurrent / mPreviousFramesCounter));
-            this.mRealStartPointY = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * mCurrent / mPreviousFramesCounter));
-            Point point = new Point((int) this.mRealStartPointX, (int) this.mRealStartPointY);
+            this.mFakerPointX = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * mCurrent / mPreviousFramesCounter));
+            this.mFakerPointY = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * mCurrent / mPreviousFramesCounter));
+            Point point = new Point((int) this.mFakerPointX, (int) this.mFakerPointY);
             AMapNaviLocation location = new AMapNaviLocation();
 
             location.setCoord(DrawUtils.latLng2NaviLatLng(projection.fromScreenLocation(point)));
