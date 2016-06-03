@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
-    private static final float HUDWAY_LENGTH_IN_SCREEN = 350;
+    private static final float HUDWAY_LENGTH_IN_SCREEN = 400;
 
     private AMapNaviLocation mPrePreLocation       = null;
     private AMapNaviLocation mPreLocation          = null;
@@ -63,10 +63,6 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         RouteResult routeResult = RouteResult.getInstance();
         routeResult.reset();
 
-        //RouteFactor:
-        //canDraw , maybeErrorLocation , currentDist,currentPoint,currentStep
-        //mPrePreLocation , mPathLatLngs, mCroodsInStep.
-
         //fullPointsAndLatLngs + handle points
 
         //if we can draw , and current location is a useful location.
@@ -83,25 +79,38 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                      routeResult.mCurrentLatLngs
                 );
 
-//                routeResult.mPreLocation = routeFactor.mPreLocation;
+
+
                 routeResult.mPrePreLocation = this.mPrePreLocation;
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
                 routeResult.mFakerPointX = this.mFakerPointX;
                 routeResult.mFakerPointY = this.mFakerPointY;
                 routeResult.mCurrentIndex = this.mCurrentIndex;
+                routeResult.mCurrentLocation = routeFactor.mPreLocation;
 
-                // if currentPoints is null or it`s size is zero , return routeResult.
+                //处理由于index值得改变导致faker点与形状点的距离计算本身就是错误的(因为此时faker点处于的形状点范围与真实的形状点范围是一样的,index已经加1了,但是faker点实际还是前一个形状点处)
+                //if the faker latlng to next latlng`s distance bigger than last latlng to next latlng`s distance , error.
+                float distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()),DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
+                        - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)),DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
+                int index = 2;
+//                if(distance_diff<0){
+//                    routeResult.mFlag = false;
+//                }else{
+//                    routeResult.mFlag = true;
+//                }
+                while(this.mCurrentIndex-index>=0 && distance_diff >= 0) {
+                    routeResult.mCurrentLatLngs.add(0, routeFactor.mPathLatLngs.get(this.mCurrentIndex - index));
+                    routeResult.mCurrentPoints.add(0,routeFactor.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeFactor.mPathLatLngs.get(this.mCurrentIndex - index))));
+                    distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()),DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
+                            - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)),DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
+                    index++;
+                }
+
+                // if currentPoints is null or it`s size is zero , clear the points and return.
                 if (routeResult.mCurrentPoints == null || routeResult.mCurrentPoints.size() <= 1) {
                     routeResult.mCurrentPoints.clear();
                     return routeResult;
                 }
-
-                // The first point in list may be have some little error,so we could not use it.
-                // We should be use realStartPoint as first point.
-                //TODO helong fix
-//                routeResult.mCurrentPoints.remove(0);
-//                routeResult.mCurrentPoints.add(0, new Point(
-//                        (int) Math.rint(this.mFakerPointX), (int) Math.rint(this.mFakerPointY)));
 
                 //if the point1 is look like point2 , remove it.
                 for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
@@ -137,22 +146,18 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
     private void fullPointsAndLatLngs(AMapNaviLocation fakerLocation, AMapNaviLocation prePreLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection,
                                       int currentPoint, int currentStep, List<Point> points, List<NaviLatLng> currentLatLngs) {
-        NaviLatLng prePreLatLng = prePreLocation.getCoord();
-        if (prePreLatLng == null || pathLatLngs == null || pathLatLngs.size() <= 0) {
+        //NaviLatLng prePreLatLng = prePreLocation.getCoord();
+        if (fakerLocation == null || pathLatLngs == null || pathLatLngs.size() <= 0) {
             return;
         }
         float totalLength = 0;
         points.clear();
         currentLatLngs.clear();
-//        Point currentScreenPoint = projection
-//                .toScreenLocation(DrawUtils.naviLatLng2LatLng(prePreLatLng));
-//      points.add(currentScreenPoint);
-//      currentLatLngs.add(prePreLatLng);
         //TODO helong fix
         Point currentScreenPoint = projection
                 .toScreenLocation(DrawUtils.naviLatLng2LatLng(pathLatLngs.get(mCurrentIndex-1)));
         points.add(currentScreenPoint);
-        currentLatLngs.add(prePreLatLng);
+        currentLatLngs.add(pathLatLngs.get(mCurrentIndex-1));
 
         //get current next point`s index in path
         this.mCurrentIndex = getCurrentIndex(pathLatLngs, croodsInSteps, currentPoint, currentStep);

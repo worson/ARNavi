@@ -34,6 +34,8 @@ public class RouteResult {
     public         double                 mFakerPointX          = 0f;
     public         double                 mFakerPointY          = 0f;
     public         int                    mCurrentIndex         = 0;
+    public         AMapNaviLocation       mCurrentLocation      = null;
+    public         boolean                mFlag                 = false;
 
     private RouteResult() {}
 
@@ -45,6 +47,7 @@ public class RouteResult {
         mCanDraw = true;
         mMayBeErrorLocation = false;
         mHasNextRoadName = false;
+        mFlag = false;
         mCurrentPoints.clear();
         mCurrentLatLngs.clear();
         mNextRoadNamePosition = null;
@@ -53,8 +56,9 @@ public class RouteResult {
         mProjection = null;
         mPrePreLocation = null;
         mFakeLocation = null;
+        mCurrentLocation = null;
         mFakerPointX = 0f;
         mFakerPointY = 0f;
-        mCurrentIndex=0;
+        mCurrentIndex = 0;
     }
 }

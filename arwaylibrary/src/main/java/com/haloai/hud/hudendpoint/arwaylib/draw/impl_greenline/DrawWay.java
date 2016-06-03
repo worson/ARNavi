@@ -33,7 +33,6 @@ public class DrawWay extends DrawObject {
                 return;
             }
 
-            //            canvas.drawBitmap(wayFrameData.getImage(), wayFrameData.getSrcRect(), wayFrameData.getDestRect(), null);
             canvas.drawBitmap(wayFrameData.getImage(), 0,0, null);
         }
     }
