@@ -20,8 +20,7 @@ public abstract class SuperBean {
     public boolean isShow(){
         return mIsShow;
     }
-    public SuperBean setIsShow(boolean isShow){
+    public void setIsShow(boolean isShow){
         this.mIsShow = isShow;
-        return this;
     }
 }

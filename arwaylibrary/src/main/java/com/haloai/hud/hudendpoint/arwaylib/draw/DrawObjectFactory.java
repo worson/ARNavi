@@ -1,12 +1,13 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw;
 
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawCrossImage;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawExit;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawIcon;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawMusic;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawNextRoadName;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawWay;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline.DrawTurnInfo;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCrossImage;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawExit;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawIcon;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawMusic;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNaviInfo;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNextRoadName;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawRoute;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawTurnInfo;
 
 /**
  * author       : 龙;
@@ -21,9 +22,10 @@ public class DrawObjectFactory {
         EXIT,
         MUSIC,
         NEXT_ROAD_NAME,
-        WAY,
+        ROUTE,
         TURN_INFO,
         SATELLITE,
+        NAVI_INFO,
         NETWORK
     }
     public static DrawObject getDrawObject(DrawType drawType){
@@ -41,8 +43,11 @@ public class DrawObjectFactory {
             case NEXT_ROAD_NAME:
                 drawObject = DrawNextRoadName.getInstance();
                 break;
-            case WAY:
-                drawObject = DrawWay.getInstance();
+            case ROUTE:
+                drawObject = DrawRoute.getInstance();
+                break;
+            case NAVI_INFO:
+                drawObject = DrawNaviInfo.getInstance();
                 break;
             case TURN_INFO:
                 drawObject = DrawTurnInfo.getInstance();

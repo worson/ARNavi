@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline;
+package com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,7 +6,7 @@ import android.graphics.Canvas;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.WayFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 
 /**
  * author       : 龙;
@@ -15,25 +15,24 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.WayFrameData;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline;
  * project_name : hudlauncher;
  */
-public class DrawWay extends DrawObject {
-    private static DrawWay mDrawRoute = new DrawWay();
+public class DrawRoute extends DrawObject {
+    private static DrawRoute mDrawRoute = new DrawRoute();
 
-    private DrawWay() {}
+    private DrawRoute() {}
 
-    public static DrawWay getInstance() {
+    public static DrawRoute getInstance() {
         return mDrawRoute;
     }
 
     @Override
     public void doDraw(Context context, Canvas canvas) {
         if (BeanFactory.getBean(BeanFactory.BeanType.ROUTE).isShow()) {
-            WayFrameData wayFrameData = (WayFrameData) FrameDataFactory.getFrameDataForDraw(
-                    context, FrameDataFactory.FrameDataType.WAY);
-            if (wayFrameData.getImage() == null) {
+            RouteFrameData routeFrameData = (RouteFrameData) FrameDataFactory.getFrameData4Draw(
+                    context, FrameDataFactory.FrameDataType.ROUTE);
+            if (routeFrameData.getPicture() == null) {
                 return;
             }
-
-            canvas.drawBitmap(wayFrameData.getImage(), 0,0, null);
+            routeFrameData.getPicture().draw(canvas);
         }
     }
 }

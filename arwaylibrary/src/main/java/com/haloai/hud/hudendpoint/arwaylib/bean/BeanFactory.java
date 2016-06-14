@@ -1,8 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean;
 
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.ExitBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
@@ -20,8 +19,7 @@ public class BeanFactory {
         SATELLITE,
         MUSIC,
         NETWORK,
-        EXIT,
-        COMMON
+        NAVI_INFO
     }
 
     /**
@@ -32,9 +30,8 @@ public class BeanFactory {
     private static RouteBean     mRouteBean     = null;
     private static SatelliteBean mSatelliteBean = null;
     private static MusicBean     mMusicBean     = null;
-    private static ExitBean      mExitBean      = null;
     private static NetworkBean   mNetworkBean   = null;
-    private static CommonBean    mCommonBean    = null;
+    private static NaviInfoBean  mNaviInfoBean  = null;
 
     public static SuperBean getBean(BeanType beanType) {
         if (!mIsInited) {
@@ -51,14 +48,11 @@ public class BeanFactory {
             case MUSIC:
                 hudBean = mMusicBean;
                 break;
-            case EXIT:
-                hudBean = mExitBean;
-                break;
             case NETWORK:
                 hudBean = mNetworkBean;
                 break;
-            case COMMON:
-                hudBean = mCommonBean;
+            case NAVI_INFO:
+                hudBean = mNaviInfoBean;
                 break;
             default:
                 throw new RuntimeException("bean type is error or missing break.");
@@ -71,9 +65,8 @@ public class BeanFactory {
             mRouteBean = new RouteBean();
             mSatelliteBean = new SatelliteBean();
             mMusicBean = new MusicBean();
-            mExitBean = new ExitBean();
             mNetworkBean = new NetworkBean();
-            mCommonBean = new CommonBean();
+            mNaviInfoBean = new NaviInfoBean();
             mIsInited = true;
         }
     }

@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 
 import android.graphics.Point;
+import android.graphics.PointF;
 
 import com.haloai.hud.utils.HaloLogger;
 
@@ -39,6 +40,11 @@ public class MathUtils {
      * @return
      */
     public static double calculateDistance(Point point1, Point point2) {
+        //(y2-y1)^2+(x2-x1)^2=Z^2
+        return Math.sqrt(Math.pow((point2.y - point1.y), 2) + Math.pow((point2.x - point1.x), 2));
+    }
+
+    public static double calculateDistance(PointF point1, PointF point2) {
         //(y2-y1)^2+(x2-x1)^2=Z^2
         return Math.sqrt(Math.pow((point2.y - point1.y), 2) + Math.pow((point2.x - point1.x), 2));
     }

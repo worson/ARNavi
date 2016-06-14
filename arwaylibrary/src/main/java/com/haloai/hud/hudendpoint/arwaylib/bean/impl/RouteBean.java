@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.Projection;
-import com.amap.api.navi.model.AMapNaviLink;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
@@ -110,15 +109,15 @@ public class RouteBean extends SuperBean {
         for (AMapNaviStep aMapNaviStep : naviStepList) {
             mPathLatLngs.addAll(aMapNaviStep.getCoords());
 
-            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
-                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
-                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
-                    value.addAll(link.getCoords());
-                    mRoadNameLatLngs.put(link.getRoadName(), value);
-                } else {
-                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
-                }
-            }
+//            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
+//                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
+//                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
+//                    value.addAll(link.getCoords());
+//                    mRoadNameLatLngs.put(link.getRoadName(), value);
+//                } else {
+//                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
+//                }
+//            }
         }
 
         return this;
@@ -128,7 +127,7 @@ public class RouteBean extends SuperBean {
         return mCanDrawHudway;
     }
 
-    public RouteBean setCanDrawHudway(boolean canDrawHudway) {
+    public RouteBean setCanDrawARway(boolean canDrawHudway) {
         mCanDrawHudway = canDrawHudway;
         return this;
     }
@@ -163,7 +162,7 @@ public class RouteBean extends SuperBean {
                 distance = distance < 1 ? 0 : distance;
                 this.mCurrentDistance += distance;
             }
-            mMayBeErrorLocation = true;
+            mMayBeErrorLocation = mCurrentDistance <= CORRECTING_DISTANCE;
         } else {
             mMayBeErrorLocation = false;
         }

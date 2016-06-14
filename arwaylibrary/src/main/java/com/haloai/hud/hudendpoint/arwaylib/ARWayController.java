@@ -10,8 +10,8 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.ExitBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
@@ -86,7 +86,8 @@ public class ARWayController {
 
         public static RouteBean setIsShow(boolean isShow) {
             synchronized (ARWayController.class) {
-                return (RouteBean) mRouteBean.setIsShow(isShow);
+                mRouteBean.setIsShow(isShow);
+                return mRouteBean;
             }
         }
 
@@ -104,7 +105,7 @@ public class ARWayController {
 
         public static RouteBean setCanDrawHudway(boolean canDrawHudway) {
             synchronized (ARWayController.class) {
-                return mRouteBean.setCanDrawHudway(canDrawHudway);
+                return mRouteBean.setCanDrawARway(canDrawHudway);
             }
         }
 
@@ -139,6 +140,35 @@ public class ARWayController {
         }
     }
 
+    /**
+     * the class for udpate navi info data.
+     * NaviInfoBeanUpdate class is a packing class for NaviInfoBean.
+     */
+    public static class NaviInfoBeanUpdate{
+        private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+
+        public static NaviInfoBean setIsShow(boolean isShow){
+            mNaviInfoBean.setIsShow(isShow);
+            return mNaviInfoBean;
+        }
+
+        public static NaviInfoBean setNaviIcon(int naviIcon){
+            return mNaviInfoBean.setNaviIcon(naviIcon);
+        }
+
+        public static NaviInfoBean setNaviIconDist(int naviIcon){
+            return mNaviInfoBean.setNaviIconDistance(naviIcon);
+        }
+
+        public static NaviInfoBean setCurrentRoadName(String currentRoadName){
+            return mNaviInfoBean.setCurrentRoadName(currentRoadName);
+        }
+
+        public static NaviInfoBean setNextRoadName(String nextRoadName){
+            return mNaviInfoBean.setNextRoadName(nextRoadName);
+        }
+    }
+
     /***
      * the class for update data about satellite.
      * SatelliteBeanUpdater class is a packing class for SatelliteBean.
@@ -148,7 +178,8 @@ public class ARWayController {
 
         public static SatelliteBean setIsShow(boolean isShow) {
             synchronized (ARWayController.class) {
-                return (SatelliteBean) mSatelliteBean.setIsShow(isShow);
+                mSatelliteBean.setIsShow(isShow);
+                return mSatelliteBean;
             }
         }
     }
@@ -162,7 +193,8 @@ public class ARWayController {
 
         public static MusicBean setIsShow(boolean isShow) {
             synchronized (ARWayController.class) {
-                return (MusicBean) mMusicBean.setIsShow(isShow);
+                mMusicBean.setIsShow(isShow);
+                return mMusicBean;
             }
         }
 
@@ -183,21 +215,6 @@ public class ARWayController {
                 return mMusicBean.setDuration(duration);
             }
         }
-
-    }
-
-    /***
-     * the class for update data about exit navigation.
-     * ExitBeanUpdater class is a packing class for ExitBean.
-     */
-    public static class ExitBeanUpdater {
-        private static ExitBean mExitBean = (ExitBean) BeanFactory.getBean(BeanFactory.BeanType.EXIT);
-
-        public static ExitBean setIsShow(boolean isShow) {
-            synchronized (ARWayController.class) {
-                return (ExitBean) mExitBean.setIsShow(isShow);
-            }
-        }
     }
 
     /***
@@ -209,7 +226,8 @@ public class ARWayController {
 
         public static NetworkBean setIsShow(boolean isShow) {
             synchronized (ARWayController.class) {
-                return (NetworkBean) mNetworkBean.setIsShow(isShow);
+                mNetworkBean.setIsShow(isShow);
+                return mNetworkBean;
             }
         }
     }

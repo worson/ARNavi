@@ -18,6 +18,16 @@ android {
     }
 }
 
+//task makeJar(type: Copy) {
+//    delete 'build/libs/mysdk.jar'
+//    from('build/intermediates/bundles/release/')
+//    into('build/libs/')
+//    include('classes.jar')
+//    rename ('classes.jar', 'mysdk.jar')
+//}
+//
+//makeJar.dependsOn(build)
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'

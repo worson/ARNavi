@@ -4,9 +4,8 @@ import android.content.Context;
 import android.graphics.Point;
 
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.ExitBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
@@ -30,8 +29,9 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.ExitFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.IconFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.WayFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 
 /**
@@ -52,10 +52,9 @@ public class FrameDataFactory {
     //bean
     private static MusicBean     mMusicBean     = (MusicBean) BeanFactory.getBean(BeanFactory.BeanType.MUSIC);
     private static RouteBean     mRouteBean     = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
-    private static CommonBean    mCommonBean    = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
-    private static ExitBean      mExitBean      = (ExitBean) BeanFactory.getBean(BeanFactory.BeanType.EXIT);
     private static NetworkBean   mNetworkBean   = (NetworkBean) BeanFactory.getBean(BeanFactory.BeanType.NETWORK);
     private static SatelliteBean mSatelliteBean = (SatelliteBean) BeanFactory.getBean(BeanFactory.BeanType.SATELLITE);
+    private static NaviInfoBean  mNaviInfoBean  = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
 
     public enum FrameDataType {
         CROSS_IMAGE,
@@ -63,8 +62,9 @@ public class FrameDataFactory {
         MUSIC,
         NETWORK,
         NEXT_ROAD_NAME,
-        WAY,
+        ROUTE,
         SATELLITE,
+        NAVI_INFO,
         TURN_INFO
     }
 
@@ -74,7 +74,7 @@ public class FrameDataFactory {
      * @param frameDataType
      * @return
      */
-    public static SuperFrameData getFrameData2Update(FrameDataType frameDataType) {
+    public static SuperFrameData getFrameData4Update(FrameDataType frameDataType) {
         SuperFrameData frameData = null;
         switch (frameDataType) {
             case CROSS_IMAGE:
@@ -92,14 +92,17 @@ public class FrameDataFactory {
             case NEXT_ROAD_NAME:
                 frameData = NextRoadNameFrameData.getInstance();
                 break;
-            case WAY:
-                frameData = WayFrameData.getInstance();
+            case ROUTE:
+                frameData = RouteFrameData.getInstance();
                 break;
             case SATELLITE:
                 frameData = IconFrameData.getInstance(FrameDataType.SATELLITE);
                 break;
             case TURN_INFO:
                 frameData = TurnInfoFrameData.getInstance();
+                break;
+            case NAVI_INFO:
+                frameData = NaviInfoFrameData.getInstance();
                 break;
             default:
                 break;
@@ -114,7 +117,7 @@ public class FrameDataFactory {
      * @param frameDataType
      * @return
      */
-    public static SuperFrameData getFrameDataForDraw(Context context, FrameDataType frameDataType) {
+    public static SuperFrameData getFrameData4Draw(Context context, FrameDataType frameDataType) {
         SuperFrameData frameData = null;
         switch (frameDataType) {
             case CROSS_IMAGE:
@@ -131,9 +134,13 @@ public class FrameDataFactory {
                 frameData = NextRoadNameFrameData.getInstance();
                 updateNextRoadName(context, frameData);
                 break;
-            case WAY:
-                frameData = WayFrameData.getInstance();
-                updateWay(context, frameData);
+            case ROUTE:
+                frameData = RouteFrameData.getInstance();
+                updateRoute(context, frameData);
+                break;
+            case NAVI_INFO:
+                frameData = NaviInfoFrameData.getInstance();
+                updateNaviInfo(context, frameData);
                 break;
             case TURN_INFO:
 
@@ -148,6 +155,11 @@ public class FrameDataFactory {
                 break;
         }
         return frameData;
+    }
+
+    private static void updateNaviInfo(Context context, SuperFrameData frameData) {
+        NaviInfoFrameData naviInfoFrameData = (NaviInfoFrameData) frameData;
+
     }
 
     /**
@@ -165,17 +177,17 @@ public class FrameDataFactory {
      * @param context
      * @param frameData
      */
-    private static void updateWay(Context context, SuperFrameData frameData) {
-        WayFrameData wayFrameData = (WayFrameData) frameData;
+    private static void updateRoute(Context context, SuperFrameData frameData) {
+        RouteFrameData routeFrameData = (RouteFrameData) frameData;
         RouteFactor routeFactor = RouteFactor.getInstance();
         routeFactor.init(mRouteBean.isCanDrawHudway(), mRouteBean.isMayBeErrorLocation(),
                          mRouteBean.getCurrentPoint(), mRouteBean.getCurrentStep(),
-                         mRouteBean.getPreLocation(), mRouteBean.getPathLatLngs(),
+                         mRouteBean.getCurrentLocation(), mRouteBean.getPathLatLngs(),
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
                          mRouteBean.getRoadNameLatLngs());
         RouteResult routeResult = mRouteCalculator.calculate(routeFactor);
-        wayFrameData.update(routeResult);
+        routeFrameData.update(routeResult);
     }
 
     /**
