@@ -59,12 +59,14 @@ public class RouteFrameData extends SuperFrameData {
 
     private static RouteFrameData   mRouteFrameData   = new RouteFrameData();
     private        List<Point>      mLastPoints       = new ArrayList<Point>();
-    private        int              mDrawIndex        = 0;
+    private        int              mLastDrawIndex    = 0;
     private        double           mLastOffsetHeight = 0;
     private        AMapNaviLocation mPrePreLocation   = null;
     private        float            mLastDistance     = 0f;
     private        AMapNaviLocation mFakeLocation     = null;
-    private        Picture          mPicture          = new Picture();
+    private        Picture          mPictureOne       = new Picture();
+    private        Picture          mPictureTwo       = new Picture();
+    private        boolean          mChooseOne        = true;
 
     private RouteFrameData() {
         setPosition(X, Y);
@@ -84,8 +86,9 @@ public class RouteFrameData extends SuperFrameData {
     public void animOver() {
         this.mLastDistance = 0f;
         this.mFakeLocation = null;
-        this.mDrawIndex = 0;
+        this.mLastDrawIndex = 0;
         this.mLastOffsetHeight = 0;
+        this.mChooseOne = true;
     }
 
     public void initDrawLine(int bitmap_width, int bitmap_height) {
@@ -112,7 +115,8 @@ public class RouteFrameData extends SuperFrameData {
         if (routeResult.mCanDraw) {
             //          this.mImage = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
             //          Canvas canvas = new Canvas(this.mImage);
-            Canvas canvas = this.mPicture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
+            Picture picture = mChooseOne ? this.mPictureOne : this.mPictureTwo;
+            Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
 
             this.mPaint.reset();
             mPaint.setColor(Color.BLACK);
@@ -123,11 +127,13 @@ public class RouteFrameData extends SuperFrameData {
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
                 canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
-                this.mPicture.endRecording();
+                picture.endRecording();
                 return;
             }
 
             if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1) {
+                this.mChooseOne = !this.mChooseOne;
+                picture.endRecording();
                 return;
             }
 
@@ -140,17 +146,13 @@ public class RouteFrameData extends SuperFrameData {
             double offsetWidth = routeResult.mFakerPointX -
                     routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0))).x;
 
-            // FIXME: 2016/6/14
-            if (this.mDrawIndex > routeResult.mDrawIndex) {
-                return;
-            }
             //靠上的位置Y轴小
-            if (this.mLastOffsetHeight - offsetHeight < 0 && this.mDrawIndex == routeResult.mDrawIndex) {
+            if (this.mLastOffsetHeight - offsetHeight < 0 && this.mLastDrawIndex == routeResult.mDrawIndex) {
+                HaloLogger.logE("route_log_info", "error : offset_height back off!!, error distance : " + offsetHeight);
                 offsetHeight = this.mLastOffsetHeight;
-                HaloLogger.logE("route_log_info", "error : offset_height back off!!");
             } else {
                 this.mLastOffsetHeight = offsetHeight;
-                this.mDrawIndex = routeResult.mDrawIndex;
+                this.mLastDrawIndex = routeResult.mDrawIndex;
             }
 
             this.mTempPoints.clear();
@@ -162,6 +164,8 @@ public class RouteFrameData extends SuperFrameData {
                 }
                 this.mTempPoints.add(point);
             }
+            HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+            HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
             HaloLogger.logE("route_log_info", "offset_height:" + offsetHeight);
             HaloLogger.logE("route_log_info", "points size : " + mTempPoints.size() + ",points:" + mTempPoints + "");
 
@@ -185,8 +189,8 @@ public class RouteFrameData extends SuperFrameData {
             //                mTempPoints.remove(0);
             //            } else {
             //                double offsetHeight = routeResult.mCurrentPoints.get(0).y - routeResult.mFakerPointY;
-            //                if (mDrawIndex != routeResult.mDrawIndex) {
-            //                    mDrawIndex = routeResult.mDrawIndex;
+            //                if (mLastDrawIndex != routeResult.mLastDrawIndex) {
+            //                    mLastDrawIndex = routeResult.mLastDrawIndex;
             //                    mLastOffsetHeight = 0f;
             //                }
             //                if (offsetHeight >= mLastOffsetHeight) {
@@ -238,6 +242,8 @@ public class RouteFrameData extends SuperFrameData {
                         j--;
                     }
                     if (this.mTempPoints.size() <= 1) {
+                        picture.endRecording();
+                        this.mChooseOne = !this.mChooseOne;
                         return;
                     }
                     i--;
@@ -252,6 +258,8 @@ public class RouteFrameData extends SuperFrameData {
 
             if (mTempPoints.size() <= 1) {
                 HaloLogger.logE("route_log_info___", "error return : mTempPoints.size() <= 1 , \n" + mTempPoints);
+                picture.endRecording();
+                this.mChooseOne = !this.mChooseOne;
                 return;
             }
 
@@ -491,7 +499,8 @@ public class RouteFrameData extends SuperFrameData {
             //============================================================
 
             //delete black color background
-            canvas.drawPaint(mPaintBitmapColorFilter);
+            //TODO Too long to run this.
+            //canvas.drawPaint(mPaintBitmapColorFilter);
 
             //            //TODO 问题:由于此时的mTempPoints是经过一系列操作处理的,但是mCurrentLatLngs是未经过处理的,因此两者并不同步,不能直接从后者得到nextRoadIndex用于前者
             //            //draw next road name
@@ -556,51 +565,14 @@ public class RouteFrameData extends SuperFrameData {
 
             mPaint.reset();
 
-            /*//update src rect and dest rect
-            //TODO 这部分代码有问题
-            Point startPoint = new Point(mTempPoints.get(0).x, mTempPoints.get(0).y);
-            float[] startXY = new float[2];
-            final_matrix.mapPoints(startXY, new float[]{startPoint.x, startPoint.y});
-            startPoint.x = (int) startXY[0];
-            startPoint.y = (int) startXY[1];
-
-            Point mSecondPoint = new Point(mTempPoints.get(1).x, mTempPoints.get(1).y);
-            float[] secondXY = new float[2];
-            final_matrix.mapPoints(secondXY, new float[]{mSecondPoint.x, mSecondPoint.y});
-            mSecondPoint.x = (int) secondXY[0];
-            mSecondPoint.y = (int) secondXY[1];
-
-            float offsetDiv = (1 -
-                    AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
-                                                    DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))
-                            /
-                            AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
-                                                            DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()))
-            );
-            int fakerX = mTempPoints.get(0).x + (int) (offsetDiv * (mTempPoints.get(1).x - mTempPoints.get(0).x));
-            int fakerY = mTempPoints.get(0).y + (int) (offsetDiv * (mTempPoints.get(1).y - mTempPoints.get(0).y));
-            float[] fakerXY = new float[2];
-            final_matrix.mapPoints(fakerXY,new float[]{fakerX,fakerY});
-            Point fakerPoint = new Point((int)fakerXY[0],(int)fakerXY[1]);
-
-            int offsetHeight = fakerPoint.y - startPoint.y;
-            mSrcRect.set(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT + offsetHeight);
-            mDestRect.set(0, 0 - offsetHeight, IMAGE_WIDTH, IMAGE_HEIGHT);
-            HaloLogger.logE("src_des_rect:", "distance:" + (mSecondPoint.y - startPoint.y));
-            HaloLogger.logE("src_des_rect:", "src:" + 0 + "," + 0 + "," + IMAGE_WIDTH + "," + (IMAGE_HEIGHT + offsetHeight));
-            HaloLogger.logE("src_des_rect:", "des:" + 0 + "," + (0 - offsetHeight) + "," + IMAGE_WIDTH + "," + IMAGE_HEIGHT);
-            HaloLogger.logE("src_des_rect:", "fake_dist:" + (AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
-                                                                                             DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()))));
-            HaloLogger.logE("src_des_rect:", "start_dist:" + (AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)),
-                                                                                              DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()))));
-            */
-            this.mPicture.endRecording();
+            picture.endRecording();
         } else {
             animOver();
         }
     }
 
     public Picture getPicture() {
-        return mPicture;
+        Picture picture = this.mChooseOne ? mPictureOne : mPictureTwo;
+        return picture;
     }
 }

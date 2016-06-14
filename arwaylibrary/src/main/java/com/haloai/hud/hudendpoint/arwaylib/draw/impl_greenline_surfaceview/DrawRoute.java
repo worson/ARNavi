@@ -33,6 +33,11 @@ public class DrawRoute extends DrawObject {
                 return;
             }
             routeFrameData.getPicture().draw(canvas);
+//            Paint paint = new Paint();
+//            paint.setTextSize(100);
+//            paint.setStrokeWidth(10);
+//            paint.setColor(Color.RED);
+//            canvas.drawText("You must be kidding me!!!", 300, 300, paint);
         }
     }
 }

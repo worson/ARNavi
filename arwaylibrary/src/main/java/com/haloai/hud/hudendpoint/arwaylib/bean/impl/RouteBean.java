@@ -11,7 +11,6 @@ import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
-import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,7 +149,6 @@ public class RouteBean extends SuperBean {
     }
 
     public RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {
-        HaloLogger.logE("route_result__", currentLocation + "");
         mPreLocation = mCurrentLocation;
         mCurrentLocation = currentLocation;
         if (mCurrentDistance < CORRECTING_DISTANCE) {

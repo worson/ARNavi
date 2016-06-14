@@ -31,12 +31,14 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
     private int    mCurrentFramesCounter  = 0;
     private int    mPreviousFramesCounter = 0;
+    private long   mPreTime               = 0l;
+    private long   mCurrentTime           = 0l;
     private int    mCurrent               = -1;
     private double mFakerPointX           = 0f;
     private double mFakerPointY           = 0f;
     private int    mDrawIndex             = 1;
-    private int    mCurrentIndex          = 1;
 
+    private        int             mCurrentIndex    = 1;
     private static RouteCalculator mRouteCalculator = new RouteCalculator();
 
     private RouteCalculator() {}
@@ -74,6 +76,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             routeResult.mProjection = routeFactor.mProjection;
             this.mFakerCurrentLocation = getFakerLocation(routeFactor.mCurrentLocation, routeFactor.mProjection);
             if (this.mFakerCurrentLocation != null) {
+
                 boolean currentIndexChange = false;
                 if (this.mCurrentIndex != currentIndex) {
                     this.mCurrentIndex = currentIndex;
@@ -102,22 +105,22 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                             - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
                     int index = 2;
 
-                    HaloLogger.logE("==route_log_info", "=========current index change start=============");
-                    HaloLogger.logE("==route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
-                    HaloLogger.logE("==route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                    HaloLogger.logE("==route_log_info","distance : "+distance_diff);
+                    //                    HaloLogger.logE("route_log_info", "=========current index change start=============");
+                    //                    HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+                    //                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                    //                    HaloLogger.logE("route_log_info","distance : "+distance_diff);
                     //处理绘制点落在currentLatLngs集合第一个点之前的情况
                     while (this.mCurrentIndex - index >= 0 && distance_diff > 0) {
                         routeResult.mDrawIndex = this.mCurrentIndex - index + 1;
-                        HaloLogger.logE("==route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                        //                        HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
                         routeResult.mCurrentLatLngs.add(0, routeFactor.mPathLatLngs.get(this.mCurrentIndex - index));
                         distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
                                 - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
-                        HaloLogger.logE("==route_log_info","distance : "+distance_diff);
+                        //                        HaloLogger.logE("route_log_info","distance : "+distance_diff);
                         index++;
                     }
-                    HaloLogger.logE("==route_log_info", "=========current index change end===============");
-                    HaloLogger.logE("==route_log_info","\n\n");
+                    //                    HaloLogger.logE("route_log_info", "=========current index change end===============");
+                    //                    HaloLogger.logE("route_log_info","\n\n");
                 }
 
                 // FIXME: 2016/6/12
@@ -125,23 +128,24 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 // 那么这种情况下我们是否应该控制drawIndex?
                 // 控制drawIndex是没有必要的,虽然理论上都让我Index不应该大于currentIndex,但是根据数据 返回绘制这种情况是有可能的,不能直接就限制死
                 //处理currentLatLngs中补充点之后,绘制点经过某个点之后需要从currentLatLngs中移除补充点的情况
-                if(!currentIndexChange) {
-                    HaloLogger.logE("==route_log_info", "=========not change update start=============");
+                if (!currentIndexChange) {
+                    HaloLogger.logE("route_log_info", "=========not change update start=============");
                     float distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
-                               - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
-                    HaloLogger.logE("==route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
-                    HaloLogger.logE("==route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                    HaloLogger.logE("==route_log_info", "distance : " + distance_diff);
-                    while (distance_diff >0 && routeResult.mCurrentLatLngs.size() > 1 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size()-1) {
+                            - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
+                    HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                    HaloLogger.logE("route_log_info", "distance : " + distance_diff);
+                    HaloLogger.logE("route_log_info", "faker : " + mFakerCurrentLocation.getCoord().getLatitude() + "," + mFakerCurrentLocation.getCoord().getLongitude());
+                    while (distance_diff > 0 && routeResult.mCurrentLatLngs.size() > 1 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size() - 1) {
                         routeResult.mCurrentLatLngs.remove(0);
                         routeResult.mDrawIndex++;
-                        HaloLogger.logE("==route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                        HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
                         distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
                                 - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
-                        HaloLogger.logE("==route_log_info", "distance : " + distance_diff);
+                        HaloLogger.logE("route_log_info", "distance : " + distance_diff);
                     }
-                    HaloLogger.logE("==route_log_info", "=========not change update end===============");
-                    HaloLogger.logE("==route_log_info","\n\n");
+                    HaloLogger.logE("route_log_info", "=========not change update end===============");
+                    HaloLogger.logE("route_log_info", "\n\n");
                 }
 
                 //将当前drawIndex保存下来供下次使用
@@ -164,22 +168,22 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 //                }
 
                 //create next road name and its position.
-//                routeResult.mHasNextRoadName = routeFactor.mNextRoadName != null && routeFactor.mNextRoadName.length() > 0;
-//                if (routeResult.mHasNextRoadName) {
-//                    routeResult.mNextRoadName = routeFactor.mNextRoadName;
-//                    routeResult.mNextRoadType = routeFactor.mNextRoadType;
-//                    routeResult.mNextRoadNamePosition = null;
-//                    List<NaviLatLng> latLngs = routeFactor.mRoadNameLatLngs.get(routeFactor.mNextRoadName);
-//                    if (latLngs != null && latLngs.size() >= 1) {
-//                        for (int i = 1; i < routeResult.mCurrentLatLngs.size(); i++) {
-//                            NaviLatLng latLng = routeFactor.mPathLatLngs.get(this.mCurrentIndex + i - 1);
-//                            if (latLngs.contains(latLng)) {
-//                                routeResult.mNextRoadNamePosition = latLng;
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
+                //                routeResult.mHasNextRoadName = routeFactor.mNextRoadName != null && routeFactor.mNextRoadName.length() > 0;
+                //                if (routeResult.mHasNextRoadName) {
+                //                    routeResult.mNextRoadName = routeFactor.mNextRoadName;
+                //                    routeResult.mNextRoadType = routeFactor.mNextRoadType;
+                //                    routeResult.mNextRoadNamePosition = null;
+                //                    List<NaviLatLng> latLngs = routeFactor.mRoadNameLatLngs.get(routeFactor.mNextRoadName);
+                //                    if (latLngs != null && latLngs.size() >= 1) {
+                //                        for (int i = 1; i < routeResult.mCurrentLatLngs.size(); i++) {
+                //                            NaviLatLng latLng = routeFactor.mPathLatLngs.get(this.mCurrentIndex + i - 1);
+                //                            if (latLngs.contains(latLng)) {
+                //                                routeResult.mNextRoadNamePosition = latLng;
+                //                                break;
+                //                            }
+                //                        }
+                //                    }
+                //                }
             }
         }
         return routeResult;
@@ -288,47 +292,99 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         //if prePreLocation is null , set the value to it , and return null
         if (mPreLocation == null) {
             mPreLocation = currentLocation;
+            mPreTime = System.currentTimeMillis();
             return null;
         }
         mCurrentFramesCounter++;
         //if mPreLocation is null , so this is the first step to draw
         if (mCurrentLocation == null) {
             mCurrentLocation = currentLocation;
-            mCurrent = 1;
+            mCurrentTime = System.currentTimeMillis();
 
-            mPreviousFramesCounter = mCurrentFramesCounter;
-            mCurrentFramesCounter = 0;
         } else if (mCurrentLocation != currentLocation) {
             mPreLocation = mFakerCurrentLocation == null ? mCurrentLocation : mFakerCurrentLocation;
+            mPreTime = mCurrentTime;
             mCurrentLocation = currentLocation;
-            mCurrent = 1;
-
-            mPreviousFramesCounter = mCurrentFramesCounter;
-            mCurrentFramesCounter = 0;
+            mCurrentTime = System.currentTimeMillis();
         }
-        if (mPreviousFramesCounter != 0 && mCurrent <= mPreviousFramesCounter) {
+        long currentFrameTime = System.currentTimeMillis();
+        long diff = currentFrameTime - (mCurrentTime - mPreTime) - mPreTime;
+        long diff_pre_cur = mCurrentTime - mPreTime;
+        if (diff >= 0 && diff <= diff_pre_cur) {
+            HaloLogger.logE("empty_points_count", "=======================normal======================");
             Point prePrePoint = projection.toScreenLocation(
                     DrawUtils.naviLatLng2LatLng(mPreLocation.getCoord()));
             Point prePoint = projection.toScreenLocation(
                     DrawUtils.naviLatLng2LatLng(mCurrentLocation.getCoord()));
-            this.mFakerPointX = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * mCurrent / mPreviousFramesCounter));
-            this.mFakerPointY = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * mCurrent / mPreviousFramesCounter));
+            this.mFakerPointX = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * diff / diff_pre_cur));
+            this.mFakerPointY = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * diff / diff_pre_cur));
             Point point = new Point((int) this.mFakerPointX, (int) this.mFakerPointY);
             AMapNaviLocation location = new AMapNaviLocation();
             location.setCoord(DrawUtils.latLng2NaviLatLng(projection.fromScreenLocation(point)));
-            mCurrent++;
             return location;
         } else {
-            if (mPreviousFramesCounter == 0) {
-                HaloLogger.logE("empty_points_count", "mPreviousFramesCounter == 0");
-            } else if (mCurrent > mPreviousFramesCounter) {
-                HaloLogger.logE("empty_points_count", "mCurrent > mPreviousFramesCounter");
-            } else {
-                HaloLogger.logE("empty_points_count", "unknown");
-            }
+            HaloLogger.logE("empty_points_count", "=================error=============");
+            Point point = projection.toScreenLocation(DrawUtils.naviLatLng2LatLng(mFakerCurrentLocation.getCoord()));
+            this.mFakerPointX = point.x;
+            this.mFakerPointY = point.y;
             return mFakerCurrentLocation;
         }
     }
+
+    //    private AMapNaviLocation getFakerLocation(AMapNaviLocation currentLocation, Projection projection) {
+    //        //if we do get the location not yet , return null.
+    //        if (currentLocation == null) {
+    //            return null;
+    //        }
+    //        //if prePreLocation is null , set the value to it , and return null
+    //        if (mPreLocation == null) {
+    //            mPreLocation = currentLocation;
+    //            return null;
+    //        }
+    //        mCurrentFramesCounter++;
+    //        //if mPreLocation is null , so this is the first step to draw
+    //        if (mCurrentLocation == null) {
+    //            mCurrentLocation = currentLocation;
+    //            mCurrent = 1;
+    //
+    //            mPreviousFramesCounter = mCurrentFramesCounter;
+    //            mCurrentFramesCounter = 0;
+    //        } else if (mCurrentLocation != currentLocation) {
+    //            mPreLocation = mFakerCurrentLocation == null ? mCurrentLocation : mFakerCurrentLocation;
+    //            mCurrentLocation = currentLocation;
+    //            mCurrent = 1;
+    //
+    //            // FIXME: 2016/6/14  临时将mCurrentFramesCounter+5后赋值给mPreviousFramesCounter,减少下方进else的此处
+    //            mPreviousFramesCounter = mCurrentFramesCounter+5;
+    //            mCurrentFramesCounter = 0;
+    //        }
+    //        HaloLogger.logE("empty_points_count", "=======================one frame======================");
+    //        if (mPreviousFramesCounter != 0 && mCurrent <= mPreviousFramesCounter) {
+    //            Point prePrePoint = projection.toScreenLocation(
+    //                    DrawUtils.naviLatLng2LatLng(mPreLocation.getCoord()));
+    //            Point prePoint = projection.toScreenLocation(
+    //                    DrawUtils.naviLatLng2LatLng(mCurrentLocation.getCoord()));
+    //            this.mFakerPointX = (prePrePoint.x + (prePoint.x - prePrePoint.x) * (1.0 * mCurrent / mPreviousFramesCounter));
+    //            this.mFakerPointY = (prePrePoint.y + (prePoint.y - prePrePoint.y) * (1.0 * mCurrent / mPreviousFramesCounter));
+    //            Point point = new Point((int) this.mFakerPointX, (int) this.mFakerPointY);
+    //            AMapNaviLocation location = new AMapNaviLocation();
+    //            location.setCoord(DrawUtils.latLng2NaviLatLng(projection.fromScreenLocation(point)));
+    //            mCurrent++;
+    //            return location;
+    //        } else {
+    //            if (mPreviousFramesCounter == 0) {
+    //                HaloLogger.logE("empty_points_count", "mPreviousFramesCounter == 0");
+    //            } else if (mCurrent > mPreviousFramesCounter) {
+    //                HaloLogger.logE("empty_points_count", "mCurrent > mPreviousFramesCounter");
+    //            } else {
+    //                HaloLogger.logE("empty_points_count", "unknown");
+    //            }
+    //            Point point = projection.toScreenLocation(DrawUtils.naviLatLng2LatLng(mFakerCurrentLocation.getCoord()));
+    //            this.mFakerPointX = point.x;
+    //            this.mFakerPointY = point.y;
+    //            return mFakerCurrentLocation;
+    //        }
+    //    }
 }
 
 
