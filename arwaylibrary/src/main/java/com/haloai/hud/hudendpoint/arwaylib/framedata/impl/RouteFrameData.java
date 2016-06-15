@@ -148,7 +148,7 @@ public class RouteFrameData extends SuperFrameData {
 
             //靠上的位置Y轴小
             if (this.mLastOffsetHeight - offsetHeight < 0 && this.mLastDrawIndex == routeResult.mDrawIndex) {
-                HaloLogger.logE("route_log_info", "error : offset_height back off!!, error distance : " + offsetHeight);
+                HaloLogger.logE("route_log_info", "error : offset_height back off!!, error offsetHeight : " + offsetHeight);
                 offsetHeight = this.mLastOffsetHeight;
             } else {
                 this.mLastOffsetHeight = offsetHeight;
