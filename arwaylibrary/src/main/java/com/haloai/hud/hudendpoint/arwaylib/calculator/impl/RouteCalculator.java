@@ -100,53 +100,54 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 //处理由于index值得改变导致faker点与形状点的距离计算本身就是错误的(因为此时faker点处于的形状点范围与真实的形状点范围是一样的,index已经加1了,但是faker点实际还是前一个形状点处)
                 //if the faker latlng to next latlng`s distance bigger than last latlng to next latlng`s distance , error.
                 //只需要在currentIndexChange为true时处理,只有此时才可能发生这种情况
-                //if (currentIndexChange) {
-                float distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
-                        - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
-                int index = 2;
-
-                HaloLogger.logE("route_log_info", "=========current index change start=============");
-                HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
-                HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                HaloLogger.logE("route_log_info", "distance : " + distance_diff);
-                //处理绘制点落在currentLatLngs集合第一个点之前的情况
-                while (this.mCurrentIndex - index >= 0 && distance_diff > 0) {
-                    routeResult.mDrawIndex = this.mCurrentIndex - index + 1;
-                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                    routeResult.mCurrentLatLngs.add(0, routeFactor.mPathLatLngs.get(this.mCurrentIndex - index));
-                    distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
+                if (currentIndexChange) {
+                    //如果currentIndex改变了,那么就可能需要进行补充点,此时需要将drawIndex设置为currentIndex一致,
+                    //也就是假设drawIndex与currentIndex同步,然后如果确实需要补充点的话,再去修复darwIndex的值.
+                    routeResult.mDrawIndex = routeResult.mCurrentIndex;
+                    float distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
                             - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
+
+                    HaloLogger.logE("route_log_info", "=========current index change start=============");
+                    HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
                     HaloLogger.logE("route_log_info", "distance : " + distance_diff);
-                    index++;
+                    //处理绘制点落在currentLatLngs集合第一个点之前的情况
+                    while (routeResult.mDrawIndex - 2 >= 0 && distance_diff > 0) {
+                        HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                        routeResult.mCurrentLatLngs.add(0, routeFactor.mPathLatLngs.get(routeResult.mDrawIndex - 2));
+                        distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
+                                - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
+                        HaloLogger.logE("route_log_info", "distance : " + distance_diff);
+                        routeResult.mDrawIndex --;
+                    }
+                    HaloLogger.logE("route_log_info", "=========current index change end===============");
+                    HaloLogger.logE("route_log_info", "\n\n");
                 }
-                HaloLogger.logE("route_log_info", "=========current index change end===============");
-                HaloLogger.logE("route_log_info", "\n\n");
-                //}
 
                 // FIXME: 2016/6/12
                 // drawIndex <= currentIndex这个条件是否有必要,已经证实了是可能的,就是说绘制点跑到了GPS点之后
                 // 那么这种情况下我们是否应该控制drawIndex?
                 // 控制drawIndex是没有必要的,虽然理论上都让我Index不应该大于currentIndex,但是根据数据 返回绘制这种情况是有可能的,不能直接就限制死
                 //处理currentLatLngs中补充点之后,绘制点经过某个点之后需要从currentLatLngs中移除补充点的情况
-                //if (!currentIndexChange) {
-                HaloLogger.logE("route_log_info", "=========not change update start=============");
-                float distance_diff_ = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
-                        - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
-                HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
-                HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                HaloLogger.logE("route_log_info", "distance : " + distance_diff_);
-                HaloLogger.logE("route_log_info", "faker : " + mFakerCurrentLocation.getCoord().getLatitude() + "," + mFakerCurrentLocation.getCoord().getLongitude());
-                while (distance_diff_ > 0 && routeResult.mCurrentLatLngs.size() > 1 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size() - 1) {
-                    routeResult.mCurrentLatLngs.remove(0);
-                    routeResult.mDrawIndex++;
-                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
-                    distance_diff_ = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
+                if (!currentIndexChange) {
+                    HaloLogger.logE("route_log_info", "=========not change update start=============");
+                    float distance_diff_ = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
                             - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
+                    HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+                    HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
                     HaloLogger.logE("route_log_info", "distance : " + distance_diff_);
+                    HaloLogger.logE("route_log_info", "faker : " + mFakerCurrentLocation.getCoord().getLatitude() + "," + mFakerCurrentLocation.getCoord().getLongitude());
+                    while (distance_diff_ > 0 && routeResult.mCurrentLatLngs.size() > 1 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size() - 1) {
+                        routeResult.mCurrentLatLngs.remove(0);
+                        routeResult.mDrawIndex++;
+                        HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+                        distance_diff_ = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)))
+                                - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)));
+                        HaloLogger.logE("route_log_info", "distance : " + distance_diff_);
+                    }
+                    HaloLogger.logE("route_log_info", "=========not change update end===============");
+                    HaloLogger.logE("route_log_info", "\n\n");
                 }
-                HaloLogger.logE("route_log_info", "=========not change update end===============");
-                HaloLogger.logE("route_log_info", "\n\n");
-                //}
 
                 //将当前drawIndex保存下来供下次使用
                 this.mDrawIndex = routeResult.mDrawIndex;

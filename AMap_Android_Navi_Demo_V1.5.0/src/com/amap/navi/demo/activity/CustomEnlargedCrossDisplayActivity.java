@@ -35,6 +35,7 @@ import com.amap.navi.demo.R;
 public class CustomEnlargedCrossDisplayActivity extends BaseActivity implements AMapNaviListener, OnMapLoadedListener, OnCameraChangeListener {
 
     private ImageView myCustomEnlargedCross;
+	public static long mCrossImageCreateTime = 0l;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,9 +87,10 @@ public class CustomEnlargedCrossDisplayActivity extends BaseActivity implements 
 
     @Override
     public void showCross(AMapNaviCross aMapNaviCross) {
+    	this.mCrossImageCreateTime  = System.currentTimeMillis();
         myCustomEnlargedCross.setImageBitmap(aMapNaviCross.getBitmap());
         try {
-			write2(bitmap2Bytes2(aMapNaviCross.getBitmap()),"cross_image_"+System.currentTimeMillis()+".png");
+			write2(bitmap2Bytes2(aMapNaviCross.getBitmap()),"cross_image_"+mCrossImageCreateTime+".png");
 		} catch (IOException e) {
 			Log.e("test", "xxxx:"+e.toString());
 			e.printStackTrace();
@@ -96,7 +98,7 @@ public class CustomEnlargedCrossDisplayActivity extends BaseActivity implements 
 
         myCustomEnlargedCross.setVisibility(View.VISIBLE);
         
-        mFlushFakerCross = true;
+        mIsFlushFakerCross = true;
         
         if(mHudwayView!=null){
         	mHudwayView.drawWay();

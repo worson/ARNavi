@@ -96,8 +96,8 @@ public class RouteFrameData extends SuperFrameData {
         this.IMAGE_HEIGHT = MathUtils.formatAsEvenNumber(bitmap_height);
         this.OUTSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.437f));
         this.MIDDLE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.375f));
-        this.OUTSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.237f));
-        this.MIDDLE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.185f));
+//        this.OUTSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.237f));
+//        this.MIDDLE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.185f));
         this.INSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.353f));
         this.NOT_DRAW_TEXT_X = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.102f));
         this.NOT_DRAW_TEXT_Y = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.574f));
@@ -136,7 +136,6 @@ public class RouteFrameData extends SuperFrameData {
                 picture.endRecording();
                 return;
             }
-
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setAntiAlias(true);
             mPaint.setStrokeJoin(Paint.Join.ROUND);
@@ -481,12 +480,17 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setColor(Color.WHITE);
             //canvas.drawPath(circlePath, mPaint);
 
+            //TODO helong test
+            mPaint.setTextSize(100);
+            float text_width = mPaint.measureText("1000米");
+            canvas.drawText("1000米",first_point.x-text_width/2,first_point.y-110,mPaint);
+
             //============================================================
             //TODO helong debug
-            mPaint.setColor(Color.RED);
-            for (int i = 0; i < mTempPoints.size(); i++) {
-                canvas.drawCircle(mTempPoints.get(i).x, mTempPoints.get(i).y, CIRCLE_RADIUS, mPaint);
-            }
+//            mPaint.setColor(Color.RED);
+//            for (int i = 0; i < mTempPoints.size(); i++) {
+//                canvas.drawCircle(mTempPoints.get(i).x, mTempPoints.get(i).y, CIRCLE_RADIUS, mPaint);
+//            }
             //            mPaint.setColor(Color.BLUE);
             //            Point testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()));
             //            canvas.drawCircle(testPoint.x, testPoint.y, 30, mPaint);
