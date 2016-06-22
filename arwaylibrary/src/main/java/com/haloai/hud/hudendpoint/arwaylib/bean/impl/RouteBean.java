@@ -48,6 +48,7 @@ public class RouteBean extends SuperBean {
     private double       mRealStartPointY = 0f;
     private String       mNextRoadName    = null;
     private NextRoadType mNextRoadType    = null;
+    private float        mDegrees         = 0f;
 
     public enum NextRoadType {
         LEFT,
@@ -71,6 +72,7 @@ public class RouteBean extends SuperBean {
         mMayBeErrorLocation = true;
         mNextRoadName = null;
         mNextRoadType = null;
+        mDegrees = 0f;
         mPathLatLngs.clear();
         mCroodsInSteps.clear();
         mRoadNameLatLngs.clear();
@@ -108,15 +110,15 @@ public class RouteBean extends SuperBean {
         for (AMapNaviStep aMapNaviStep : naviStepList) {
             mPathLatLngs.addAll(aMapNaviStep.getCoords());
 
-//            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
-//                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
-//                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
-//                    value.addAll(link.getCoords());
-//                    mRoadNameLatLngs.put(link.getRoadName(), value);
-//                } else {
-//                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
-//                }
-//            }
+            //            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
+            //                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
+            //                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
+            //                    value.addAll(link.getCoords());
+            //                    mRoadNameLatLngs.put(link.getRoadName(), value);
+            //                } else {
+            //                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
+            //                }
+            //            }
         }
 
         return this;
@@ -144,7 +146,7 @@ public class RouteBean extends SuperBean {
         return mCurrentLocation;
     }
 
-    public AMapNaviLocation getPreLocation(){
+    public AMapNaviLocation getPreLocation() {
         return mPreLocation;
     }
 
@@ -212,11 +214,20 @@ public class RouteBean extends SuperBean {
         return mNextRoadName;
     }
 
-    public NextRoadType getNextRoadType(){
+    public NextRoadType getNextRoadType() {
         return mNextRoadType;
     }
 
     public Map<String, List<NaviLatLng>> getRoadNameLatLngs() {
         return mRoadNameLatLngs;
+    }
+
+    public RouteBean setDegrees(float degrees) {
+        mDegrees = degrees;
+        return this;
+    }
+
+    public float getDegrees(){
+        return mDegrees;
     }
 }

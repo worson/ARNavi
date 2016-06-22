@@ -180,7 +180,7 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
                         surfaceHolder.unlockCanvasAndPost(can);
                     }
                 } else {
-                    SystemClock.sleep(300);
+                    SystemClock.sleep(100);
                 }
             }
         }

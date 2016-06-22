@@ -185,7 +185,8 @@ public class FrameDataFactory {
                          mRouteBean.getCurrentLocation(), mRouteBean.getPathLatLngs(),
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
-                         mRouteBean.getRoadNameLatLngs());
+                         mRouteBean.getRoadNameLatLngs(),mRouteBean.getCrossImage(),
+                         mRouteBean.getDegrees());
         RouteResult routeResult = mRouteCalculator.calculate(routeFactor);
         routeFrameData.update(routeResult);
     }

@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
 
+import android.graphics.Bitmap;
+
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviLatLng;
@@ -34,6 +36,8 @@ public class RouteResult {
     public         int                    mDrawIndex            = 0;
     public         AMapNaviLocation       mCurrentLocation      = null;
     public         boolean                mFlag                 = false;
+    public         Bitmap                 mCrossImage           = null;
+    public         float                  mCrossImageDegrees    = 0f;
 
     private RouteResult() {}
 
@@ -57,6 +61,8 @@ public class RouteResult {
         mFakerPointX = 0f;
         mFakerPointY = 0f;
         mCurrentIndex = 0;
-        mDrawIndex=0;
+        mDrawIndex = 0;
+        mCrossImage = null;
+        mCrossImageDegrees = 0f;
     }
 }

@@ -138,6 +138,12 @@ public class ARWayController {
                 return mRouteBean.setNextRoadNameAndType(nextRoadName,nextRoadType);
             }
         }
+
+        public static RouteBean setDegrees(float bearing) {
+            synchronized (ARWayController.class){
+                return mRouteBean.setDegrees(bearing);
+            }
+        }
     }
 
     /**
