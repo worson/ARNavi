@@ -1,5 +1,8 @@
 package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
 
+import android.graphics.Point;
+import android.graphics.PointF;
+
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviLatLng;
@@ -18,6 +21,7 @@ import java.util.List;
 public class RouteResult {
     public boolean          mCanDraw            = true;
     public List<NaviLatLng> mCurrentLatLngs     = new ArrayList<NaviLatLng>();
+    public List<PointF>     mCurrentPoints      = new ArrayList<>();
     public boolean          mMayBeErrorLocation = false;
     public boolean          mHasNextRoadName    = false;
     public String           mNextRoadName       = null;
@@ -25,7 +29,7 @@ public class RouteResult {
     public         Projection             mProjection           = null;
     public         NaviLatLng             mNextRoadNamePosition = null;
     private static RouteResult            mRouteResult          = new RouteResult();
-    public         AMapNaviLocation       mPrePreLocation       = null;
+    public         AMapNaviLocation mPreLocation = null;
     public         AMapNaviLocation       mFakeLocation         = null;
     public         RouteBean.NextRoadType mNextRoadType         = null;
     public         double                 mFakerPointX          = 0f;
@@ -34,6 +38,7 @@ public class RouteResult {
     public         int                    mDrawIndex            = 0;
     public         AMapNaviLocation       mCurrentLocation      = null;
     public         boolean                mFlag                 = false;
+    public boolean mFakeOver;
 
     private RouteResult() {}
 
@@ -51,7 +56,7 @@ public class RouteResult {
         mNextRoadName = null;
         mNextRoadType = null;
         mProjection = null;
-        mPrePreLocation = null;
+        mPreLocation = null;
         mFakeLocation = null;
         mCurrentLocation = null;
         mFakerPointX = 0f;

@@ -29,12 +29,14 @@ import java.util.List;
 public class RouteFrameData extends SuperFrameData {
     private static final int    X                     = 100;
     private static final int    Y                     = 100;
-    private static final int    MAGNIFIED_TIME        = 2;
+    private static final int    MAGNIFIED_TIME        = 1;
     //路线错乱的容忍值当点的Y坐标大于起始点的Y坐标+TOLERATE_VALUE,代表绘制该点可能会出现错乱的情况
     private static final int    TOLERATE_VALUE        = 70;
     //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
     private static final double ADD_POINT_INTERVAL    = 100f;
     private static final String NOT_DRAW_TEXT_CONTENT = "正在进行GPS定位，请继续行驶...";
+
+    private static int ROAD_TURN_DRAFT_ANGLE = 15;
 
     private int   IMAGE_WIDTH                  = 0;
     private int   IMAGE_HEIGHT                 = 0;
@@ -61,6 +63,7 @@ public class RouteFrameData extends SuperFrameData {
     private        List<Point>      mLastPoints       = new ArrayList<Point>();
     private        int              mLastDrawIndex    = 0;
     private        double           mLastOffsetHeight = 0;
+    private        double           mLastOffsetDistance = 0;
     private        AMapNaviLocation mPrePreLocation   = null;
     private        float            mLastDistance     = 0f;
     private        AMapNaviLocation mFakeLocation     = null;
@@ -112,6 +115,8 @@ public class RouteFrameData extends SuperFrameData {
 
     public void update(RouteResult routeResult) {
 
+        long performanceLogTime;
+        performanceLogTime = System.currentTimeMillis();
         if (routeResult.mCanDraw) {
             //          this.mImage = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
             //          Canvas canvas = new Canvas(this.mImage);
@@ -141,33 +146,87 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setAntiAlias(true);
             mPaint.setStrokeJoin(Paint.Join.ROUND);
 
-            double offsetHeight = routeResult.mFakerPointY -
-                    routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0))).y;
-            double offsetWidth = routeResult.mFakerPointX -
-                    routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0))).x;
 
+
+            PointF fakePoint = new PointF((float)routeResult.mFakerPointX,(float)routeResult.mFakerPointY);
+            PointF originPoint0 = routeResult.mCurrentPoints.get(0);
+            PointF originRef = originPoint0;
+            PointF originPoint1 = routeResult.mCurrentPoints.get(1);
+
+            double k_fakey = (fakePoint.y-originPoint1.y)*1.0/(originPoint0.y-originPoint1.y);
+            double originFakeX = originPoint1.x+(originPoint0.x-originPoint1.x)*k_fakey;
+            PointF originfakePoint = new PointF((float)originFakeX,fakePoint.y);
+
+            double driftAngle = MathUtils.pointDegree(originPoint0,originPoint1);
+            double rotateRadian = (driftAngle-270)*Math.PI/180;
+            PointF rotatePoint1 = MathUtils.pointRotate(originPoint1,originRef,rotateRadian);
+            PointF rotateFakePoint = MathUtils.pointRotate(originfakePoint,originRef,rotateRadian);
+
+
+            double tOffsetDistance = 0;
+            double offsetHeight = routeResult.mFakerPointY -originPoint0.y;
+            double offsetWidth = routeResult.mFakerPointX - originPoint0.x;
+
+            HaloLogger.logE("route_log_info", "1-0 driftAngle: "+driftAngle+",rotateRadian: "+rotateRadian+",originPoint0:"+originPoint0
+                    +",rotatePoint1:"+rotatePoint1+",rotateFakePoint:"+rotateFakePoint+",originfakePoint:"+originfakePoint);
+
+            // FIXME: 16/6/15 排除计算间隔，造成地图旋转mProjection转换误差
+            HaloLogger.logI("route_log_info_test_performance","=========performance_log=========== update frame time = "+ (System.currentTimeMillis()-performanceLogTime));
+            if (true){
+                offsetHeight = rotateFakePoint.y - originPoint0.y;
+                offsetWidth = rotateFakePoint.x -originPoint0.x;
+                tOffsetDistance = offsetHeight*offsetHeight+offsetWidth*offsetWidth;
+                HaloLogger.logE("route_log_info", " real faker : " + routeResult.mFakeLocation.getCoord().getLatitude() + "," + routeResult.mFakeLocation.getCoord().getLongitude()
+                        + ",  fake point:"+fakePoint);
+            }
+            double tempOffsetHeight = originPoint1.y - originPoint0.y;
+
+
+            HaloLogger.logE("route_log_info","1-0:"+tempOffsetHeight+" , f-0:"+offsetHeight);
+            if (tempOffsetHeight > offsetHeight) {
+                HaloLogger.logE("route_log_info", "range error");
+                offsetHeight = tempOffsetHeight;
+            } else {
+                HaloLogger.logE("route_log_info", "normal error");
+            }
+            // FIXME: 16/6/15 给回退加一个阀值
             //靠上的位置Y轴小
-            if (this.mLastOffsetHeight - offsetHeight < 0 && this.mLastDrawIndex == routeResult.mDrawIndex) {
-                HaloLogger.logE("route_log_info", "error : offset_height back off!!, error offsetHeight : " + offsetHeight);
+            if ((driftAngle<=(270+ROAD_TURN_DRAFT_ANGLE) && driftAngle>=(270-ROAD_TURN_DRAFT_ANGLE)) && this.mLastOffsetHeight - offsetHeight < 0 && this.mLastDrawIndex == routeResult.mDrawIndex) {
+//            if ((this.mLastOffsetDistance - tOffsetDistance < 0) && (this.mLastOffsetHeight - offsetHeight < 0 ) && this.mLastDrawIndex == routeResult.mDrawIndex) {
+                HaloLogger.logE("route_log_info_test__error", "????????? error : offset_height back off!!, error offsetHeight : " + offsetHeight+",last offsetHeight :"+this.mLastOffsetHeight
+                        +",  1-0:"+tempOffsetHeight+",  currentIndex:" + routeResult.mCurrentIndex+"   ,darwIndex:" + routeResult.mDrawIndex+", FakeOver :"+routeResult.mFakeOver);
                 offsetHeight = this.mLastOffsetHeight;
             } else {
+                this.mLastOffsetDistance = tOffsetDistance;
                 this.mLastOffsetHeight = offsetHeight;
                 this.mLastDrawIndex = routeResult.mDrawIndex;
             }
-
             this.mTempPoints.clear();
             for (int i = 0; i < routeResult.mCurrentLatLngs.size(); i++) {
-                PointF point = new PointF(routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(i))));
-                if (i != 0) {
+//                PointF point = new PointF(routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(i))));
+                PointF pointF = routeResult.mCurrentPoints.get(i);
+                PointF point = new PointF(pointF.x,pointF.y);
+                if (i != 0) {// FIXME: 16/6/20  给后续点设定一个下移极限值
                     point.x -= offsetWidth;
                     point.y -= offsetHeight;
                 }
                 this.mTempPoints.add(point);
             }
+
+            /*HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
+            HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
+            HaloLogger.logE("route_log_info", "offset_height:" + offsetHeight);
+            HaloLogger.logE("route_log_info", "points size : " + mTempPoints.size() + ",points:" + mTempPoints + "");*/
+
             HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex);
             HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
             HaloLogger.logE("route_log_info", "offset_height:" + offsetHeight);
+            HaloLogger.logE("route_log_info", "offsetWidth:" + offsetWidth);
             HaloLogger.logE("route_log_info", "points size : " + mTempPoints.size() + ",points:" + mTempPoints + "");
+            if(mTempPoints.size()>=2 && mTempPoints.get(1).y>mTempPoints.get(0).y){
+                HaloLogger.logE("route_log_info", "points path black");
+            }
+            HaloLogger.logE("route_log_info", "==============================================***************   end   end  end ***************===========================================================================================================");
 
             /**
              * 根据fakerLocation计算出应该移动多少米,就向下一个形状点移动多少米:
@@ -280,16 +339,16 @@ public class RouteFrameData extends SuperFrameData {
             //TODO log points
             if (this.mPrePreLocation == null) {
                 //HaloLogger.logE("route_log_info", "=================================");
-                this.mPrePreLocation = routeResult.mPrePreLocation;
-            } else if (this.mPrePreLocation != routeResult.mPrePreLocation) {
+                this.mPrePreLocation = routeResult.mPreLocation;
+            } else if (this.mPrePreLocation != routeResult.mPreLocation) {
                 //HaloLogger.logE("route_log_info", "=================================");
-                this.mPrePreLocation = routeResult.mPrePreLocation;
+                this.mPrePreLocation = routeResult.mPreLocation;
             }
 
             // here we must be 3D turn around first ,and rotate the path second(Now we do not to rotate);
             // first:3D turn around and set matrix;
             first_point = mTempPoints.get(0);
-            DrawUtils.setRotateMatrix4Canvas(first_point.x, first_point.y, -100f, 45f, canvas);
+            DrawUtils.setRotateMatrix4Canvas(first_point.x, first_point.y, -100f, 60f, canvas);
 
             /*// second:Calculate degrees and rotate path with it.
             float degrees = 0f;
@@ -487,15 +546,13 @@ public class RouteFrameData extends SuperFrameData {
             for (int i = 0; i < mTempPoints.size(); i++) {
                 canvas.drawCircle(mTempPoints.get(i).x, mTempPoints.get(i).y, CIRCLE_RADIUS, mPaint);
             }
-            //            mPaint.setColor(Color.BLUE);
-            //            Point testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()));
-            //            canvas.drawCircle(testPoint.x, testPoint.y, 30, mPaint);
-            //            mPaint.setColor(Color.GREEN);
-            //            testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()));
-            //            canvas.drawCircle(testPoint.x, testPoint.y, 25, mPaint);
-            //            mPaint.setColor(Color.YELLOW);
-            //            testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLocation.getCoord()));
-            //            canvas.drawCircle(testPoint.x, testPoint.y, 20, mPaint);
+            /*mPaint.setColor(Color.BLUE);
+            Point testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()));
+            canvas.drawCircle(testPoint.x, testPoint.y, 5, mPaint);
+            mPaint.setColor(Color.GREEN);
+            canvas.drawCircle(testPoint.x, testPoint.y, 7, mPaint);
+            mPaint.setColor(Color.YELLOW);
+            canvas.drawCircle(testPoint.x, testPoint.y, 5, mPaint);*/
             //============================================================
 
             //delete black color background

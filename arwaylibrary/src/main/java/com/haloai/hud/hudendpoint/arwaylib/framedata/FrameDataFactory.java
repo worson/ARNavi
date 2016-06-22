@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.framedata;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.provider.Settings;
 
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
@@ -33,6 +34,7 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
+import com.haloai.hud.utils.HaloLogger;
 
 /**
  * author       : 龙;
@@ -186,8 +188,14 @@ public class FrameDataFactory {
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
                          mRouteBean.getRoadNameLatLngs());
+        // FIXME: 16/6/14
+        long performanceLogTime;
+        performanceLogTime = System.currentTimeMillis();
         RouteResult routeResult = mRouteCalculator.calculate(routeFactor);
+        HaloLogger.logI("performance_log","=========performance_log=========== calculate time = "+ (System.currentTimeMillis()-performanceLogTime));
+        performanceLogTime = System.currentTimeMillis();
         routeFrameData.update(routeResult);
+        HaloLogger.logI("performance_log","=========performance_log=========== update time = "+ (System.currentTimeMillis()-performanceLogTime));
     }
 
     /**

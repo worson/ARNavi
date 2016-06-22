@@ -15,6 +15,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +139,7 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
             paint = new Paint();
             paint.setStrokeWidth(5);
             paint.setColor(Color.DKGRAY);
-            paint.setTextSize(50);
+            paint.setTextSize(25);
         }
 
         @Override
@@ -170,6 +171,7 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
                             can.restore();
                         }
                     }
+                    HaloLogger.logI("performance_log","*********************performance_log********************* total time is "+(endTime - startTime));
                     if (FPS_TIME - lastTime > endTime - startTime) {
                         SystemClock.sleep(FPS_TIME - lastTime - (endTime - startTime));
                         lastTime = 0;
