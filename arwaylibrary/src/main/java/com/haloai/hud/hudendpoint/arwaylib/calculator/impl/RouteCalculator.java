@@ -23,22 +23,22 @@ import java.util.List;
  */
 public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
-    private static final float HUDWAY_LENGTH_IN_SCREEN = 1000;
+    private static final float ARWAY_LENGTH_IN_SCREEN  = 1000;
 
     private AMapNaviLocation mPreLocation          = null;
     private AMapNaviLocation mCurrentLocation      = null;
     private AMapNaviLocation mFakerCurrentLocation = null;
 
-    private int    mCurrentFramesCounter  = 0;
-    private int    mPreviousFramesCounter = 0;
-    private long   mPreTime               = 0l;
-    private long   mCurrentTime           = 0l;
-    private int    mCurrent               = -1;
-    private double mFakerPointX           = 0f;
-    private double mFakerPointY           = 0f;
-    private int    mDrawIndex             = 1;
+    //    private int    mCurrentFramesCounter  = 0;
+    //    private int    mPreviousFramesCounter = 0;
+    //    private int    mCurrent               = -1;
+    private long   mPreTime      = 0l;
+    private long   mCurrentTime  = 0l;
+    private double mFakerPointX  = 0f;
+    private double mFakerPointY  = 0f;
+    private int    mDrawIndex    = 1;
+    private int    mCurrentIndex = 1;
 
-    private        int             mCurrentIndex    = 1;
     private static RouteCalculator mRouteCalculator = new RouteCalculator();
 
     private RouteCalculator() {}
@@ -52,9 +52,9 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         mPreLocation = null;
         mCurrentLocation = null;
         mFakerCurrentLocation = null;
-        mCurrentFramesCounter = 0;
-        mPreviousFramesCounter = 0;
-        mCurrent = -1;
+        //        mCurrentFramesCounter = 0;
+        //        mPreviousFramesCounter = 0;
+        //        mCurrent = -1;
         mFakerPointX = 0f;
         mFakerPointY = 0f;
         mCurrentIndex = 1;
@@ -95,6 +95,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 routeResult.mCurrentIndex = this.mCurrentIndex;
                 routeResult.mDrawIndex = this.mDrawIndex == 1 ? this.mCurrentIndex : this.mDrawIndex;
                 routeResult.mCurrentLocation = routeFactor.mCurrentLocation;
+                routeResult.mCrossImage = routeFactor.mCrossImage;
+                routeResult.mCrossImageDegrees = routeFactor.mCrossImageDegrees;
 
                 // FIXME: 2016/6/12
                 //处理由于index值得改变导致faker点与形状点的距离计算本身就是错误的(因为此时faker点处于的形状点范围与真实的形状点范围是一样的,index已经加1了,但是faker点实际还是前一个形状点处)
@@ -118,7 +120,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                         distance_diff = AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)))
                                 - AMapUtils.calculateLineDistance(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(0)), DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(1)));
                         HaloLogger.logE("route_log_info", "distance : " + distance_diff);
-                        routeResult.mDrawIndex --;
+                        routeResult.mDrawIndex--;
                     }
                     HaloLogger.logE("route_log_info", "=========current index change end===============");
                     HaloLogger.logE("route_log_info", "\n\n");
@@ -137,7 +139,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                     HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
                     HaloLogger.logE("route_log_info", "distance : " + distance_diff_);
                     HaloLogger.logE("route_log_info", "faker : " + mFakerCurrentLocation.getCoord().getLatitude() + "," + mFakerCurrentLocation.getCoord().getLongitude());
-                    while (distance_diff_ > 0 && routeResult.mCurrentLatLngs.size() > 1 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size() - 1) {
+                    //此处routeResult.mCurrentLatLngs.size() > 2而不是 > 1的原因是括号内需要remove一个元素,因此需要大于2
+                    while (distance_diff_ > 0 && routeResult.mCurrentLatLngs.size() > 2 && routeResult.mDrawIndex < routeFactor.mPathLatLngs.size() - 1) {
                         routeResult.mCurrentLatLngs.remove(0);
                         routeResult.mDrawIndex++;
                         HaloLogger.logE("route_log_info", "darwIndex:" + routeResult.mDrawIndex);
@@ -228,12 +231,12 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                             DrawUtils.naviLatLng2LatLng(pathLatLngs.get(i)));
                     totalLength += distance;
                 }
-                //be sure the total distance is HUDWAY_LENGTH_IN_SCREEN
-                if (totalLength == HUDWAY_LENGTH_IN_SCREEN) {
+                //be sure the total distance is ARWAY_LENGTH_IN_SCREEN
+                if (totalLength == ARWAY_LENGTH_IN_SCREEN) {
                     currentLatLngs.add(pathLatLng);
                     return;
-                } else if (totalLength > HUDWAY_LENGTH_IN_SCREEN) {
-                    float div = totalLength - HUDWAY_LENGTH_IN_SCREEN;
+                } else if (totalLength > ARWAY_LENGTH_IN_SCREEN) {
+                    float div = totalLength - ARWAY_LENGTH_IN_SCREEN;
                     Point prePoint = null;
                     if (i == mCurrentIndex) {
                         prePoint = projection
@@ -266,7 +269,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                 DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i)),
                                 DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i + 1)));
             }
-            float div = totalLength - HUDWAY_LENGTH_IN_SCREEN;*/
+            float div = totalLength - ARWAY_LENGTH_IN_SCREEN;*/
 
 
         }
@@ -296,7 +299,6 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             mPreTime = System.currentTimeMillis();
             return null;
         }
-        mCurrentFramesCounter++;
         //if mPreLocation is null , so this is the first step to draw
         if (mCurrentLocation == null) {
             mCurrentLocation = currentLocation;
