@@ -32,7 +32,18 @@ public class DrawRoute extends DrawObject {
             if (routeFrameData.getPicture() == null) {
                 return;
             }
+
             routeFrameData.getPicture().draw(canvas);
+
+            //TODO helong test 放大四倍
+            ///*new Rect(0,0,RouteFrameData.IMAGE_WIDTH*4,RouteFrameData.IMAGE_HEIGHT*4)*/
+//            canvas.drawBitmap(routeFrameData.getBitmap(), null,
+//                              new Rect(-((RouteFrameData.IMAGE_WIDTH*4-RouteFrameData.IMAGE_WIDTH)/2),
+//                                       -((RouteFrameData.IMAGE_HEIGHT*4-RouteFrameData.IMAGE_HEIGHT)/2),
+//                                       RouteFrameData.IMAGE_WIDTH*4-(RouteFrameData.IMAGE_WIDTH*4-RouteFrameData.IMAGE_WIDTH)/2,
+//                                       RouteFrameData.IMAGE_HEIGHT*4-(RouteFrameData.IMAGE_HEIGHT*4-RouteFrameData.IMAGE_HEIGHT)/2),
+//                              null);
+//            canvas.drawBitmap(routeFrameData.getBitmap(),0,0,null);
 //            Paint paint = new Paint();
 //            paint.setTextSize(100);
 //            paint.setStrokeWidth(10);
