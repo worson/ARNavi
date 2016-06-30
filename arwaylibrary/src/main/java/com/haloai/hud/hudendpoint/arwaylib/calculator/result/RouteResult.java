@@ -18,7 +18,7 @@ import java.util.List;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.calculator.result;
  * project_name : hudlauncher;
  */
-public class RouteResult {
+public class RouteResult extends SuperResult{
     public boolean          mCanDraw            = true;
     public List<NaviLatLng> mCurrentLatLngs     = new ArrayList<NaviLatLng>();
     public List<PointF>     mCurrentPoints      = new ArrayList<>();
@@ -39,6 +39,7 @@ public class RouteResult {
     public         AMapNaviLocation       mCurrentLocation      = null;
     public         boolean                mFlag                 = false;
     public boolean mFakeOver;
+    public int mGpsNumber = 0;
 
     private RouteResult() {}
 

@@ -7,6 +7,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
+import com.haloai.hud.utils.HaloLogger;
 
 /**
  * author       : 龙;
@@ -28,6 +29,11 @@ public class DrawNaviInfo extends DrawObject {
         if (BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO).isShow()) {
             NaviInfoFrameData naviInfoFrameData = (NaviInfoFrameData) FrameDataFactory.getFrameData4Draw(
                     context, FrameDataFactory.FrameDataType.NAVI_INFO);
+            if (naviInfoFrameData.getPicture() == null) {
+                return;
+            }
+            naviInfoFrameData.getPicture().draw(canvas);
+            HaloLogger.logE("DrawNaviInfo","DrawNaviInfo doDraw");
 
         }
     }

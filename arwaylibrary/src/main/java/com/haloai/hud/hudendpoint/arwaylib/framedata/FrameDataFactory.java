@@ -2,7 +2,6 @@ package com.haloai.hud.hudendpoint.arwaylib.framedata;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.provider.Settings;
 
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
@@ -10,22 +9,35 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.AlphaFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.CrossImageFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.NaviInfoFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.PositionFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.RotateFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.RouteFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.ScaleFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.SpeedFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.TurnInfoFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.AlphaCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.CrossImageCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.NaviInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.PositionCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RotateCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RouteCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.ScaleCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SpeedCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.TurnInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.AlphaResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.CrossImageResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.NaviInfoResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.PositionResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RotateResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.ScaleResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SpeedResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.TurnInfoResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.ExitFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.IconFrameData;
@@ -33,6 +45,7 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -50,6 +63,10 @@ public class FrameDataFactory {
     private static AlphaCalculator    mAlphaCalculator    = (AlphaCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.ALPHA);
     private static RotateCalculator   mRotateCalculator   = (RotateCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.ROTATE);
     private static RouteCalculator    mRouteCalculator    = (RouteCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.ROUTE);
+    private static TurnInfoCalculator mTurnInfoCalculator    = (TurnInfoCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.TURN_INFO);
+    private static NaviInfoCalculator mNaviInfoCalculator    = (NaviInfoCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.NAVI_INFO);
+    private static CrossImageCalculator mCrossImageCalculator    = (CrossImageCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.CROSS_IMAGE);
+    private static SpeedCalculator mSpeedCalculator    = (SpeedCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.SPEED);
 
     //bean
     private static MusicBean     mMusicBean     = (MusicBean) BeanFactory.getBean(BeanFactory.BeanType.MUSIC);
@@ -57,6 +74,7 @@ public class FrameDataFactory {
     private static NetworkBean   mNetworkBean   = (NetworkBean) BeanFactory.getBean(BeanFactory.BeanType.NETWORK);
     private static SatelliteBean mSatelliteBean = (SatelliteBean) BeanFactory.getBean(BeanFactory.BeanType.SATELLITE);
     private static NaviInfoBean  mNaviInfoBean  = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+    private static SpeedBean mSpeedBean  = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
 
     public enum FrameDataType {
         CROSS_IMAGE,
@@ -67,7 +85,8 @@ public class FrameDataFactory {
         ROUTE,
         SATELLITE,
         NAVI_INFO,
-        TURN_INFO
+        TURN_INFO,
+        SPEED
     }
 
     /***
@@ -106,6 +125,9 @@ public class FrameDataFactory {
             case NAVI_INFO:
                 frameData = NaviInfoFrameData.getInstance();
                 break;
+            case SPEED:
+                frameData = SpeedFrameData.getInstance();
+                break;
             default:
                 break;
         }
@@ -123,7 +145,8 @@ public class FrameDataFactory {
         SuperFrameData frameData = null;
         switch (frameDataType) {
             case CROSS_IMAGE:
-
+                frameData = CrossImageFrameData.getInstance();
+                updateCrossImage(context,frameData);
                 break;
             case EXIT:
 
@@ -145,7 +168,8 @@ public class FrameDataFactory {
                 updateNaviInfo(context, frameData);
                 break;
             case TURN_INFO:
-
+                frameData = TurnInfoFrameData.getInstance();
+                updateTurnInfo(context, frameData);
                 break;
             case SATELLITE:
 
@@ -153,15 +177,62 @@ public class FrameDataFactory {
             case NETWORK:
 
                 break;
+            case SPEED:
+                frameData = SpeedFrameData.getInstance();
+                updateSpeedDisplay(context, frameData);
+                break;
             default:
                 break;
         }
         return frameData;
     }
 
-    private static void updateNaviInfo(Context context, SuperFrameData frameData) {
-        NaviInfoFrameData naviInfoFrameData = (NaviInfoFrameData) frameData;
+    private static void updateSpeedDisplay(Context context, SuperFrameData frameData){
+        SpeedFrameData speedFrameData = (SpeedFrameData) frameData;
+        SpeedFactor speedFactor = SpeedFactor.getInstance();
+        speedFactor.init(!mRouteBean.isMayBeErrorLocation() ,mSpeedBean.getSpeed());
+        SpeedResult speedResult = mSpeedCalculator.calculate(speedFactor);
+        try {
+            speedFrameData.update(speedResult);
+        }catch (Exception e){
 
+        }
+    }
+    private static void updateCrossImage(Context context, SuperFrameData frameData){
+        CrossImageFrameData crossImageFrameData = (CrossImageFrameData) frameData;
+        CrossImageFactor crossImageFactor = CrossImageFactor.getInstance();
+        crossImageFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getCrossBitmap());
+        CrossImageResult crossImageResult = mCrossImageCalculator.calculate(crossImageFactor);
+        try {
+            crossImageFrameData.update(crossImageResult);
+        }catch (Exception e){
+
+        }
+    }
+    private static void updateTurnInfo(Context context, SuperFrameData frameData){
+        TurnInfoFrameData turnInfoFrameData = (TurnInfoFrameData) frameData;
+        TurnInfoFactor turnInfoFactor = TurnInfoFactor.getInstance();
+        turnInfoFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getNaviIconDistance(),mNaviInfoBean.getNaviIconBitmap());
+        TurnInfoResult turnInfoResult = mTurnInfoCalculator.calculate(turnInfoFactor);
+        try {
+            turnInfoFrameData.update(turnInfoResult);
+        }catch (Exception e){
+
+        }
+
+    }
+
+    private static void updateNaviInfo(Context context, SuperFrameData frameData) {
+        HaloLogger.logE("FrameDataFactory","updateNaviInfo called ,MayBeErrorLocation is "+mRouteBean.isMayBeErrorLocation());
+        NaviInfoFrameData naviInfoFrameData = (NaviInfoFrameData) frameData;
+        NaviInfoFactor naviInfoFactor = NaviInfoFactor.getInstance();
+        naviInfoFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getPathRetainDistance(),mNaviInfoBean.getPathRetainTime(),mNaviInfoBean.getNaviText());
+        NaviInfoResult naviInfoResult = mNaviInfoCalculator.calculate(naviInfoFactor);
+        try {
+            naviInfoFrameData.update(naviInfoResult);
+        }catch (Exception e){
+
+        }
     }
 
     /**
@@ -187,14 +258,18 @@ public class FrameDataFactory {
                          mRouteBean.getCurrentLocation(), mRouteBean.getPathLatLngs(),
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
-                         mRouteBean.getRoadNameLatLngs());
+                         mRouteBean.getRoadNameLatLngs(),mRouteBean.getGpsNumber());
         // FIXME: 16/6/14
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();
         RouteResult routeResult = mRouteCalculator.calculate(routeFactor);
         HaloLogger.logI("performance_log","=========performance_log=========== calculate time = "+ (System.currentTimeMillis()-performanceLogTime));
         performanceLogTime = System.currentTimeMillis();
-        routeFrameData.update(routeResult);
+        try {
+            routeFrameData.update(routeResult);
+        }catch (Exception e){
+
+        }
         HaloLogger.logI("performance_log","=========performance_log=========== update time = "+ (System.currentTimeMillis()-performanceLogTime));
     }
 

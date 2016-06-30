@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
 import android.graphics.AvoidXfermode;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Picture;
@@ -11,6 +12,7 @@ import android.graphics.PointF;
 
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -27,9 +29,11 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class RouteFrameData extends SuperFrameData {
+    private static final boolean ROUTE_FRAME_DEBUG = true;
+
     private static final int    X                     = 100;
     private static final int    Y                     = 100;
-    private static final int    MAGNIFIED_TIME        = 1;
+    private static final int    MAGNIFIED_TIME        = 4;
     //路线错乱的容忍值当点的Y坐标大于起始点的Y坐标+TOLERATE_VALUE,代表绘制该点可能会出现错乱的情况
     private static final int    TOLERATE_VALUE        = 70;
     //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
@@ -113,20 +117,23 @@ public class RouteFrameData extends SuperFrameData {
         this.NEXT_ROAD_TEXT_OFFSET_HEIGHT = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.438f));
     }
 
-    public void update(RouteResult routeResult) {
-
+    public void update(SuperResult result) throws Exception{
+        RouteResult routeResult = null;
+        if (result instanceof RouteResult) {
+            routeResult = (RouteResult)result;
+        }else {
+            throw new Exception("SuperResult 的实例类型不可用");
+        }
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();
+        Picture picture = mChooseOne ? this.mPictureOne : this.mPictureTwo;
+        Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
         if (routeResult.mCanDraw) {
             //          this.mImage = Bitmap.createBitmap(IMAGE_WIDTH, IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
             //          Canvas canvas = new Canvas(this.mImage);
-            Picture picture = mChooseOne ? this.mPictureOne : this.mPictureTwo;
-            Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
-
             this.mPaint.reset();
             mPaint.setColor(Color.BLACK);
             canvas.drawPaint(mPaint);
-
             //if the location point may be a error point ,do not to draw path and to draw text to warning user.
             if (routeResult.mMayBeErrorLocation) {
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
@@ -134,10 +141,26 @@ public class RouteFrameData extends SuperFrameData {
                 canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
                 picture.endRecording();
                 return;
+            }else if((!ROUTE_FRAME_DEBUG) && routeResult.mGpsNumber<3){
+                mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setColor(Color.RED);
+                canvas.drawText("GPS 信号弱，请开往空旷处", NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
+                picture.endRecording();
+                return;
+            }else if ((routeResult.mCurrentLocation != null && (!routeResult.mCurrentLocation.isMatchNaviPath()))){
+                HaloLogger.logE("sen_debug_arway","定位点不在规划路径上");
+                /*mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setColor(Color.RED);
+                canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
+                picture.endRecording();
+                return;*/
             }
 
-            if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1) {
-                this.mChooseOne = !this.mChooseOne;
+            if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1 || routeResult.mCurrentLocation == null
+                    || routeResult.mProjection ==null || routeResult.mCurrentPoints==null) {
+                HaloLogger.logE("sen_debug_error","route update ：绘制条件不足");
+                // FIXME: 16/6/30 先不切换PICTURE
+//                this.mChooseOne = !this.mChooseOne;
                 picture.endRecording();
                 return;
             }
@@ -147,7 +170,7 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setStrokeJoin(Paint.Join.ROUND);
 
 
-
+            //mFakerPointX 已经经过二次转换
             PointF fakePoint = new PointF((float)routeResult.mFakerPointX,(float)routeResult.mFakerPointY);
             PointF originPoint0 = routeResult.mCurrentPoints.get(0);
             PointF originRef = originPoint0;
@@ -172,12 +195,15 @@ public class RouteFrameData extends SuperFrameData {
 
             // FIXME: 16/6/15 排除计算间隔，造成地图旋转mProjection转换误差
             HaloLogger.logI("route_log_info_test_performance","=========performance_log=========== update frame time = "+ (System.currentTimeMillis()-performanceLogTime));
-            if (true){
+            if (false){//经过摆正
                 offsetHeight = rotateFakePoint.y - originPoint0.y;
                 offsetWidth = rotateFakePoint.x -originPoint0.x;
                 tOffsetDistance = offsetHeight*offsetHeight+offsetWidth*offsetWidth;
                 HaloLogger.logE("route_log_info", " real faker : " + routeResult.mFakeLocation.getCoord().getLatitude() + "," + routeResult.mFakeLocation.getCoord().getLongitude()
                         + ",  fake point:"+fakePoint);
+            }else {//helong 直接处理
+                offsetHeight = fakePoint.y - originPoint0.y;
+                offsetWidth = fakePoint.x -originPoint0.x;
             }
             double tempOffsetHeight = originPoint1.y - originPoint0.y;
 
@@ -201,6 +227,7 @@ public class RouteFrameData extends SuperFrameData {
                 this.mLastOffsetHeight = offsetHeight;
                 this.mLastDrawIndex = routeResult.mDrawIndex;
             }
+
             this.mTempPoints.clear();
             for (int i = 0; i < routeResult.mCurrentLatLngs.size(); i++) {
 //                PointF point = new PointF(routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(i))));
@@ -223,7 +250,7 @@ public class RouteFrameData extends SuperFrameData {
             HaloLogger.logE("route_log_info", "offset_height:" + offsetHeight);
             HaloLogger.logE("route_log_info", "offsetWidth:" + offsetWidth);
             HaloLogger.logE("route_log_info", "points size : " + mTempPoints.size() + ",points:" + mTempPoints + "");
-            if(mTempPoints.size()>=2 && mTempPoints.get(1).y>mTempPoints.get(0).y){
+            if(mTempPoints != null &&mTempPoints.size()>=2 && mTempPoints.get(1).y>mTempPoints.get(0).y){
                 HaloLogger.logE("route_log_info", "points path black");
             }
             HaloLogger.logE("route_log_info", "==============================================***************   end   end  end ***************===========================================================================================================");
@@ -264,7 +291,7 @@ public class RouteFrameData extends SuperFrameData {
             //            }
 
             // move to screen center
-            float offsetX = this.IMAGE_WIDTH / 2 - this.mTempPoints.get(0).x;
+            float offsetX = this.IMAGE_WIDTH / 2 - this.mTempPoints.get(0).x+(int)(this.IMAGE_WIDTH/4.5);
             float offsetY = this.IMAGE_HEIGHT - this.mTempPoints.get(0).y;
             for (int i = 0; i < this.mTempPoints.size(); i++) {
                 PointF temp_point = this.mTempPoints.get(i);
@@ -620,10 +647,16 @@ public class RouteFrameData extends SuperFrameData {
             //                //canvas.drawTextOnPath(road_name, text_path, 0, 0, paint);
             //            }
 
+            Matrix matrix = new Matrix();
+            canvas.setMatrix(matrix);
+            mPaint.setColor(Color.BLACK);
+            mPaint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT,mPaint);
             mPaint.reset();
 
             picture.endRecording();
         } else {
+            picture.endRecording();
             animOver();
         }
     }

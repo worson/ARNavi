@@ -10,11 +10,16 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
+import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
@@ -28,12 +33,15 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callback, IARWay {
+
+    private static boolean FPS_DISPALY = true;
     private List<DrawObject>  mDrawList          = new ArrayList<DrawObject>();
     private boolean           mIsRunning         = false;
     private HudwayFlushThread mHudwayFlushThread = null;
     private boolean           mIsPause           = false;
     private Context           mContext           = null;
     private SurfaceHolder     mSurfaceHolder     = null;
+    private float mWidth,mHeight;
 
     public ARWaySurfaceView(Context context) {
         super(context);
@@ -63,17 +71,20 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
     public void start() {
         if (mDrawList.size() <= 0) {
             //warning:this order is draw order.
-            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.CROSS_IMAGE));
             mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.ROUTE));
-            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NAVI_INFO));
             //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NEXT_ROAD_NAME));
-            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.TURN_INFO));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.TURN_INFO));
             //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.SATELLITE));
             //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NETWORK));
             //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.MUSIC));
-            //mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.EXIT));
+//            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.EXIT));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.SPEED));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.NAVI_INFO));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.COMPASS));
+            mDrawList.add(DrawObjectFactory.getDrawObject(DrawObjectFactory.DrawType.CROSS_IMAGE));
         }
         mIsRunning = true;
+        mIsPause = false;
     }
 
     @Override
@@ -108,7 +119,13 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mHudwayFlushThread = new HudwayFlushThread(surfaceHolder);
         mIsRunning = true;
         mHudwayFlushThread.start();
+        this.mWidth = this.getWidth();
+        this.mHeight = this.getHeight();
         ((RouteFrameData) FrameDataFactory.getFrameData4Update(FrameDataFactory.FrameDataType.ROUTE)).initDrawLine(this.getWidth(), this.getHeight());
+        ((NaviInfoFrameData) FrameDataFactory.getFrameData4Update(FrameDataFactory.FrameDataType.NAVI_INFO)).initDrawLine(this.getWidth(), this.getHeight());
+        ((TurnInfoFrameData) FrameDataFactory.getFrameData4Update(FrameDataFactory.FrameDataType.TURN_INFO)).initDrawLine(this.getWidth(), this.getHeight());
+        ((CrossImageFrameData) FrameDataFactory.getFrameData4Update(FrameDataFactory.FrameDataType.CROSS_IMAGE)).initDrawLine(this.getWidth(), this.getHeight());
+        ((SpeedFrameData) FrameDataFactory.getFrameData4Update(FrameDataFactory.FrameDataType.SPEED)).initDrawLine(this.getWidth(), this.getHeight());
     }
 
     @Override
@@ -145,44 +162,49 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
         @Override
         public void run() {
             testTime = System.currentTimeMillis();
-            while (mIsRunning) {
-                if (!mIsPause) {
-                    can = surfaceHolder.lockCanvas(null);
-                    if (can != null) {
-                        synchronized (surfaceHolder) {
-                            startTime = System.currentTimeMillis();
-                            can.drawColor(Color.BLACK);
-                            can.save();
-                            for (DrawObject drawObject : mDrawList) {
-                                drawObject.doDraw(mContext, can);
+            while (true) {
+                if (mIsRunning) {
+                    if (!mIsPause) {
+                        can = surfaceHolder.lockCanvas(null);
+                        if (can != null) {
+                            synchronized (surfaceHolder) {
+                                startTime = System.currentTimeMillis();
+                                can.drawColor(Color.BLACK);
+                                can.save();
+                                for (DrawObject drawObject : mDrawList) {
+                                    drawObject.doDraw(mContext, can);
+                                }
+                                endTime = System.currentTimeMillis();
+                                // FIXME: 2016/6/14
+                                frameTime = endTime - testTime;
+                                frameCounter++;
+                                if (frameTime >= 1000) {
+                                    testTime = endTime;
+                                    frameResult = frameCounter;
+                                    frameTime = 0;
+                                    frameCounter = 0;
+                                }
+                                if (FPS_DISPALY) {
+                                    can.drawText("FPS:" + frameResult, mWidth*0.8f, mHeight*0.1f, paint);
+                                }
+                                can.restore();
                             }
-                            endTime = System.currentTimeMillis();
-
-                            // FIXME: 2016/6/14
-                            frameTime = endTime - testTime;
-                            frameCounter++;
-                            if (frameTime >= 1000) {
-                                testTime = endTime;
-                                frameResult = frameCounter;
-                                frameTime = 0;
-                                frameCounter = 0;
-                            }
-                            can.drawText("FPS:" + frameResult, 50, 100, paint);
-                            can.restore();
                         }
-                    }
-                    HaloLogger.logI("performance_log","*********************performance_log********************* total time is "+(endTime - startTime));
-                    if (FPS_TIME - lastTime > endTime - startTime) {
-                        SystemClock.sleep(FPS_TIME - lastTime - (endTime - startTime));
-                        lastTime = 0;
+                        HaloLogger.logI("performance_log", "*********************performance_log********************* total time is " + (endTime - startTime));
+                        if (FPS_TIME - lastTime > endTime - startTime) {
+                            SystemClock.sleep(FPS_TIME - lastTime - (endTime - startTime));
+                            lastTime = 0;
+                        } else {
+                            lastTime = endTime - startTime - FPS_TIME + lastTime;
+                        }
+                        if (can != null) {
+                            surfaceHolder.unlockCanvasAndPost(can);
+                        }
                     } else {
-                        lastTime = endTime - startTime - FPS_TIME + lastTime;
+                        SystemClock.sleep(300);
                     }
-                    if (can != null) {
-                        surfaceHolder.unlockCanvasAndPost(can);
-                    }
-                } else {
-                    SystemClock.sleep(300);
+                }else {
+                    SystemClock.sleep(1000);
                 }
             }
         }

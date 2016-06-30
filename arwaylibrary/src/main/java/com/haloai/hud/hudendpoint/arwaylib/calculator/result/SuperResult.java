@@ -9,4 +9,5 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
  */
 public class SuperResult {
     public boolean mIsOver         = false;
+    public boolean mShouldDraw     = false;
 }

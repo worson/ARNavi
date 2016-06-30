@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
-    private static final float HUDWAY_LENGTH_IN_SCREEN = 1000;
+    private static final float HUDWAY_LENGTH_IN_SCREEN = 600;
 
     private AMapNaviLocation mPreLocation          = null;
     private AMapNaviLocation mCurrentLocation      = null;
@@ -40,6 +40,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     private double mFakerPointY           = 0f;
     private int    mDrawIndex             = 1;
     public boolean mFakeOver = false;
+
 
     private        int             mCurrentIndex    = 1;
     private static RouteCalculator mRouteCalculator = new RouteCalculator();
@@ -67,20 +68,41 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     @Override
     public RouteResult calculate(RouteFactor routeFactor) {
         RouteResult routeResult = RouteResult.getInstance();
+        //保证必要的数据赋值
+        routeResult.mCanDraw = routeFactor.mCanDraw;
+        routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
+        routeResult.mGpsNumber = routeFactor.mGpsNumber;
+
+        //保证某些数据清空
+//        routeResult.mCurrentLatLngs.clear();//当前形状点
+        routeResult.mCurrentPoints.clear();//清空转换好的屏幕点
+
+        if(routeFactor.mPathLatLngs == null || routeFactor.mPathLatLngs.size()<=2 || routeFactor.mCroodsInSteps == null){
+            HaloLogger.logE("sen_debug_error","calculate ：整段规划路径形状点为空");
+            return routeResult;
+        }else if(routeFactor.mProjection == null){
+            HaloLogger.logE("sen_debug_error","calculate ：mProjection is null ");
+            return routeResult;
+        }else if(routeFactor.mCurrentLocation == null || !routeFactor.mCurrentLocation.isMatchNaviPath()){//已经偏航，回到重新计算路径界面
+            HaloLogger.logE("sen_debug_error","calculate ：返回的location不上规划的路径上 ");
+//            return routeResult;
+        }
         //        routeResult.reset();
         //fullPointsAndLatLngs + handle points
         //if we can draw , and current location is a useful location.
-        routeResult.mCanDraw = routeFactor.mCanDraw;
-        routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
         //计算当前定位点的下一个形状点下标
         int currentIndex = getCurrentIndex(routeFactor.mPathLatLngs, routeFactor.mCroodsInSteps, routeFactor.mCurrentPoint, routeFactor.mCurrentStep);
 
         if (routeResult.mCanDraw && !routeResult.mMayBeErrorLocation
-                && routeFactor.mCurrentLocation != null && currentIndex >= 1) {
+                && routeFactor.mCurrentLocation != null && currentIndex >= 1 ) {
             routeResult.mProjection = routeFactor.mProjection;
             long performanceLogTime;
             performanceLogTime = System.currentTimeMillis();
             this.mFakerCurrentLocation = getFakerLocation(routeFactor.mCurrentLocation, routeFactor.mProjection);
+            if(this.mFakerCurrentLocation == null){
+                HaloLogger.logE("sen_debug_error","calculate ：this.mFakerCurrentLocation == null ");
+                return routeResult;
+            }
             if (this.mFakerCurrentLocation != null) {
 
                 boolean currentIndexChange = false;
@@ -93,7 +115,10 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                      routeFactor.mProjection, routeResult.mCurrentLatLngs,
                                      currentIndexChange
                 );
-
+                if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<=2 ){
+                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs == null ");
+                    return routeResult;
+                }
                 routeResult.mPreLocation = this.mPreLocation;
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
                 routeResult.mFakerPointX = this.mFakerPointX;
@@ -252,8 +277,11 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             currentLatLngs.clear();
             Point currentScreenPoint = projection
                     .toScreenLocation(DrawUtils.naviLatLng2LatLng(pathLatLngs.get(mCurrentIndex - 1)));
-            currentLatLngs.add(pathLatLngs.get(mCurrentIndex - 1));
-
+            if(pathLatLngs.size()>(mCurrentIndex - 1)){
+                currentLatLngs.add(pathLatLngs.get(mCurrentIndex - 1));
+            }else {
+                return;
+            }
             for (int i = mCurrentIndex; i < pathLatLngs.size(); i++) {
                 NaviLatLng pathLatLng = pathLatLngs.get(i);
                 Point pathPoint = projection
@@ -359,11 +387,15 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             mCurrentLocation = currentLocation;
             mCurrentTime = System.currentTimeMillis();
         }
+        if(mCurrentLocation == null){
+            return null;
+        }
         long currentFrameTime = System.currentTimeMillis();
         long diff = currentFrameTime - (mCurrentTime - mPreTime) - mPreTime;
         long diff_pre_cur = mCurrentTime - mPreTime;
         if (diff >= 0 && diff < diff_pre_cur) {
             HaloLogger.logE("empty_points_count", "=======================normal======================");
+            // FIXME: 16/6/23 projection 有时候为会null ，应该是地图没有初始化完成
             Point prePrePoint = projection.toScreenLocation(
                     DrawUtils.naviLatLng2LatLng(mPreLocation.getCoord()));
             Point prePoint = projection.toScreenLocation(

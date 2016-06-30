@@ -10,11 +10,14 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
+import com.haloai.hud.utils.HaloLogger;
 
 /**
  * author       : 龙;
@@ -43,7 +46,6 @@ public class ARWayController {
         }
         return mARWay.getARWay();
     }
-
     /**
      * the class for update arway status.
      */
@@ -53,6 +55,7 @@ public class ARWayController {
         }
 
         public static void release() {
+            resetBean();
             mARWay.release();
         }
 
@@ -69,11 +72,28 @@ public class ARWayController {
         }
 
         public static void stop() {
+            resetBean();
             mARWay.stop();
         }
 
+        public static void reset() {
+            resetBean();
+        }
         public static boolean isRunning() {
             return mARWay.isRunning();
+        }
+        /**
+         * reset bean data
+         */
+        public static void resetBean() {
+            HaloLogger.logE("ARWayController","resetBean called");
+            RouteBeanUpdater.reset();
+            SpeedBeanUpdater.reset();
+            NetworkBeanUpdater.reset();
+            MusicBeanUpdater.reset();
+            SatelliteBeanUpdater.reset();
+            NaviInfoBeanUpdate.reset();
+            RouteBeanUpdater.reset();
         }
     }
 
@@ -138,6 +158,16 @@ public class ARWayController {
                 return mRouteBean.setNextRoadNameAndType(nextRoadName,nextRoadType);
             }
         }
+
+        public static RouteBean setGpsNumber(int gpsNumber) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setGpsNumber(gpsNumber);
+            }
+        }
+
+        public static void reset(){
+            mRouteBean.reset();
+        }
     }
 
     /**
@@ -156,6 +186,14 @@ public class ARWayController {
             return mNaviInfoBean.setNaviIcon(naviIcon);
         }
 
+        public static NaviInfoBean setNaviIconBitmap(Bitmap bitmap){
+            return mNaviInfoBean.setNaviIconBitmap(bitmap);
+        }
+
+        public static NaviInfoBean setCrossBitmap(Bitmap bitmap){
+            return mNaviInfoBean.setCrossBitmap(bitmap);
+        }
+
         public static NaviInfoBean setNaviIconDist(int naviIcon){
             return mNaviInfoBean.setNaviIconDistance(naviIcon);
         }
@@ -167,6 +205,24 @@ public class ARWayController {
         public static NaviInfoBean setNextRoadName(String nextRoadName){
             return mNaviInfoBean.setNextRoadName(nextRoadName);
         }
+
+        public static NaviInfoBean setPathRetainDistance(int pathRetainDistance){
+            return mNaviInfoBean.setPathRetainDistance(pathRetainDistance);
+        }
+
+        public static NaviInfoBean setPathRetainTime(int pathRetainTime){
+            return mNaviInfoBean.setPathRetainTime(pathRetainTime);
+        }
+
+        public static NaviInfoBean setNaviText(String naviText){
+            return mNaviInfoBean.setNaviText(naviText);
+        }
+
+        public static void reset(){
+            mNaviInfoBean.reset();
+        }
+
+
     }
 
     /***
@@ -182,6 +238,11 @@ public class ARWayController {
                 return mSatelliteBean;
             }
         }
+
+        public static void reset(){
+            mSatelliteBean.reset();
+        }
+
     }
 
     /***
@@ -215,6 +276,10 @@ public class ARWayController {
                 return mMusicBean.setDuration(duration);
             }
         }
+
+        public static void reset(){
+            mMusicBean.reset();
+        }
     }
 
     /***
@@ -230,6 +295,66 @@ public class ARWayController {
                 return mNetworkBean;
             }
         }
+
+        public static void reset(){
+            mNetworkBean.reset();
+        }
     }
+
+    /***
+     * the class for update data about car speed dispaly
+     * NetworkBeanUpdater class is a packing class for car speed.
+     */
+    public static class SpeedBeanUpdater {
+        private static SpeedBean mSpeedBean = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
+
+        public static SpeedBean setIsShow(boolean isShow) {
+            synchronized (ARWayController.class) {
+                mSpeedBean.setIsShow(isShow);
+                return mSpeedBean;
+            }
+        }
+        /**
+         * @param speed km/h
+         * */
+        public static void setSpeed(int speed) {
+            synchronized (ARWayController.class) {
+                mSpeedBean.setSpeed(speed);
+            }
+        }
+
+        public static void reset(){
+            mSpeedBean.reset();
+        }
+    }
+
+    /***
+     * the class for update data about compass
+     * NetworkBeanUpdater class is a packing class for compass.
+     */
+    public static class CompassBeanUpdater {
+        private static CompassBean mCompassBean = (CompassBean) BeanFactory.getBean(BeanFactory.BeanType.COMPASS);
+
+        public static CompassBean setIsShow(boolean isShow) {
+            synchronized (ARWayController.class) {
+                mCompassBean.setIsShow(isShow);
+                return mCompassBean;
+            }
+        }
+
+        public static void setDirection(int direction) {
+            mCompassBean.setDirection(direction);
+        }
+
+        public static void setOrientation(int orientation) {
+            mCompassBean.setOrientation(orientation);
+        }
+
+        public static void reset(){
+            mCompassBean.reset();
+        }
+
+    }
+    
 
 }

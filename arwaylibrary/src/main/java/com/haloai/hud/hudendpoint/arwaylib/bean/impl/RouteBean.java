@@ -11,6 +11,7 @@ import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 public class RouteBean extends SuperBean {
     private static final int CORRECTING_DISTANCE = 50;
+    private static final int GPS_SET_COUNTER = 3;
 
     private List<NaviLatLng>              mPathLatLngs     = new ArrayList<NaviLatLng>();
     private List<Integer>                 mCroodsInSteps   = new ArrayList<Integer>();
@@ -48,6 +50,10 @@ public class RouteBean extends SuperBean {
     private double       mRealStartPointY = 0f;
     private String       mNextRoadName    = null;
     private NextRoadType mNextRoadType    = null;
+
+    private int mGpsNumberSetCounter = 1;
+    private int mGpsNumber = 0;
+    private int mGpsNumberSum = 0;
 
     public enum NextRoadType {
         LEFT,
@@ -74,6 +80,27 @@ public class RouteBean extends SuperBean {
         mPathLatLngs.clear();
         mCroodsInSteps.clear();
         mRoadNameLatLngs.clear();
+        mGpsNumber = 0;
+        mGpsNumberSetCounter = 1;
+        mGpsNumberSum = 0;
+    }
+
+    /***
+     * 进行了连续几次取平均操作
+     * */
+    public RouteBean setGpsNumber(int gpsNumber) {
+        ++mGpsNumberSetCounter;
+        mGpsNumberSum += gpsNumber;
+        mGpsNumber = mGpsNumberSum / mGpsNumberSetCounter;
+        if ( mGpsNumberSetCounter > GPS_SET_COUNTER) {
+            mGpsNumberSetCounter = 0;
+            mGpsNumberSum = 0;
+        }
+        return this;
+    }
+
+    public int getGpsNumber() {
+        return mGpsNumber;
     }
 
     public boolean isMayBeErrorLocation() {
@@ -107,7 +134,6 @@ public class RouteBean extends SuperBean {
 
         for (AMapNaviStep aMapNaviStep : naviStepList) {
             mPathLatLngs.addAll(aMapNaviStep.getCoords());
-
 //            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
 //                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
 //                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
@@ -151,6 +177,9 @@ public class RouteBean extends SuperBean {
     public RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {
         mPreLocation = mCurrentLocation;
         mCurrentLocation = currentLocation;
+        if (mPathLatLngs == null || mPathLatLngs.size()<=0){
+            return this;
+        }
         if (mCurrentDistance < CORRECTING_DISTANCE) {
             if (mPreLocation != null) {
                 //如果distance小于1m，就判定为不是车的移动而是location持续返回的误差，就不将其加入到mCurrentDistance中

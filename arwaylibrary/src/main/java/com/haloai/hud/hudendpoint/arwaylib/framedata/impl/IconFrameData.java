@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
 
 import android.graphics.Bitmap;
 
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 
@@ -38,6 +39,11 @@ public class IconFrameData extends SuperFrameData {
 
     @Override
     public void animOver() {
+
+    }
+
+    @Override
+    public void update(SuperResult result) throws Exception {
 
     }
 }
