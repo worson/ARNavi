@@ -30,3 +30,4 @@ gen/
 *.classpath
 *.project
 *.properties
+.metadata/
