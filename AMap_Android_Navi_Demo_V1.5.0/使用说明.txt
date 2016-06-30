@@ -1,0 +1,6 @@
+﻿1.Android_Navi_V1.5.0是导航的jar包，libtbt.so、libwtbt.so是导航引擎。支持Android SDK2.2及以上。
+2.AMap_Android_3DMapSDK_V3.1.0.jar包是AMap 3d地图包，支持Android SDK2.2及以上。
+
+3.libgdamapv4sdk751.so和libgdamapv4sdk751ex.so文件是AMap地图引擎，支持Android SDK2.2及以上。
+4.msc.jar与libmsc.so是科大讯飞提供的语音播报引擎（http://www.xfyun.cn/doccenter/awd）。
+5.如果遇到问题，可以上技术支持论坛http://bbs.amap.com/forum.php。

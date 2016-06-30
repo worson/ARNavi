@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+
+        sourceSets.main.jni.srcDirs = []
+        ndk {
+            moduleName "HaloECP" // Halo enlarged cross image process lib.
+            ldLibs "dl", "log" // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
+////            stl "stlport_shared"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable true
+        }
+    }
+}
+
+//task makeJar(type: Copy) {
+//    delete 'build/libs/mysdk.jar'
+//    from('build/intermediates/bundles/release/')
+//    into('build/libs/')
+//    include('classes.jar')
+//    rename ('classes.jar', 'mysdk.jar')
+//}
+//
+//makeJar.dependsOn(build)
+
+
+//task cleanNativeLibs(type: Delete) {
+//    delete('./src/main/jniLibs')
+//}
+//task copyNativeLibs(type: Copy) {
+//    from('./build/intermediates/ndk/debug/lib/')
+//    into('./src/main/jniLibs')
+//}
+//copyNativeLibs.dependsOn(cleanNativeLibs)
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile project(':endpointsSharedLib')
+    compile project(':openCVLibrary300')
+}
