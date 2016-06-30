@@ -76,6 +76,18 @@ public class FrameDataFactory {
     private static NaviInfoBean  mNaviInfoBean  = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
     private static SpeedBean mSpeedBean  = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
 
+    public static void resetCalculators(){
+        mScalaCalculator.reset();
+        mPositionCalculator.reset();
+        mAlphaCalculator.reset();
+        mRotateCalculator.reset();
+        mRouteCalculator.reset();
+        mTurnInfoCalculator.reset();
+        mNaviInfoCalculator.reset();
+        mCrossImageCalculator.reset();
+        mSpeedCalculator.reset();
+    }
+
     public enum FrameDataType {
         CROSS_IMAGE,
         EXIT,

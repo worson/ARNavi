@@ -53,7 +53,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 
     @Override
     public void reset() {
-        mPreLocation = null;
+        mPreLocation = null; 
         mCurrentLocation = null;
         mFakerCurrentLocation = null;
         mCurrentFramesCounter = 0;
@@ -116,7 +116,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                      currentIndexChange
                 );
                 if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<=2 ){
-                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs == null ");
+                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs "+routeResult.mCurrentLatLngs);
                     return routeResult;
                 }
                 routeResult.mPreLocation = this.mPreLocation;

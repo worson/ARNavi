@@ -59,4 +59,17 @@ public abstract class SuperFrameData {
      * 在此函数中更新每一帧的数据
      */
     public abstract void update(SuperResult result) throws Exception;
+    /**
+     * 释放某一个流程的标记
+     */
+    public void reset(){
+
+    }
+
+    /**
+     * 释放所有的资源
+     */
+    public void release(){
+
+    }
 }

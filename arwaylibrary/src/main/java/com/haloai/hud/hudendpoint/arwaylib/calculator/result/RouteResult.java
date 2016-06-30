@@ -26,10 +26,10 @@ public class RouteResult extends SuperResult{
     public boolean          mHasNextRoadName    = false;
     public String           mNextRoadName       = null;
 
+    private static RouteResult            mRouteResult          = new RouteResult();
     public         Projection             mProjection           = null;
     public         NaviLatLng             mNextRoadNamePosition = null;
-    private static RouteResult            mRouteResult          = new RouteResult();
-    public         AMapNaviLocation mPreLocation = null;
+    public         AMapNaviLocation       mPreLocation          = null;
     public         AMapNaviLocation       mFakeLocation         = null;
     public         RouteBean.NextRoadType mNextRoadType         = null;
     public         double                 mFakerPointX          = 0f;
@@ -46,8 +46,32 @@ public class RouteResult extends SuperResult{
     public static RouteResult getInstance() {
         return mRouteResult;
     }
-
+    @Override
     public void reset() {
+        super.reset();
+        mCanDraw = true;
+        mCurrentLatLngs.clear();
+        mCurrentPoints.clear();
+        mMayBeErrorLocation = false;
+        mHasNextRoadName = false;
+        mNextRoadName = null;
+        mProjection = null;
+        mNextRoadNamePosition = null;
+        mPreLocation = null;
+        mFakeLocation = null;
+        mNextRoadType = null;
+        mFakerPointX = 0f;
+        mFakerPointY = 0f;
+        mCurrentIndex = 0;
+        mDrawIndex = 0;
+        mCurrentLocation = null;
+        mFlag = false;
+
+    }
+
+    @Override
+    public void release() {
+        super.release();
         mCanDraw = true;
         mMayBeErrorLocation = false;
         mHasNextRoadName = false;
@@ -65,4 +89,6 @@ public class RouteResult extends SuperResult{
         mCurrentIndex = 0;
         mDrawIndex=0;
     }
+
+
 }

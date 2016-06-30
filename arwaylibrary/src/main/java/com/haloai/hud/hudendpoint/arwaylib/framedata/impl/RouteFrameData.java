@@ -85,6 +85,20 @@ public class RouteFrameData extends SuperFrameData {
 
     }
 
+    @Override
+    public void reset() {
+        super.reset();
+        mTempPoints.clear();
+        mOffsetPoints.clear();
+        mLastDrawIndex = 0;
+        mLastOffsetHeight = 0;
+        mLastOffsetDistance = 0;
+        mPrePreLocation = null;
+        mLastDistance = 0f;
+        mFakeLocation = null;
+        mChooseOne = true;
+    }
+
     public static RouteFrameData getInstance() {
         return mRouteFrameData;
     }
@@ -149,11 +163,11 @@ public class RouteFrameData extends SuperFrameData {
                 return;
             }else if ((routeResult.mCurrentLocation != null && (!routeResult.mCurrentLocation.isMatchNaviPath()))){
                 HaloLogger.logE("sen_debug_arway","定位点不在规划路径上");
-                /*mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
                 canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
                 picture.endRecording();
-                return;*/
+                return;
             }
 
             if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1 || routeResult.mCurrentLocation == null

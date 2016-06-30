@@ -17,6 +17,15 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
 
 /**
@@ -55,8 +64,15 @@ public class ARWayController {
         }
 
         public static void release() {
-            resetBean();
+            resetData();
             mARWay.release();
+            CrossImageFrameData.getInstance().release();
+            MusicFrameData.getInstance().release();
+            NextRoadNameFrameData.getInstance().release();
+            RouteFrameData.getInstance().release();
+            NaviInfoFrameData.getInstance().release();
+            TurnInfoFrameData.getInstance().release();
+            SpeedFrameData.getInstance().release();
         }
 
         public static void start() {
@@ -72,12 +88,12 @@ public class ARWayController {
         }
 
         public static void stop() {
-            resetBean();
+            resetData();
             mARWay.stop();
         }
 
         public static void reset() {
-            resetBean();
+            resetData();
         }
         public static boolean isRunning() {
             return mARWay.isRunning();
@@ -85,8 +101,8 @@ public class ARWayController {
         /**
          * reset bean data
          */
-        public static void resetBean() {
-            HaloLogger.logE("ARWayController","resetBean called");
+        public static void resetData() {
+            HaloLogger.logE("ARWayController","resetData called");
             RouteBeanUpdater.reset();
             SpeedBeanUpdater.reset();
             NetworkBeanUpdater.reset();
@@ -94,6 +110,19 @@ public class ARWayController {
             SatelliteBeanUpdater.reset();
             NaviInfoBeanUpdate.reset();
             RouteBeanUpdater.reset();
+
+            FrameDataFactory.resetCalculators();
+
+            CrossImageFrameData.getInstance().reset();
+            MusicFrameData.getInstance().reset();
+            NextRoadNameFrameData.getInstance().reset();
+            RouteFrameData.getInstance().reset();
+            NaviInfoFrameData.getInstance().reset();
+            TurnInfoFrameData.getInstance().reset();
+            SpeedFrameData.getInstance().reset();
+
+            // FIXME: 16/6/30 
+            RouteResult.getInstance().reset();
         }
     }
 
