@@ -87,12 +87,12 @@ public class CustomEnlargedCrossDisplayActivity extends BaseActivity implements 
     @Override
     public void showCross(AMapNaviCross aMapNaviCross) {
         myCustomEnlargedCross.setImageBitmap(aMapNaviCross.getBitmap());
-        try {
-			write2(bitmap2Bytes2(aMapNaviCross.getBitmap()),"cross_image_"+System.currentTimeMillis()+".png");
-		} catch (IOException e) {
-			Log.e("test", "xxxx:"+e.toString());
-			e.printStackTrace();
-		}
+//        try {
+//			write2(bitmap2Bytes2(aMapNaviCross.getBitmap()),"cross_image_"+System.currentTimeMillis()+".png");
+//		} catch (IOException e) {
+//			Log.e("test", "xxxx:"+e.toString());
+//			e.printStackTrace();
+//		}
 
         myCustomEnlargedCross.setVisibility(View.VISIBLE);
         
