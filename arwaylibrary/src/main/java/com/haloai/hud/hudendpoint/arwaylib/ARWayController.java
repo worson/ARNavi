@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.view.View;
 
 import com.amap.api.maps.Projection;
@@ -59,41 +60,83 @@ public class ARWayController {
      * the class for update arway status.
      */
     public static class ARWayStatusUpdater {
+        private static boolean           mIsRunning         = true;
+        private static boolean           mIsPause           = false;
+        private static int TASK_DELAY_MS = 200;
+
+        private static Handler mStatusUPdaterHandler = new Handler(){
+
+        };
+        /***
+         * 保证ARWAY停止后才能清空数据，任务根据需求再次启动
+         * */
+        private static Runnable mStatusUPdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                resetData();
+                if(mIsPause){
+                    mARWay.pause();
+                }else {
+                    mARWay.continue_();
+                }
+                if(mIsRunning){
+                    mARWay.start();
+                }else {
+                    mARWay.stop();
+                }
+            }
+        };
         public static void back2Init() {
             mARWay.reset();
         }
 
         public static void release() {
-            resetData();
             mARWay.release();
-            CrossImageFrameData.getInstance().release();
-            MusicFrameData.getInstance().release();
-            NextRoadNameFrameData.getInstance().release();
-            RouteFrameData.getInstance().release();
-            NaviInfoFrameData.getInstance().release();
-            TurnInfoFrameData.getInstance().release();
-            SpeedFrameData.getInstance().release();
+            mIsRunning = false;
+            mIsPause = true;
+            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,200);//
         }
 
         public static void start() {
             mARWay.start();
+            mIsRunning = true;
+            mIsPause = false;
         }
 
         public static void continue_() {
             mARWay.continue_();
+            mIsRunning = true;
+            mIsPause = false;
         }
 
         public static void pause() {
             mARWay.pause();
+            mIsRunning = true;
+            mIsPause = true;
+            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,200);//
         }
 
         public static void stop() {
-            resetData();
             mARWay.stop();
+            mIsRunning = false;
+            mIsPause = true;
+            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
+
+        }
+
+        public static void reStart() {
+            mARWay.stop();
+            mIsRunning = true;
+            mIsPause = false;
+            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
+
         }
 
         public static void reset() {
-            resetData();
+            mARWay.reset();
+            mIsRunning = false;
+            mIsPause = true;
+            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
         }
         public static boolean isRunning() {
             return mARWay.isRunning();
@@ -121,7 +164,7 @@ public class ARWayController {
             TurnInfoFrameData.getInstance().reset();
             SpeedFrameData.getInstance().reset();
 
-            // FIXME: 16/6/30 
+            // FIXME: 16/6/30
             RouteResult.getInstance().reset();
         }
     }

@@ -202,7 +202,7 @@ public class FrameDataFactory {
     private static void updateSpeedDisplay(Context context, SuperFrameData frameData){
         SpeedFrameData speedFrameData = (SpeedFrameData) frameData;
         SpeedFactor speedFactor = SpeedFactor.getInstance();
-        speedFactor.init(!mRouteBean.isMayBeErrorLocation() ,mSpeedBean.getSpeed());
+        speedFactor.init(true ,mSpeedBean.getSpeed());
         SpeedResult speedResult = mSpeedCalculator.calculate(speedFactor);
         try {
             speedFrameData.update(speedResult);
@@ -213,7 +213,7 @@ public class FrameDataFactory {
     private static void updateCrossImage(Context context, SuperFrameData frameData){
         CrossImageFrameData crossImageFrameData = (CrossImageFrameData) frameData;
         CrossImageFactor crossImageFactor = CrossImageFactor.getInstance();
-        crossImageFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getCrossBitmap());
+        crossImageFactor.init(true,mNaviInfoBean.getCrossBitmap());
         CrossImageResult crossImageResult = mCrossImageCalculator.calculate(crossImageFactor);
         try {
             crossImageFrameData.update(crossImageResult);
@@ -224,7 +224,7 @@ public class FrameDataFactory {
     private static void updateTurnInfo(Context context, SuperFrameData frameData){
         TurnInfoFrameData turnInfoFrameData = (TurnInfoFrameData) frameData;
         TurnInfoFactor turnInfoFactor = TurnInfoFactor.getInstance();
-        turnInfoFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getNaviIconDistance(),mNaviInfoBean.getNaviIconBitmap());
+        turnInfoFactor.init(true,mNaviInfoBean.getNaviIconDistance(),mNaviInfoBean.getNaviIconBitmap());
         TurnInfoResult turnInfoResult = mTurnInfoCalculator.calculate(turnInfoFactor);
         try {
             turnInfoFrameData.update(turnInfoResult);
@@ -238,7 +238,7 @@ public class FrameDataFactory {
         HaloLogger.logE("FrameDataFactory","updateNaviInfo called ,MayBeErrorLocation is "+mRouteBean.isMayBeErrorLocation());
         NaviInfoFrameData naviInfoFrameData = (NaviInfoFrameData) frameData;
         NaviInfoFactor naviInfoFactor = NaviInfoFactor.getInstance();
-        naviInfoFactor.init(!mRouteBean.isMayBeErrorLocation() ,mNaviInfoBean.getPathRetainDistance(),mNaviInfoBean.getPathRetainTime(),mNaviInfoBean.getNaviText());
+        naviInfoFactor.init(true ,mNaviInfoBean.getPathRetainDistance(),mNaviInfoBean.getPathRetainTime(),mNaviInfoBean.getNaviText());
         NaviInfoResult naviInfoResult = mNaviInfoCalculator.calculate(naviInfoFactor);
         try {
             naviInfoFrameData.update(naviInfoResult);
@@ -270,7 +270,7 @@ public class FrameDataFactory {
                          mRouteBean.getCurrentLocation(), mRouteBean.getPathLatLngs(),
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
-                         mRouteBean.getRoadNameLatLngs(),mRouteBean.getGpsNumber());
+                         mRouteBean.getRoadNameLatLngs(),mRouteBean.getGpsNumber(),mNaviInfoBean.getNaviText());
         // FIXME: 16/6/14
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();

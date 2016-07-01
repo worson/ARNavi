@@ -9,6 +9,9 @@ import android.graphics.Path;
 import android.graphics.Picture;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
@@ -38,7 +41,7 @@ public class RouteFrameData extends SuperFrameData {
     private static final int    TOLERATE_VALUE        = 70;
     //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
     private static final double ADD_POINT_INTERVAL    = 100f;
-    private static final String NOT_DRAW_TEXT_CONTENT = "正在进行GPS定位，请继续行驶...";
+    private static final String NOT_DRAW_TEXT_CONTENT = "正在进行GPS定位";//，请继续行驶...
 
     private static int ROAD_TURN_DRAFT_ANGLE = 15;
 
@@ -50,6 +53,7 @@ public class RouteFrameData extends SuperFrameData {
     private float NOT_DRAW_TEXT_X              = 0;//50;
     private float NOT_DRAW_TEXT_Y              = 0;//270;
     private float NOT_DRAW_TEXT_SIZE           = 0;//50
+    private float NOT_DRAW_SUB_TEXT_SIZE           = 0;//50
     private float CIRCLE_INTERVAL              = 0;//500f;
     private float CIRCLE_RADIUS                = 0;//15f;
     private int   NEXT_ROAD_X                  = 0;//500;
@@ -61,7 +65,7 @@ public class RouteFrameData extends SuperFrameData {
     private List<PointF> mOffsetPoints           = new ArrayList<PointF>();
     //此paint可以将Route中的黑色去掉变为透明
     private Paint        mPaintBitmapColorFilter = new Paint();
-    private Paint        mTextPaint              = new Paint();
+    private TextPaint    mTextPaint              = new TextPaint();
 
     private static RouteFrameData   mRouteFrameData   = new RouteFrameData();
     private        List<Point>      mLastPoints       = new ArrayList<Point>();
@@ -120,9 +124,11 @@ public class RouteFrameData extends SuperFrameData {
         this.OUTSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.237f));
         this.MIDDLE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.185f));
         this.INSIDE_LINE_WIDTH = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.353f));
-        this.NOT_DRAW_TEXT_X = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.102f));
+//        this.NOT_DRAW_TEXT_X = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.102f)); //helong
+        this.NOT_DRAW_TEXT_X = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f));
         this.NOT_DRAW_TEXT_Y = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.574f));
-        this.NOT_DRAW_TEXT_SIZE = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.056f));
+        this.NOT_DRAW_TEXT_SIZE = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * .0550f));
+        this.NOT_DRAW_SUB_TEXT_SIZE = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * .0475f));
         this.CIRCLE_INTERVAL = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 1.064f));
         this.CIRCLE_RADIUS = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.022f));
         this.CIRCLE_RADIUS = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.012f));
@@ -151,8 +157,37 @@ public class RouteFrameData extends SuperFrameData {
             //if the location point may be a error point ,do not to draw path and to draw text to warning user.
             if (routeResult.mMayBeErrorLocation) {
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setAntiAlias(true);
                 mTextPaint.setColor(Color.RED);
-                canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
+                if(true){//语音内容
+                    if (routeResult.mNaviText != null){
+                        String text = " "+routeResult.mNaviText;
+                        mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                        canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.374f)), mTextPaint);
+
+                        mTextPaint.setTextSize(NOT_DRAW_SUB_TEXT_SIZE);
+                        StaticLayout layout = new StaticLayout(text,mTextPaint,(int)(IMAGE_WIDTH/2-NOT_DRAW_SUB_TEXT_SIZE), Layout.Alignment.ALIGN_NORMAL, (float) 1.0,(float) 0.0, false);
+                        canvas.translate(NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.474f)));
+                        layout.draw(canvas);
+//                        canvas.drawText(routeResult.mNaviText, NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.674f)), mTextPaint);
+                    }else {
+                        canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
+                    }
+
+
+                }else {//下一条路名
+                    if (routeResult.mNextRoadName != null  && (!routeResult.mNextRoadName.equals("")) && (!routeResult.mNextRoadName.contains("无名道路"))){
+                        mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                        canvas.drawText("请行驶到"+routeResult.mNextRoadName, NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.374f)), mTextPaint);
+                        mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                        canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.674f)), mTextPaint);
+                    }else {
+                        canvas.drawText(NOT_DRAW_TEXT_CONTENT, NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
+                    }
+
+                }
+
+
                 picture.endRecording();
                 return;
             }else if((!ROUTE_FRAME_DEBUG) && routeResult.mGpsNumber<3){
@@ -331,7 +366,7 @@ public class RouteFrameData extends SuperFrameData {
                 temp_point.x = pre_point.x + offset_point.x * MAGNIFIED_TIME;
                 temp_point.y = pre_point.y + offset_point.y * MAGNIFIED_TIME;
             }
-
+            HaloLogger.logE("sen_gl","scale points is "+mTempPoints);
             //remove the point in list if it may be error to draw
             PointF first_point = this.mTempPoints.get(0);
             for (int i = 1; i < this.mTempPoints.size(); i++) {

@@ -40,6 +40,7 @@ public class RouteResult extends SuperResult{
     public         boolean                mFlag                 = false;
     public boolean mFakeOver;
     public int mGpsNumber = 0;
+    public String mNaviText = null;
 
     private RouteResult() {}
 

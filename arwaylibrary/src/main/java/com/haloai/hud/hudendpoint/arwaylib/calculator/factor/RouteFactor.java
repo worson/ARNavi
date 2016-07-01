@@ -33,6 +33,7 @@ public class RouteFactor {
     public Map<String, List<NaviLatLng>> mRoadNameLatLngs    = null;
     public RouteBean.NextRoadType        mNextRoadType       = null;
     public int mGpsNumber = 0;
+    public String mNaviText = null;
 
     private static RouteFactor mRouteFactor = new RouteFactor();
 
@@ -44,7 +45,7 @@ public class RouteFactor {
     }
 
     public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation currentLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps,
-                     Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs,int gpsNumber) {
+                     Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs,int gpsNumber,String naviText) {
         mCanDraw = canDraw;
         mMayBeErrorLocation = mayBeErrorLocation;
         mCurrentPoint = currentPoint;
@@ -57,5 +58,6 @@ public class RouteFactor {
         mNextRoadType = nextRoadType;
         mRoadNameLatLngs = roadNameLatLngs;
         mGpsNumber = gpsNumber;
+        mNaviText = naviText;
     }
 }

@@ -72,7 +72,16 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         routeResult.mCanDraw = routeFactor.mCanDraw;
         routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
         routeResult.mGpsNumber = routeFactor.mGpsNumber;
-
+        if(routeFactor.mNextRoadName != null) {//过滤路名突然消失的情况
+            routeResult.mNextRoadName = routeFactor.mNextRoadName;
+        }
+        if(routeFactor.mNaviText != null){
+            String text = routeFactor.mNaviText;
+            int index = text.indexOf("请行驶");
+            if(index>=0 && index<=text.length()){
+                routeResult.mNaviText = text.substring(index,text.length());
+            }
+        }
         //保证某些数据清空
 //        routeResult.mCurrentLatLngs.clear();//当前形状点
         routeResult.mCurrentPoints.clear();//清空转换好的屏幕点
@@ -115,8 +124,9 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                      routeFactor.mProjection, routeResult.mCurrentLatLngs,
                                      currentIndexChange
                 );
-                if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<=2 ){
-                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs "+routeResult.mCurrentLatLngs);
+                if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<2 ){
+                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs "+routeResult.mCurrentLatLngs+"    ,currentIndexChange"+currentIndexChange);
+                    HaloLogger.logE("sen_debug_error","this.mFakerCurrentLocation "+this.mFakerCurrentLocation+",routeFactor.mCurrentPoint"+routeFactor.mCurrentPoint+"   ,routeFactor.mCurrentStep"+ routeFactor.mCurrentStep+"   ,routeFactor.mPathLatLngs"+routeFactor.mPathLatLngs+ " ,routeFactor.mCroodsInSteps"+routeFactor.mCroodsInSteps);
                     return routeResult;
                 }
                 routeResult.mPreLocation = this.mPreLocation;
@@ -215,16 +225,16 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 routeResult.mFakerPointY = fakePoint.y;
 
                 // FIXME: 16/6/15
-                if(true){
+                if(false){
                     if(routeResult.mCurrentLatLngs != null && routeResult.mCurrentLatLngs.size()>3){
                     /*HaloLogger.logE("route_log_info_test___", "points size : " + routeResult.mCurrentLatLngs.size() + ",points:" + routeResult.mCurrentLatLngs.get(0)
                             + routeResult.mCurrentLatLngs.get(1)+routeResult.mCurrentLatLngs.get(2)+routeResult.mCurrentLatLngs.get(3));*/
                         HaloLogger.logE("route_log_info", "points size : " + routeResult.mCurrentLatLngs.size() + ",points:" + routeResult.mCurrentLatLngs);
                     }
                     HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex+"   ,darwIndex:" + routeResult.mDrawIndex+", FakeOver :"+routeResult.mFakeOver);
+                    HaloLogger.logE("route_log_info", " origion points size : " + routeResult.mCurrentPoints.size() + ",points:" + routeResult.mCurrentPoints + "");
                 }
 
-                HaloLogger.logE("route_log_info", " origion points size : " + routeResult.mCurrentPoints.size() + ",points:" + routeResult.mCurrentPoints + "");
 
                 LatLng testLatLng = DrawUtils.naviLatLng2LatLng(routeResult.mPreLocation.getCoord());
                 Point testPoint;
