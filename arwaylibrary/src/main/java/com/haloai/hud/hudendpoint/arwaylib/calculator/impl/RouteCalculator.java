@@ -72,6 +72,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         routeResult.mCanDraw = routeFactor.mCanDraw;
         routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
         routeResult.mGpsNumber = routeFactor.mGpsNumber;
+        routeResult.mIsMatchNaviPath = routeFactor.mIsMatchNaviPath;
         if(routeFactor.mNextRoadName != null) {//过滤路名突然消失的情况
             routeResult.mNextRoadName = routeFactor.mNextRoadName;
         }
@@ -86,7 +87,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
 //        routeResult.mCurrentLatLngs.clear();//当前形状点
         routeResult.mCurrentPoints.clear();//清空转换好的屏幕点
 
-        if(routeFactor.mPathLatLngs == null || routeFactor.mPathLatLngs.size()<=2 || routeFactor.mCroodsInSteps == null){
+        if(routeFactor.mPathLatLngs == null || routeFactor.mPathLatLngs.size()<2 || routeFactor.mCroodsInSteps == null){
             HaloLogger.logE("sen_debug_error","calculate ：整段规划路径形状点为空");
             return routeResult;
         }else if(routeFactor.mProjection == null){
@@ -101,34 +102,33 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         //if we can draw , and current location is a useful location.
         //计算当前定位点的下一个形状点下标
         int currentIndex = getCurrentIndex(routeFactor.mPathLatLngs, routeFactor.mCroodsInSteps, routeFactor.mCurrentPoint, routeFactor.mCurrentStep);
-
+        HaloLogger.logE("sen_debug_error","形状点下标"+"this.mCurrentIndex is :"+this.mCurrentIndex +"    ,currentIndex: "+currentIndex);
         if (routeResult.mCanDraw && !routeResult.mMayBeErrorLocation
                 && routeFactor.mCurrentLocation != null && currentIndex >= 1 ) {
             routeResult.mProjection = routeFactor.mProjection;
             long performanceLogTime;
             performanceLogTime = System.currentTimeMillis();
+
+            HaloLogger.logE("sen_debug_error","获取形状点传入参数"+",routeFactor.mCurrentPoint： "+routeFactor.mCurrentPoint+"   ,routeFactor.mCurrentStep："+ routeFactor.mCurrentStep+"  ,routeResult.mCurrentLatLngs size is "+routeResult.mCurrentLatLngs.size());
             this.mFakerCurrentLocation = getFakerLocation(routeFactor.mCurrentLocation, routeFactor.mProjection);
             if(this.mFakerCurrentLocation == null){
                 HaloLogger.logE("sen_debug_error","calculate ：this.mFakerCurrentLocation == null ");
                 return routeResult;
             }
             if (this.mFakerCurrentLocation != null) {
-
                 boolean currentIndexChange = false;
                 if (this.mCurrentIndex != currentIndex) {
                     this.mCurrentIndex = currentIndex;
                     currentIndexChange = true;
+                }else {
+//                    HaloLogger.logE("sen_debug_error","this.mCurrentIndex is "+this.mCurrentIndex +"    ,currentIndex: "+currentIndex+" ,currentIndexChange"+currentIndexChange);
                 }
                 // full points in list
                 fullPointsAndLatLngs(this.mFakerCurrentLocation, routeFactor.mPathLatLngs,
                                      routeFactor.mProjection, routeResult.mCurrentLatLngs,
                                      currentIndexChange
                 );
-                if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<2 ){
-                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs "+routeResult.mCurrentLatLngs+"    ,currentIndexChange"+currentIndexChange);
-                    HaloLogger.logE("sen_debug_error","this.mFakerCurrentLocation "+this.mFakerCurrentLocation+",routeFactor.mCurrentPoint"+routeFactor.mCurrentPoint+"   ,routeFactor.mCurrentStep"+ routeFactor.mCurrentStep+"   ,routeFactor.mPathLatLngs"+routeFactor.mPathLatLngs+ " ,routeFactor.mCroodsInSteps"+routeFactor.mCroodsInSteps);
-                    return routeResult;
-                }
+
                 routeResult.mPreLocation = this.mPreLocation;
                 routeResult.mFakeLocation = this.mFakerCurrentLocation;
                 routeResult.mFakerPointX = this.mFakerPointX;
@@ -138,6 +138,16 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 routeResult.mCurrentLocation = routeFactor.mCurrentLocation;
                 routeResult.mFakeOver = this.mFakeOver;
 
+                HaloLogger.logE("sen_debug_error","this.mCurrentIndex is "+this.mCurrentIndex +"    ,currentIndex: "+currentIndex+" ,currentIndexChange: "+currentIndexChange
+                        +"   ,形状点为大小为："+(routeResult.mCurrentLatLngs==null?null:routeResult.mCurrentLatLngs.size()));
+
+                if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size()<2 ){
+                    HaloLogger.logE("sen_debug_error","calculate ： 视野内的形状点为空，routeResult.mCurrentLatLngs "+routeResult.mCurrentLatLngs+"    ,currentIndexChange"+currentIndexChange);
+                    if(routeFactor.mPathLatLngs !=null && routeFactor.mCroodsInSteps != null){
+                        HaloLogger.logE("sen_debug_error","   ,routeFactor.mPathLatLngs"+routeFactor.mPathLatLngs.size()+ " ,routeFactor.mCroodsInSteps"+routeFactor.mCroodsInSteps.size());
+                    }
+                    return routeResult;
+                }
                 // FIXME: 2016/6/12
                 //处理由于index值得改变导致faker点与形状点的距离计算本身就是错误的(因为此时faker点处于的形状点范围与真实的形状点范围是一样的,index已经加1了,但是faker点实际还是前一个形状点处)
                 //if the faker latlng to next latlng`s distance bigger than last latlng to next latlng`s distance , error.
@@ -271,7 +281,12 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 //                        }
                 //                    }
                 //                }
+            }else {
+                HaloLogger.logE("sen_debug_arway","calculate ：this.mFakerCurrentLocation is "+this.mFakerCurrentLocation);
             }
+        }else {
+            HaloLogger.logE("sen_debug_arway","calculate ：routeResult.mCanDraw:"+routeResult.mCanDraw+
+                    " routeResult.mMayBeErrorLocation: "+routeResult.mMayBeErrorLocation+"    routeFactor.mCurrentLocation :"+routeFactor.mCurrentLocation+"    currentIndex:"+currentIndex);
         }
         return routeResult;
     }
@@ -280,9 +295,11 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                                       List<NaviLatLng> currentLatLngs, boolean currentIndexChange) {
         //NaviLatLng prePreLatLng = prePreLocation.getCoord();
         if (fakerLocation == null || pathLatLngs == null || pathLatLngs.size() <= 0) {
+            HaloLogger.logE("sen_debug_arway"," fullPointsAndLatLngs returned !");
             return;
         }
-        if (currentIndexChange) {
+        // FIXME: 16/7/1 判断是否此原因造成形状点为空
+        if ( currentIndexChange) {
             float totalLength = 0;
             currentLatLngs.clear();
             Point currentScreenPoint = projection

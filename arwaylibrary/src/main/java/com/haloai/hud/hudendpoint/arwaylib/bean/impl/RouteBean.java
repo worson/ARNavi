@@ -55,6 +55,10 @@ public class RouteBean extends SuperBean {
     private int mGpsNumber = 0;
     private int mGpsNumberSum = 0;
 
+    private static final int NOT_MATCH_PATH_NUBER = 5;
+    private int mIsNotMactchPathCounter = 0;
+    private boolean mIsMatchNaviPath = true;
+
     public enum NextRoadType {
         LEFT,
         BACK,
@@ -174,9 +178,23 @@ public class RouteBean extends SuperBean {
         return mPreLocation;
     }
 
+    public boolean isMatchNaviPath() {
+        return mIsMatchNaviPath;
+    }
+
     public RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {
         mPreLocation = mCurrentLocation;
         mCurrentLocation = currentLocation;
+        if(!currentLocation.isMatchNaviPath()){
+            if(++mIsNotMactchPathCounter > NOT_MATCH_PATH_NUBER){
+                mIsNotMactchPathCounter = 0;
+                mIsMatchNaviPath = false;
+            }
+        }else {
+            if (!mIsMatchNaviPath){
+                mIsMatchNaviPath = true;
+            }
+        }
         if (mPathLatLngs == null || mPathLatLngs.size()<=0){
             return this;
         }

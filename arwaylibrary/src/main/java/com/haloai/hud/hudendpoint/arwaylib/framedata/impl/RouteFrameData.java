@@ -196,7 +196,7 @@ public class RouteFrameData extends SuperFrameData {
                 canvas.drawText("GPS 信号弱，请开往空旷处", NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
                 picture.endRecording();
                 return;
-            }else if ((routeResult.mCurrentLocation != null && (!routeResult.mCurrentLocation.isMatchNaviPath()))){
+            }else if (!routeResult.mIsMatchNaviPath){//(routeResult.mCurrentLocation != null && (!routeResult.mCurrentLocation.isMatchNaviPath())
                 HaloLogger.logE("sen_debug_arway","定位点不在规划路径上");
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
@@ -278,7 +278,7 @@ public class RouteFrameData extends SuperFrameData {
             }
 
             this.mTempPoints.clear();
-            for (int i = 0; i < routeResult.mCurrentLatLngs.size(); i++) {
+            for (int i = 0; i < routeResult.mCurrentPoints.size(); i++) {
 //                PointF point = new PointF(routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLatLngs.get(i))));
                 PointF pointF = routeResult.mCurrentPoints.get(i);
                 PointF point = new PointF(pointF.x,pointF.y);
@@ -700,7 +700,7 @@ public class RouteFrameData extends SuperFrameData {
             canvas.setMatrix(matrix);
             mPaint.setColor(Color.BLACK);
             mPaint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT,mPaint);
+            canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT*(1.1f),mPaint);
             mPaint.reset();
 
             picture.endRecording();

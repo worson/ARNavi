@@ -41,6 +41,7 @@ public class RouteResult extends SuperResult{
     public boolean mFakeOver;
     public int mGpsNumber = 0;
     public String mNaviText = null;
+    public boolean mIsMatchNaviPath = true;
 
     private RouteResult() {}
 
