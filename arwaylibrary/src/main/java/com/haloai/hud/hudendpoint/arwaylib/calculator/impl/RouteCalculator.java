@@ -68,6 +68,10 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     @Override
     public RouteResult calculate(RouteFactor routeFactor) {
         RouteResult routeResult = RouteResult.getInstance();
+        if(routeFactor.mIsYaw){ //目前偏航不需要画路，直接返回
+            routeResult.mIsYaw = routeFactor.mIsYaw;
+            return routeResult;
+        }
         //保证必要的数据赋值
         routeResult.mCanDraw = routeFactor.mCanDraw;
         routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
@@ -243,16 +247,22 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                     }
                     HaloLogger.logE("route_log_info", "currentIndex:" + routeResult.mCurrentIndex+"   ,darwIndex:" + routeResult.mDrawIndex+", FakeOver :"+routeResult.mFakeOver);
                     HaloLogger.logE("route_log_info", " origion points size : " + routeResult.mCurrentPoints.size() + ",points:" + routeResult.mCurrentPoints + "");
+
+                    LatLng testLatLng = null;
+                    Point testPoint;
+                    if (routeResult.mPreLocation != null) {
+                        testLatLng = DrawUtils.naviLatLng2LatLng(routeResult.mPreLocation.getCoord());
+                        testPoint = routeResult.mProjection.toScreenLocation(testLatLng);
+                        HaloLogger.logE("route_log_info", " pre FakeLocation" +",Latlng :"+testLatLng+",Points :"+testPoint);
+                    }
+                    if (routeResult.mCurrentLocation != null) {
+                        testLatLng = DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLocation.getCoord());
+                        testPoint = routeResult.mProjection.toScreenLocation(testLatLng);
+                        HaloLogger.logE("route_log_info", " Current FakeLocation" +",Latlng :"+testLatLng+",Points :"+testPoint);
+                    }
+
                 }
 
-
-                LatLng testLatLng = DrawUtils.naviLatLng2LatLng(routeResult.mPreLocation.getCoord());
-                Point testPoint;
-                testPoint = routeResult.mProjection.toScreenLocation(testLatLng);
-                HaloLogger.logE("route_log_info", " pre FakeLocation" +",Latlng :"+testLatLng+",Points :"+testPoint);
-                testLatLng = DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLocation.getCoord());
-                testPoint = routeResult.mProjection.toScreenLocation(testLatLng);
-                HaloLogger.logE("route_log_info", " Current FakeLocation" +",Latlng :"+testLatLng+",Points :"+testPoint);
                 HaloLogger.logI("route_log_info_test_performance","=========performance_log=========== calculate time = "+ (System.currentTimeMillis()-performanceLogTime));
                 //                //if the point1 is look like point2 , remove it.
                 //                for (int i = 1; i < routeResult.mCurrentPoints.size(); i++) {
@@ -400,7 +410,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         if (mPreLocation == null) {
             mPreLocation = currentLocation;
             mPreTime = System.currentTimeMillis();
-            return null;
+            return mPreLocation;
         }
         mCurrentFramesCounter++;
         //if mPreLocation is null , so this is the first step to draw

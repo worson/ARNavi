@@ -155,6 +155,14 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setColor(Color.BLACK);
             canvas.drawPaint(mPaint);
             //if the location point may be a error point ,do not to draw path and to draw text to warning user.
+            if(routeResult.mIsYaw){
+                HaloLogger.logE("sen_debug_arway","正在偏航");
+                mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setColor(Color.RED);
+                canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
+                picture.endRecording();
+                return;
+            }
             if (routeResult.mMayBeErrorLocation) {
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setAntiAlias(true);
@@ -702,12 +710,21 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setStyle(Paint.Style.FILL);
             canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT*(1.1f),mPaint);
             mPaint.reset();
-
+            drawLeftBlack(canvas);
             picture.endRecording();
         } else {
             picture.endRecording();
             animOver();
         }
+    }
+
+    private void drawLeftBlack(Canvas canvas){
+        Matrix matrix = new Matrix();
+        canvas.setMatrix(matrix);
+        mPaint.setColor(Color.BLACK);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT*(1.1f),mPaint);
+        mPaint.reset();
     }
 
     public Picture getPicture() {

@@ -36,6 +36,8 @@ public class RouteFactor {
     public String mNaviText = null;
     public boolean mIsMatchNaviPath = true;
 
+    public boolean mIsYaw = false;
+
     private static RouteFactor mRouteFactor = new RouteFactor();
 
 
@@ -46,7 +48,8 @@ public class RouteFactor {
     }
 
     public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation currentLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps,
-                     Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs,int gpsNumber,String naviText,boolean isMatchNaviPath) {
+                     Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs,int gpsNumber,String naviText,
+                     boolean isMatchNaviPath,boolean isYaw) {
         mCanDraw = canDraw;
         mMayBeErrorLocation = mayBeErrorLocation;
         mCurrentPoint = currentPoint;
@@ -61,5 +64,6 @@ public class RouteFactor {
         mGpsNumber = gpsNumber;
         mNaviText = naviText;
         mIsMatchNaviPath = isMatchNaviPath;
+        mIsYaw = isYaw;
     }
 }

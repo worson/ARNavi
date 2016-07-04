@@ -11,6 +11,7 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
@@ -60,92 +61,70 @@ public class ARWayController {
      * the class for update arway status.
      */
     public static class ARWayStatusUpdater {
-        private static boolean           mIsRunning         = true;
-        private static boolean           mIsPause           = false;
-        private static int TASK_DELAY_MS = 200;
-
-        private static Handler mStatusUPdaterHandler = new Handler(){
-
-        };
         /***
          * 保证ARWAY停止后才能清空数据，任务根据需求再次启动
+         * 偏航时：更改绘制内容，领航成功时重置内容，再写入新路径
          * */
-        private static Runnable mStatusUPdateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                resetData();
-                if(mIsPause){
-                    mARWay.pause();
-                }else {
-                    mARWay.continue_();
-                }
-                if(mIsRunning){
-                    mARWay.start();
-                }else {
-                    mARWay.stop();
-                }
-            }
-        };
+
         public static void back2Init() {
             mARWay.reset();
         }
 
         public static void release() {
             mARWay.release();
-            mIsRunning = false;
-            mIsPause = true;
-            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,200);//
         }
 
         public static void start() {
             mARWay.start();
-            mIsRunning = true;
-            mIsPause = false;
         }
 
         public static void continue_() {
             mARWay.continue_();
-            mIsRunning = true;
-            mIsPause = false;
         }
 
         public static void pause() {
             mARWay.pause();
-            mIsRunning = true;
-            mIsPause = true;
-            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,200);//
         }
 
         public static void stop() {
             mARWay.stop();
-            mIsRunning = false;
-            mIsPause = true;
-            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
-
         }
 
         public static void reStart() {
             mARWay.stop();
-            mIsRunning = true;
-            mIsPause = false;
-            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
-
         }
 
         public static void reset() {
             mARWay.reset();
-            mIsRunning = false;
-            mIsPause = true;
-            mStatusUPdaterHandler.postDelayed(mStatusUPdateRunnable,TASK_DELAY_MS);//
         }
+
+        /**
+         * 开始偏航(yawStart)：停止当前绘制内容，进入状态显示界面(显示指南针、速度等内容)
+         * 尽可能保证beean中的计算代码的健壮性
+         * */
+        public static void yawStart() {
+            if(isRunning()){
+                CommonBeanUpdater.setYaw(true);
+            }
+        }
+        /**
+         * 结束偏航(yawEnd)：resetData ，重新开始绘制draw 导航路径等内容
+         * */
+        public static void yawEnd() {
+            if(isRunning()){
+                resetData();
+            }
+        }
+
         public static boolean isRunning() {
             return mARWay.isRunning();
         }
         /**
          * reset bean data
          */
-        public static void resetData() {
+        private static void resetData() {
             HaloLogger.logE("ARWayController","resetData called");
+            CommonBeanUpdater.reset();
             RouteBeanUpdater.reset();
             SpeedBeanUpdater.reset();
             NetworkBeanUpdater.reset();
@@ -166,6 +145,18 @@ public class ARWayController {
 
             // FIXME: 16/6/30
             RouteResult.getInstance().reset();
+        }
+    }
+
+    public static class CommonBeanUpdater{
+        private static CommonBean mCommonBean = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+        public static void setYaw(boolean yaw) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setYaw(yaw);
+            }
+        }
+        public static void reset(){
+            mCommonBean.reset();
         }
     }
 

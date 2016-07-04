@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean;
 
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
@@ -17,6 +18,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
  */
 public class BeanFactory {
     public enum BeanType {
+        COMMON,
         ROUTE,
         SATELLITE,
         MUSIC,
@@ -31,6 +33,7 @@ public class BeanFactory {
      */
     private static boolean mIsInited = false;
 
+    private static CommonBean    mCommonBean    = null;
     private static RouteBean     mRouteBean     = null;
     private static SatelliteBean mSatelliteBean = null;
     private static MusicBean     mMusicBean     = null;
@@ -45,6 +48,9 @@ public class BeanFactory {
         }
         SuperBean hudBean = null;
         switch (beanType) {
+            case COMMON:
+                hudBean = mCommonBean;
+                break;
             case ROUTE:
                 hudBean = mRouteBean;
                 break;
@@ -81,6 +87,7 @@ public class BeanFactory {
             mNaviInfoBean = new NaviInfoBean();
             mSpeedBean = new SpeedBean();
             mCompassBean = new CompassBean();
+            mCommonBean = new CommonBean();
             mIsInited = true;
         }
     }

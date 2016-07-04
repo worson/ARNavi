@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Point;
 
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
@@ -69,6 +70,7 @@ public class FrameDataFactory {
     private static SpeedCalculator mSpeedCalculator    = (SpeedCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.SPEED);
 
     //bean
+    private static CommonBean    mCommonBean     = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
     private static MusicBean     mMusicBean     = (MusicBean) BeanFactory.getBean(BeanFactory.BeanType.MUSIC);
     private static RouteBean     mRouteBean     = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
     private static NetworkBean   mNetworkBean   = (NetworkBean) BeanFactory.getBean(BeanFactory.BeanType.NETWORK);
@@ -89,6 +91,7 @@ public class FrameDataFactory {
     }
 
     public enum FrameDataType {
+
         CROSS_IMAGE,
         EXIT,
         MUSIC,
@@ -271,7 +274,7 @@ public class FrameDataFactory {
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
                          mRouteBean.getRoadNameLatLngs(),mRouteBean.getGpsNumber(),
-                         mNaviInfoBean.getNaviText(),mRouteBean.isMatchNaviPath());
+                         mNaviInfoBean.getNaviText(),mRouteBean.isMatchNaviPath(),mCommonBean.isYaw());
         // FIXME: 16/6/14
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();
