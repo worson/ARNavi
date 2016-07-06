@@ -24,7 +24,7 @@ import com.amap.navi.demo.R;
 public class IndexActivity extends Activity implements TextWatcher {
 
 
-	
+	public static int route_length = 0;
     private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -57,7 +57,6 @@ public class IndexActivity extends Activity implements TextWatcher {
 	private EditText mEt;
 	private EditText mEt2;
 	public static float mDraw_scale = 1f;
-	public static int route_length = 500;
 
 
     protected void onCreate(Bundle savedInstanceState) {

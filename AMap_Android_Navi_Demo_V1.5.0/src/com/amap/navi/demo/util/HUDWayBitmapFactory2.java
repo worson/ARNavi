@@ -74,7 +74,6 @@ public class HUDWayBitmapFactory2 {
     private Paint            mPaintFilterBitmapColor   = new Paint();
     private Bitmap           mCrossImage               = null;
     private Bitmap           mCrossImageTarget         = null;
-    Bitmap mTempBitmap = Bitmap.createBitmap(400, 400, Config.ARGB_8888);
     private AMapNaviLocation mCrossImageLastLatLng     = null;
     private int              mCrossImageRetainDistance = 0;
     //已经走过的距离(距离初始路口放大图)
@@ -349,7 +348,7 @@ public class HUDWayBitmapFactory2 {
         
         circlePath.addCircle(pointsXY[0], pointsXY[1], 6, Direction.CCW);
         for (int i = 0; i < pointsXY.length / 2 - 1; i++) {
-        	if(this.m300InPaths || (i + 1) * 2!=(this.m300Index-1)*2){
+        	if(this.m300InPaths || (i + 1) * 2!=this.m300Index*2){
         		circlePath.addCircle(pointsXY[(i + 1) * 2], pointsXY[(i + 1) * 2 + 1], 6, Direction.CCW);
         	}
             if (mCurrentIndex + i - 1 >= mPointsDistance.size()) {
@@ -418,9 +417,9 @@ public class HUDWayBitmapFactory2 {
         
         paint.setColor(Color.BLUE);
         try{
-	        if((this.m300Index-1)*2+1 < currentPoints.size()*2){
-		        float cx = pointsXY[(this.m300Index-1)*2];
-		        float cy = pointsXY[(this.m300Index-1)*2+1];
+	        if(this.m300Index*2+1 < currentPoints.size()*2){
+		        float cx = pointsXY[this.m300Index*2];
+		        float cy = pointsXY[this.m300Index*2+1];
 		        canvas.drawCircle(cx, cy, 5, paint);
 	        }
         }catch(Exception e){
@@ -431,12 +430,14 @@ public class HUDWayBitmapFactory2 {
         canvas.drawPaint(mPaintFilterBitmapColor);
         
         //create faker cross image
-        if(BaseActivity.mIsFlushFakerCross){
+        if(BaseActivity.mFlushFakerCross){
         	try{
         		synchronized (HUDWayBitmapFactory2.class) {
         			int x = (int) pointsXY[(this.m300Index-1)*2];
         			int y = (int) pointsXY[(this.m300Index-1)*2+1];
-        			Canvas canv = new Canvas(mTempBitmap);
+        			
+        			Bitmap temp = Bitmap.createBitmap(400, 400, Config.ARGB_8888);
+        			Canvas canv = new Canvas(temp);
         			List<Point> points = new ArrayList<Point>();
         			points.add(0,new Point(x,y));
         			//向前取点
@@ -449,7 +450,7 @@ public class HUDWayBitmapFactory2 {
         				}
         			}
         			//向后取点
-        			for(int i=this.m300Index;i<pointsXY.length/2;i++){
+        			for(int i=this.m300Index;i<pointsXY.length/2-1;i++){
         				int q = (int) pointsXY[i*2];
         				int w = (int) pointsXY[i*2+1];
         				points.add(new Point(q,w));
@@ -460,7 +461,6 @@ public class HUDWayBitmapFactory2 {
         			
         			canv.drawColor(Color.BLACK);
         			
-        			//将蓝点移动到屏幕中间
         			float offsetX_ = 400 / 2 - x;
     		        float offsetY_ = 400 / 2 - y;//-100
     		        for (int i = 0; i <points.size(); i++) {
@@ -468,72 +468,22 @@ public class HUDWayBitmapFactory2 {
     		            points.get(i).y = (int) (points.get(i).y+offsetY_);
     		        }
     		        
-    		      //将路线摆正
-    		        int x2 = (int) pointsXY[(this.m300Index-2)*2];
-        			int y2 = (int) pointsXY[(this.m300Index-2)*2+1];
-        			float selfDegrees = 0f;
-					//TODO
-        			if (x2 == x) {
-        	            if (y2 <= y) {
-        	                selfDegrees = 0;
-        	            } else {
-        	                selfDegrees = 180;
-        	            }
-        	            // if the line is horizontal
-        	        } else if (y2 == y) {
-        	            if (x2 <= x) {
-        	                selfDegrees = 90;
-        	            } else {
-        	                selfDegrees = 270;
-        	            }
-        	        } else {
-        	            // if the line is not a vertical or horizontal,we should be to
-        	            // calculate the degrees
-        	            // cosA = (c*c + b*b - a*a)/(2*b*c)
-        	            // A = acos(A)/2/PI*360
-        	            double c = Math.sqrt(Math.pow(Math.abs(x - x2),
-        	                                          2.0) + Math.pow(Math.abs(y - y2), 2.0));
-        	            double b = Math.abs(y - y2);
-        	            double a = Math.abs(x - x2);
-        	            selfDegrees = (float) (Math.acos((c * c + b * b - a * a) / (2 * b * c)) / 2 / Math.PI * 360);
-        	            if (x2 >= x && y2 >= y) {
-        	                selfDegrees += 180;
-        	            } else if (x2 <= x && y2 >= y) {
-        	                selfDegrees = (90 - selfDegrees) + 90;
-        	            } else if (x2 <= x && y2 <= y) {
-        	                selfDegrees += 0;
-        	            } else if (x2 >= x && y2 <= y) {
-        	
-        	                selfDegrees = 270 + (90 - selfDegrees);
-        	            }
-        	        }
-        			Log.e("test", "degrees:"+selfDegrees);
-        			canv.rotate(selfDegrees-180,200,200);
-    		        
     		        Path mypath = new Path();
     		        Path cicPath = new Path();
     		        mypath.moveTo(points.get(0).x, points.get(0).y);
-    		        cicPath.addCircle(points.get(0).x, points.get(0).y, 15, Direction.CCW);
+    		        cicPath.addCircle(points.get(0).x, points.get(0).y, 10, Direction.CCW);
     		        for(int i=1;i<points.size();i++){
     		        	mypath.lineTo(points.get(i).x, points.get(i).y);
-    		        	cicPath.addCircle(points.get(i).x, points.get(i).y, 15, Direction.CCW);
+    		        	cicPath.addCircle(points.get(i).x, points.get(i).y, 10, Direction.CCW);
     		        }
     		        paint.setColor(Color.WHITE);
     		        canv.drawPath(mypath, paint);
     		        paint.setStyle(Style.FILL);
     		        paint.setColor(Color.RED);
     		        canv.drawPath(cicPath, paint);
-    		        //300M对应点
-    		        paint.setColor(Color.YELLOW);
-    		        int cx = (int) pointsXY[(this.m300Index)*2];
-        			int cy = (int) pointsXY[(this.m300Index)*2+1];
-    		        canv.drawCircle(cx+offsetX_, cy+offsetY_, 12, paint);
-    		        //中心点
     		        paint.setColor(Color.BLUE);
-    		        canv.drawCircle(x+offsetX_, y+offsetY_, 10, paint);
-    		        //中心点前一个点(测试中心点错误的情况是否是前一个点才是真实的中心带你)
-    		        paint.setColor(Color.GREEN);
-    		        canv.drawCircle(x2+offsetX_, y2+offsetY_, 8, paint);
+    		        canv.drawCircle(x+offsetX_, y+offsetY_, 11, paint);
+        			
         			
         			
 //		        	paint.setColor(Color.GREEN);
@@ -548,10 +498,10 @@ public class HUDWayBitmapFactory2 {
 //		        			new Rect(0,0,400,400),  //dst
 //		        			null);
 		        	if(mCount++  == 20){
-		        		BaseActivity.mIsFlushFakerCross = false;
+		        		BaseActivity.mFlushFakerCross = false;
 		        		mCount = 0;
 		        		Message msg = Message.obtain();
-		        		msg.obj = mTempBitmap;
+		        		msg.obj = temp;
 		        		BaseActivity.mHandler.sendMessage(msg );
 		        	}
         		}

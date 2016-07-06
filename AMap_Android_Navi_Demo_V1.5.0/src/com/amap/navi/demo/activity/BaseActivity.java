@@ -498,13 +498,13 @@ public class BaseActivity extends Activity implements AMapNaviListener,
 	private int mCurrentIndex = 1;
 
 	public static ImageView mFakerCrossIV = null;
-	public static boolean mIsFlushFakerCross = false;
+	public static boolean mFlushFakerCross = false;
 	public static Handler mHandler = new Handler(){
 		public void handleMessage(android.os.Message msg) {
 			Bitmap bm = (Bitmap) msg.obj;
 			mFakerCrossIV.setImageBitmap(bm);
 			try {
-				write(bitmap2Bytes(bm),"self_image_"+CustomEnlargedCrossDisplayActivity.mCrossImageCreateTime+".png");
+				write(bitmap2Bytes(bm),"self_image_"+System.currentTimeMillis()+".png");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
