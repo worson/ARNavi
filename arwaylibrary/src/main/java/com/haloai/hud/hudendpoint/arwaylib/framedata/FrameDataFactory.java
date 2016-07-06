@@ -274,7 +274,8 @@ public class FrameDataFactory {
                          mRouteBean.getCroodsInSteps(), mRouteBean.getProjection(),
                          mRouteBean.getNextRoadName(),mRouteBean.getNextRoadType(),
                          mRouteBean.getRoadNameLatLngs(),mRouteBean.getGpsNumber(),
-                         mNaviInfoBean.getNaviText(),mRouteBean.isMatchNaviPath(),mCommonBean.isYaw());
+                         mNaviInfoBean.getNaviText(),mRouteBean.isMatchNaviPath(),
+                         mCommonBean.isYaw(),mCommonBean.isNaviEnd());
         // FIXME: 16/6/14
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();

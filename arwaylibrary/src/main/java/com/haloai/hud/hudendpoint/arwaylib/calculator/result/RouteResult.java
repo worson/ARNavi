@@ -43,6 +43,7 @@ public class RouteResult extends SuperResult{
     public String mNaviText = null;
     public boolean mIsMatchNaviPath = true;
     public boolean mIsYaw = false;
+    public boolean mNaviEnd = false;
 
     private RouteResult() {}
 
@@ -70,6 +71,7 @@ public class RouteResult extends SuperResult{
         mCurrentLocation = null;
         mFlag = false;
         mIsYaw = false;
+        mNaviEnd = false;
 
     }
 
@@ -92,6 +94,10 @@ public class RouteResult extends SuperResult{
         mFakerPointY = 0f;
         mCurrentIndex = 0;
         mDrawIndex=0;
+
+        mFlag = false;
+        mIsYaw = false;
+        mNaviEnd = false;
     }
 
 

@@ -32,7 +32,7 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class RouteFrameData extends SuperFrameData {
-    private static final boolean ROUTE_FRAME_DEBUG = true;
+    private static final boolean ROUTE_FRAME_DEBUG = false;
 
     private static final int    X                     = 100;
     private static final int    Y                     = 100;
@@ -41,7 +41,7 @@ public class RouteFrameData extends SuperFrameData {
     private static final int    TOLERATE_VALUE        = 70;
     //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
     private static final double ADD_POINT_INTERVAL    = 100f;
-    private static final String NOT_DRAW_TEXT_CONTENT = "正在进行GPS定位";//，请继续行驶...
+    private static final String NOT_DRAW_TEXT_CONTENT = "正在检测行驶方向";//，请继续行驶...
 
     private static int ROAD_TURN_DRAFT_ANGLE = 15;
 
@@ -155,8 +155,63 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setColor(Color.BLACK);
             canvas.drawPaint(mPaint);
             //if the location point may be a error point ,do not to draw path and to draw text to warning user.
-            if(routeResult.mIsYaw){
-                HaloLogger.logE("sen_debug_arway","正在偏航");
+            //显示指示性文字
+            {
+                PointF titlePos = new PointF(NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.374f)));
+                boolean drawSub = false;
+                String title = null;
+                String text = null;
+                if(routeResult.mNaviEnd){
+                    HaloLogger.logE("sen_debug_arway"," call route update :本次导航结束");
+                    title = "本次导航结束";
+                }else if(routeResult.mIsYaw){
+                    HaloLogger.logE("sen_debug_arway"," call route update :正在偏航");
+                    title = "重新计算偏航路径";
+                }else if (routeResult.mMayBeErrorLocation){
+                    HaloLogger.logE("sen_debug_arway"," call update :行驶未超出50米");
+                    title = NOT_DRAW_TEXT_CONTENT;
+                    drawSub = true;
+                    if((!ROUTE_FRAME_DEBUG) && routeResult.mGpsNumber<1){
+                        HaloLogger.logE("sen_debug_arway"," call update :GPS 信号弱，请开往空旷处");
+                        title = "GPS 信号弱";
+                    }
+                }if (!routeResult.mIsMatchNaviPath) {
+                    HaloLogger.logE("sen_debug_error", "route update ：location 不在path 上");
+                    title = NOT_DRAW_TEXT_CONTENT;
+                } else if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1 || routeResult.mCurrentLocation == null
+                        || routeResult.mProjection == null || routeResult.mCurrentPoints == null) {
+                    HaloLogger.logE("sen_debug_error", "route update ：绘制条件不足");
+                    title = NOT_DRAW_TEXT_CONTENT;
+                }
+                if (title != null) {
+                    mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                    mTextPaint.setColor(Color.RED);
+                    canvas.drawText(title, titlePos.x, titlePos.y, mTextPaint);
+                    if (drawSub && routeResult.mNaviText != null) {
+                        if (routeResult.mNaviText != null){
+                            text = " "+routeResult.mNaviText;
+                        }
+                        mTextPaint.setAntiAlias(true);
+                        mTextPaint.setColor(Color.RED);
+                        mTextPaint.setTextSize(NOT_DRAW_SUB_TEXT_SIZE);
+                        StaticLayout layout = new StaticLayout(text,mTextPaint,(int)(IMAGE_WIDTH/2-NOT_DRAW_SUB_TEXT_SIZE), Layout.Alignment.ALIGN_NORMAL, (float) 1.0,(float) 0.0, false);
+                        canvas.translate(NOT_DRAW_TEXT_X, MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_HEIGHT * 0.474f)));
+                        layout.draw(canvas);
+                    }
+                    picture.endRecording();
+                    return;
+                }
+
+            }
+            /*if(routeResult.mNaviEnd){
+                HaloLogger.logE("sen_debug_arway"," call route update :本次导航结束");
+                mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setColor(Color.RED);
+                canvas.drawText("本次导航结束", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
+                picture.endRecording();
+                return;
+            }else if(routeResult.mIsYaw){
+                HaloLogger.logE("sen_debug_arway"," call route update :正在偏航");
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
                 canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
@@ -199,28 +254,33 @@ public class RouteFrameData extends SuperFrameData {
                 picture.endRecording();
                 return;
             }else if((!ROUTE_FRAME_DEBUG) && routeResult.mGpsNumber<3){
+                HaloLogger.logE("sen_debug_arway"," call update :GPS 信号弱，请开往空旷处");
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
-                canvas.drawText("GPS 信号弱，请开往空旷处", NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
+                canvas.drawText("GPS 信号弱", NOT_DRAW_TEXT_X, NOT_DRAW_TEXT_Y, mTextPaint);
                 picture.endRecording();
                 return;
             }else if (!routeResult.mIsMatchNaviPath){//(routeResult.mCurrentLocation != null && (!routeResult.mCurrentLocation.isMatchNaviPath())
-                HaloLogger.logE("sen_debug_arway","定位点不在规划路径上");
+                HaloLogger.logE("sen_debug_arway"," call route update :定位点不在规划路径上");
                 mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
                 mTextPaint.setColor(Color.RED);
-                canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
+                canvas.drawText("正在检测行驶方向", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
                 picture.endRecording();
                 return;
             }
 
+            //形状点为空时的防护处理
             if (routeResult.mCurrentLatLngs == null || routeResult.mCurrentLatLngs.size() <= 1 || routeResult.mCurrentLocation == null
                     || routeResult.mProjection ==null || routeResult.mCurrentPoints==null) {
                 HaloLogger.logE("sen_debug_error","route update ：绘制条件不足");
+                mTextPaint.setTextSize(NOT_DRAW_TEXT_SIZE);
+                mTextPaint.setColor(Color.RED);
+                canvas.drawText("重新计算偏航路径", MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.522f)), NOT_DRAW_TEXT_Y, mTextPaint);
                 // FIXME: 16/6/30 先不切换PICTURE
 //                this.mChooseOne = !this.mChooseOne;
                 picture.endRecording();
                 return;
-            }
+            }*/
 
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setAntiAlias(true);

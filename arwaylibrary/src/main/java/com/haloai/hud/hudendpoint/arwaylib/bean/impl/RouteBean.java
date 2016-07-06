@@ -55,7 +55,7 @@ public class RouteBean extends SuperBean {
     private int mGpsNumber = 0;
     private int mGpsNumberSum = 0;
 
-    private static final int NOT_MATCH_PATH_NUBER = 5;
+    private static final int NOT_MATCH_PATH_NUBER = 1;
     private int mIsNotMactchPathCounter = 0;
     private boolean mIsMatchNaviPath = true;
 
@@ -93,13 +93,15 @@ public class RouteBean extends SuperBean {
      * 进行了连续几次取平均操作
      * */
     public RouteBean setGpsNumber(int gpsNumber) {
-        ++mGpsNumberSetCounter;
+        mGpsNumber = gpsNumber;
+        //平均处理
+        /*++mGpsNumberSetCounter;
         mGpsNumberSum += gpsNumber;
         mGpsNumber = mGpsNumberSum / mGpsNumberSetCounter;
         if ( mGpsNumberSetCounter > GPS_SET_COUNTER) {
             mGpsNumberSetCounter = 0;
             mGpsNumberSum = 0;
-        }
+        }*/
         return this;
     }
 

@@ -38,11 +38,11 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     private int    mCurrent               = -1;
     private double mFakerPointX           = 0f;
     private double mFakerPointY           = 0f;
-    private int    mDrawIndex             = 1;
+    private int    mDrawIndex             = 0;
     public boolean mFakeOver = false;
 
 
-    private        int             mCurrentIndex    = 1;
+    private        int             mCurrentIndex    = 0;
     private static RouteCalculator mRouteCalculator = new RouteCalculator();
 
     private RouteCalculator() {}
@@ -61,8 +61,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         mCurrent = -1;
         mFakerPointX = 0f;
         mFakerPointY = 0f;
-        mCurrentIndex = 1;
-        mDrawIndex = 1;
+        mCurrentIndex = 0;
+        mDrawIndex = 0;
     }
 
     @Override
@@ -74,6 +74,8 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
         }
         //保证必要的数据赋值
         routeResult.mCanDraw = routeFactor.mCanDraw;
+        routeResult.mNaviEnd = routeFactor.mNaviEnd;
+
         routeResult.mMayBeErrorLocation = routeFactor.mMayBeErrorLocation;
         routeResult.mGpsNumber = routeFactor.mGpsNumber;
         routeResult.mIsMatchNaviPath = routeFactor.mIsMatchNaviPath;
@@ -85,7 +87,14 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             int index = text.indexOf("请行驶");
             if(index>=0 && index<=text.length()){
                 routeResult.mNaviText = text.substring(index,text.length());
+            }else {
+                routeResult.mNaviText = "";
             }
+        }else {
+            routeResult.mNaviText = "";
+        }
+        if(routeFactor.mNaviEnd){//导航结束不去计算
+            return routeResult;
         }
         //保证某些数据清空
 //        routeResult.mCurrentLatLngs.clear();//当前形状点
@@ -138,7 +147,7 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
                 routeResult.mFakerPointX = this.mFakerPointX;
                 routeResult.mFakerPointY = this.mFakerPointY;
                 routeResult.mCurrentIndex = this.mCurrentIndex;
-                routeResult.mDrawIndex = this.mDrawIndex == 1 ? this.mCurrentIndex : this.mDrawIndex;
+                routeResult.mDrawIndex = this.mDrawIndex == 0 ? this.mCurrentIndex : this.mDrawIndex;
                 routeResult.mCurrentLocation = routeFactor.mCurrentLocation;
                 routeResult.mFakeOver = this.mFakeOver;
 

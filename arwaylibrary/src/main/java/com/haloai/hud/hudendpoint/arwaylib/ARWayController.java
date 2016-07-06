@@ -115,6 +115,12 @@ public class ARWayController {
                 resetData();
             }
         }
+        /**
+         * 到达目的地时调用
+         * */
+        public static void arriveDestination() {
+            CommonBeanUpdater.setNaviEnd(true);
+        }
 
         public static boolean isRunning() {
             return mARWay.isRunning();
@@ -122,7 +128,7 @@ public class ARWayController {
         /**
          * reset bean data
          */
-        private static void resetData() {
+        protected static void resetData() {
             HaloLogger.logE("ARWayController","resetData called");
             CommonBeanUpdater.reset();
             RouteBeanUpdater.reset();
@@ -155,6 +161,13 @@ public class ARWayController {
                 mCommonBean.setYaw(yaw);
             }
         }
+
+        public static void setNaviEnd(boolean naviEnd) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setNaviEnd(naviEnd);
+            }
+        }
+
         public static void reset(){
             mCommonBean.reset();
         }
@@ -182,6 +195,8 @@ public class ARWayController {
 
         public static RouteBean setPath(AMapNaviPath AMapNaviPath) {
             synchronized (ARWayController.class) {
+                // FIXME: 16/7/5 暂且在设定路径的时候重新bean
+//                ARWayStatusUpdater.resetData();
                 return mRouteBean.setPath(AMapNaviPath);
             }
         }
