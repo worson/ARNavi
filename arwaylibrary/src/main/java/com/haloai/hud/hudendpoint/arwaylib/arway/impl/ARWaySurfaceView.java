@@ -144,43 +144,47 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
         @Override
         public void run() {
             testTime = System.currentTimeMillis();
-            while (mIsRunning) {
-                if (!mIsPause) {
-                    can = surfaceHolder.lockCanvas(null);
-                    if (can != null) {
-                        synchronized (surfaceHolder) {
-                            startTime = System.currentTimeMillis();
-                            can.drawColor(Color.BLACK);
-                            can.save();
-                            for (DrawObject drawObject : mDrawList) {
-                                drawObject.doDraw(mContext, can);
-                            }
-                            endTime = System.currentTimeMillis();
+            while (true) {
+                if(mIsRunning) {
+                    if (!mIsPause) {
+                        can = surfaceHolder.lockCanvas(null);
+                        if (can != null) {
+                            synchronized (surfaceHolder) {
+                                startTime = System.currentTimeMillis();
+                                can.drawColor(Color.BLACK);
+                                can.save();
+                                for (DrawObject drawObject : mDrawList) {
+                                    drawObject.doDraw(mContext, can);
+                                }
+                                endTime = System.currentTimeMillis();
 
-                            // FIXME: 2016/6/14
-                            frameTime = endTime - testTime;
-                            frameCounter++;
-                            if (frameTime >= 1000) {
-                                testTime = endTime;
-                                frameResult = frameCounter;
-                                frameTime = 0;
-                                frameCounter = 0;
+                                // FIXME: 2016/6/14
+                                frameTime = endTime - testTime;
+                                frameCounter++;
+                                if (frameTime >= 1000) {
+                                    testTime = endTime;
+                                    frameResult = frameCounter;
+                                    frameTime = 0;
+                                    frameCounter = 0;
+                                }
+                                can.drawText("FPS:" + frameResult, 50, 100, paint);
+                                can.restore();
                             }
-                            can.drawText("FPS:" + frameResult, 50, 100, paint);
-                            can.restore();
                         }
-                    }
-                    if (FPS_TIME - lastTime > endTime - startTime) {
-                        SystemClock.sleep(FPS_TIME - lastTime - (endTime - startTime));
-                        lastTime = 0;
+                        if (FPS_TIME - lastTime > endTime - startTime) {
+                            SystemClock.sleep(FPS_TIME - lastTime - (endTime - startTime));
+                            lastTime = 0;
+                        } else {
+                            lastTime = endTime - startTime - FPS_TIME + lastTime;
+                        }
+                        if (can != null) {
+                            surfaceHolder.unlockCanvasAndPost(can);
+                        }
                     } else {
-                        lastTime = endTime - startTime - FPS_TIME + lastTime;
+                        SystemClock.sleep(100);
                     }
-                    if (can != null) {
-                        surfaceHolder.unlockCanvasAndPost(can);
-                    }
-                } else {
-                    SystemClock.sleep(100);
+                }else{
+                    SystemClock.sleep(1000);
                 }
             }
         }
