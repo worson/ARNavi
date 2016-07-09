@@ -68,10 +68,6 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
     @Override
     public RouteResult calculate(RouteFactor routeFactor) {
         RouteResult routeResult = RouteResult.getInstance();
-        if(routeFactor.mIsYaw){ //目前偏航不需要画路，直接返回
-            routeResult.mIsYaw = routeFactor.mIsYaw;
-            return routeResult;
-        }
         //保证必要的数据赋值
         routeResult.mCanDraw = routeFactor.mCanDraw;
         routeResult.mNaviEnd = routeFactor.mNaviEnd;
@@ -92,6 +88,11 @@ public class RouteCalculator extends SuperCalculator<RouteResult, RouteFactor> {
             }
         }else {
             routeResult.mNaviText = "";
+        }
+
+        if(routeFactor.mIsYaw){ //目前偏航不需要画路，直接返回
+            routeResult.mIsYaw = routeFactor.mIsYaw;
+            return routeResult;
         }
         if(routeFactor.mNaviEnd){//导航结束不去计算
             return routeResult;

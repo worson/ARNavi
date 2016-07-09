@@ -166,10 +166,10 @@ public class RouteFrameData extends SuperFrameData {
                     title = "本次导航结束";
                 }else if(routeResult.mIsYaw){
                     HaloLogger.logE("sen_debug_arway"," call route update :正在偏航");
-                    title = "重新计算偏航路径";
+                    title = "正在计算偏航路径...";
                 }else if (routeResult.mMayBeErrorLocation){
                     HaloLogger.logE("sen_debug_arway"," call update :行驶未超出50米");
-                    title = NOT_DRAW_TEXT_CONTENT;
+                    title = "开始导航";//+NOT_DRAW_TEXT_CONTENT
                     drawSub = true;
                     if((!ROUTE_FRAME_DEBUG) && routeResult.mGpsNumber<1){
                         HaloLogger.logE("sen_debug_arway"," call update :GPS 信号弱，请开往空旷处");
