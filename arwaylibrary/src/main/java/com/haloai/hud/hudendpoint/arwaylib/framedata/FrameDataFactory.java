@@ -279,6 +279,7 @@ public class FrameDataFactory {
         // FIXME: 16/6/14
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();
+
         RouteResult routeResult = mRouteCalculator.calculate(routeFactor);
         HaloLogger.logI("performance_log","=========performance_log=========== calculate time = "+ (System.currentTimeMillis()-performanceLogTime));
         performanceLogTime = System.currentTimeMillis();

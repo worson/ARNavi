@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.calculator.result;
 
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Bitmap;
 
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
@@ -44,6 +45,8 @@ public class RouteResult extends SuperResult{
     public boolean mIsMatchNaviPath = true;
     public boolean mIsYaw = false;
     public boolean mNaviEnd = false;
+    public         Bitmap                 mCrossImage           = null;
+    public         float                  mCrossImageDegrees    = 0f;
 
     private RouteResult() {}
 
@@ -98,6 +101,9 @@ public class RouteResult extends SuperResult{
         mFlag = false;
         mIsYaw = false;
         mNaviEnd = false;
+        /*mDrawIndex = 0;
+        mCrossImage = null;
+        mCrossImageDegrees = 0f;*/
     }
 
 

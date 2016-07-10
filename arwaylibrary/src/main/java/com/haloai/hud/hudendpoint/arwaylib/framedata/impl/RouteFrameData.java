@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
 
 import android.graphics.AvoidXfermode;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -12,8 +13,11 @@ import android.graphics.PointF;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
-
+import android.util.Log;
+import com.amap.api.maps.AMapUtils;
+import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
+import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
@@ -38,7 +42,7 @@ public class RouteFrameData extends SuperFrameData {
     private static final int    Y                     = 100;
     private static final int    MAGNIFIED_TIME        = 4;
     //路线错乱的容忍值当点的Y坐标大于起始点的Y坐标+TOLERATE_VALUE,代表绘制该点可能会出现错乱的情况
-    private static final int    TOLERATE_VALUE        = 70;
+    private static final int    TOLERATE_VALUE          = 70;
     //在一个点的左右两侧多少距离生成两个点与当前点组成一个贝塞尔曲线
     private static final double ADD_POINT_INTERVAL    = 100f;
     private static final String NOT_DRAW_TEXT_CONTENT = "正在检测行驶方向";//，请继续行驶...
@@ -60,7 +64,6 @@ public class RouteFrameData extends SuperFrameData {
     private int   NEXT_ROAD_Y                  = 0;//500;
     private int   NEXT_ROAD_TEXT_OFFSET_HEIGHT = 0;//300;
 
-
     private List<PointF> mTempPoints             = new ArrayList<PointF>();
     private List<PointF> mOffsetPoints           = new ArrayList<PointF>();
     //此paint可以将Route中的黑色去掉变为透明
@@ -79,6 +82,18 @@ public class RouteFrameData extends SuperFrameData {
     private        Picture          mPictureTwo       = new Picture();
     private        boolean          mChooseOne        = true;
 
+    //cross image about
+    private NaviLatLng         mCrossImageCenterLatLng     = null;
+    private NaviLatLng         mCrossImageCenterPreLatLng  = null;
+    private NaviLatLng         mCrossImageCenterNextLatLng = null;
+    private Bitmap             mCrossImage                 = null;
+    private boolean            mFakeCrossImageCanUse       = false;
+//    private Bitmap             mFakeCrossImage             = Bitmap.createBitmap(FAKE_CROSS_IMAGE_WIDTH, FAKE_CROSS_IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+    private List<PointF>       mFakeCrossPoints            = new ArrayList<PointF>();
+    private int                mCrossImageFrameCount       = 0;
+    private List<List<PointF>> mForkRoads                  = new ArrayList<List<PointF>>();
+    private int                mForkRoadNumber             = -1;
+
     private RouteFrameData() {
         setPosition(X, Y);
 
@@ -87,6 +102,26 @@ public class RouteFrameData extends SuperFrameData {
         this.mPaintBitmapColorFilter.setARGB(0, 0, 0, 0);
         this.mPaintBitmapColorFilter.setXfermode(new AvoidXfermode(0x000000, 10, AvoidXfermode.Mode.TARGET));
 
+        List<PointF> forkRoad0 = new ArrayList<PointF>();
+        List<PointF> forkRoad1 = new ArrayList<PointF>();
+        forkRoad1.add(new PointF(0, 0));
+        forkRoad1.add(new PointF(-50 * 4, -50 * 4));
+        forkRoad1.add(new PointF(-150 * 4, -100 * 4));
+        forkRoad1.add(new PointF(-400 * 4, -200 * 4));
+        List<PointF> forkRoad2 = new ArrayList<PointF>();
+        forkRoad2.add(new PointF(0, 0));
+        forkRoad2.add(new PointF(80 * 4, -160 * 4));
+        forkRoad2.add(new PointF(120 * 4, -280 * 4));
+        forkRoad2.add(new PointF(200 * 4, -400 * 4));
+        forkRoad2.add(new PointF(360 * 4, -800 * 4));
+        List<PointF> forkRoad3 = new ArrayList<PointF>();
+        forkRoad3.add(new PointF(0, 0));
+        forkRoad3.add(new PointF(0 * 4, -800 * 4));
+
+        mForkRoads.add(forkRoad0);
+        mForkRoads.add(forkRoad1);
+        mForkRoads.add(forkRoad2);
+        mForkRoads.add(forkRoad3);
     }
 
     @Override
@@ -114,6 +149,14 @@ public class RouteFrameData extends SuperFrameData {
         this.mLastDrawIndex = 0;
         this.mLastOffsetHeight = 0;
         this.mChooseOne = true;
+        this.mCrossImageFrameCount = 0;
+        this.mCrossImage = null;
+        this.mCrossImageCenterLatLng = null;
+        this.mCrossImageCenterPreLatLng = null;
+        this.mCrossImageCenterNextLatLng = null;
+        this.mFakeCrossImageCanUse = false;
+        this.mForkRoadNumber = -1;
+        this.mForkRoads.clear();
     }
 
     public void initDrawLine(int bitmap_width, int bitmap_height) {
@@ -282,6 +325,7 @@ public class RouteFrameData extends SuperFrameData {
                 return;
             }*/
 
+
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setAntiAlias(true);
             mPaint.setStrokeJoin(Paint.Join.ROUND);
@@ -416,6 +460,8 @@ public class RouteFrameData extends SuperFrameData {
                 temp_point.y += offsetY;
             }
 
+            // FIXME: 2016/6/16 如果此时有放大或者缩小,也就是 MAGNIFIED_TIME!=1, 那么也应该同步fakeCrossImagePoint的值,否则绘制出的图位置也是错误的;
+
             // get offset with current and next point.
             mOffsetPoints.clear();
             for (int i = 0; i < this.mTempPoints.size() - 1; i++) {
@@ -435,6 +481,34 @@ public class RouteFrameData extends SuperFrameData {
                 temp_point.y = pre_point.y + offset_point.y * MAGNIFIED_TIME;
             }
             HaloLogger.logE("sen_gl","scale points is "+mTempPoints);
+            //同步修改路口放大图对应中心点的x和y
+            /*Point fakeCrossImageCenterPoint = null;
+            if (this.mCrossImageCenterLatLng != null) {
+                fakeCrossImageCenterPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(this.mCrossImageCenterLatLng));
+                fakeCrossImageCenterPoint.x -= offsetWidth;
+                fakeCrossImageCenterPoint.y -= offsetHeight;
+                fakeCrossImageCenterPoint.x += offsetX;
+                fakeCrossImageCenterPoint.y += offsetY;
+            }
+            //同步修改路口放大图对应前点的x和y
+            Point fakeCrossImagePrePoint = null;
+            if (this.mCrossImageCenterPreLatLng != null) {
+                fakeCrossImagePrePoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(this.mCrossImageCenterPreLatLng));
+                fakeCrossImagePrePoint.x -= offsetWidth;
+                fakeCrossImagePrePoint.y -= offsetHeight;
+                fakeCrossImagePrePoint.x += offsetX;
+                fakeCrossImagePrePoint.y += offsetY;
+            }
+            //同步修改路口放大图对应后点的x和y
+            Point fakeCrossImageNextPoint = null;
+            if (this.mCrossImageCenterNextLatLng != null) {
+                fakeCrossImageNextPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(this.mCrossImageCenterNextLatLng));
+                fakeCrossImageNextPoint.x -= offsetWidth;
+                fakeCrossImageNextPoint.y -= offsetHeight;
+                fakeCrossImageNextPoint.x += offsetX;
+                fakeCrossImageNextPoint.y += offsetY;
+            }*/
+
             //remove the point in list if it may be error to draw
             PointF first_point = this.mTempPoints.get(0);
             for (int i = 1; i < this.mTempPoints.size(); i++) {
@@ -665,9 +739,51 @@ public class RouteFrameData extends SuperFrameData {
                 mTempPoints.add(remove_point);
             }
 
-            // set corner path for right angle(直角) 参数代表-平滑程度
-            //CornerPathEffect cornerPathEffect = new CornerPathEffect(200);
-            //mPaint.setPathEffect(cornerPathEffect);
+            /*//计算路口放大图出现时的中心点所处的屏幕位置以及经纬度
+            calc300MLatLng(routeResult.mCrossImage, routeResult.mFakeLocation, routeResult.mCurrentLatLngs, this.mTempPoints, routeResult.mProjection);
+
+            //TODO helong test draw fork road
+            Path forkPath = new Path();
+            double forkDegrees = 0;
+            if (fakeCrossImageCenterPoint != null && fakeCrossImagePrePoint != null) {
+                mPaint.setColor(Color.YELLOW);
+                forkDegrees = MathUtils.getDegrees(fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y, fakeCrossImagePrePoint.x, fakeCrossImagePrePoint.y);
+                //                canvas.drawCircle(fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y, 5, mPaint);
+                //                canvas.drawCircle(fakeCrossImagePrePoint.x, fakeCrossImagePrePoint.y, 5, mPaint);
+                canvas.rotate((float) (180 - (forkDegrees)), fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y);
+                //                if(this.mFakeCrossImageCanUse) {
+                //                    canvas.drawBitmap(this.mFakeCrossImage, fakeCrossImageCenterPoint.x - FAKE_CROSS_IMAGE_WIDTH / 2, fakeCrossImageCenterPoint.y - FAKE_CROSS_IMAGE_HEIGHT / 2, null);
+                //                }
+                mPaint.setStyle(Paint.Style.STROKE);
+                mPaint.setColor(Color.WHITE);
+                mPaint.setStrokeWidth(OUTSIDE_LINE_WIDTH);
+                if (this.mForkRoadNumber < this.mForkRoads.size()) {
+                    List<PointF> forkRoad = this.mForkRoads.get(this.mForkRoadNumber);
+                    if (forkRoad.size() > 1) {
+
+                        for (int i = 0; i < forkRoad.size(); i++) {
+                            float x = fakeCrossImageCenterPoint.x + forkRoad.get(i).x;
+                            float y = fakeCrossImageCenterPoint.y + forkRoad.get(i).y;
+                            if (y > first_point.y + TOLERATE_VALUE) {
+                                break;
+                            }
+                            if (i == 0) {
+                                forkPath.moveTo(x, y);
+                            } else {
+                                forkPath.lineTo(x, y);
+                            }
+                        }
+                        canvas.drawPath(forkPath, mPaint);
+                    }
+                }
+                //恢复画布
+                canvas.rotate(-(float) (180 - (forkDegrees)), fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y);
+                //                Paint crossPaint = new Paint();
+                //                crossPaint.setAlpha(100);
+                //                Matrix matrix = new Matrix();
+                //                canvas.setMatrix(matrix);
+                //                canvas.drawBitmap(this.mCrossImage, 100, 100, null);
+            }*/
 
             // draw outside line
             mPaint.setStrokeWidth(OUTSIDE_LINE_WIDTH);
@@ -684,6 +800,28 @@ public class RouteFrameData extends SuperFrameData {
             mPaint.setColor(Color.WHITE);
             //canvas.drawPath(circlePath, mPaint);
 
+            /*if (!forkPath.isEmpty()) {
+                canvas.rotate((float) (180 - (forkDegrees)), fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y);
+                mPaint.setColor(Color.BLACK);
+                mPaint.setStyle(Paint.Style.STROKE);
+                mPaint.setStrokeWidth(MIDDLE_LINE_WIDTH);
+                canvas.drawPath(forkPath, mPaint);
+                canvas.rotate(-(float) (180 - (forkDegrees)), fakeCrossImageCenterPoint.x, fakeCrossImageCenterPoint.y);
+            }*/
+
+            /*//TODO helong test 根据源点与目标点旋转bitmap
+            if (this.mCrossImage != null) {
+                Matrix matrix = new Matrix();
+                canvas.setMatrix(matrix);
+                canvas.drawBitmap(this.mCrossImage, 100, 100, null);
+                canvas.drawBitmap(MathUtils.getRotateBitmap(new PointF(-100, 0), new PointF(0, -100), this.mCrossImage), 550, 100, null);
+            }*/
+
+            //TODO helong test
+            //            mPaint.setTextSize(100);
+            //            float text_width = mPaint.measureText("1000米");
+            //            canvas.drawText("1000米", first_point.x - text_width / 2, first_point.y - 110, mPaint);
+
             //============================================================
             //TODO helong debug
             mPaint.setColor(Color.RED);
@@ -697,10 +835,23 @@ public class RouteFrameData extends SuperFrameData {
             canvas.drawCircle(testPoint.x, testPoint.y, 7, mPaint);
             mPaint.setColor(Color.YELLOW);
             canvas.drawCircle(testPoint.x, testPoint.y, 5, mPaint);*/
+            //                        mPaint.setColor(Color.RED);
+            //                        for (int i = 0; i < mTempPoints.size(); i++) {
+            //                            canvas.drawCircle(mTempPoints.get(i).x, mTempPoints.get(i).y, CIRCLE_RADIUS, mPaint);
+            //                        }
+            //            mPaint.setColor(Color.BLUE);
+            //            Point testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mFakeLocation.getCoord()));
+            //            canvas.drawCircle(testPoint.x, testPoint.y, 30, mPaint);
+            //            mPaint.setColor(Color.GREEN);
+            //            testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mPrePreLocation.getCoord()));
+            //            canvas.drawCircle(testPoint.x, testPoint.y, 25, mPaint);
+            //            mPaint.setColor(Color.YELLOW);
+            //            testPoint = routeResult.mProjection.toScreenLocation(DrawUtils.naviLatLng2LatLng(routeResult.mCurrentLocation.getCoord()));
+            //            canvas.drawCircle(testPoint.x, testPoint.y, 20, mPaint);
             //============================================================
 
             //delete black color background
-            //TODO Too long to run this.
+            //TODO Too long time to run this.
             //canvas.drawPaint(mPaintBitmapColorFilter);
 
             //            //TODO 问题:由于此时的mTempPoints是经过一系列操作处理的,但是mCurrentLatLngs是未经过处理的,因此两者并不同步,不能直接从后者得到nextRoadIndex用于前者
@@ -786,9 +937,150 @@ public class RouteFrameData extends SuperFrameData {
         canvas.drawRect(0,0,(float) (this.IMAGE_WIDTH*0.439),this.IMAGE_HEIGHT*(1.1f),mPaint);
         mPaint.reset();
     }
+    /**
+     * 使用该方法,通过路口放大图bitmap判断是否需要去计算该路口放大图对应的中心点经纬度并截取ARWay作为传到
+     * 图像处理那边的图像数据
+     *
+     * @param crossImage
+     * @param fakeLocation
+     * @param currentLatLngs
+     * @param tempPoints
+     * @param projection
+     */
+     private void calc300MLatLng(Bitmap crossImage, AMapNaviLocation fakeLocation, List<NaviLatLng> currentLatLngs, List<PointF> tempPoints, Projection projection) {
+         /*if (crossImage == null) {
+             //如果crossImage为null,表示高德回调隐藏路口放大图
+             //此时应该将与该部分有关的数据重置
+             this.mCrossImage = null;
+             //            this.mCrossImageCenterLatLng = null;
+             //            this.mCrossImageCenterPreLatLng = null;
+             this.mFakeCrossImageCanUse = false;
+             return;
+         }
+
+         //如果crossImage与上次的不同,表示路口放大图有更新
+         if (this.mCrossImage != crossImage) {
+             this.mCrossImageFrameCount++;
+             this.mCrossImage = null;
+             //            this.mCrossImageCenterLatLng = null;
+             //            this.mCrossImageCenterPreLatLng = null;
+             this.mFakeCrossImageCanUse = false;
+         }
+         if (this.mCrossImage != crossImage && mCrossImageFrameCount == 2) {
+             this.mForkRoadNumber++;
+             this.mCrossImageFrameCount = 0;
+             this.mFakeCrossImageCanUse = true;
+             this.mCrossImage = crossImage;
+
+             //获取路口放大图在ARWay上的中心点的经纬度
+             float totalLength = 0;
+             int centerLatLngIndex = 1;
+             for (int i = 1; i < currentLatLngs.size(); i++) {
+                 float distance = 1;
+                 if (i == 1) {
+                     distance = AMapUtils.calculateLineDistance(
+                             DrawUtils.naviLatLng2LatLng(fakeLocation.getCoord()),
+                             DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i)));
+                     totalLength += distance;
+                 } else {
+                     distance = AMapUtils.calculateLineDistance(
+                             DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i - 1)),
+                             DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i)));
+                     totalLength += distance;
+                 }
+                 *//*if (totalLength == CROSS_IMAGE_SHOW_LENGTH) {
+                     this.mCrossImageCenterLatLng = currentLatLngs.get(i);
+                 } else if (totalLength > CROSS_IMAGE_SHOW_LENGTH) {
+                     float div = totalLength - CROSS_IMAGE_SHOW_LENGTH;
+                     Point beyoundPoint = projection.toScreenLocation(DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i)));
+                     Point prePoint = null;
+                     if (i == 1) {
+                         prePoint = projection
+                                 .toScreenLocation(DrawUtils.naviLatLng2LatLng(fakeLocation.getCoord()));
+                     } else {
+                         prePoint = projection
+                                 .toScreenLocation(DrawUtils.naviLatLng2LatLng(currentLatLngs.get(i - 1)));
+                     }
+                     Point makePoint = new Point(
+                             (int) (prePoint.x + (beyoundPoint.x - prePoint.x) * ((distance - div) / distance)),
+                             (int) (prePoint.y + (beyoundPoint.y - prePoint.y) * ((distance - div) / distance)));
+                     this.mCrossImageCenterLatLng = DrawUtils.latLng2NaviLatLng(projection.fromScreenLocation(makePoint));
+                 }*//*
+                 if (totalLength >= CROSS_IMAGE_SHOW_LENGTH) {
+                     this.mCrossImageCenterLatLng = currentLatLngs.get(i);
+                     this.mCrossImageCenterPreLatLng = currentLatLngs.get(i - 1);
+                     if (i + 1 < currentLatLngs.size()) {
+                         this.mCrossImageCenterNextLatLng = currentLatLngs.get(i + 1);
+                     }
+                     centerLatLngIndex = i;
+                     break;
+                 }
+             }
+
+             //获取传给图像处理那边的截取的ARWay中代表路口放大图那一部分的bitmap
+             //this.mFakeCrossImage  centerPointIndex即为中心点在绘制集合中的下标
+             Canvas fakeCrossImageCanvas = new Canvas(this.mFakeCrossImage);
+             fakeCrossImageCanvas.drawColor(Color.BLACK);
+             this.mFakeCrossPoints.clear();
+             try {
+                 PointF centerPoint = tempPoints.get(centerLatLngIndex);
+                 float x = centerPoint.x;
+                 float y = centerPoint.y;
+                 this.mFakeCrossPoints.add(new PointF(x, y));
+                 //向前取点
+                 for (int i = centerLatLngIndex - 1; i >= 0; i--) {
+                     PointF prePoint = tempPoints.get(i);
+                     this.mFakeCrossPoints.add(0, new PointF(prePoint.x, prePoint.y));
+                 }
+                 //向后取点
+                 for (int i = centerLatLngIndex + 1; i < tempPoints.size(); i++) {
+                     PointF nextPoint = tempPoints.get(i);
+                     this.mFakeCrossPoints.add(new PointF(nextPoint.x, nextPoint.y));
+                 }
+                 //将路口放大图的中心点移动到中心
+                 float offsetX = FAKE_CROSS_IMAGE_WIDTH / 2 - x;
+                 float offsetY = FAKE_CROSS_IMAGE_HEIGHT / 2 - y;
+                 for (int i = 0; i < this.mFakeCrossPoints.size(); i++) {
+                     PointF point = this.mFakeCrossPoints.get(i);
+                     point.x = point.x + offsetX;
+                     point.y = point.y + offsetY;
+                 }
+                 //旋转至竖直状态
+                 float x2 = tempPoints.get(centerLatLngIndex - 1).x;
+                 float y2 = tempPoints.get(centerLatLngIndex - 1).y;
+                 float selfDegrees = MathUtils.getDegrees(x, y, x2, y2);
+                 fakeCrossImageCanvas.rotate(selfDegrees - 180, FAKE_CROSS_IMAGE_WIDTH / 2, FAKE_CROSS_IMAGE_HEIGHT / 2);
+                 //绘制到bitmap上
+                 Path crossPath = new Path();
+                 crossPath.moveTo(this.mFakeCrossPoints.get(0).x, this.mFakeCrossPoints.get(0).y);
+                 for (int i = 1; i < this.mFakeCrossPoints.size(); i++) {
+                     crossPath.lineTo(this.mFakeCrossPoints.get(i).x, this.mFakeCrossPoints.get(i).y);
+                 }
+                 Paint paint = new Paint();
+                 paint.setColor(Color.BLUE);
+                 paint.setStrokeWidth(20);
+                 paint.setStyle(Paint.Style.STROKE);
+                 paint.setAntiAlias(true);
+                 fakeCrossImageCanvas.drawPath(crossPath, paint);
+                 //                paint.setColor(Color.RED);
+                 //                paint.setStyle(Paint.Style.FILL);
+                 //                for (int i = 0; i < this.mFakeCrossPoints.size(); i++) {
+                 //                    fakeCrossImageCanvas.drawCircle(this.mFakeCrossPoints.get(i).x, this.mFakeCrossPoints.get(i).y, 10, paint);
+                 //                }
+                 //                paint.setColor(Color.GREEN);
+                 //                fakeCrossImageCanvas.drawCircle(x + offsetX, y + offsetY, 10, paint);
+                 //                paint.setColor(Color.DKGRAY);
+                 //                fakeCrossImageCanvas.drawCircle(x2 + offsetX, y2 + offsetY, 10, paint);
+
+                 //fakeCrossImageCanvas.drawPaint(this.mPaintBitmapColorFilter);
+             } catch (Exception e) {
+                 Log.e("calc300MLatLng", "create fake cross image error:" + e.getMessage());
+             }*/
+         }
+    
 
     public Picture getPicture() {
-        Picture picture = this.mChooseOne ? mPictureOne : mPictureTwo;
+        Picture picture = this.mChooseOne ? this.mPictureOne : this.mPictureTwo;
         return picture;
     }
 }

@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.calculator.factor;
 
+import android.graphics.Bitmap;
+
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviLatLng;
@@ -38,6 +40,8 @@ public class RouteFactor {
 
     public boolean mIsYaw = false;
     public boolean mNaviEnd = false;
+    /*public Bitmap                        mCrossImage         = null;
+    public float                         mCrossImageDegrees  = 0f;*/
 
     private static RouteFactor mRouteFactor = new RouteFactor();
 
@@ -67,5 +71,7 @@ public class RouteFactor {
         mIsMatchNaviPath = isMatchNaviPath;
         mIsYaw = isYaw;
         mNaviEnd = naviEnd;
+        /*mCrossImage = crossImage;
+        mCrossImageDegrees = degrees;*/
     }
 }

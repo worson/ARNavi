@@ -3,6 +3,8 @@ package com.haloai.hud.hudendpoint.arwaylib;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 
 import com.amap.api.maps.Projection;
@@ -29,6 +31,12 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
+//import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
+//
+//import org.opencv.android.Utils;
+//import org.opencv.core.Mat;
+
+import java.io.IOException;
 
 /**
  * author       : 龙;
@@ -54,9 +62,35 @@ public class ARWayController {
         mContext = context;
         if (mARWay == null) {
             mARWay = ARWayFactory.getARWay(context, ARWayFactory.ARWayType.SURFACE_VIEW);
+
+
         }
         return mARWay.getARWay();
     }
+
+    private static boolean crossImageEnvReady = false;
+    public static void prepareCrossImageEnv(Context context) {
+        if (!crossImageEnvReady) {
+            crossImageEnvReady = true;
+            //Harry Test.
+//            BitmapFactory.Options opts = new BitmapFactory.Options();
+//            opts.inDither = true;
+//            opts.inPreferredConfig = Bitmap.Config.RGB_565;
+//            opts.inScaled = false;
+//            Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.sample_enlarge_crossimage, opts);
+
+           /* Mat matBmp = null;
+            try {
+                matBmp = Utils.loadResource(context, R.drawable.sample_enlarge_crossimage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            EnlargedCrossProcess ecp = new EnlargedCrossProcess();
+            ecp.processAMapECImage(matBmp, null);
+            Log.e("EnlargedCrossProcess", "!!!! EnlargedCrossProcess !!!");*/
+        }
+    }
+
     /**
      * the class for update arway status.
      */
@@ -245,6 +279,12 @@ public class ARWayController {
 
         public static void reset(){
             mRouteBean.reset();
+        }
+        
+        public static RouteBean setDegrees(float bearing) {
+            synchronized (ARWayController.class){
+                return mRouteBean.setDegrees(bearing);
+            }
         }
     }
 

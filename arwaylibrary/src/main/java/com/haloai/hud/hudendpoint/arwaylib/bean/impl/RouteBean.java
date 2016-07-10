@@ -50,6 +50,7 @@ public class RouteBean extends SuperBean {
     private double       mRealStartPointY = 0f;
     private String       mNextRoadName    = null;
     private NextRoadType mNextRoadType    = null;
+    private float        mDegrees         = 0f;
 
     private int mGpsNumberSetCounter = 1;
     private int mGpsNumber = 0;
@@ -81,6 +82,7 @@ public class RouteBean extends SuperBean {
         mMayBeErrorLocation = true;
         mNextRoadName = null;
         mNextRoadType = null;
+        mDegrees = 0f;
         mPathLatLngs.clear();
         mCroodsInSteps.clear();
         mRoadNameLatLngs.clear();
@@ -176,7 +178,7 @@ public class RouteBean extends SuperBean {
         return mCurrentLocation;
     }
 
-    public AMapNaviLocation getPreLocation(){
+    public AMapNaviLocation getPreLocation() {
         return mPreLocation;
     }
 
@@ -261,11 +263,20 @@ public class RouteBean extends SuperBean {
         return mNextRoadName;
     }
 
-    public NextRoadType getNextRoadType(){
+    public NextRoadType getNextRoadType() {
         return mNextRoadType;
     }
 
     public Map<String, List<NaviLatLng>> getRoadNameLatLngs() {
         return mRoadNameLatLngs;
+    }
+
+    public RouteBean setDegrees(float degrees) {
+        mDegrees = degrees;
+        return this;
+    }
+
+    public float getDegrees(){
+        return mDegrees;
     }
 }

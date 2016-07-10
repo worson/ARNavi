@@ -204,6 +204,7 @@ public class ARWaySurfaceView extends SurfaceView implements SurfaceHolder.Callb
                         SystemClock.sleep(300);
                     }
                 }else {
+
                     SystemClock.sleep(1000);
                 }
             }
