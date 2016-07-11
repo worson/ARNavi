@@ -28,7 +28,9 @@ public class CalculatorFactory {
         TURN_INFO,
         CROSS_IMAGE,
         SPEED,
-        NAVI_INFO
+        NAVI_INFO,
+        GL_SCENE,
+        GL_CAMERA
     }
 
     public static SuperCalculator getCalculator(CalculatorType calculatorType) {

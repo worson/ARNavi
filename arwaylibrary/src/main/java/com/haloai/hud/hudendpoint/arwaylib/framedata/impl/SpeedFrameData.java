@@ -14,7 +14,7 @@ import com.haloai.hud.utils.HaloLogger;
 /**
  * Created by wangshengxing on 16/6/23.
  */
-public class SpeedFrameData extends SuperFrameData{
+public class SpeedFrameData extends SuperFrameData<SpeedResult>{
     private Path mPath = new Path();
     private final static int X = 0;
     private final static int Y = 0;
@@ -59,14 +59,8 @@ public class SpeedFrameData extends SuperFrameData{
     }
 
     @Override
-    public void update(SuperResult result) throws Exception {
-        SpeedResult speedResult = null;
-        HaloLogger.logE("SpeedFrameData","IMAGE_WIDTH :"+IMAGE_WIDTH+",IMAGE_HEIGHT"+IMAGE_HEIGHT);
-        if (result instanceof SpeedResult) {
-            speedResult = (SpeedResult)result;
-        }else {
-            throw new Exception("SuperResult 的实例类型不可用");
-        }
+    public void update(SpeedResult result){
+        SpeedResult speedResult = result;
         Picture picture = this.mPicture;
         Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
         this.mPaint.reset();

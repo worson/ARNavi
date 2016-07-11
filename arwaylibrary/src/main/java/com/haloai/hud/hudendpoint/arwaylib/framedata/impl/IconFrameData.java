@@ -13,7 +13,7 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
  * project_name : hudlauncher;
  */
-public class IconFrameData extends SuperFrameData {
+public class IconFrameData extends SuperFrameData <SuperResult>{
     private final static int X = 0;
     private final static int Y = 0;
 
@@ -43,7 +43,7 @@ public class IconFrameData extends SuperFrameData {
     }
 
     @Override
-    public void update(SuperResult result) throws Exception {
+    public void update(SuperResult result){
 
     }
 }

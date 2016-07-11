@@ -17,7 +17,7 @@ import com.haloai.hud.utils.HaloLogger;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
  * project_name : hudlauncher;
  */
-public class NaviInfoFrameData extends SuperFrameData {
+public class NaviInfoFrameData extends SuperFrameData <NaviInfoResult>{
     private int   IMAGE_WIDTH                  = 0;
     private int   IMAGE_HEIGHT                 = 0;
 
@@ -45,13 +45,8 @@ public class NaviInfoFrameData extends SuperFrameData {
 
     }
     @Override
-    public void update(SuperResult result) throws Exception{
-        NaviInfoResult naviInfoResult = null;
-        if (result instanceof NaviInfoResult) {
-            naviInfoResult = (NaviInfoResult)result;
-        }else {
-            throw new Exception("SuperResult 的实例类型不可用");
-        }
+    public void update(NaviInfoResult result){
+        NaviInfoResult naviInfoResult = result;
         Picture picture = this.mPictureOne;
         Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
         if (!naviInfoResult.mShouldDraw ){//取名不太贴切，目前是如果不画主路时

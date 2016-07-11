@@ -10,6 +10,8 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawN
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawRoute;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawSpeed;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawTurnInfo;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawCamera;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
 
 /**
  * author       : 龙;
@@ -30,7 +32,9 @@ public class DrawObjectFactory {
         NAVI_INFO,
         NETWORK,
         SPEED,
-        COMPASS
+        COMPASS,
+        GL_SCENE,
+        GL_CAMERA
     }
     public static DrawObject getDrawObject(DrawType drawType){
         DrawObject drawObject = null;
@@ -67,6 +71,12 @@ public class DrawObjectFactory {
                 break;
             case COMPASS:
                 drawObject = DrawCompass.getInstance();
+                break;
+            case GL_SCENE:
+                drawObject = DrawScene.getInstance();
+                break;
+            case GL_CAMERA:
+                drawObject = DrawCamera.getInstance();
                 break;
             default:
                 break;

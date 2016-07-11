@@ -15,7 +15,7 @@ import com.haloai.hud.utils.HaloLogger;
 /**
  * Created by 龙 on 2016/4/29.
  */
-public class CrossImageFrameData extends SuperFrameData {
+public class CrossImageFrameData extends SuperFrameData <CrossImageResult>{
     private final static int X = 0;
     private final static int Y = 0;
     private Picture mPicture = new Picture();
@@ -52,13 +52,8 @@ public class CrossImageFrameData extends SuperFrameData {
     }
 
     @Override
-    public void update(SuperResult result) throws Exception {
+    public void update(CrossImageResult result){
         CrossImageResult crossImageResult = null;
-        if (result instanceof CrossImageResult) {
-            crossImageResult = (CrossImageResult)result;
-        }else {
-            throw new Exception("SuperResult 的实例类型不可用");
-        }
         Picture picture = this.mPicture;
         Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);
         if (!crossImageResult.mShouldDraw){

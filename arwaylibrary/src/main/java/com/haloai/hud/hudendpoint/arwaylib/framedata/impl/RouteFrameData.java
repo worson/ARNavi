@@ -31,7 +31,7 @@ import java.util.List;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
  * project_name : hudlauncher;
  */
-public class RouteFrameData extends SuperFrameData {
+public class RouteFrameData extends SuperFrameData <RouteResult>{
     private static final boolean ROUTE_FRAME_DEBUG = false;
 
     private static final int    X                     = 100;
@@ -137,13 +137,8 @@ public class RouteFrameData extends SuperFrameData {
         this.NEXT_ROAD_TEXT_OFFSET_HEIGHT = MathUtils.formatAsEvenNumber(Math.round(this.IMAGE_WIDTH * 0.438f));
     }
 
-    public void update(SuperResult result) throws Exception{
-        RouteResult routeResult = null;
-        if (result instanceof RouteResult) {
-            routeResult = (RouteResult)result;
-        }else {
-            throw new Exception("SuperResult 的实例类型不可用");
-        }
+    public void update(RouteResult result){
+        RouteResult routeResult = result;
         long performanceLogTime;
         performanceLogTime = System.currentTimeMillis();
         Picture picture = mChooseOne ? this.mPictureOne : this.mPictureTwo;

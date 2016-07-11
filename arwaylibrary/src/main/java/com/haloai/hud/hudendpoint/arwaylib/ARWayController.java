@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -41,8 +42,11 @@ import com.haloai.hud.utils.HaloLogger;
  * And they also can update any data about arway.
  */
 public class ARWayController {
-    private static IARWay     mARWay      = null;
-    private static Context    mContext    = null;
+    private static IARWay                 mARWay         = null;
+    private static Fragment               mARWayFragment = null;
+    private static Context                mContext       = null;
+    private static ARWayFactory.ARWayType mDrawTyte      = ARWayFactory.ARWayType.OPENGL;
+
 
     /**
      * get arway for show.
@@ -57,6 +61,20 @@ public class ARWayController {
         }
         return mARWay.getARWay();
     }
+
+    /***
+     * get arway fragment for show.
+     * @param context
+     * @return
+     */
+    public static Fragment getARWayFragmentAndInit(Context context){
+        mContext = context;
+        if (mARWayFragment == null) {
+            mARWayFragment = ARWayFactory.getArwayOpenglFragment(context,ARWayFactory.ARWayType.OPENGL);
+        }
+        return mARWayFragment;
+    }
+
     /**
      * the class for update arway status.
      */

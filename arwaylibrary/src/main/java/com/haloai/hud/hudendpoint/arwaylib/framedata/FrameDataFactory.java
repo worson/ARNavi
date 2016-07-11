@@ -13,30 +13,36 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.AlphaFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.CameraFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.CrossImageFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.NaviInfoFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.PositionFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.RotateFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.RouteFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.ScaleFactor;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.SceneFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.SpeedFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.TurnInfoFactor;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.AlphaCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.CameraCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.CrossImageCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.NaviInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.PositionCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RotateCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RouteCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.ScaleCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SceneCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SpeedCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.TurnInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.AlphaResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.CameraResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.CrossImageResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.NaviInfoResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.PositionResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RotateResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.ScaleResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SceneResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SpeedResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.TurnInfoResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
@@ -48,6 +54,8 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl_opengl.CameraFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl_opengl.SceneFrameData;
 import com.haloai.hud.utils.HaloLogger;
 
 /**
@@ -68,6 +76,9 @@ public class FrameDataFactory {
     private static NaviInfoCalculator mNaviInfoCalculator    = (NaviInfoCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.NAVI_INFO);
     private static CrossImageCalculator mCrossImageCalculator    = (CrossImageCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.CROSS_IMAGE);
     private static SpeedCalculator mSpeedCalculator    = (SpeedCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.SPEED);
+    
+    private static SceneCalculator  mSceneCalculator  = (SceneCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.GL_SCENE);
+    private static CameraCalculator mCameraCalculator = (CameraCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.GL_CAMERA);
 
     //bean
     private static CommonBean    mCommonBean     = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
@@ -91,7 +102,6 @@ public class FrameDataFactory {
     }
 
     public enum FrameDataType {
-
         CROSS_IMAGE,
         EXIT,
         MUSIC,
@@ -101,7 +111,35 @@ public class FrameDataFactory {
         SATELLITE,
         NAVI_INFO,
         TURN_INFO,
-        SPEED
+        SPEED,
+        GL_SCENE,
+        GL_CAMERA,
+    }
+
+    public static SuperFrameData getOpenglFrameDate(Context context, FrameDataType frameDataType){
+        SuperFrameData frameData = null;
+        switch (frameDataType) {
+            case GL_SCENE:
+                frameData = SceneFrameData.getInstance();
+                SceneFrameData sceneFrameData = (SceneFrameData) frameData;
+                SceneFactor sceneFactor = SceneFactor.getInstance();
+                sceneFactor.init();
+                SceneResult sceneResult = mSceneCalculator.calculate(sceneFactor);
+                sceneFrameData.update(sceneResult);
+                
+                break;
+            case GL_CAMERA:
+                frameData = CameraFrameData.getInstance();
+                CameraFrameData cameraFrameData = (CameraFrameData) frameData;
+                CameraFactor cameraFactor = CameraFactor.getInstance();
+                cameraFactor.init();
+                CameraResult cameraResult = mCameraCalculator.calculate(cameraFactor);
+                cameraFrameData.update(cameraResult);
+                break;
+            default:
+                break;
+        }
+        return frameData;
     }
 
     /***

@@ -16,7 +16,7 @@ import com.haloai.hud.utils.HaloLogger;
 /**
  * Created by 龙 on 2016/4/29.
  */
-public class TurnInfoFrameData extends SuperFrameData {
+public class TurnInfoFrameData extends SuperFrameData <TurnInfoResult>{
     private final static int X = 0;
     private final static int Y = 0;
 
@@ -62,10 +62,7 @@ public class TurnInfoFrameData extends SuperFrameData {
     }
 
     @Override
-    public void update(SuperResult result) throws Exception{
-        if (!(result instanceof TurnInfoResult)){
-            throw new Exception("SuperResult 的实例类型不可用");
-        }
+    public void update(TurnInfoResult result){
         TurnInfoResult turnInfoResult = (TurnInfoResult)result;
         Picture picture = this.mPicture;
         Canvas canvas = picture.beginRecording(IMAGE_WIDTH, IMAGE_HEIGHT);

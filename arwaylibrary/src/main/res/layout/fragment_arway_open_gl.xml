@@ -1,0 +1,23 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             xmlns:textureview="http://schemas.android.com/apk/res-auto"
+             tools:context="com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARwayOpenGLFragment">
+
+    <com.amap.api.navi.AMapNaviView
+        android:id="@+id/amap_navi_amapnaviview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:visibility="invisible"/>
+
+    <!--
+    <org.rajawali3d.view.TextureView
+        android:id="@+id/rajwali_surface"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+    />-->
+    <!--textureview:frameRate="60.0"-->
+    <!--textureview:renderMode="RENDER_WHEN_DIRTY"-->
+</RelativeLayout>

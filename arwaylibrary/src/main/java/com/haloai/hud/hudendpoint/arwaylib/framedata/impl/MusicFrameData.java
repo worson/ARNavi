@@ -21,7 +21,7 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
  * project_name : hudlauncher;
  */
-public class MusicFrameData extends SuperFrameData {
+public class MusicFrameData extends SuperFrameData <SuperResult>{
     private static final float IMAGE_WIDTH  = 100;
     private static final float IMAGE_HEIGHT = 100;
     private final static int   X            = 100;
@@ -168,7 +168,7 @@ public class MusicFrameData extends SuperFrameData {
     }
 
     @Override
-    public void update(SuperResult result) throws Exception {
+    public void update(SuperResult result){
 
     }
 }

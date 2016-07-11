@@ -6,6 +6,11 @@ import android.graphics.Canvas;
 /**
  * Created by 龙 on 2016/4/29.
  */
-public abstract class DrawObject {
-    public abstract void doDraw(Context context, Canvas canvas);
+public class DrawObject {
+    public  void doDraw(Context context, Canvas canvas){
+
+    }
+    public  void doDraw(Context context){
+
+    }
 }

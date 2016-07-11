@@ -14,7 +14,7 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.framedata;
  * project_name : hudlauncher;
  */
-public abstract class SuperFrameData {
+public abstract class SuperFrameData <FRAME_RESULT>{
     protected Bitmap mImage = null;
     public void setImage(Bitmap image){
         this.mImage = image;
@@ -58,7 +58,7 @@ public abstract class SuperFrameData {
     /**
      * 在此函数中更新每一帧的数据
      */
-    public abstract void update(SuperResult result) throws Exception;
+    public abstract void update(FRAME_RESULT result);
     /**
      * 释放某一个流程的标记
      */

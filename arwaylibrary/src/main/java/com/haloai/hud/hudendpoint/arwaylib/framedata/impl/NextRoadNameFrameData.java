@@ -6,7 +6,7 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 /**
  * Created by 龙 on 2016/4/29.
  */
-public class NextRoadNameFrameData extends SuperFrameData {
+public class NextRoadNameFrameData extends SuperFrameData <SuperResult>{
     private final static int X = 0;
     private final static int Y = 0;
 
@@ -26,7 +26,7 @@ public class NextRoadNameFrameData extends SuperFrameData {
     }
 
     @Override
-    public void update(SuperResult result) throws Exception {
+    public void update(SuperResult result){
 
     }
 }
