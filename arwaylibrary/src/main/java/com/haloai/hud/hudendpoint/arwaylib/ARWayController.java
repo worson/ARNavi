@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.View;
@@ -12,15 +13,28 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
-import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
-
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
+import com.haloai.hud.utils.HaloLogger;
+//import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
+//
+//import org.opencv.android.Utils;
+//import org.opencv.core.Mat;
 
 import java.io.IOException;
 
@@ -65,7 +79,7 @@ public class ARWayController {
 //            opts.inScaled = false;
 //            Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.sample_enlarge_crossimage, opts);
 
-            Mat matBmp = null;
+           /* Mat matBmp = null;
             try {
                 matBmp = Utils.loadResource(context, R.drawable.sample_enlarge_crossimage);
             } catch (IOException e) {
@@ -73,7 +87,7 @@ public class ARWayController {
             }
             EnlargedCrossProcess ecp = new EnlargedCrossProcess();
             ecp.processAMapECImage(matBmp, null);
-            Log.e("EnlargedCrossProcess", "!!!! EnlargedCrossProcess !!!");
+            Log.e("EnlargedCrossProcess", "!!!! EnlargedCrossProcess !!!");*/
         }
     }
 
@@ -81,6 +95,11 @@ public class ARWayController {
      * the class for update arway status.
      */
     public static class ARWayStatusUpdater {
+        /***
+         * 保证ARWAY停止后才能清空数据，任务根据需求再次启动
+         * 偏航时：更改绘制内容，领航成功时重置内容，再写入新路径
+         * */
+
         public static void back2Init() {
             mARWay.reset();
         }
@@ -105,8 +124,86 @@ public class ARWayController {
             mARWay.stop();
         }
 
+        public static void reStart() {
+            mARWay.stop();
+        }
+
+        public static void reset() {
+            mARWay.reset();
+        }
+
+        /**
+         * 开始偏航(yawStart)：停止当前绘制内容，进入状态显示界面(显示指南针、速度等内容)
+         * 尽可能保证beean中的计算代码的健壮性
+         * */
+        public static void yawStart() {
+            if(isRunning()){
+                CommonBeanUpdater.setYaw(true);
+            }
+        }
+        /**
+         * 结束偏航(yawEnd)：resetData ，重新开始绘制draw 导航路径等内容
+         * */
+        public static void yawEnd() {
+            if(isRunning()){
+                resetData();
+            }
+        }
+        /**
+         * 到达目的地时调用
+         * */
+        public static void arriveDestination() {
+            CommonBeanUpdater.setNaviEnd(true);
+        }
+
         public static boolean isRunning() {
             return mARWay.isRunning();
+        }
+        /**
+         * reset bean data
+         */
+        protected static void resetData() {
+            HaloLogger.logE("ARWayController","resetData called");
+            CommonBeanUpdater.reset();
+            RouteBeanUpdater.reset();
+            SpeedBeanUpdater.reset();
+            NetworkBeanUpdater.reset();
+            MusicBeanUpdater.reset();
+            SatelliteBeanUpdater.reset();
+            NaviInfoBeanUpdate.reset();
+            RouteBeanUpdater.reset();
+
+            FrameDataFactory.resetCalculators();
+
+            CrossImageFrameData.getInstance().reset();
+            MusicFrameData.getInstance().reset();
+            NextRoadNameFrameData.getInstance().reset();
+            RouteFrameData.getInstance().reset();
+            NaviInfoFrameData.getInstance().reset();
+            TurnInfoFrameData.getInstance().reset();
+            SpeedFrameData.getInstance().reset();
+
+            // FIXME: 16/6/30
+            RouteResult.getInstance().reset();
+        }
+    }
+
+    public static class CommonBeanUpdater{
+        private static CommonBean mCommonBean = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+        public static void setYaw(boolean yaw) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setYaw(yaw);
+            }
+        }
+
+        public static void setNaviEnd(boolean naviEnd) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setNaviEnd(naviEnd);
+            }
+        }
+
+        public static void reset(){
+            mCommonBean.reset();
         }
     }
 
@@ -132,6 +229,8 @@ public class ARWayController {
 
         public static RouteBean setPath(AMapNaviPath AMapNaviPath) {
             synchronized (ARWayController.class) {
+                // FIXME: 16/7/5 暂且在设定路径的时候重新bean
+//                ARWayStatusUpdater.resetData();
                 return mRouteBean.setPath(AMapNaviPath);
             }
         }
@@ -172,6 +271,16 @@ public class ARWayController {
             }
         }
 
+        public static RouteBean setGpsNumber(int gpsNumber) {
+            synchronized (ARWayController.class) {
+                return mRouteBean.setGpsNumber(gpsNumber);
+            }
+        }
+
+        public static void reset(){
+            mRouteBean.reset();
+        }
+        
         public static RouteBean setDegrees(float bearing) {
             synchronized (ARWayController.class){
                 return mRouteBean.setDegrees(bearing);
@@ -195,6 +304,14 @@ public class ARWayController {
             return mNaviInfoBean.setNaviIcon(naviIcon);
         }
 
+        public static NaviInfoBean setNaviIconBitmap(Bitmap bitmap){
+            return mNaviInfoBean.setNaviIconBitmap(bitmap);
+        }
+
+        public static NaviInfoBean setCrossBitmap(Bitmap bitmap){
+            return mNaviInfoBean.setCrossBitmap(bitmap);
+        }
+
         public static NaviInfoBean setNaviIconDist(int naviIcon){
             return mNaviInfoBean.setNaviIconDistance(naviIcon);
         }
@@ -206,6 +323,24 @@ public class ARWayController {
         public static NaviInfoBean setNextRoadName(String nextRoadName){
             return mNaviInfoBean.setNextRoadName(nextRoadName);
         }
+
+        public static NaviInfoBean setPathRetainDistance(int pathRetainDistance){
+            return mNaviInfoBean.setPathRetainDistance(pathRetainDistance);
+        }
+
+        public static NaviInfoBean setPathRetainTime(int pathRetainTime){
+            return mNaviInfoBean.setPathRetainTime(pathRetainTime);
+        }
+
+        public static NaviInfoBean setNaviText(String naviText){
+            return mNaviInfoBean.setNaviText(naviText);
+        }
+
+        public static void reset(){
+            mNaviInfoBean.reset();
+        }
+
+
     }
 
     /***
@@ -221,6 +356,11 @@ public class ARWayController {
                 return mSatelliteBean;
             }
         }
+
+        public static void reset(){
+            mSatelliteBean.reset();
+        }
+
     }
 
     /***
@@ -254,6 +394,10 @@ public class ARWayController {
                 return mMusicBean.setDuration(duration);
             }
         }
+
+        public static void reset(){
+            mMusicBean.reset();
+        }
     }
 
     /***
@@ -269,6 +413,66 @@ public class ARWayController {
                 return mNetworkBean;
             }
         }
+
+        public static void reset(){
+            mNetworkBean.reset();
+        }
     }
+
+    /***
+     * the class for update data about car speed dispaly
+     * NetworkBeanUpdater class is a packing class for car speed.
+     */
+    public static class SpeedBeanUpdater {
+        private static SpeedBean mSpeedBean = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
+
+        public static SpeedBean setIsShow(boolean isShow) {
+            synchronized (ARWayController.class) {
+                mSpeedBean.setIsShow(isShow);
+                return mSpeedBean;
+            }
+        }
+        /**
+         * @param speed km/h
+         * */
+        public static void setSpeed(int speed) {
+            synchronized (ARWayController.class) {
+                mSpeedBean.setSpeed(speed);
+            }
+        }
+
+        public static void reset(){
+            mSpeedBean.reset();
+        }
+    }
+
+    /***
+     * the class for update data about compass
+     * NetworkBeanUpdater class is a packing class for compass.
+     */
+    public static class CompassBeanUpdater {
+        private static CompassBean mCompassBean = (CompassBean) BeanFactory.getBean(BeanFactory.BeanType.COMPASS);
+
+        public static CompassBean setIsShow(boolean isShow) {
+            synchronized (ARWayController.class) {
+                mCompassBean.setIsShow(isShow);
+                return mCompassBean;
+            }
+        }
+
+        public static void setDirection(int direction) {
+            mCompassBean.setDirection(direction);
+        }
+
+        public static void setOrientation(int orientation) {
+            mCompassBean.setOrientation(orientation);
+        }
+
+        public static void reset(){
+            mCompassBean.reset();
+        }
+
+    }
+    
 
 }

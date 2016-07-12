@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw;
 
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCrossImage;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawExit;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawIcon;
@@ -7,6 +8,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawM
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNextRoadName;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawRoute;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawSpeed;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawTurnInfo;
 
 /**
@@ -26,7 +28,9 @@ public class DrawObjectFactory {
         TURN_INFO,
         SATELLITE,
         NAVI_INFO,
-        NETWORK
+        NETWORK,
+        SPEED,
+        COMPASS
     }
     public static DrawObject getDrawObject(DrawType drawType){
         DrawObject drawObject = null;
@@ -57,6 +61,12 @@ public class DrawObjectFactory {
                 break;
             case NETWORK:
                 drawObject = DrawIcon.getInstance(DrawType.NETWORK);
+                break;
+            case SPEED:
+                drawObject = DrawSpeed.getInstance();
+                break;
+            case COMPASS:
+                drawObject = DrawCompass.getInstance();
                 break;
             default:
                 break;

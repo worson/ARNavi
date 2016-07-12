@@ -1,10 +1,13 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean;
 
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
 
 /**
  * author       : 龙;
@@ -15,11 +18,14 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
  */
 public class BeanFactory {
     public enum BeanType {
+        COMMON,
         ROUTE,
         SATELLITE,
         MUSIC,
         NETWORK,
-        NAVI_INFO
+        NAVI_INFO,
+        SPEED,
+        COMPASS,
     }
 
     /**
@@ -27,11 +33,14 @@ public class BeanFactory {
      */
     private static boolean mIsInited = false;
 
+    private static CommonBean    mCommonBean    = null;
     private static RouteBean     mRouteBean     = null;
     private static SatelliteBean mSatelliteBean = null;
     private static MusicBean     mMusicBean     = null;
     private static NetworkBean   mNetworkBean   = null;
     private static NaviInfoBean  mNaviInfoBean  = null;
+    private static SpeedBean     mSpeedBean     = null;
+    private static CompassBean   mCompassBean   = null;
 
     public static SuperBean getBean(BeanType beanType) {
         if (!mIsInited) {
@@ -39,6 +48,9 @@ public class BeanFactory {
         }
         SuperBean hudBean = null;
         switch (beanType) {
+            case COMMON:
+                hudBean = mCommonBean;
+                break;
             case ROUTE:
                 hudBean = mRouteBean;
                 break;
@@ -54,6 +66,12 @@ public class BeanFactory {
             case NAVI_INFO:
                 hudBean = mNaviInfoBean;
                 break;
+            case SPEED:
+                hudBean = mSpeedBean;
+                break;
+            case COMPASS:
+                hudBean = mCompassBean;
+                break;
             default:
                 throw new RuntimeException("bean type is error or missing break.");
         }
@@ -67,6 +85,9 @@ public class BeanFactory {
             mMusicBean = new MusicBean();
             mNetworkBean = new NetworkBean();
             mNaviInfoBean = new NaviInfoBean();
+            mSpeedBean = new SpeedBean();
+            mCompassBean = new CompassBean();
+            mCommonBean = new CommonBean();
             mIsInited = true;
         }
     }

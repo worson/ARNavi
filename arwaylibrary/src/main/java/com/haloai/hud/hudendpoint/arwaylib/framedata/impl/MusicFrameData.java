@@ -11,6 +11,7 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.result.AlphaResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.PositionResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RotateResult;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.ScaleResult;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 
 /**
@@ -164,5 +165,10 @@ public class MusicFrameData extends SuperFrameData {
 
     public float getAlpha() {
         return this.mAlpha;
+    }
+
+    @Override
+    public void update(SuperResult result) throws Exception {
+
     }
 }

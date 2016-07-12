@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.framedata.impl;
 
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
 
 /**
@@ -21,6 +22,11 @@ public class NextRoadNameFrameData extends SuperFrameData {
 
     @Override
     public void animOver() {
+
+    }
+
+    @Override
+    public void update(SuperResult result) throws Exception {
 
     }
 }

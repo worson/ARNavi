@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.bean.impl;
 
+import android.graphics.Bitmap;
+
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 
 /**
@@ -13,15 +15,56 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 public class NaviInfoBean extends SuperBean {
     private int    mNaviIconDistance = 0;
     private int    mNaviIcon         = 0;
+    private Bitmap mNaviIconBitmap   = null;
+    private Bitmap mCrossBitmap   = null;
     private String mCurrentRoadName  = "";
     private String mNextRoadName     = "";
+    private int mSpeed;
+
+    //道路向导信息
+    private int mPathRetainTime;//获取路线剩余时间 min
+    private int mPathRetainDistance;//获取路线剩余距离 m
+
+    private String mNaviText;
+
 
     @Override
     public void reset() {
         mNaviIconDistance = 0;
         mNaviIcon = 0;
+        mNaviIconBitmap = null;
+        mCrossBitmap = null;
         mCurrentRoadName = "";
         mNextRoadName = "";
+        mSpeed=0;
+        mNaviText = "";
+    }
+
+    public NaviInfoBean setNaviText(String beginNaviText) {
+        mNaviText = beginNaviText;
+        return this;
+    }
+
+    public String getNaviText() {
+        return mNaviText;
+    }
+
+    public int getPathRetainTime() {
+        return mPathRetainTime;
+    }
+
+    public NaviInfoBean setPathRetainTime(int pathRetainTime) {
+        mPathRetainTime = pathRetainTime;
+        return this;
+    }
+
+    public int getPathRetainDistance() {
+        return mPathRetainDistance;
+    }
+
+    public NaviInfoBean setPathRetainDistance(int pathRetainDistance) {
+        mPathRetainDistance = pathRetainDistance;
+        return this;
     }
 
     public int getNaviIcon() {
@@ -33,7 +76,33 @@ public class NaviInfoBean extends SuperBean {
         return this;
     }
 
-    public float getNaviIconDistance() {
+    public Bitmap getNaviIconBitmap() {
+        return mNaviIconBitmap;
+    }
+
+    public NaviInfoBean setNaviIconBitmap(Bitmap naviIconBitmap) {
+        mNaviIconBitmap = naviIconBitmap;
+        return this;
+    }
+
+    public Bitmap getCrossBitmap() {
+        return mCrossBitmap;
+    }
+
+    public int getSpeed() {
+        return mSpeed;
+    }
+
+    public void setSpeed(int speed) {
+        mSpeed = speed;
+    }
+
+    public NaviInfoBean setCrossBitmap(Bitmap crossBitmap) {
+        mCrossBitmap = crossBitmap;
+        return this;
+    }
+
+    public int getNaviIconDistance() {
         return mNaviIconDistance;
     }
 

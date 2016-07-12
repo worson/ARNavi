@@ -34,8 +34,14 @@ public class RouteFactor {
     public String                        mNextRoadName       = null;
     public Map<String, List<NaviLatLng>> mRoadNameLatLngs    = null;
     public RouteBean.NextRoadType        mNextRoadType       = null;
-    public Bitmap                        mCrossImage         = null;
-    public float                         mCrossImageDegrees  = 0f;
+    public int mGpsNumber = 0;
+    public String mNaviText = null;
+    public boolean mIsMatchNaviPath = true;
+
+    public boolean mIsYaw = false;
+    public boolean mNaviEnd = false;
+    /*public Bitmap                        mCrossImage         = null;
+    public float                         mCrossImageDegrees  = 0f;*/
 
     private static RouteFactor mRouteFactor = new RouteFactor();
 
@@ -46,7 +52,9 @@ public class RouteFactor {
         return mRouteFactor;
     }
 
-    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation currentLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps, Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs, Bitmap crossImage, float degrees) {
+    public void init(boolean canDraw, boolean mayBeErrorLocation, int currentPoint, int currentStep, AMapNaviLocation currentLocation, List<NaviLatLng> pathLatLngs, List<Integer> croodsInSteps,
+                     Projection projection, String nextRoadName, RouteBean.NextRoadType nextRoadType, Map<String, List<NaviLatLng>> roadNameLatLngs,int gpsNumber,String naviText,
+                     boolean isMatchNaviPath,boolean isYaw,boolean naviEnd) {
         mCanDraw = canDraw;
         mMayBeErrorLocation = mayBeErrorLocation;
         mCurrentPoint = currentPoint;
@@ -58,7 +66,12 @@ public class RouteFactor {
         mNextRoadName = nextRoadName;
         mNextRoadType = nextRoadType;
         mRoadNameLatLngs = roadNameLatLngs;
-        mCrossImage = crossImage;
-        mCrossImageDegrees = degrees;
+        mGpsNumber = gpsNumber;
+        mNaviText = naviText;
+        mIsMatchNaviPath = isMatchNaviPath;
+        mIsYaw = isYaw;
+        mNaviEnd = naviEnd;
+        /*mCrossImage = crossImage;
+        mCrossImageDegrees = degrees;*/
     }
 }
