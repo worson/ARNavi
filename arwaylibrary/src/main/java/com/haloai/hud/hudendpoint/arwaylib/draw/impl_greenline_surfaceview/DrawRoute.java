@@ -7,6 +7,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
+import com.haloai.hud.utils.HaloLogger;
 
 /**
  * author       : 龙;
@@ -32,7 +33,8 @@ public class DrawRoute extends DrawObject {
             if (routeFrameData.getPicture() == null) {
                 return;
             }
-
+            // FIXME: 16/6/14
+            long  performanceLogTime = System.currentTimeMillis();
             routeFrameData.getPicture().draw(canvas);
 
             //TODO helong test 放大四倍
@@ -49,6 +51,7 @@ public class DrawRoute extends DrawObject {
 //            paint.setStrokeWidth(10);
 //            paint.setColor(Color.RED);
 //            canvas.drawText("You must be kidding me!!!", 300, 300, paint);
+            HaloLogger.logI("performance_log","=========performance_log=========== draw time = "+ (System.currentTimeMillis()-performanceLogTime));
         }
     }
 }

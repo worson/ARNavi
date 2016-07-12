@@ -10,6 +10,7 @@ import android.graphics.Point;
  * project_name : hudlauncher;
  */
 public class SuperFactor {
+    public boolean mNeedDraw     = true;
     public long    mStartTime    = 0l;
     public long    mLastTime     = 0l;
     public long    mDuration     = 0l;

@@ -276,7 +276,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
             return null;
         }
         mCurrentFramesCounter++;
-        //if mPrePreLocation is null , so this is the first step to draw
+        //if mPreLocation is null , so this is the first step to draw
         if (mPreLocation == null) {
             mPreLocation = mCurrentLocation;
             mCurrent = 1;
@@ -286,7 +286,7 @@ public class HudwayView extends SurfaceView implements SurfaceHolder.Callback {
         } else if (mPreLocation != mCurrentLocation) {
             mPrePreLocation = mFakerCurrentLocation == null ? mPreLocation : mFakerCurrentLocation;
             //TODO test
-            //mPrePreLocation = mPrePreLocation;
+            //mPreLocation = mPreLocation;
             mPreLocation = mCurrentLocation;
             mCurrent = 1;
 

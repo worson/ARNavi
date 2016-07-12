@@ -11,6 +11,7 @@ import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 public class RouteBean extends SuperBean {
     private static final int CORRECTING_DISTANCE = 50;
+    private static final int GPS_SET_COUNTER = 3;
 
     private List<NaviLatLng>              mPathLatLngs     = new ArrayList<NaviLatLng>();
     private List<Integer>                 mCroodsInSteps   = new ArrayList<Integer>();
@@ -49,6 +51,14 @@ public class RouteBean extends SuperBean {
     private String       mNextRoadName    = null;
     private NextRoadType mNextRoadType    = null;
     private float        mDegrees         = 0f;
+
+    private int mGpsNumberSetCounter = 1;
+    private int mGpsNumber = 0;
+    private int mGpsNumberSum = 0;
+
+    private static final int NOT_MATCH_PATH_NUBER = 1;
+    private int mIsNotMactchPathCounter = 0;
+    private boolean mIsMatchNaviPath = true;
 
     public enum NextRoadType {
         LEFT,
@@ -76,6 +86,29 @@ public class RouteBean extends SuperBean {
         mPathLatLngs.clear();
         mCroodsInSteps.clear();
         mRoadNameLatLngs.clear();
+        mGpsNumber = 0;
+        mGpsNumberSetCounter = 1;
+        mGpsNumberSum = 0;
+    }
+
+    /***
+     * 进行了连续几次取平均操作
+     * */
+    public RouteBean setGpsNumber(int gpsNumber) {
+        mGpsNumber = gpsNumber;
+        //平均处理
+        /*++mGpsNumberSetCounter;
+        mGpsNumberSum += gpsNumber;
+        mGpsNumber = mGpsNumberSum / mGpsNumberSetCounter;
+        if ( mGpsNumberSetCounter > GPS_SET_COUNTER) {
+            mGpsNumberSetCounter = 0;
+            mGpsNumberSum = 0;
+        }*/
+        return this;
+    }
+
+    public int getGpsNumber() {
+        return mGpsNumber;
     }
 
     public boolean isMayBeErrorLocation() {
@@ -109,16 +142,15 @@ public class RouteBean extends SuperBean {
 
         for (AMapNaviStep aMapNaviStep : naviStepList) {
             mPathLatLngs.addAll(aMapNaviStep.getCoords());
-
-            //            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
-            //                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
-            //                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
-            //                    value.addAll(link.getCoords());
-            //                    mRoadNameLatLngs.put(link.getRoadName(), value);
-            //                } else {
-            //                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
-            //                }
-            //            }
+//            for (AMapNaviLink link : aMapNaviStep.getLinks()) {
+//                if (mRoadNameLatLngs.containsKey(link.getRoadName())) {
+//                    List<NaviLatLng> value = mRoadNameLatLngs.get(link.getRoadName());
+//                    value.addAll(link.getCoords());
+//                    mRoadNameLatLngs.put(link.getRoadName(), value);
+//                } else {
+//                    mRoadNameLatLngs.put(link.getRoadName(), link.getCoords());
+//                }
+//            }
         }
 
         return this;
@@ -150,9 +182,26 @@ public class RouteBean extends SuperBean {
         return mPreLocation;
     }
 
+    public boolean isMatchNaviPath() {
+        return mIsMatchNaviPath;
+    }
+
     public RouteBean setCurrentLocation(AMapNaviLocation currentLocation) {
         mPreLocation = mCurrentLocation;
         mCurrentLocation = currentLocation;
+        if(!currentLocation.isMatchNaviPath()){
+            if(++mIsNotMactchPathCounter > NOT_MATCH_PATH_NUBER){
+                mIsNotMactchPathCounter = 0;
+                mIsMatchNaviPath = false;
+            }
+        }else {
+            if (!mIsMatchNaviPath){
+                mIsMatchNaviPath = true;
+            }
+        }
+        if (mPathLatLngs == null || mPathLatLngs.size()<=0){
+            return this;
+        }
         if (mCurrentDistance < CORRECTING_DISTANCE) {
             if (mPreLocation != null) {
                 //如果distance小于1m，就判定为不是车的移动而是location持续返回的误差，就不将其加入到mCurrentDistance中

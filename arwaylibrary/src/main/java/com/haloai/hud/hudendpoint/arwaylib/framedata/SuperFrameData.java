@@ -5,6 +5,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 
+import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SuperResult;
+
 /**
  * author       : 龙;
  * date         : 2016/5/5;
@@ -53,4 +55,21 @@ public abstract class SuperFrameData {
      * 在相关元素的动画结束时调用该方法进行数据重置等相关操作
      */
     public abstract void animOver();
+    /**
+     * 在此函数中更新每一帧的数据
+     */
+    public abstract void update(SuperResult result) throws Exception;
+    /**
+     * 释放某一个流程的标记
+     */
+    public void reset(){
+
+    }
+
+    /**
+     * 释放所有的资源
+     */
+    public void release(){
+
+    }
 }

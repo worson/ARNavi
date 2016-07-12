@@ -11,7 +11,8 @@ import com.haloai.hud.utils.HaloLogger;
 import java.util.ArrayList;
 import java.util.List;
 
-import rajawali.math.vector.Vector3;
+import org.rajawali3d.math.vector.Vector3;
+
 
 /**
  * author       : 龙;
@@ -351,5 +352,54 @@ public class MathUtils {
             path.close();
             mPaths.add(path);
         }*/
+    }
+
+    /**
+     * 以某个参照点旋转一个点
+     * @param angle 以弧度计算
+     */
+    public static PointF pointRotate(PointF src,PointF ref,double angle){
+        PointF result = null;
+        PointF rPoint = new PointF(src.x-ref.x,src.y-ref.y);
+        double c=Math.cos(angle);
+        double s=Math.sin(angle);
+        float x=(float)(rPoint.x*c-rPoint.y*s+ref.x);
+        float y=(float)(rPoint.x*s+rPoint.y*c+ref.y);
+        result = new PointF(x,y);
+        return result;
+    }
+    /**
+     * 得到两点之间的角度 以逆时针方向，0-360
+     */
+    public static double pointDegree(PointF p1,PointF p2){
+        double angle = 0;
+        float diffX,diffY;
+        diffX = p2.x - p1.x;
+        diffY = p2.y - p1.y;
+        if (diffX==0){
+            if (diffY>0){
+                return 90;
+            }else {
+                return -90;
+            }
+        }else if(diffY==0){
+            if (diffX>=0){
+                return 0;
+            }else {
+                return 180;
+            }
+        }else {
+            double k = (1.0f*diffY)/diffX;   //斜率
+            double rad  = Math.atan(k); //注意这个角度的范围是 [-pi/2..pi/2], 不是0到90°
+            angle = (rad*180)/Math.PI;
+            if(diffY>0 && diffX<0){
+                angle += 180;
+            }else if(diffY<0 && diffX<0){
+                angle += 180;
+            }else if(diffY<0 && diffX>0){
+                angle += 360;
+            }
+        }
+        return  angle;
     }
 }
