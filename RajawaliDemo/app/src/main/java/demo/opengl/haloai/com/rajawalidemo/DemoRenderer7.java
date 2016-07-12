@@ -1,6 +1,7 @@
 package demo.opengl.haloai.com.rajawalidemo;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class DemoRenderer7 extends RajawaliRenderer {
 
 
     private static final int NUM_POINTS = 50;
+    private static final int NUM_CATMULL_DESIRED_PT = 10;
     private long                       mStartTime;
     private Material                   mMaterial;
     private PlanesGaloreMaterialPlugin mMaterialPlugin;
@@ -55,6 +57,7 @@ public class DemoRenderer7 extends RajawaliRenderer {
         getCurrentScene().addLight(light);
 
         getCurrentCamera().setZ(2);
+//        getCurrentCamera().setLookAt(0, 6, 0);
 
 
         sphere.setColor(0xffff00);
@@ -67,6 +70,7 @@ public class DemoRenderer7 extends RajawaliRenderer {
         sphere2.setPosition(0, 0, 0);
         getCurrentScene().addChild(sphere2);
 
+        List<Vector3> pathOfSp = new ArrayList<>();
         CatmullRomCurve3D catmull = new CatmullRomCurve3D();
         for (int i = 0; i < NUM_POINTS; i++) {
             // -- generate a random point within certain limits
@@ -77,6 +81,7 @@ public class DemoRenderer7 extends RajawaliRenderer {
                 pos = new Vector3((Math.random() - 0.5) * 2, (i + 1) * 1, 0);
             }
             catmull.addPoint(new Vector3(pos));
+            pathOfSp.add(pos);
         }
         //        catmull.addPoint(new Vector3(-3,3,0));
         //        catmull.addPoint(new Vector3(-3,0,0));
@@ -86,9 +91,9 @@ public class DemoRenderer7 extends RajawaliRenderer {
 
         List<Vector3> mRoad = new ArrayList<>();
         mRoad.clear();
-        for (int i = 0; i < NUM_POINTS * 10; i++) {
+        for (int i = 0; i < NUM_POINTS * NUM_CATMULL_DESIRED_PT; i++) {//4;i++) {//
             Vector3 pos = new Vector3();
-            catmull.calculatePoint(pos, (1.0 * i) / (1.0 * NUM_POINTS * 10));
+            catmull.calculatePoint(pos, (1.0 * i) / (1.0 * NUM_POINTS * NUM_CATMULL_DESIRED_PT));//4);//
             mRoad.add(pos);
         }
 
@@ -98,6 +103,15 @@ public class DemoRenderer7 extends RajawaliRenderer {
             sp.setColor(0x00ffff);
             sp.setMaterial(material);
             sp.setPosition(mRoad.get(i));
+            getCurrentScene().addChild(sp);
+        }
+
+        Material material1 = new Material();
+        for (int i = 0; i < pathOfSp.size(); i++) {
+            Sphere sp = new Sphere(0.02f, 24, 24);
+            sp.setColor(0xff0000);
+            sp.setMaterial(material1);
+            sp.setPosition(pathOfSp.get(i));
             getCurrentScene().addChild(sp);
         }
 
@@ -120,13 +134,14 @@ public class DemoRenderer7 extends RajawaliRenderer {
         //        mMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
 
         try {
-            ATexture texture = new Texture("route_new", R.mipmap.route_new);
-            //            texture.setMipmap(false);
-            //            texture.setFilterType(ATexture.FilterType.LINEAR);
+            ATexture texture = new Texture("route_new", R.mipmap.roadm);//.route_new);
+//                        texture.setMipmap(false);
+//                        texture.setFilterType(ATexture.FilterType.LINEAR);
             mMaterial.addTexture(texture);
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
+//        mMaterial.setColor(Color.GREEN);
 
         mMaterialPlugin = planes.getMaterialPlugin();
 
@@ -225,15 +240,22 @@ public class DemoRenderer7 extends RajawaliRenderer {
     }
 
     public void onDrawFrame(GL10 glUnused) {
-        super.onDrawFrame(glUnused);
+        try {
+            super.onDrawFrame(glUnused);
+        }catch (Throwable t) {
+            t.printStackTrace();;
+        }
         //mMaterial.setTime((System.currentTimeMillis() - mStartTime) / 1000f);
         //mMaterialPlugin.setCameraPosition(getCurrentCamera().getPosition());
 
         if (mRunning) {
             //getCurrentCamera().setY(getCurrentCamera().getY() + .01f);
             Vector3 cameraPosition = getCurrentCamera().getPosition();
-            mMaterialPlugin.setCameraPosition(cameraPosition);
-            //getCurrentCamera().setLookAt(cameraPosition.x,cameraPosition.y+2,0);
+//            mMaterialPlugin.setCameraPosition(cameraPosition);
+
+//            getCurrentCamera().setLookAt(cameraPosition.x,cameraPosition.y+5,0);
+
+//            getCurrentCamera().setRotation(0, );
             //sphere.setPosition(cameraPosition.x,cameraPosition.y,0);
             //sphere2.setPosition(getCurrentCamera().getLookAt());
             //Log.e("helong_debug","rotation:"+planes.getRotation());

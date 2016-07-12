@@ -91,13 +91,13 @@ public class PlanesGalore extends Object3D {
             for (int i = 0; i < mPath.size() - 1; ++i) {
                 // TODO: 2016/7/4 宽高都需要乘以2才与Rajawali那边的比例一致,暂时不清楚为什么(不是因为z轴)
                 Vector3 p1 = new Vector3(mPath.get(i));
-                p1.x *= 2;
-                p1.y *= 2;
-                p1.z *= 2;
+//                p1.x *= 2;
+//                p1.y *= 2;
+//                p1.z *= 2;
                 Vector3 p2 = new Vector3(mPath.get(i + 1));
-                p2.x *= 2;
-                p2.y *= 2;
-                p2.z *= 2;
+//                p2.x *= 2;
+//                p2.y *= 2;
+//                p2.z *= 2;
                 Vector3 planeVector3_position = new Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, (p1.z + p2.z) / 2);
                 int randColor = 0xffff0000;
 
@@ -126,40 +126,40 @@ public class PlanesGalore extends Object3D {
                 //p2
                 //左上
                 Vector3 leftUp = new Vector3(mPathLeft.get(i+1));
-                leftUp.x*=2;
-                leftUp.y*=2;
-                leftUp.z*=2;
-                vertices[vIndex + 0] = (float) ((leftUp.x-p2.x)+(p2.x-planeVector3_position.x));
-                vertices[vIndex + 1] = (float) (p2.y-p1.y)/2+0.1f;
-                vertices[vIndex + 1] = (float) ((leftUp.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
+//                leftUp.x*=2;
+//                leftUp.y*=2;
+//                leftUp.z*=2;
+                vertices[vIndex + 0] = (float) leftUp.x;//((leftUp.x-p2.x)+(p2.x-planeVector3_position.x));
+//                vertices[vIndex + 1] = (float) (p2.y-p1.y)/2+0.1f;
+                vertices[vIndex + 1] = (float) leftUp.y;//((leftUp.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
                 vertices[vIndex + 2] = (float) leftUp.z;
                 //右上
                 Vector3 rightUp = new Vector3(mPathRight.get(i+1));
-                rightUp.x*=2;
-                rightUp.y*=2;
-                rightUp.z*=2;
-                vertices[vIndex + 3] = (float) ((rightUp.x-p2.x)+(p2.x-planeVector3_position.x));
-                vertices[vIndex + 4] = (float) (p2.y-p1.y)/2+0.1f;
-                vertices[vIndex + 4] = (float) ((rightUp.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
+//                rightUp.x*=2;
+//                rightUp.y*=2;
+//                rightUp.z*=2;
+                vertices[vIndex + 3] = (float) rightUp.x;//((rightUp.x-p2.x)+(p2.x-planeVector3_position.x));
+//                vertices[vIndex + 4] = (float) (p2.y-p1.y)/2+0.1f;
+                vertices[vIndex + 4] = (float) rightUp.y;//((rightUp.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
                 vertices[vIndex + 5] = (float) rightUp.z;
                 //p1
                 //右下
                 Vector3 rightDown = new Vector3(mPathRight.get(i));
-                rightDown.x*=2;
-                rightDown.y*=2;
-                rightDown.z*=2;
-                vertices[vIndex + 6] = (float) ((rightDown.x-p1.x) + (p1.x - planeVector3_position.x));
-                vertices[vIndex + 7] = -(float) (p2.y-p1.y)/2-0.1f;
-                vertices[vIndex + 7] = (float) ((rightDown.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
+//                rightDown.x*=2;
+//                rightDown.y*=2;
+//                rightDown.z*=2;
+                vertices[vIndex + 6] = (float) rightDown.x;//((rightDown.x-p1.x) + (p1.x - planeVector3_position.x));
+//                vertices[vIndex + 7] = -(float) (p2.y-p1.y)/2-0.1f;
+                vertices[vIndex + 7] = (float) rightDown.y;//((rightDown.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
                 vertices[vIndex + 8] = (float) rightDown.z;
                 //左下
                 Vector3 leftDown = new Vector3(mPathLeft.get(i));
-                leftDown.x*=2;
-                leftDown.y*=2;
-                leftDown.z*=2;
-                vertices[vIndex + 9]  = (float) ((leftDown.x-p1.x)+ (p1.x - planeVector3_position.x));
-                vertices[vIndex + 10] = -(float) (p2.y-p1.y)/2-0.1f;
-                vertices[vIndex + 10] = (float) ((leftDown.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
+//                leftDown.x*=2;
+//                leftDown.y*=2;
+//                leftDown.z*=2;
+                vertices[vIndex + 9]  = (float) leftDown.x;//((leftDown.x-p1.x)+ (p1.x - planeVector3_position.x));
+//                vertices[vIndex + 10] = -(float) (p2.y-p1.y)/2-0.1f;
+                vertices[vIndex + 10] = (float) leftDown.y;//((leftDown.y-p2.y)+(p2.y-planeVector3_position.y))+0.015f;
                 vertices[vIndex + 11] = (float) leftDown.z;
 
                 for (int j = 0; j < 12; j += 3) {
@@ -183,10 +183,10 @@ public class PlanesGalore extends Object3D {
 
                 vIndex = i * 4 * 2;
 
-                float u1 = .25f * 0;
-                float v1 = .25f * 0;
-                float u2 = u1 + .25f;
-                float v2 = v1 + .25f;
+                float u1 = 0;//.25f * 0;
+                float v1 = 0;//.25f * 0;
+                float u2 = 1;//u1 + .25f;
+                float v2 = 1;//v1 + .25f;
 
                 textureCoords[vIndex + 0] = u2;
                 textureCoords[vIndex + 1] = v1;

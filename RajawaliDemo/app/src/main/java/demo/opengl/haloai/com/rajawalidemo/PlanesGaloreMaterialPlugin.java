@@ -1,6 +1,8 @@
 package demo.opengl.haloai.com.rajawalidemo;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.plugins.IMaterialPlugin;
@@ -93,55 +95,57 @@ public class PlanesGaloreMaterialPlugin implements IMaterialPlugin {
 			RFloat time = (RFloat) getGlobal(DefaultShaderVar.U_TIME);
 			RFloat rotation = new RFloat("rotation");
 			rotation.assign(time.multiply(maRotationSpeed));
-			
+
 			//
 			// -- rotate around the z axis
 			//
-			
+
 			// -- mat4 mz = mat4(1.0);
-			RMat4 mz = new RMat4("mz");
-			mz.assign(castMat4(1.0f));
-			// -- mz[0][0] = cos(rotation);
-			mz.elementAt(0).elementAt(0).assign(cos(rotation)); 
-			// -- mz[0][1] = sin(rotation);
-			mz.elementAt(0).elementAt(1).assign(sin(rotation)); 
-			// -- mz[1][0] = -sin(rotation);
-			mz.elementAt(1).elementAt(0).assign(sin(rotation).negate());
-			// -- mz[1][1] = cos(rotation);
-			mz.elementAt(1).elementAt(1).assign(cos(rotation)); 
-			
+//			RMat4 mz = new RMat4("mz");
+//			mz.assign(castMat4(1.0f));
+//			// -- mz[0][0] = cos(rotation);
+//			mz.elementAt(0).elementAt(0).assign(cos(rotation));
+//			// -- mz[0][1] = sin(rotation);
+//			mz.elementAt(0).elementAt(1).assign(sin(rotation));
+//			// -- mz[1][0] = -sin(rotation);
+//			mz.elementAt(1).elementAt(0).assign(sin(rotation).negate());
+//			// -- mz[1][1] = cos(rotation);
+//			mz.elementAt(1).elementAt(1).assign(cos(rotation));
+
 			//
 			// -- rotate around the y axis
 			//
-			
+
 			// -- mat4 my = mat4(1.0);
-			RMat4 my = new RMat4("my");
-			my.assign(castMat4(1.0f));
-			// -- my[0][0] = cos(rotation);
-			my.elementAt(0).elementAt(0).assign(cos(rotation));
-			// -- my[0][2] = -sin(rotation);
-			my.elementAt(0).elementAt(2).assign(sin(rotation).negate());
-			// -- my[2][0] = sin(rotation);
-			my.elementAt(2).elementAt(0).assign(sin(rotation));
-			// -- my[2][2] = cos(rotation);
-			my.elementAt(2).elementAt(2).assign(cos(rotation));
-			
+//			RMat4 my = new RMat4("my");
+//			my.assign(castMat4(1.0f));
+//			// -- my[0][0] = cos(rotation);
+//			my.elementAt(0).elementAt(0).assign(cos(rotation));
+//			// -- my[0][2] = -sin(rotation);
+//			my.elementAt(0).elementAt(2).assign(sin(rotation).negate());
+//			// -- my[2][0] = sin(rotation);
+//			my.elementAt(2).elementAt(0).assign(sin(rotation));
+//			// -- my[2][2] = cos(rotation);
+//			my.elementAt(2).elementAt(2).assign(cos(rotation));
+
 			RVec4 gPosition = (RVec4) getGlobal(DefaultShaderVar.G_POSITION);
-			
+
 			// -- vec4 rotPos = gPosition * mz * my;
-			RVec4 rotPos = new RVec4("rotPos");
-			rotPos.assign(gPosition.multiply(mz).multiply(my));
-			rotPos.assignAdd(maPlanePosition);
-			gPosition.assign(rotPos);
-			
+//			RVec4 rotPos = new RVec4("rotPos");
+//			rotPos.assign(gPosition.multiply(mz).multiply(my));
+//			rotPos.assignAdd(maPlanePosition);
+//			gPosition.assign(rotPos);
+
 			// -- float pdist = length(uCamPos - gl_Position.xyz);
 			RFloat planeDist = new RFloat("planeDist");
 			planeDist.assign(distance(muCameraPosition, gPosition.xyz()));
-			
+
 			// -- quick & dirty, hacky fog
 			// -- vFog = 1.0 - ((1.0 / 50.0) * planeDist);
 			mvFog.assign(enclose(new RFloat(1.0f).divide(new RFloat(40.f))).multiply(planeDist));
 			mvFog.assign(new RFloat(1.f).subtract(mvFog));
+
+			Log.e("OpenGLShader", "The Vertex Shader String is: \n" + this.mShaderSB.toString());
 		}
 
 		@Override
@@ -227,7 +231,8 @@ public class PlanesGaloreMaterialPlugin implements IMaterialPlugin {
 		@Override
 		public void main() {
 			RVec4 gColor = (RVec4) getGlobal(DefaultShaderVar.G_COLOR);
-			gColor.rgb().assignMultiply(mvFog);
+//			gColor.rgb().assign("vec3(1,1,1)");
+//			gColor.rgb().assignMultiply(mvFog);//Harry
 		}
 		
 		@Override
