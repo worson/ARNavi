@@ -297,7 +297,6 @@ public class RouteFrameData extends SuperFrameData <RouteResult>{
             PointF rotatePoint1 = MathUtils.pointRotate(originPoint1,originRef,rotateRadian);
             PointF rotateFakePoint = MathUtils.pointRotate(originfakePoint,originRef,rotateRadian);
 
-
             double tOffsetDistance = 0;
             double offsetHeight = routeResult.mFakerPointY -originPoint0.y;
             double offsetWidth = routeResult.mFakerPointX - originPoint0.x;

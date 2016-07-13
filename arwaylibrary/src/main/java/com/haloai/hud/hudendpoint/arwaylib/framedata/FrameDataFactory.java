@@ -119,7 +119,7 @@ public class FrameDataFactory {
     public static SuperFrameData getOpenglFrameDate(Context context, FrameDataType frameDataType){
         SuperFrameData frameData = null;
         switch (frameDataType) {
-            case GL_SCENE:
+            /*case GL_ROUTE:
                 frameData = SceneFrameData.getInstance();
                 SceneFrameData sceneFrameData = (SceneFrameData) frameData;
                 SceneFactor sceneFactor = SceneFactor.getInstance();
@@ -137,7 +137,7 @@ public class FrameDataFactory {
                 cameraFrameData.update(cameraResult);
                 break;
             default:
-                break;
+                break;*/
         }
         return frameData;
     }

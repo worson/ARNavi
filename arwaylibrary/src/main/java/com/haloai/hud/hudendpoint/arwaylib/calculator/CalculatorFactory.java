@@ -1,12 +1,14 @@
 package com.haloai.hud.hudendpoint.arwaylib.calculator;
 
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.AlphaCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.CameraCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.CrossImageCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.NaviInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.PositionCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RotateCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.RouteCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.ScaleCalculator;
+import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SceneCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SpeedCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.TurnInfoCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
@@ -62,6 +64,12 @@ public class CalculatorFactory {
                 break;
             case NAVI_INFO:
                 calculator = NaviInfoCalculator.getInstance();
+                break;
+            case GL_SCENE:
+                calculator = SceneCalculator.getInstance();
+                break;
+            case GL_CAMERA:
+                calculator = CameraCalculator.getInstance();
                 break;
             default:
                 break;

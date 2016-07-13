@@ -9,6 +9,10 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SpeedResult;
  */
 public class SpeedCalculator extends SuperCalculator<SpeedResult,SpeedFactor>{
     private static SpeedCalculator mSpeedCalculator = new SpeedCalculator();
+    public static SpeedCalculator getInstance() {
+        return mSpeedCalculator;
+    }
+
     @Override
     public SpeedResult calculate(SpeedFactor speedFactor) {
         SpeedResult speedResult = SpeedResult.getInstance();
@@ -22,7 +26,5 @@ public class SpeedCalculator extends SuperCalculator<SpeedResult,SpeedFactor>{
 
     }
 
-    public static SpeedCalculator getInstance() {
-        return mSpeedCalculator;
-    }
+
 }

@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Handler;
 import android.view.View;
 
 import com.amap.api.maps.Projection;
@@ -20,6 +19,8 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.CameraBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.OpenglRouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
@@ -30,6 +31,10 @@ import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
+
+import org.rajawali3d.math.vector.Vector3;
+
+import java.util.List;
 
 /**
  * author       : 龙;
@@ -84,7 +89,7 @@ public class ARWayController {
          * 偏航时：更改绘制内容，领航成功时重置内容，再写入新路径
          * */
 
-        public static void back2Init() {
+         public static void back2Init() {
             mARWay.reset();
         }
 
@@ -191,6 +196,33 @@ public class ARWayController {
         }
     }
 
+    public static class SceneBeanUpdater{
+        private static OpenglRouteBean mOpenglRouteBean = (OpenglRouteBean) BeanFactory.getBean(BeanFactory.BeanType.GL_ROUTE);
+        public static OpenglRouteBean setProjection(Projection projection) {
+            synchronized (ARWayController.class) {
+                return  mOpenglRouteBean.setProjection(projection);
+            }
+        }
+
+        public static OpenglRouteBean setPath(List<Vector3> path) {
+            synchronized (ARWayController.class) {
+                return mOpenglRouteBean.setPathPoints(path);
+            }
+        }
+
+        public static OpenglRouteBean setAllLength(int allLength) {
+            synchronized (ARWayController.class) {
+                return mOpenglRouteBean.setAllLength(allLength);
+            }
+        }
+
+    }
+
+    public static class CameraBeanUpdater{
+        private static CameraBean mCameraBean = (CameraBean) BeanFactory.getBean(BeanFactory.BeanType.GL_CAMERA);
+
+    }
+    
     /***
      * the class for update data about navigation.
      * RouteBeanUpdater class is a packing class for RouteBean.
