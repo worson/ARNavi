@@ -8,6 +8,9 @@ import android.graphics.PointF;
 
 import com.haloai.hud.utils.HaloLogger;
 
+import org.rajawali3d.math.Quaternion;
+import org.rajawali3d.math.vector.Vector3;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +64,146 @@ public class MathUtils {
         return Math.sqrt(Math.pow((y2 - y1), 2) + Math.pow((x2 - x1), 2));
     }
 
+    /**
+     * 得到两个点连成的线与一个角度之间的插值(正数为向右旋转,负数为向左旋转)
+     * @param preX
+     * @param preY
+     * @param curX
+     * @param curY
+     * @param cameraRotZ
+     * @return
+     */
+    public static double getRotateDegreesWithLineAndAngle(double preX, double preY, double curX, double curY, double cameraRotZ) {
+        double road_direction = MathUtils.rotateDegrees(MathUtils.getDegrees(preX, preY, curX, curY), 180);//顺时针方向，从6点方向旋转到12点方向
+        road_direction = road_direction > 180 ? road_direction - 360 : road_direction;
+        //                    double camera_direction = euler.z;//顺时针，12点方向为参考
+        double camera_direction = Math.toDegrees(cameraRotZ);//顺时针，12点方向为参考
+        //        double road_yaw = MathUtils.triPointYaw(pre.x, pre.y, cur.x, cur.y, next.x, next.y);//顺时针为正
+        double camera_yaw = -camera_direction + road_direction;
+        double cal_camera_yaw = camera_yaw;
+        if (Math.abs(camera_yaw) > 180) {
+            if (camera_yaw > 0) {
+                cal_camera_yaw = camera_yaw - 360;
+            } else {
+                cal_camera_yaw = camera_yaw + 360;
+            }
+        }
+        return cal_camera_yaw;
+    }
+
+    /**
+     * 计算三个平面点之间的两个连续矢量方向变化，顺时针方向为正，逆时针方向为负
+     * ax,ay,bx,by,cx,cy表示可构成三角形的三个点,对应边了a,b,c,最后求c的角度
+     * @param ax
+     * @param ay
+     * @param bx
+     * @param by
+     * @param cx
+     * @param cy
+     * @return
+     */
+    public static double getRotateDegreesWithTwoLines(double ax,double ay,double bx,double by,double cx,double cy){
+        double a,b,c,mx,my,result=0,dgress=0;
+        a = calculateDistance(ax,ay,bx,by);
+        b = calculateDistance(bx,by,cx,cy);
+        c = calculateDistance(ax,ay,cx,cy);
+        if(!isTriangle(a,b,c)){
+            return 0;
+        }else {
+            mx = (ax+cx)/2;//求中点
+            my = (ay+cy)/2;//求中点
+            if((bx==mx) && (by==my)){
+                return 0;
+            }
+            dgress = triangleLength2Degress(c,b,a);
+            if(!triClockWise(ax, ay, bx, by, cx, cy)){//逆时针
+                result = dgress-180;
+            }else{//顺时针
+                result = 180-dgress;
+            }
+        }
+        return result;
+    }
+
+    /***
+     * 判断三角形是否为顺时针方向
+     * @return
+     */
+    public static boolean triClockWise(double x1,double y1,double x2,double y2,double x3,double y3){
+        return ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1)) <0;
+    }
+
+    /**
+     * 以某个参照点逆时针旋转一个点
+     * @param angle 以弧度计算
+     */
+
+    public static Vector3 vector3Rotate(Vector3 src, Vector3 ref, double angle){
+        Vector3 result = null;
+        Vector3 rPoint = new Vector3(src.x-ref.x,src.y-ref.y,src.z);
+        double c=Math.cos(angle);
+        double s=Math.sin(angle);
+        float x=(float)(rPoint.x*c-rPoint.y*s+ref.x);
+        float y=(float)(rPoint.x*s+rPoint.y*c+ref.y);
+        result = new Vector3(x,y,src.z);
+        return result;
+    }
+
+
+    /**
+     * 由三角开的三条边计算角度
+     *
+     * @param a 需要计算角的对边
+     * @param b 计算角的邻边
+     * @param c 计算角的邻边
+     * @return 参数有误时，返回-1，返回角度在0~180
+     */
+    public static double triangleLength2Degress(double a,double b,double c){
+        if(!isTriangle(a,b,c)){
+            return -1;
+        }
+        double cosA = (b*b+c*c-a*a)/(2*b*c);
+        double dA = Math.toDegrees(Math.acos(cosA));
+        return dA;
+    }
+
+    public static Vector3 getEulerDegeress(Quaternion qt){
+        Vector3 r = new Vector3();
+        boolean reProject = false;
+        double fator = 180/Math.PI;
+        double yaw,roll,pitch;
+        yaw = qt.getYaw()*fator;
+        roll = qt.getRoll()*fator;
+        pitch = qt.getPitch()*fator;
+        r.x = pitch;
+        r.y = yaw;
+        r.z = roll;
+        return r;
+    }
+
+    /**
+     * 由三角开的三条边计算角度
+     *
+     * @return
+     */
+    public static boolean isTriangle(double a,double b,double c){
+        if((a>0 && a>0 && c>0) && ((a+b)>c && (a+c)>b && (b+c)>a)){
+            return true;
+        }
+        return false;
+    }
+
+    /***
+     * 顺时针方向重新映射角度
+     * @param from
+     * @return 0~360
+     */
+    public static double rotateDegrees(double from,double rotate){
+        double to = from+rotate;
+        int n = ((int)to)/360;
+        return to>360?to-360*n:to;
+    }
+
     /***
      * 获取两个屏幕点的连线与水平线之间的距离
      *
@@ -70,8 +213,8 @@ public class MathUtils {
      * @param y2
      * @return
      */
-    public static float getDegrees(float x, float y, float x2, float y2) {
-        return getDegrees(x,y,x2,y2);
+    public static double getDegrees(float x, float y, float x2, float y2) {
+        return getDegrees((double)x, (double)y, (double)x2, (double)y2);
     }
 
     public static double getDegrees(double x, double y, double x2, double y2){
@@ -401,5 +544,64 @@ public class MathUtils {
             }
         }
         return  angle;
+    }
+
+    public static int getIntersection(PointF line1Start, PointF line1End, PointF line2Start, PointF line2End, PointF intersectionPoint) {
+        PointF intersection = new PointF(0, 0);
+
+        if (Math.abs(line1End.y - line1Start.y) + Math.abs(line1End.x - line1Start.x) + Math.abs(line2End.y - line2Start.y)
+                + Math.abs(line2End.x - line2Start.x) == 0) {
+            if ((line2Start.x - line1Start.x) + (line2Start.y - line1Start.y) == 0) {
+//                Log.e("helong_debug", "ABCD是同一个点！");
+            } else {
+//                Log.e("helong_debug","AB是一个点，CD是一个点，且AC不同！");
+            }
+            return 0;
+        }
+
+        if (Math.abs(line1End.y - line1Start.y) + Math.abs(line1End.x - line1Start.x) == 0) {
+            if ((line1Start.x - line2End.x) * (line2Start.y - line2End.y) - (line1Start.y - line2End.y) * (line2Start.x - line2End.x) == 0) {
+//                Log.e("helong_debug","A、B是一个点，且在CD线段上！");
+            } else {
+//                Log.e("helong_debug","A、B是一个点，且不在CD线段上！");
+            }
+            return 0;
+        }
+        if (Math.abs(line2End.y - line2Start.y) + Math.abs(line2End.x - line2Start.x) == 0) {
+            if ((line2End.x - line1End.x) * (line1Start.y - line1End.y) - (line2End.y - line1End.y) * (line1Start.x - line1End.x) == 0) {
+//                Log.e("helong_debug","C、D是一个点，且在AB线段上！");
+            } else {
+//                Log.e("helong_debug","C、D是一个点，且不在AB线段上！");
+            }
+            return 0;
+        }
+
+        if ((line1End.y - line1Start.y) * (line2Start.x - line2End.x) - (line1End.x - line1Start.x) * (line2Start.y - line2End.y) == 0) {
+//            Log.e("helong_debug","线段平行，无交点！");
+            return 0;
+        }
+
+        intersection.x = ((line1End.x - line1Start.x) * (line2Start.x - line2End.x) * (line2Start.y - line1Start.y) -
+                line2Start.x * (line1End.x - line1Start.x) * (line2Start.y - line2End.y) + line1Start.x * (line1End.y - line1Start.y) * (line2Start.x - line2End.x)) /
+                ((line1End.y - line1Start.y) * (line2Start.x - line2End.x) - (line1End.x - line1Start.x) * (line2Start.y - line2End.y));
+        intersection.y = ((line1End.y - line1Start.y) * (line2Start.y - line2End.y) * (line2Start.x - line1Start.x) - line2Start.y
+                * (line1End.y - line1Start.y) * (line2Start.x - line2End.x) + line1Start.y * (line1End.x - line1Start.x) * (line2Start.y - line2End.y))
+                / ((line1End.x - line1Start.x) * (line2Start.y - line2End.y) - (line1End.y - line1Start.y) * (line2Start.x - line2End.x));
+
+        if ((intersection.x - line1Start.x) * (intersection.x - line1End.x) <= 0
+                && (intersection.x - line2Start.x) * (intersection.x - line2End.x) <= 0
+                && (intersection.y - line1Start.y) * (intersection.y - line1End.y) <= 0
+                && (intersection.y - line2Start.y) * (intersection.y - line2End.y) <= 0) {
+
+//            Log.e("helong_debug","线段相交于点(" + intersection.x + "," + intersection.y + ")！");
+            intersectionPoint.x = intersection.x;
+            intersectionPoint.y = intersection.y;
+            return 1; // '相交
+        } else {
+//            Log.e("helong_debug","线段相交于虚交点(" + intersection.x + "," + intersection.y + ")！");
+            intersectionPoint.x = intersection.x;
+            intersectionPoint.y = intersection.y;
+            return -1; // '相交但不在线段上
+        }
     }
 }
