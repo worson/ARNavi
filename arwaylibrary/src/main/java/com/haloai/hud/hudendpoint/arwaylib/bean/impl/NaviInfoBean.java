@@ -25,6 +25,8 @@ public class NaviInfoBean extends SuperBean {
     private int mPathRetainTime;//获取路线剩余时间 min
     private int mPathRetainDistance;//获取路线剩余距离 m
 
+    private int mPathTotalDistance = 0;//获取路线总距离 m
+
     private String mNaviText;
 
 
@@ -38,6 +40,15 @@ public class NaviInfoBean extends SuperBean {
         mNextRoadName = "";
         mSpeed=0;
         mNaviText = "";
+        mPathTotalDistance = 0;
+    }
+
+    public int getPathTotalDistance() {
+        return mPathTotalDistance;
+    }
+
+    public void setPathTotalDistance(int pathTotalDistance) {
+        mPathTotalDistance = pathTotalDistance;
     }
 
     public NaviInfoBean setNaviText(String beginNaviText) {

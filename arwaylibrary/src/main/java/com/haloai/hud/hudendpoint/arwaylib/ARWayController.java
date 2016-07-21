@@ -151,7 +151,7 @@ public class ARWayController {
         /**
          * reset bean data
          */
-        protected static void resetData() {
+        public static void resetData() {
             HaloLogger.logE("ARWayController","resetData called");
             CommonBeanUpdater.reset();
             RouteBeanUpdater.reset();
@@ -188,6 +188,11 @@ public class ARWayController {
         public static void setNaviEnd(boolean naviEnd) {
             synchronized (ARWayController.class) {
                 mCommonBean.setNaviEnd(naviEnd);
+            }
+        }
+        public static void setStartOk(boolean startOk) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setStartOk(startOk);
             }
         }
 
@@ -307,6 +312,10 @@ public class ARWayController {
 
         public static NaviInfoBean setIsShow(boolean isShow){
             mNaviInfoBean.setIsShow(isShow);
+            return mNaviInfoBean;
+        }
+        public static NaviInfoBean setPathTotalDistance(int distance){
+            mNaviInfoBean.setPathTotalDistance(distance);
             return mNaviInfoBean;
         }
 

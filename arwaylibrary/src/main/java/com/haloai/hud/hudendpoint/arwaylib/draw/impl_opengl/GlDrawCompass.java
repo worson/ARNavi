@@ -1,0 +1,196 @@
+package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
+
+import android.animation.ObjectAnimator;
+import android.content.Context;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.TextView;
+
+import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
+import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
+import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
+
+/**
+ * Created by wangshengxing on 16/7/15.
+ */
+public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
+
+
+
+    public static float VIEW_BOTTOM_ERROR = 1f;
+    public static  int ANIMA_WIDTH_SCALE = (int)(VIEW_DRIVING_WIDTH *1f/ VIEW_NOT_DRIVING_WIDTH);
+    public static  int ANIMA_HEIGHT_SCALE = (int)(VIEW_DRIVING_HEIGHT *1f/ VIEW_NOT_DRIVING_HEIGHT);
+
+
+
+    private  static GlDrawCompass mGlDrawCompass = new GlDrawCompass();
+
+    public GlDrawCompass() {
+
+    }
+    public static GlDrawCompass getInstance() {
+        return mGlDrawCompass;
+    }
+
+    public ComPassView mComPassView       = null;
+    public TextView    mDirectionTextView = null;
+
+    @Override
+    protected void initLayout(Context context, ViewGroup parent, View view) {
+        super.initLayout(context, parent, view);
+        if (mResources != null) {
+            VIEW_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.compass_driving_width));
+            VIEW_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.compass_driving_height));
+            VIEW_NOT_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.compass_pause_width));
+            VIEW_NOT_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.compass_pause_height));
+        }
+    }
+
+    @Override
+    public View getViewInstance(Context context) {
+        if (mComPassView == null) {
+            initLayout(context,null,null);
+            mComPassView=new ComPassView(context, VIEW_NOT_DRIVING_WIDTH, VIEW_NOT_DRIVING_HEIGHT);
+            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(VIEW_NOT_DRIVING_WIDTH, VIEW_NOT_DRIVING_HEIGHT);
+            mComPassView.setLayoutParams(layoutParams);
+//            mComPassView=new ComPassView(context, 300, 300);
+        }
+        /*ComPassView mComPassView = new ComPassView(mContext, 254, 254);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(254, 254);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mComPassView.setLayoutParams(layoutParams);
+        mComPassView.setDestDegree(180 - 90);*/
+        return mComPassView;
+    }
+
+    @Override
+    public void setView(Context context, View view) {
+        ComPassView compass = (ComPassView)view.findViewById(R.id.compass_view);
+        mDirectionTextView = (TextView) view.findViewById(R.id.diretion_textview);
+        if (compass != null) {
+            ViewGroup parent = (ViewGroup)view.getParent();
+            mComPassView = compass;
+            initLayout(context,parent,compass);
+//            bringToFront();
+        }
+
+    }
+    public void showHide(boolean show) {
+        View[] views = new View[]{mDirectionTextView,mComPassView};
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    v.setVisibility(View.VISIBLE);
+                }else {
+                    v.setVisibility(View.INVISIBLE);
+                }
+            }
+        }
+    }
+
+    private void bringToFront(){
+        mComPassView.bringToFront();
+        mDirectionTextView.bringToFront();
+    }
+
+    @Override
+    public void changeDriveState(DriveState state) {
+        if (mViewParent != null) {
+            VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
+            VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
+        }
+
+        switch (state){
+            case DRIVING:
+                if (mComPassView != null) {
+                    ObjectAnimator animator = null;
+
+                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",1,0.5f);
+                    animator.setDuration(1000);
+                    animator.setRepeatCount(0);
+//                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",1,0.754f);
+                    animator.setDuration(VIEW_ANIMATION_DURATION/4);
+                    animator.setInterpolator(new DecelerateInterpolator(4));
+                    animator.setRepeatCount(0);
+//                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", 0, VIEW_ROTATION_DEGREES);
+                    animator.setInterpolator(new DecelerateInterpolator(1));
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.setRepeatCount(0);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha", 1,0);
+                    animator.setInterpolator(new DecelerateInterpolator(1));
+                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
+                    animator.setRepeatCount(0);
+                    animator.start();
+
+
+                    /*animator = ObjectAnimator.ofFloat(mComPassView, "X", 0, 50);
+                    animator.setDuration(1000);
+                    animator.setRepeatCount(0);
+                    animator.start();*/
+                    Log.e("compassdraw", VIEW_PARRENT_HEIGHT +",   "+ VIEW_NOT_DRIVING_HEIGHT +",   "+ VIEW_DRIVING_HEIGHT);
+                    if (mViewParent != null) {
+                        animator = ObjectAnimator.ofFloat(mComPassView, "Y", VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT), (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT *VIEW_BOTTOM_ERROR)));
+                        animator.setInterpolator(new DecelerateInterpolator(4));
+                        animator.setDuration(300);
+                        animator.setRepeatCount(0);
+//                        animator.start();
+                    }
+                }
+                break;
+            case PAUSE:
+                if (mComPassView != null) {
+                    ObjectAnimator animator = null;
+
+                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",0.5f,1);
+                    animator.setDuration(500);
+                    animator.setRepeatCount(0);
+//                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",0.754f,1);
+                    animator.setDuration(500);
+                    animator.setRepeatCount(0);
+//                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", VIEW_ROTATION_DEGREES,0);
+                    animator.setInterpolator(new DecelerateInterpolator(4));
+                    animator.setDuration(500);
+                    animator.setRepeatCount(0);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha",0,1);
+                    animator.setInterpolator(new DecelerateInterpolator(1));
+                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
+                    animator.setRepeatCount(0);
+                    animator.start();
+
+                    if (mViewParent != null) {
+                        animator = ObjectAnimator.ofFloat(mComPassView, "Y", (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT *VIEW_BOTTOM_ERROR)), VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT));
+                        animator.setInterpolator(new DecelerateInterpolator(4));
+                        animator.setDuration(300);
+                        animator.setRepeatCount(0);
+//                        animator.start();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void doDraw() {
+        super.doDraw();
+    }
+
+
+}

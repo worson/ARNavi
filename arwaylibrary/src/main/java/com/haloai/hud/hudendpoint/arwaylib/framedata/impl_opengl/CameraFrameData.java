@@ -24,7 +24,7 @@ public class CameraFrameData extends SuperFrameData <CameraResult> {
 
     @Override
     public void update(CameraResult cameraResult) {
-        HaloLogger.logE("sen_debug_gl", "camera update called");
+//        HaloLogger.logE("sen_debug_gl", "camera update called");
         if (cameraResult == null || cameraResult.mRenderer == null) {
             return;
         }
@@ -35,7 +35,7 @@ public class CameraFrameData extends SuperFrameData <CameraResult> {
                     renderer.getCurrentScene().registerAnimation(animation);
                     animation.setTransformable3D(renderer.getCurrentCamera());
                     animation.play();
-                    HaloLogger.logE("sen_debug_gl", "camera update anim called");
+//                    HaloLogger.logE("sen_debug_gl", "camera update anim called");
                 }
             }
         }

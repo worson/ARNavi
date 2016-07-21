@@ -191,20 +191,20 @@ public class MathUtils {
             double x1=m,y1=n;
             double x2=a,y2=b;
             if(y2==y1){
-                x = (m - (b-n) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
-                y = (n + (path_width/2)*(a-m) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
+                x = (m - (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
+                y = (n + (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
             }else if(x2==x1){
                 x = x1-(path_width/2);
                 y = y1;
             }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                x= (x1+(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1-(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
             }else{
-                x= (x1-(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1+(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
             }
 
-            Vector3 vector3 = new Vector3(x, y, 0);
+            Vector3 vector3 = new Vector3(x,y,0);
 
             //如果不是第一个或者最后一个，那么需要取该点和该点的前一个点继续运算得到x,y，然后取中间值
             if(i!=0 && i!=prePoints.size()-1){
@@ -216,17 +216,17 @@ public class MathUtils {
                 x2=a;
                 y2=b;
                 if(y2==y1){
-                    x =  (m + (b-n) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
-                    y =  (n - (path_width/2)*(a-m) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
+                    x =  (m + (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
+                    y =  (n - (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
                 }else if(x2==x1){
                     x = x1-(path_width/2);
                     y = y1;
                 }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                    x= (x1-(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1+(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                    x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                    y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
                 }else{
-                    x= (x1+(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1-(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                    x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                    y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
                 }
                 vector3.x = (vector3.x+x)/2;
                 vector3.y = (vector3.y+y)/2;
@@ -266,17 +266,17 @@ public class MathUtils {
             double x1=m,y1=n;
             double x2=a,y2=b;
             if(y2==y1){
-                x =  (m + (b-n) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
-                y =  (n - (path_width/2)*(a-m) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
+                x =  (m + (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
+                y =  (n - (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
             }else if(x2==x1){
                 x = x1+(path_width/2);
                 y = y1;
             }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                x= (x1-(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1+(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
             }else{
-                x= (x1+(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1-(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
             }
 
             Vector3 vector3 = new Vector3(x, y, 0);
@@ -291,17 +291,17 @@ public class MathUtils {
                 x2=a;
                 y2=b;
                 if(y2==y1){
-                    x =  (m - (b-n) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
-                    y =  (n + (path_width/2)*(a-m) / Math.sqrt(Math.pow((a-m), 2)+ Math.pow((b-n), 2)));
+                    x =  (m - (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
+                    y =  (n + (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
                 }else if(x2==x1){
                     x = x1+(path_width/2);
                     y = y1;
                 }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                    x= (x1+(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1-(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                    x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                    y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
                 }else{
-                    x= (x1-(path_width/2)* Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1+(path_width/2)* Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                    x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
+                    y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
                 }
                 vector3.x = (vector3.x+x)/2;
                 vector3.y = (vector3.y+y)/2;

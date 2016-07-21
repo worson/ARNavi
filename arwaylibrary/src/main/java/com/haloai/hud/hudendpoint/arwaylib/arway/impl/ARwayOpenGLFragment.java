@@ -2,10 +2,11 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl;
 
 
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.AvoidXfermode;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -30,10 +31,21 @@ import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
+import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
+import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
+import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
+import com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView;
+import com.haloai.hud.hudendpoint.arwaylib.view.SpeedView;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
+import com.haloai.hud.utils.ShareDrawables;
 
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.ISurfaceRenderer;
@@ -52,6 +64,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private static final int GPS_STATUS_WEEK = 1;
     private static final int GPS_STATUS_BAD  = 2;
 
+    private Context mContext;
+    private SpeedView          mSpeedView          = null;
+    private RetainDistanceView mRetainDistanceView = null;
+    private ComPassView        mComPassView        = null;
 
     private ViewGroup  mNaviView     = null;
     private AMapNaviView mAmapNaviView = null;
@@ -70,7 +86,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private List<Vector3> mPath = new ArrayList<>();
 
     //opengle
-    protected ViewGroup        mLayout;
+    protected ViewGroup           mLayout;
+    protected RelativeLayout      mLeftLayout;
+    protected RelativeLayout      mRightLayout;
+    protected RelativeLayout      mMiddleLayout;
     protected TextureView         mRenderSurface;
     protected ARwayOpenGLRenderer mRenderer;
 
@@ -80,27 +99,53 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         // Required empty public constructor
     }
 
+    //draw object
+    private DrawScene            mDrawScene            = (DrawScene)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.GL_SCENE);
+    private GlDrawCompass        mGlDrawCompass        = (GlDrawCompass)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.COMPASS);
+    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
+    private GlDrawSpeedDial      mGlDrawSpeedDial      = (GlDrawSpeedDial)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.SPEED);
+    private GlDrawRetainDistance mGlDrawRetainDistance = (GlDrawRetainDistance)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.RETAIN_DISTANCE);
+
+    // var
+    private boolean mLastIsReady    = false;
+    private int     mTotalDistance  = 0;
+    private int     mRetainDistance = 0;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mContext = getActivity();
         // Inflate the layout for this fragment
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
-        mLayout.setBackgroundColor(Color.WHITE);
+
+        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, container);
+        mLayout.addView(mainARWayView);
+
+        mRenderSurface = (TextureView) mDrawScene.getViewInstance(mContext);
+        mRenderer = (ARwayOpenGLRenderer)createRenderer();
+        onBeforeApplyRenderer();
+        applyRenderer();
+
+        //原来从latout中创建
+        /*mLeftLayout = (RelativeLayout)mLayout.findViewById(R.id.left_card_viewgroup);
+        mMiddleLayout = (RelativeLayout)mLayout.findViewById(R.id.middle_card_viewgroup);
+        mRightLayout = (RelativeLayout)mLayout.findViewById(R.id.right_card_viewgroup);
         // Find the TextureView
 //        mRenderSurface = (ISurface) mLayout.findViewById(R.id.rajwali_surface);
         mRenderSurface = new TextureView(getActivity());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         mRenderSurface.setLayoutParams(params);
         // Create the renderer
-        mRenderer = (ARwayOpenGLRenderer)createRenderer();
-        onBeforeApplyRenderer();
-        applyRenderer();
-        mLayout.addView(mRenderSurface);
+        mMiddleLayout.addView(mRenderSurface);*/
 
+
+
+//        createToolView();
         //amap view
 
         mNaviView = mLayout;
+//        mNaviView = (ViewGroup) mDrawScene.getViewInstance(mContext).getParent();
         arway = mRenderSurface;
         //init amap navi view
         mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
@@ -114,6 +159,31 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"fragment onCreateView");
         return mLayout;
+    }
+
+
+    private void createToolView(){
+        mComPassView = new ComPassView(mContext, 254, 254);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(254, 254);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mComPassView.setLayoutParams(layoutParams);
+        mComPassView.setDestDegree(180 - 90);
+        mMiddleLayout.addView(mComPassView);
+
+        mSpeedView = new SpeedView(mContext, 118, 118);
+        layoutParams = new RelativeLayout.LayoutParams(118, 118);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mSpeedView.setLayoutParams(layoutParams);
+        mLeftLayout.addView(mSpeedView);
+
+        mRetainDistanceView = new RetainDistanceView(mContext, 118, 118);
+        layoutParams = new RelativeLayout.LayoutParams(118, 118);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mRetainDistanceView.setLayoutParams(layoutParams);
+        mRetainDistanceView.setTotalDistance(1000);
+        mRightLayout.addView(mRetainDistanceView);
+
+
     }
 
     @Override
@@ -168,9 +238,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 mCrossCanShow = true;
             } else {
                 mRenderer.continue_();
-                if(arway.getParent()!=mNaviView){
+                /*if(arway.getParent()!=mNaviView){
                     mNaviView.addView(arway);
-                }
+                }*/
             }
         }
 
@@ -449,6 +519,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * */
     public void updateNaviText(NavigationSDKAdapter.NavigationNotifier.NaviTextType textType, String text){
         ARWayController.NaviInfoBeanUpdate.setNaviText(text);
+        if (mGlDrawNaviInfo != null) {
+            mGlDrawNaviInfo.doDraw();
+        }
     }
 
     /**
@@ -462,11 +535,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (mMapLoaded && projection != null) {
             List<Vector3> path = getPathPoints(aMapNavi);
             if (path != null) {
+                ARWayController.ARWayStatusUpdater.resetData();
                 LogI(ARWayConst.INDICATE_LOG_TAG," updatePath called");
                 ARWayController.SceneBeanUpdater.setPath(path)
                         .setAllLength(aMapNavi.getNaviPath().getAllLength());
                 mRenderer.onDrawScene();
+
+                //更新总距离
+                int distance = aMapNavi.getNaviPath().getAllLength();
+                mTotalDistance = distance;
+                ARWayController.NaviInfoBeanUpdate.setPathTotalDistance(distance);
             }
+
             mNeedUpdatePath = false;
         }else {
             mNeedUpdatePath = true;
@@ -517,8 +597,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param info
      */
     public void updateNaviInfo(NaviInfo info){
+        if (info == null) {
+            return;
+        }
         // TODO: 16/7/10 sen ,需要引用主工程的转向标资源
-        /*int iconResource = ShareDrawables.getNaviDirectionId(info.getIconType());//info
+        int iconResource = ShareDrawables.getNaviDirectionId(info.getIconType());//info
         Bitmap iconBitmap = null;
         // TODO: 16/6/22 应该不会内存溢出
         if(mLastNaviIconType !=iconResource &&  iconResource != 0){
@@ -526,7 +609,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mNaviIconBitmap = iconBitmap;
             mLastNaviIconType = iconResource;
         }
-        ARWayController.NaviInfoBeanUpdate.setNaviIconBitmap(mNaviIconBitmap).setNaviIcon(iconResource);*/
+        ARWayController.NaviInfoBeanUpdate.setNaviIconBitmap(mNaviIconBitmap).setNaviIcon(iconResource);
         //update arway data
         ARWayController.NaviInfoBeanUpdate.setNaviIconDist(info.getCurStepRetainDistance())
                 .setCurrentRoadName(info.getCurrentRoadName())
@@ -535,7 +618,33 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 .setPathRetainTime(info.getPathRetainTime());
         //ARWayController.CompassBeanUpdater.setDirection(info.getDirection());
         mRenderer.onCameraChange();
+        if (mGlDrawRetainDistance != null) {
+            mGlDrawRetainDistance.doDraw();
+        }
+        if (mGlDrawNaviInfo != null) {
+            mGlDrawNaviInfo.doDraw();
+            if (mGlDrawRetainDistance != null) {
+                mGlDrawRetainDistance.showHide(mGlDrawNaviInfo.getNaviStatusText() == null);
+            }
+        }
+        //倾斜各个表盘
+        this.mRetainDistance = info.getPathRetainDistance();
+        boolean ready = isNavingReady();
+        if(this.mLastIsReady != ready){
+            if(ready){
+                ARWayController.CommonBeanUpdater.setStartOk(true);
+                switchViewStatus(IDriveStateLister.DriveState.DRIVING);
+            }else {
+                switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+            }
+            this.mLastIsReady = ready;
+        }
 
+    }
+
+    public void onSpeedUpgraded(float speed) {
+        ARWayController.SpeedBeanUpdater.setSpeed((int) speed);
+        updateSpeedDialDisplay();
 
     }
 
@@ -553,53 +662,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //        ARWayController.SceneBeanUpdater.setNextRoadName(str, nextRoadType);
     }
 
-    /**
-     * user said "退出导航" , will show this view with move in
-     */
-    public void showCancelNaviView() {
-        //HudAMapAnimation.startCancelNaviShowAnimation(mRl_cancel_navi);
-    }
-
-    /**
-     * user said "确定" or "取消", will hide this view with move out
-     */
-    public void hideCancelNaviViewDelay500() {
-        //HudAMapAnimation.startCancelNaviHideAnimationDelay500(mRl_cancel_navi);
-    }
-
-    public void hideCancelNaviViewDelay0() {
-        //HudAMapAnimation.startCancelNaviHideAnimationDelay0(mRl_cancel_navi);
-    }
-
-    /**
-     * show the view for not network
-     */
-    public void showNotNetworKView() {
-        //mRl_navi_not_network.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * hide the view for not network
-     */
-    public void hideNotNetworKView() {
-        //mRl_navi_not_network.setVisibility(View.INVISIBLE);
-    }
-
-    /***
-     * hide the view for cross image
-     */
-    public void hideCross() {
-        //mIv_cross.setImageBitmap(null);
-        //mHudwayView.setCrossImage(null);
-        mCrossCanShow = false;
-    }
-
-    /***
-     * show the view for cross image
-     */
-    public void showCross() {
-        mCrossCanShow = true;
-    }
 
     public void initAMapNaviView() {
 
@@ -659,6 +721,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mAmapNaviView.setVisibility(View.VISIBLE);
         mAmapNaviView.setAlpha(1);
         hideARWay();*/
+
+        ARWayController.CommonBeanUpdater.setYaw(true);
+        updateNaviInfoDisplay();
     }
     /**
      *
@@ -672,6 +737,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         startDrawHudway();
         mRenderer.yawEnd();
+
+        ARWayController.CommonBeanUpdater.setYaw(false);
+        updateNaviInfoDisplay();
     }
 
 
@@ -681,13 +749,26 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void resetDrawHudway() {
         mRenderer.reset();
     }
-
     /**
      * stop to draw hudway
      */
     public void stopDrawHudway() {
+        arriveDestination();
+    }
+
+    public void onArriveDestination() {
+        arriveDestination();
+        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+    }
+
+    private void arriveDestination(){
+        ARWayController.CommonBeanUpdater.setNaviEnd(true);
+        updateNaviInfoDisplay();
         mRenderer.arriveDestination();
-//        mRenderer.stop();
+    }
+
+    public void onNaviCalculateRouteFailure(int errorInfo) {
+
     }
 
     /**
@@ -702,9 +783,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void hideARWay() {
 //        mRenderer.pause();
-        if (arway != null && arway.getParent() != null) {
+        arway.setVisibility(View.INVISIBLE);
+       /* if (arway != null && arway.getParent() != null) {
             mNaviView.removeView(arway);
-        }
+        }*/
 
     }
 
@@ -713,9 +795,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void showARWay() {
         mRenderer.continue_();
-        if (arway != null && arway.getParent() == null) {
+        arway.setVisibility(View.VISIBLE);
+        /*if (arway != null && arway.getParent() == null) {
             mNaviView.addView(arway);
-        }
+        }*/
     }
 
     @Override
@@ -741,5 +824,69 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mNaviView.addView(mAmapNaviView);
         }
     }
+
+    /**
+     * 是否起步超过一定距离
+     * @return
+     */
+    private boolean isNavingReady() {
+        int totalDistance = this.mTotalDistance;
+        int distance = this.mRetainDistance;
+        return totalDistance>=distance && (totalDistance-distance)> ARWayConst.NAVI_CAR_START_DISTANCE;
+    }
+
+    void updateNaviInfoDisplay(){
+        if (mGlDrawNaviInfo != null) {
+            mGlDrawNaviInfo.doDraw();
+        }
+    }
+
+    void updateSpeedDialDisplay(){
+        if (mGlDrawSpeedDial != null) {
+            mGlDrawSpeedDial.doDraw();
+        }
+    }
+
+    /***
+     * 切换驾车起步和驾驶后view显示
+     * @param state
+     */
+    private void switchViewStatus(IDriveStateLister.DriveState state){
+        GlDrawCompass.getInstance().changeDriveState(state);
+        GlDrawSpeedDial.getInstance().changeDriveState(state);
+        GlDrawRetainDistance.getInstance().changeDriveState(state);
+
+    }
+
+    /**
+     * 配合主工程是否显示表盘
+     * @param show
+     */
+    public void showHideSpeedPanel(boolean show){
+        if (mGlDrawSpeedDial != null) {
+            mGlDrawSpeedDial.showHide(show);
+        }
+    }
+
+    /**
+     * 显示显示指南针
+     * @param show
+     */
+    public void showHideCompass(boolean show){
+        if (mGlDrawCompass != null) {
+            mGlDrawCompass.showHide(show);
+        }
+    }
+
+    /**
+     * 是否显示里程表盘
+     * @param show
+     */
+    public void showHideDistancePanel(boolean show){
+        if (mGlDrawRetainDistance != null) {
+            mGlDrawRetainDistance.showHide(show);
+        }
+    }
+
 
 }

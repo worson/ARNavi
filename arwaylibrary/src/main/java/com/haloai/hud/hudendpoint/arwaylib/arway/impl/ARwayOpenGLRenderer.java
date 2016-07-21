@@ -35,22 +35,15 @@ public class ARwayOpenGLRenderer extends Renderer {
         arwayFragment = fragment;
         setFrameRate(FRAME_RATE);
     }
-
-    public boolean readyForDraw(){
-        return mIsReadyWork;
-    }
-
     @Override
     protected void initScene() {
+//        getCurrentScene().setBackgroundColor(Color.DKGRAY);
 
-//        getCurrentScene().setBackgroundColor(Color.YELLOW);
-
-
-        Sphere mCameraSphere = null;
+        /*Sphere mCameraSphere = null;
         mCameraSphere = new Sphere(0.3f, 4, 4);
         mCameraSphere.setMaterial(new Material());
         mCameraSphere.setColor(Color.RED);
-        getCurrentScene().addChild(mCameraSphere);
+        getCurrentScene().addChild(mCameraSphere);*/
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"Renderer initScene");
     }
 

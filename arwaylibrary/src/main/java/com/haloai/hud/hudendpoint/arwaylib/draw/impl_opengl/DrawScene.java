@@ -2,6 +2,9 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
@@ -12,7 +15,7 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SceneCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SceneResult;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IOpenglFrame;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl_opengl.SceneFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGalore;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGaloreMaterialPlugin;
@@ -29,6 +32,7 @@ import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.scene.Scene;
+import org.rajawali3d.view.TextureView;
 
 import java.util.List;
 import java.util.Stack;
@@ -36,7 +40,7 @@ import java.util.Stack;
 /**
  * Created by wangshengxing on 16/7/10.
  */
-public class DrawScene extends DrawObject implements IOpenglFrame {
+public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperation{
 
     // draw contorl
     private boolean isDrawPlan = false;
@@ -61,6 +65,18 @@ public class DrawScene extends DrawObject implements IOpenglFrame {
 
     public static DrawScene getInstance() {
         return mDrawScene;
+    }
+
+    private TextureView mTextureView;
+
+    @Override
+    public View getViewInstance(Context context) {
+        if (mTextureView == null) {
+            mTextureView = new TextureView(context);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            mTextureView.setLayoutParams(params);
+        }
+        return mTextureView;
     }
 
     @Override
@@ -156,5 +172,13 @@ public class DrawScene extends DrawObject implements IOpenglFrame {
                 scene.addChild(plane);
             }
         }
+    }
+
+    @Override
+    public void setView(Context context, View view) {
+        if (view != null) {
+//            mTextureView =(TextureView) view.findViewById(R.id.rajwali_surface);
+        }
+
     }
 }

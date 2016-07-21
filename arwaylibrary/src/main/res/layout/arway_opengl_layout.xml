@@ -1,0 +1,256 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                xmlns:textureview="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#000000"
+                android:orientation="horizontal">
+
+    <RelativeLayout
+        android:id="@+id/left_card_viewgroup"
+        android:layout_width="133.3dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#000000">
+
+        <RelativeLayout
+            android:id="@+id/navi_indicate_viewgroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/navi_indicate_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="36dp"
+                android:layout_marginTop="21.3dp"
+                android:text="进入 海天一路\n然后向西行驶"
+                android:textColor="#ffffff"
+                android:textSize="16sp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/next_road_viewgroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="3dp"
+            android:layout_marginTop="19dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:id="@+id/next_road_direction_imageview"
+                android:layout_width="33dp"
+                android:layout_height="41dp"
+                android:layout_centerVertical="true"/>
+
+            <TextView
+                android:id="@+id/next_road_distance_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/next_road_direction_imageview"
+                android:padding="0dp"
+                android:text="500米"
+                android:textColor="#ffffff"
+                android:textSize="24sp"/>
+
+            <TextView
+                android:id="@+id/next_road_indicate_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/next_road_distance_textview"
+                android:layout_marginTop="3.5dp"
+                android:layout_toRightOf="@+id/next_road_direction_imageview"
+                android:padding="0dp"
+                android:text="沿滨海大道行驶"
+                android:textColor="#ffffff"
+                android:textSize="12sp"/>
+
+        </RelativeLayout>
+
+        <com.haloai.hud.hudendpoint.arwaylib.view.SpeedView
+            android:id="@+id/speed_view"
+            android:layout_width="@dimen/speed_view_pause_width"
+            android:layout_height="@dimen/speed_view_pause_height"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="77.33dp"
+            custom:custom_height="@dimen/speed_view_pause_height"
+            custom:custom_width="@dimen/speed_view_pause_width">
+        </com.haloai.hud.hudendpoint.arwaylib.view.SpeedView>
+        
+        <RelativeLayout
+            android:id="@+id/digital_speed_viewgroup"
+            android:layout_width="134dp"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/speed_view"
+            android:layout_alignStart="@+id/speed_view"
+            android:layout_alignTop="@+id/speed_view"
+            android:layout_marginLeft="9.3dp"
+            android:layout_marginTop="24.8dp">
+            <ImageView
+                android:id="@+id/speed_num_hun"
+                android:layout_width="@dimen/digital_speed_width"
+                android:layout_height="@dimen/digital_speed_height"
+                android:scaleType="fitXY"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="5dp"/>
+
+            <ImageView
+                android:id="@+id/speed_num_ten"
+                android:layout_width="@dimen/digital_speed_width"
+                android:layout_height="@dimen/digital_speed_height"
+                android:scaleType="fitXY"
+                android:layout_alignTop="@+id/speed_num_hun"
+                android:layout_toRightOf="@+id/speed_num_hun" />
+
+            <ImageView
+                android:id="@+id/speed_num_one"
+                android:layout_width="@dimen/digital_speed_width"
+                android:layout_height="@dimen/digital_speed_height"
+                android:scaleType="fitXY"
+                android:layout_alignTop="@+id/speed_num_ten"
+                android:layout_toRightOf="@+id/speed_num_ten"
+                android:src="@drawable/speed_number_0" />
+
+            <ImageView
+                android:id="@+id/speed_num_unit"
+                android:layout_width="32dp"
+                android:layout_height="14dp"
+                android:layout_alignBottom="@+id/speed_num_one"
+                android:layout_toEndOf="@+id/speed_num_one"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/speed_number_unit" />
+
+        </RelativeLayout>
+
+        <!--<TextView-->
+            <!--android:id="@+id/prefix_speed_imageview"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignLeft="@+id/speed_view"-->
+            <!--android:layout_alignStart="@+id/speed_view"-->
+            <!--android:layout_alignTop="@+id/speed_view"-->
+            <!--android:layout_marginLeft="29.3dp"-->
+            <!--android:layout_marginTop="23.8dp"-->
+            <!--android:text="100"-->
+            <!--android:textColor="#ffffff"-->
+            <!--android:textSize="20sp"-->
+            <!--/>-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/suffix_speed_textview"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignBottom="@+id/prefix_speed_imageview"-->
+            <!--android:layout_marginBottom="2dp"-->
+            <!--android:layout_marginLeft="2dp"-->
+            <!--android:layout_toRightOf="@+id/prefix_speed_imageview"-->
+            <!--android:text="km/h"-->
+            <!--android:textColor="#ffffff"-->
+            <!--android:textSize="12sp"/>-->
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/middle_card_viewgroup"
+        android:layout_width="266.7dp"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@+id/left_card_viewgroup"
+        android:layout_weight="2">
+
+        <RelativeLayout
+            android:layout_width="@dimen/compass_pause_width"
+            android:layout_height="@dimen/compass_pause_height"
+            android:layout_centerHorizontal="true"
+            android:layout_centerInParent="true">
+            <FrameLayout
+                android:id="@+id/opengl_viewgroup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </FrameLayout>
+            <!--<org.rajawali3d.view.TextureView
+                android:id="@+id/rajwali_surface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>-->
+            <TextView
+                android:id="@+id/diretion_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="往西\n行驶"
+                android:textColor="#ffffff"/>
+
+            <com.haloai.hud.hudendpoint.arwaylib.view.ComPassView
+                android:id="@+id/compass_view"
+                android:layout_width="@dimen/compass_pause_width"
+                android:layout_height="@dimen/compass_pause_height"
+                android:textColor="#000000"
+                custom:custom_height="@dimen/compass_pause_height"
+                custom:custom_width="@dimen/compass_pause_width">
+            </com.haloai.hud.hudendpoint.arwaylib.view.ComPassView>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/right_card_viewgroup"
+        android:layout_width="133.3dp"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/middle_card_viewgroup"
+        android:layout_weight="1"
+        android:background="#000000">
+
+        <com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView
+            android:id="@+id/retain_distance_view"
+            android:layout_width="@dimen/distance_view_pause_width"
+            android:layout_height="@dimen/distance_view_pause_height"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="77.33dp"
+            custom:custom_height="@dimen/distance_view_pause_height"
+            custom:custom_width="@dimen/distance_view_pause_width">
+        </com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView>
+
+        <TextView
+            android:id="@+id/prefix_time_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/retain_distance_view"
+            android:layout_alignStart="@+id/retain_distance_view"
+            android:layout_alignTop="@+id/retain_distance_view"
+            android:layout_marginLeft="-13.3dp"
+            android:layout_marginTop="23.8dp"
+            android:text="32"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/suffix_time_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/prefix_time_textview"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_toRightOf="@+id/prefix_time_textview"
+            android:text="min"
+            android:textColor="#ffffff"
+            android:textSize="12sp"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/navi_status_textiview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="383.3dp"
+        android:layout_marginTop="84dp"
+        android:text="无网络信号,正在搜索."
+        android:textColor="@color/arway_red"
+        android:textSize="15sp"/>
+</RelativeLayout>
