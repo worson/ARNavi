@@ -30,6 +30,9 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
@@ -91,7 +94,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     protected RelativeLayout      mRightLayout;
     protected RelativeLayout      mMiddleLayout;
     protected TextureView         mRenderSurface;
-    protected ARwayOpenGLRenderer mRenderer;
+    protected ARwayRenderer mRenderer;
 
 
     public ARwayOpenGLFragment() {
@@ -123,26 +126,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mLayout.addView(mainARWayView);
 
         mRenderSurface = (TextureView) mDrawScene.getViewInstance(mContext);
-        mRenderer = (ARwayOpenGLRenderer)createRenderer();
+        mRenderer = (ARwayRenderer) createRenderer();
         onBeforeApplyRenderer();
         applyRenderer();
 
-        //原来从latout中创建
-        /*mLeftLayout = (RelativeLayout)mLayout.findViewById(R.id.left_card_viewgroup);
-        mMiddleLayout = (RelativeLayout)mLayout.findViewById(R.id.middle_card_viewgroup);
-        mRightLayout = (RelativeLayout)mLayout.findViewById(R.id.right_card_viewgroup);
-        // Find the TextureView
-//        mRenderSurface = (ISurface) mLayout.findViewById(R.id.rajwali_surface);
-        mRenderSurface = new TextureView(getActivity());
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mRenderSurface.setLayoutParams(params);
-        // Create the renderer
-        mMiddleLayout.addView(mRenderSurface);*/
-
-
-
-//        createToolView();
-        //amap view
 
         mNaviView = mLayout;
 //        mNaviView = (ViewGroup) mDrawScene.getViewInstance(mContext).getParent();
@@ -150,45 +137,25 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         //init amap navi view
         mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
         mAmapNaviView.onCreate(savedInstanceState);
-        mAmapNaviView.getMap().setOnMapLoadedListener(this);
-        mAmapNaviView.getMap().setOnCameraChangeListener(this);
+        if (mAmapNaviView.getMap() != null) {
+            mAmapNaviView.getMap().setOnMapLoadedListener(this);
+            mAmapNaviView.getMap().setOnCameraChangeListener(this);
+        }
         if (IS_DEBUG_MODE) {
             mAmapNaviView.setVisibility(View.VISIBLE);
         } else {
             mAmapNaviView.setVisibility(View.INVISIBLE);
         }
+        hideARWay();
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"fragment onCreateView");
         return mLayout;
     }
 
 
-    private void createToolView(){
-        mComPassView = new ComPassView(mContext, 254, 254);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(254, 254);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mComPassView.setLayoutParams(layoutParams);
-        mComPassView.setDestDegree(180 - 90);
-        mMiddleLayout.addView(mComPassView);
-
-        mSpeedView = new SpeedView(mContext, 118, 118);
-        layoutParams = new RelativeLayout.LayoutParams(118, 118);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mSpeedView.setLayoutParams(layoutParams);
-        mLeftLayout.addView(mSpeedView);
-
-        mRetainDistanceView = new RetainDistanceView(mContext, 118, 118);
-        layoutParams = new RelativeLayout.LayoutParams(118, 118);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mRetainDistanceView.setLayoutParams(layoutParams);
-        mRetainDistanceView.setTotalDistance(1000);
-        mRightLayout.addView(mRetainDistanceView);
-
-
-    }
-
     @Override
     public ISurfaceRenderer createRenderer() {
-        return new ARwayOpenGLRenderer(getActivity(),this);
+//        return new ARwayOpenGLRenderer(getActivity(),this);
+        return new ARwayRenderer(getActivity());
     }
 
     protected void onBeforeApplyRenderer() {
@@ -204,12 +171,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     @Override
     public void onResume() {
         super.onResume();
+        mRenderer.onResume();
         mAmapNaviView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        mRenderer.onPause();
         mAmapNaviView.onPause();
     }
 
@@ -218,29 +187,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         super.onHiddenChanged(hidden);
         if (mNaviView != null) {
             if (hidden) {
-                mRenderer.pause();
-                //mHudwayView.destroyDrawingCache();
-                //mFl_hudway.removeView(mHudwayView);
-
-                //clear navigating bitmap when this fragment is hidden
-                //mIv_cross.setImageBitmap(null);
-                //TODO temp method to draw arway
-                //mHudwayView.setCrossImage(null);
-                //mIv_icon_normal.setImageBitmap(null);
-                //mIv_icon_big.setImageBitmap(null);
-                //mIv_gps_status.setImageBitmap(null);
-                //mTv_distance_big.setText("");
-                //mTv_distance_normal.setText("");
-                //mTv_gps_status.setText("");
-                //mTv_next_road.setText("");
-                //mTv_time_distance.setText("");
+//                mRenderer.pause();
                 mCurrentCrossImage = null;
                 mCrossCanShow = true;
             } else {
-                mRenderer.continue_();
-                /*if(arway.getParent()!=mNaviView){
-                    mNaviView.addView(arway);
-                }*/
+//                mRenderer.continue_();
+
             }
         }
 
@@ -352,138 +304,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param distance 当前导航信息所剩距离
      */
     public void updateRouteInfo(int naviIcon, int distance) {
-        if (mCurrentGpsStatus == GPS_STATUS_BAD) {
-            //mTv_distance_normal.setText("");
-            //mIv_icon_normal.setImageBitmap(null);
-            return;
-        }
-        if (mCurrentGpsStatus == GPS_STATUS_FINE) {
-            //mRl_navi_icon_distance_normal.setVisibility(View.VISIBLE);
-            //mRl_navi_icon_distance_big.setVisibility(View.INVISIBLE);
-        } else if (mCurrentGpsStatus == GPS_STATUS_WEEK) {
-            //mRl_navi_icon_distance_normal.setVisibility(View.INVISIBLE);
-            //mRl_navi_icon_distance_big.setVisibility(View.VISIBLE);
-        }
-        if (distance >= 1000) {
-            //mTv_distance_normal.setText(distance / 1000 + "." + ((distance - distance / 1000 * 1000) / 100) + "km");
-            //mTv_distance_big.setText(distance / 1000 + "." + ((distance - distance / 1000 * 1000) / 100) + "km");
-        } else {
-            //mTv_distance_normal.setText(distance + "m");
-            //mTv_distance_big.setText(distance + "m");
-        }
-        switch (naviIcon) {
-            case 15:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_dest);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_dest);
-                break;
-            case 13:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_service_area);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_service_area);
-                break;
-            case 14:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_tollgate);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_tollgate);
-                break;
-            case 16:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_tunnel);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_tunnel);
-                break;
-            case 10:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_passing_point);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_passing_point);
-                break;
-            case 24:
-                // TODO 通过索道
-                break;
-            case 26:
-                // TODO 通过通道、建筑物穿越通道
-                break;
-            case 17:
-                // TODO 通过人行横道
-                break;
-            case 28:
-                // TODO 通过游船路线
-                break;
-            case 1:
-                // TODO 自车图标
-                break;
-            case 11:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_ring);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_ring);
-                break;
-            case 31:
-                // TODO 通过阶梯
-                break;
-            case 2:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_left);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_left);
-                break;
-            case 6:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_left_back);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_left_back);
-                break;
-            case 4:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_left_front);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_left_front);
-                break;
-            case 8:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_back);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_back);
-                break;
-            case 23:
-                // TODO 通过直梯
-                break;
-            case 0:
-                // TODO 无定义
-                break;
-            case 12:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_ring_out);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_ring_out);
-                break;
-            case 18:
-                // TODO 通过过街天桥
-                break;
-            case 21:
-                // TODO 通过公园
-                break;
-            case 3:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_right);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_right);
-                break;
-            case 7:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_right_back);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_right_back);
-                break;
-            case 5:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_right_front);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_right_front);
-                break;
-            case 29:
-                // TODO 通过观光车路线
-                break;
-            case 25:
-                // TODO 通过空中通道
-                break;
-            case 30:
-                // TODO 通过滑道
-                break;
-            case 20:
-                // TODO 通过广场
-                break;
-            case 22:
-                // TODO 通过扶梯
-                break;
-            case 9:
-                //mIv_icon_normal.setImageResource(R.drawable.greenline_direction__icon_turn_front);
-                //mIv_icon_big.setImageResource(R.drawable.greenline_direction__icon_turn_front);
-                break;
-            case 19:
-                // TODO 通过地下通道
-                break;
-            case 27:
-                // TODO 通过行人道路
-                break;
-        }
+
     }
 
     /**
@@ -533,25 +354,27 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         this.mAMapNavi = aMapNavi;
         Projection projection = mAmapNaviView.getMap().getProjection();
         if (mMapLoaded && projection != null) {
-            List<Vector3> path = getPathPoints(aMapNavi);
+            AMapNaviPath naviPath = aMapNavi.getNaviPath();
+            if (projection != null && naviPath != null && mRenderer != null) {
+                mRenderer.setPath(projection, naviPath);
+                ARWayController.ARWayStatusUpdater.resetData();
+            }
+            /*List<Vector3> path = getPathPoints(aMapNavi);
             if (path != null) {
                 ARWayController.ARWayStatusUpdater.resetData();
                 LogI(ARWayConst.INDICATE_LOG_TAG," updatePath called");
                 ARWayController.SceneBeanUpdater.setPath(path)
                         .setAllLength(aMapNavi.getNaviPath().getAllLength());
                 mRenderer.onDrawScene();
-
-                //更新总距离
-                int distance = aMapNavi.getNaviPath().getAllLength();
-                mTotalDistance = distance;
-                ARWayController.NaviInfoBeanUpdate.setPathTotalDistance(distance);
-            }
-
+            }*/
+            //更新总距离
+            int distance = aMapNavi.getNaviPath().getAllLength();
+            mTotalDistance = distance;
+            ARWayController.NaviInfoBeanUpdate.setPathTotalDistance(distance);
             mNeedUpdatePath = false;
         }else {
             mNeedUpdatePath = true;
         }
-
 
     }
 
@@ -591,6 +414,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         return true;
     }
 
+
     /**
      * 更新ARway中的导航数据
      *
@@ -600,6 +424,41 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (info == null) {
             return;
         }
+        updateNaviInfoDate(info);
+
+        int distance = info.getPathRetainDistance();
+        mRenderer.setRetainDistance(distance);
+
+
+//        mRenderer.onCameraChange();
+
+        if (mGlDrawRetainDistance != null) {
+            mGlDrawRetainDistance.doDraw();
+        }
+        if (mGlDrawNaviInfo != null) {
+            mGlDrawNaviInfo.doDraw();
+            if (mGlDrawRetainDistance != null) {
+                mGlDrawRetainDistance.showHide(mGlDrawNaviInfo.getNaviStatusText() == null);
+            }
+        }
+        boolean ready = isNavingReady();
+        if(this.mLastIsReady != ready){
+            if(ready){
+                showARWay();
+                ARWayController.CommonBeanUpdater.setStartOk(true);
+                switchViewStatus(IDriveStateLister.DriveState.DRIVING);
+            }else {
+                hideARWay();
+                switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+            }
+            this.mLastIsReady = ready;
+        }
+
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
+
+    }
+
+    private void updateNaviInfoDate(NaviInfo info) {
         // TODO: 16/7/10 sen ,需要引用主工程的转向标资源
         int iconResource = ShareDrawables.getNaviDirectionId(info.getIconType());//info
         Bitmap iconBitmap = null;
@@ -617,29 +476,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 .setPathRetainDistance(info.getPathRetainDistance())
                 .setPathRetainTime(info.getPathRetainTime());
         //ARWayController.CompassBeanUpdater.setDirection(info.getDirection());
-        mRenderer.onCameraChange();
-        if (mGlDrawRetainDistance != null) {
-            mGlDrawRetainDistance.doDraw();
-        }
-        if (mGlDrawNaviInfo != null) {
-            mGlDrawNaviInfo.doDraw();
-            if (mGlDrawRetainDistance != null) {
-                mGlDrawRetainDistance.showHide(mGlDrawNaviInfo.getNaviStatusText() == null);
-            }
-        }
-        //倾斜各个表盘
-        this.mRetainDistance = info.getPathRetainDistance();
-        boolean ready = isNavingReady();
-        if(this.mLastIsReady != ready){
-            if(ready){
-                ARWayController.CommonBeanUpdater.setStartOk(true);
-                switchViewStatus(IDriveStateLister.DriveState.DRIVING);
-            }else {
-                switchViewStatus(IDriveStateLister.DriveState.PAUSE);
-            }
-            this.mLastIsReady = ready;
-        }
-
     }
 
     public void onSpeedUpgraded(float speed) {
@@ -664,11 +500,30 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     public void initAMapNaviView() {
-
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
         viewOptions.setNaviNight(true);
+        viewOptions.setLayoutVisible(false);
         viewOptions.setNaviViewTopic(AMapNaviViewOptions.BLUE_COLOR_TOPIC);
         viewOptions.setCrossDisplayShow(false);
+        viewOptions.setAutoChangeZoom(false);
+        viewOptions.setAutoDrawRoute(false);
+        //        位图必须在绘制前设置
+        //        viewOptions.setCarBitmap(carBM);
+        //        setEndPointBitmap(Bitmap icon);
+        //        viewOptions.setStartPointBitmap(bm);
+        //        setWayPointBitmap(Bitmap icon);
+        viewOptions.setCompassEnabled(false);
+        //        setFourCornersBitmap(Bitmap fourCornersBitmap);
+        viewOptions.setLaneInfoShow(false);
+        //设置牵引线颜色,-1为不显示
+        viewOptions.setLeaderLineEnabled(-1);
+        viewOptions.setMonitorCameraEnabled(false);
+        //        viewOptions.setNaviViewTopic(-1);
+        viewOptions.setRouteListButtonShow(false);
+        viewOptions.setSettingMenuEnabled(false);
+        viewOptions.setTrafficBarEnabled(false);
+        viewOptions.setTrafficLayerEnabled(false);
+
         mAmapNaviView.setViewOptions(viewOptions);
 
         AMap aMap = this.mAmapNaviView.getMap();
@@ -681,11 +536,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPos);
             aMap.moveCamera(cameraUpdate);
         }
+
     }
 
     @Override
     public void onMapLoaded() {
         mAmapNaviView.getMap().showMapText(false);
+        // TODO: 16/7/22 需要更新版本
+//        mAmapNaviView.getMap().showBuildings(false);
         ARWayController.SceneBeanUpdater
                 .setProjection(mAmapNaviView.getMap().getProjection());
         if(!mMapLoaded){
@@ -746,12 +604,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /**
      * stop to draw hudway
      */
-    public void resetDrawHudway() {
-        mRenderer.reset();
-    }
-    /**
-     * stop to draw hudway
-     */
     public void stopDrawHudway() {
         arriveDestination();
     }
@@ -775,7 +627,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * startHomeAnimator to draw hudway
      */
     public void startDrawHudway() {
-        mRenderer.start();
+//        mRenderer.start();
     }
 
     /**
@@ -783,10 +635,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void hideARWay() {
 //        mRenderer.pause();
-        arway.setVisibility(View.INVISIBLE);
-       /* if (arway != null && arway.getParent() != null) {
-            mNaviView.removeView(arway);
-        }*/
+        if (arway != null) {
+            arway.setVisibility(View.INVISIBLE);
+        }
 
     }
 
@@ -794,11 +645,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * show ARWay
      */
     public void showARWay() {
-        mRenderer.continue_();
-        arway.setVisibility(View.VISIBLE);
-        /*if (arway != null && arway.getParent() == null) {
-            mNaviView.addView(arway);
-        }*/
+//        mRenderer.continue_();
+        if (arway != null) {
+            arway.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @Override
@@ -830,8 +681,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @return
      */
     private boolean isNavingReady() {
-        int totalDistance = this.mTotalDistance;
-        int distance = this.mRetainDistance;
+        NaviInfoBean naviBean = (NaviInfoBean)BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+        int totalDistance = naviBean.getPathTotalDistance();
+        int distance = naviBean.getPathRetainDistance();
         return totalDistance>=distance && (totalDistance-distance)> ARWayConst.NAVI_CAR_START_DISTANCE;
     }
 
@@ -844,6 +696,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     void updateSpeedDialDisplay(){
         if (mGlDrawSpeedDial != null) {
             mGlDrawSpeedDial.doDraw();
+        }else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDialDisplay ,mGlDrawSpeedDial is null !");
         }
     }
 
@@ -851,7 +705,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 切换驾车起步和驾驶后view显示
      * @param state
      */
-    private void switchViewStatus(IDriveStateLister.DriveState state){
+    public void switchViewStatus(IDriveStateLister.DriveState state){
         GlDrawCompass.getInstance().changeDriveState(state);
         GlDrawSpeedDial.getInstance().changeDriveState(state);
         GlDrawRetainDistance.getInstance().changeDriveState(state);

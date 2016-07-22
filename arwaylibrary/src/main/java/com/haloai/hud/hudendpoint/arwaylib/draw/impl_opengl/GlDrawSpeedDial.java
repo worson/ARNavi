@@ -40,7 +40,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     private static SpeedBean mSpeedBean = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
 
     public GlDrawSpeedDial() {
-        
+        mSpeedBean = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
     }
 
     public static GlDrawSpeedDial getInstance() {
@@ -85,6 +85,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     public void setView(Context context, View view) {
         if (view != null) {
             mSpeedView = (SpeedView)view.findViewById(R.id.speed_view);
+            initLayout(context,null,mSpeedView);
             /*mSpeedValueView = (TextView)view.findViewById(R.id.prefix_speed_imageview);
             mSpeedScaleView = (TextView)view.findViewById(R.id.suffix_speed_textview);*/
             mSpeedNumHun=(ImageView)mSpeedView.findViewById(R.id.speed_num_hun);
@@ -104,6 +105,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     private void updateSpeedDisplay() {
         if (mSpeedBean != null) {
             int speed = mSpeedBean.getSpeed();
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDisplay is ok ,speed is "+speed);
             updateSpeed(speed);
         }else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDisplay is null !");
@@ -132,6 +134,10 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
             VIEW_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.speed_view_driving_height));
             VIEW_NOT_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.speed_view_pause_width));
             VIEW_NOT_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.speed_view_pause_height));
+
+            VIEW_TOP_NOT_DRIVING_Y = (int)(mResources.getDimension(R.dimen.speed_view_pause_margin_top));
+            VIEW_TOP_DRIVING_Y = (int)(mResources.getDimension(R.dimen.speed_view_driving_margin_top));
+
         }
     }
     
@@ -157,11 +163,12 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
 
                     Log.e("compassdraw", VIEW_PARRENT_HEIGHT +",   "+ VIEW_NOT_DRIVING_HEIGHT +",   "+ VIEW_DRIVING_HEIGHT);
                     if (mViewParent != null) {
-                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT), (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT )));
+                        //                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT), (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT )));
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
                         animator.setInterpolator(new DecelerateInterpolator(4));
                         animator.setDuration(300);
                         animator.setRepeatCount(0);
-//                        animator.start();
+                        animator.start();
                     }
                 }
                 break;
@@ -176,11 +183,12 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
                     animator.start();
 
                     if (mViewParent != null) {
-                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT *1)), VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT));
+                        //                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT *1)), VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT));
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
                         animator.setInterpolator(new DecelerateInterpolator(4));
                         animator.setDuration(300);
                         animator.setRepeatCount(0);
-//                        animator.start();
+                        animator.start();
                     }
                 }
                 break;

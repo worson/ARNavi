@@ -7,8 +7,13 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,6 +32,9 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
  * project_name : ComPassDemo;
  */
 public class ComPassView extends View implements SensorEventListener {
+    private int WIDTH  = 0;
+    private int HEIGHT = 0;
+
     //compass draw data
     private long           mStartTime         = 0l;
     private float          mStartComPassValue = 0f;
@@ -36,6 +44,10 @@ public class ComPassView extends View implements SensorEventListener {
     private Bitmap mComPassDestArrowBitmap   = null;
     private int    mDestDirection            = 0;
 
+    private boolean mIsCutCanvas   = false;
+    private Path    mCanvasCutPath = null;
+    private Paint   mTextPaint     = null;
+
     public ComPassView(Context context) {
         super(context);
     }
@@ -44,6 +56,14 @@ public class ComPassView extends View implements SensorEventListener {
         super(context);
         initSensor(context);
         initBitmap(context, width, height);
+        resourceInit();
+    }
+
+    private void resourceInit() {
+        mTextPaint = new Paint();
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setStrokeWidth(WIDTH*0.1f);
+        setCanvasCut(false,-60,60);
     }
 
 
@@ -57,9 +77,12 @@ public class ComPassView extends View implements SensorEventListener {
         a.recycle();
         initSensor(context);
         initBitmap(context, width, height);
+        resourceInit();
     }
 
     private void initBitmap(Context context, int width, int height) {
+        WIDTH = width;
+        HEIGHT = height;
         mComPassOutsideRingBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.compass_outside_ring2);
         Bitmap target = Bitmap.createBitmap(width, height, mComPassOutsideRingBitmap.getConfig());
         Canvas temp_canvas = new Canvas(target);
@@ -83,14 +106,98 @@ public class ComPassView extends View implements SensorEventListener {
         sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+    public void enableCut(boolean cut){
+        mIsCutCanvas = cut;
+        invalidate();
+    }
+
+    public void setCut(int degress){
+        setCanvasCut(mIsCutCanvas,-degress,degress);
+    }
+
+    private void setCanvasCut(boolean cut,int from,int to) {
+        mIsCutCanvas = cut;
+        if(mIsCutCanvas){
+            initCanvasCutPath(from,to);
+        }
+        invalidate();
+    }
+
+    /**
+     * @param from 逆时针起始角
+     *
+     * */
+    private void initCanvasCutPath(int from, int to) {
+        PointF lu,ld,ru,rd,c;
+        double dfrom =  Math.toRadians(from);
+        double dto = Math.toRadians(to);
+
+        PointF src = new PointF(WIDTH/2,0);
+        c = new PointF(WIDTH/2,HEIGHT/2);
+
+        lu = new PointF(0,0);
+        ld = new PointF();
+        rotation(src,c,ld,dfrom);
+        rd = new PointF();
+        rotation(src,c,rd,dto);
+        ru = new PointF(WIDTH,0);
+
+        if (mCanvasCutPath == null) {
+            mCanvasCutPath = new Path();
+        }else {
+            mCanvasCutPath.reset();
+        }
+        mCanvasCutPath.moveTo(lu.x,lu.y);
+        PointF[] path = new PointF[]{ld,c,rd,ru};
+
+        for (int i = 0; i <path.length ; i++) {
+            PointF p = path[i];
+            mCanvasCutPath.lineTo(p.x,p.y);
+        }
+//        HaloLogger.logE("sen_debug_c",path[0]+"\t"+path[1]+"\t"+path[2]+"\t"+path[3]+"\t");
+
+//        mCanvasCutPath.reset();
+//        mCanvasCutPath.lineTo(0,0);
+//        mCanvasCutPath.lineTo(0,HEIGHT);
+//        mCanvasCutPath.lineTo(WIDTH,HEIGHT);
+//        mCanvasCutPath.lineTo(WIDTH,0);
+
+        mCanvasCutPath.close();
+        float r = WIDTH*0.5f/2;
+        mCanvasCutPath.addCircle(c.x,c.y,r, Path.Direction.CCW);
+    }
+
+    private void rotation(PointF src,PointF ref,PointF dest,double radians){
+        if (src == null || dest == null || ref == null) {
+            return;
+        }
+        PointF rPoint = new PointF(src.x-ref.x,src.y-ref.y);
+        double c=Math.cos(radians);
+        double s=Math.sin(radians);
+        float x=(float)(rPoint.x*c-rPoint.y*s+ref.x);
+        float y=(float)(rPoint.x*s+rPoint.y*c+ref.y);
+        dest.x = x;
+        dest.y = y;
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if(mIsCutCanvas){
+            if (mCanvasCutPath != null) {
+                canvas.clipPath(mCanvasCutPath, Region.Op.INTERSECT);
+            }
+        }
         canvas.drawBitmap(mComPassOutsideRingBitmap, 0, 0, null);
         Matrix matrix = new Matrix();
         matrix.setRotate(mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
-        canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
+        if (!mIsCutCanvas){
+            canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
+        }
+
     }
+
+
+
 
     public void setDestDegree(int degree) {
         mDestDirection = degree;

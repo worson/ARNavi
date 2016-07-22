@@ -15,5 +15,5 @@ public class ARWayConst {
     public static final double DEFAULT_CAMERA_Z = 15;
 
     //NAVING
-    public static final int NAVI_CAR_START_DISTANCE = 100;
+    public static final int NAVI_CAR_START_DISTANCE = 50;
 }

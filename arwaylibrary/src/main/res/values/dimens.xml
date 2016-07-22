@@ -5,6 +5,12 @@
     <dimen name="compass_pause_width">169.3dp</dimen>
     <dimen name="compass_pause_height">169.3dp</dimen>
 
+    <dimen name="speed_view_pause_margin_top">78.67dp</dimen>
+    <dimen name="speed_view_driving_margin_top">110.67dp</dimen>
+
+    <dimen name="distance_view_pause_margin_top">78.67dp</dimen>
+    <dimen name="distance_view_driving_margin_top">110.67dp</dimen>
+
 
     <dimen name="speed_view_pause_width">78.67dp</dimen>
     <dimen name="speed_view_pause_height">78.67dp</dimen>
@@ -16,7 +22,7 @@
     <dimen name="distance_view_driving_width">84dp</dimen>
     <dimen name="distance_view_driving_height">70dp</dimen>
 
-    <dimen name="digital_speed_width">10dp</dimen>
+    <dimen name="digital_speed_width">11dp</dimen>
     <dimen name="digital_speed_height">17dp</dimen>
 
 </resources>
