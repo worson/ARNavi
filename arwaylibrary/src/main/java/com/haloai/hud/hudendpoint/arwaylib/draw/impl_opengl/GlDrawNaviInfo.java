@@ -34,6 +34,8 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
     private ImageView mRoadDirectionImageView = null;
     private TextView  mRoadDistanceTextView = null;
     private TextView  mRoadIndicateTextView = null;
+    private TextView  mRoadNameIndicateTextView = null;
+    private TextView  mRoadDirectionIndicateTextView = null;
     private TextView  mNaviIndicateTextView = null;
     private TextView  mNaviStatusTextView = null;
     private ViewGroup mNextRoadViewGroup = null;
@@ -129,15 +131,32 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         if (mNaviIndicateTextView != null) {
             if (mNaviInfoBean != null) {
                 String text = mNaviInfoBean.getNaviText();
-                String display = null;
+                HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateNaviIndicate navi text is "+text);
+                String display = "";
+                String roadName = "";
+                String roadDirection = "";
                 int index = text.indexOf("请行驶");
                 if(index>=0 && index<=text.length()){
                     display= text.substring(index,text.length());
+                    int cIndex = display.indexOf("，");
+                    if(display !=null && cIndex>3){
+                        roadName= text.substring(3,cIndex-1);
+                        int dIndex = display.indexOf("行驶");
+                        if(dIndex>cIndex){
+                            roadDirection = display.substring(cIndex+1,dIndex+1);
+                        }
+                    }
+
+
                 }
                 if (mCommonBean.isStartOk()){
                     mNaviIndicateTextView.setText("");
+                    mRoadNameIndicateTextView.setText(roadName);
+                    mRoadDirectionIndicateTextView.setText(roadDirection);
                 }else if (display != null) {
-                    mNaviIndicateTextView.setText(display);
+                    mNaviIndicateTextView.setText("进入");
+                    mRoadNameIndicateTextView.setText(roadName);
+                    mRoadDirectionIndicateTextView.setText(roadDirection);
                 }
             }
 
@@ -155,9 +174,9 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
     private void updateNextRoadIndicate() {
         if (mRoadIndicateTextView != null) {
-            String roadName = mNaviInfoBean.getNextRoadName();
+            String roadName = mNaviInfoBean.getCurrentRoadName();
             if (roadName != null) {
-                String text = "请沿"+roadName+"行驶";
+                String text = "沿"+roadName+"行驶";
                 mRoadIndicateTextView.setText(text);
             }else {
                 mRoadIndicateTextView.setText("");
@@ -194,6 +213,8 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             mRoadDistanceTextView = (TextView) view.findViewById(R.id.next_road_distance_textview);
             mRoadIndicateTextView = (TextView) view.findViewById(R.id.next_road_indicate_textview);
             mNaviIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_textview);
+            mRoadNameIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_road_textview);
+            mRoadDirectionIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_direction_textview);
             mNaviStatusTextView = (TextView) view.findViewById(R.id.navi_status_textiview);
 
         }

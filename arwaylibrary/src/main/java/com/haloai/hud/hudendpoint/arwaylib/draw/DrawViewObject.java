@@ -23,7 +23,7 @@ public abstract class DrawViewObject extends DrawObject implements IViewOperatio
     public static int VIEW_PARRENT_WIDTH  = 254;
     public static int VIEW_PARRENT_HEIGHT = 254;
 
-    public static int VIEW_ROTATION_DEGREES   = 30;
+    public static int VIEW_ROTATION_DEGREES   = 45;
     public static int VIEW_ANIMATION_DURATION = 1000;
 
     protected Resources mResources  = null;
