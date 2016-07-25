@@ -65,6 +65,15 @@ public class GlDrawRetainDistance extends DrawViewObject implements IDriveStateL
     }
 
     @Override
+    public void resetView() {
+        if (mRetainTimeTextView != null) {
+            mRetainTimeTextView.setText("");
+        }
+        updateRetainDistance();
+        updateRetainTime();
+    }
+
+    @Override
     public void doDraw() {
         super.doDraw();
         updateRetainDistance();

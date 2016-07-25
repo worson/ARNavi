@@ -1,9 +1,11 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.RelativeLayout;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
@@ -180,5 +182,33 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
 //            mTextureView =(TextureView) view.findViewById(R.id.rajwali_surface);
         }
 
+    }
+
+    @Override
+    public void resetView() {
+
+    }
+
+    public void showHide(boolean show) {
+        View[] views = new View[]{mTextureView};//
+        ObjectAnimator animator = null;
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
+//                    v.setVisibility(View.VISIBLE);
+                }else {
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
+//                    v.setVisibility(View.INVISIBLE);
+                }
+                if (animator != null) {
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(1000);
+                    animator.setRepeatCount(0);
+                    animator.start();
+                }
+            }
+        }
     }
 }

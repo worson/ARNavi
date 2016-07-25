@@ -26,8 +26,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="36dp"
+                android:layout_marginRight="4dp"
                 android:layout_marginTop="21.3dp"
-                android:text="进入 海天一路\n然后向西行驶"
+                android:maxLines="3"
+                android:text="进入 海天一路\n然后向东行驶"
                 android:textColor="#ffffff"
                 android:textSize="16sp"/>
 
@@ -52,8 +54,9 @@
                 android:id="@+id/next_road_distance_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/next_road_direction_imageview"
                 android:layout_marginLeft="2.67dp"
+                android:layout_toRightOf="@+id/next_road_direction_imageview"
+                android:maxLines="1"
                 android:padding="0dp"
                 android:text="500米"
                 android:textColor="#ffffff"
@@ -64,9 +67,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/next_road_distance_textview"
+                android:layout_marginLeft="2.67dp"
                 android:layout_marginTop="3.5dp"
                 android:layout_toRightOf="@+id/next_road_direction_imageview"
-                android:layout_marginLeft="2.67dp"
+                android:maxLines="2"
                 android:padding="0dp"
                 android:text="沿滨海大道行驶"
                 android:textColor="#ffffff"
@@ -78,12 +82,13 @@
             android:id="@+id/speed_view"
             android:layout_width="@dimen/speed_view_pause_width"
             android:layout_height="@dimen/speed_view_pause_height"
+            android:layout_marginBottom="26.67dp"
             android:layout_marginLeft="30dp"
             android:layout_marginTop="@dimen/speed_view_pause_margin_top"
             custom:custom_height="@dimen/speed_view_pause_height"
             custom:custom_width="@dimen/speed_view_pause_width">
         </com.haloai.hud.hudendpoint.arwaylib.view.SpeedView>
-        
+
         <RelativeLayout
             android:id="@+id/digital_speed_viewgroup"
             android:layout_width="134dp"
@@ -91,71 +96,72 @@
             android:layout_alignLeft="@+id/speed_view"
             android:layout_alignStart="@+id/speed_view"
             android:layout_alignTop="@+id/speed_view"
-            android:layout_marginLeft="19.3dp"
+            android:layout_marginLeft="12.3dp"
             android:layout_marginTop="24.8dp">
+
             <ImageView
                 android:id="@+id/speed_num_hun"
                 android:layout_width="@dimen/digital_speed_width"
                 android:layout_height="@dimen/digital_speed_height"
-                android:scaleType="fitXY"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="12dp"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="5dp"
+                android:scaleType="fitXY"/>
 
             <ImageView
                 android:id="@+id/speed_num_ten"
                 android:layout_width="@dimen/digital_speed_width"
                 android:layout_height="@dimen/digital_speed_height"
-                android:scaleType="fitXY"
                 android:layout_alignTop="@+id/speed_num_hun"
-                android:layout_toRightOf="@+id/speed_num_hun" />
+                android:layout_toRightOf="@+id/speed_num_hun"
+                android:scaleType="fitXY"/>
 
             <ImageView
                 android:id="@+id/speed_num_one"
                 android:layout_width="@dimen/digital_speed_width"
                 android:layout_height="@dimen/digital_speed_height"
-                android:scaleType="fitXY"
                 android:layout_alignTop="@+id/speed_num_ten"
                 android:layout_toRightOf="@+id/speed_num_ten"
-                android:src="@drawable/speed_number_0" />
+                android:scaleType="fitXY"
+                android:src="@drawable/speed_number_0"/>
 
             <ImageView
                 android:id="@+id/speed_num_unit"
                 android:layout_width="32dp"
                 android:layout_height="14dp"
                 android:layout_alignBottom="@+id/speed_num_one"
-                android:layout_toEndOf="@+id/speed_num_one"
                 android:layout_marginStart="6dp"
-                android:src="@drawable/speed_number_unit" />
+                android:layout_toEndOf="@+id/speed_num_one"
+                android:src="@drawable/speed_number_unit"/>
 
         </RelativeLayout>
 
         <!--<TextView-->
-            <!--android:id="@+id/prefix_speed_imageview"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignLeft="@+id/speed_view"-->
-            <!--android:layout_alignStart="@+id/speed_view"-->
-            <!--android:layout_alignTop="@+id/speed_view"-->
-            <!--android:layout_marginLeft="29.3dp"-->
-            <!--android:layout_marginTop="23.8dp"-->
-            <!--android:text="100"-->
-            <!--android:textColor="#ffffff"-->
-            <!--android:textSize="20sp"-->
-            <!--/>-->
+        <!--android:id="@+id/prefix_speed_imageview"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignLeft="@+id/speed_view"-->
+        <!--android:layout_alignStart="@+id/speed_view"-->
+        <!--android:layout_alignTop="@+id/speed_view"-->
+        <!--android:layout_marginLeft="29.3dp"-->
+        <!--android:layout_marginTop="23.8dp"-->
+        <!--android:text="100"-->
+        <!--android:textColor="#ffffff"-->
+        <!--android:textSize="20sp"-->
+        <!--/>-->
 
         <!--<TextView-->
-            <!--android:id="@+id/suffix_speed_textview"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignBottom="@+id/prefix_speed_imageview"-->
-            <!--android:layout_marginBottom="2dp"-->
-            <!--android:layout_marginLeft="2dp"-->
-            <!--android:layout_toRightOf="@+id/prefix_speed_imageview"-->
-            <!--android:text="km/h"-->
-            <!--android:textColor="#ffffff"-->
-            <!--android:textSize="12sp"/>-->
+        <!--android:id="@+id/suffix_speed_textview"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignBottom="@+id/prefix_speed_imageview"-->
+        <!--android:layout_marginBottom="2dp"-->
+        <!--android:layout_marginLeft="2dp"-->
+        <!--android:layout_toRightOf="@+id/prefix_speed_imageview"-->
+        <!--android:text="km/h"-->
+        <!--android:textColor="#ffffff"-->
+        <!--android:textSize="12sp"/>-->
 
     </RelativeLayout>
 
@@ -165,6 +171,7 @@
         android:layout_height="185.3dp"
         android:layout_toRightOf="@+id/left_card_viewgroup"
         android:layout_weight="2">
+
         <FrameLayout
             android:id="@+id/opengl_viewgroup"
             android:layout_width="match_parent"
@@ -175,8 +182,8 @@
             android:id="@+id/compass_view"
             android:layout_width="@dimen/compass_pause_width"
             android:layout_height="@dimen/compass_pause_height"
-            android:textColor="#000000"
             android:layout_centerInParent="true"
+            android:textColor="#000000"
             custom:custom_height="@dimen/compass_pause_height"
             custom:custom_width="@dimen/compass_pause_width">
         </com.haloai.hud.hudendpoint.arwaylib.view.ComPassView>
@@ -203,6 +210,7 @@
             android:id="@+id/retain_distance_view"
             android:layout_width="@dimen/distance_view_pause_width"
             android:layout_height="@dimen/distance_view_pause_height"
+            android:layout_marginBottom="26.67dp"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="@dimen/distance_view_pause_margin_top"
             custom:custom_height="@dimen/distance_view_pause_height"

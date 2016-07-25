@@ -77,6 +77,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         if (view != null) {
             mComPassView = (ComPassView)view.findViewById(R.id.compass_view);
             mDirectionTextView = (TextView) view.findViewById(R.id.diretion_textview);
+            mDirectionTextView.setVisibility(View.INVISIBLE);
 //            mComPassViewGroup = (ViewGroup) view.findViewById(R.id.compass_viewgroup);
             initLayout(context,null,mComPassView);
 //            mComPassView.setY(100);
@@ -84,15 +85,32 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         }
 
     }
+
+    @Override
+    public void resetView() {
+        if (mDirectionTextView != null) {
+            mDirectionTextView.setText("");
+        }
+    }
+
     public void showHide(boolean show) {
-        View[] views = new View[]{mDirectionTextView,mComPassView};
+        View[] views = new View[]{mComPassView};//
+        ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
             if (v != null) {
                 if (show){
-                    v.setVisibility(View.VISIBLE);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
+//                    v.setVisibility(View.VISIBLE);
                 }else {
-                    v.setVisibility(View.INVISIBLE);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
+//                    v.setVisibility(View.INVISIBLE);
+                }
+                if (animator != null) {
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.setRepeatCount(0);
+                    animator.start();
                 }
             }
         }
@@ -109,111 +127,128 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
             VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
         }
-
-        AnimationSet animationSet = new AnimationSet(true);
         switch (state){
             case DRIVING:
                 showHide(false);
-                if (mComPassView != null) {
-                    ObjectAnimator animator = null;
-
-                    animationSet.setDuration(VIEW_ANIMATION_DURATION);
-
-                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",1,0.5f);
-                    animator.setDuration(1000);
-                    animator.setRepeatCount(0);
-//                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",1,0.754f);
-                    animator.setDuration(VIEW_ANIMATION_DURATION/4);
-                    animator.setInterpolator(new DecelerateInterpolator(4));
-                    animator.setRepeatCount(0);
-//                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", 0, VIEW_ROTATION_DEGREES);
-                    animator.setInterpolator(new DecelerateInterpolator(1));
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.setRepeatCount(0);
-                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha", 1,0);
-                    animator.setInterpolator(new DecelerateInterpolator(1));
-                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
-                    animator.setRepeatCount(0);
-                    animator.start();
-
-                    mComPassView.enableCut(true);
-                    mComPassView.setCut(60);
-
-                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Cut", -180,60);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
-                    animator.setRepeatCount(0);
-//                    animator.start();
-
-                    /*animator = ObjectAnimator.ofFloat(mComPassView, "X", 0, 50);
-                    animator.setDuration(1000);
-                    animator.setRepeatCount(0);
-                    animator.start();*/
-                    Log.e("compassdraw", VIEW_PARRENT_HEIGHT +",   "+ VIEW_NOT_DRIVING_HEIGHT +",   "+ VIEW_DRIVING_HEIGHT);
-                    if (mComPassView != null) {
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "Y", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
-                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", 40);
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",10);
-                        animator.setInterpolator(new LinearInterpolator());
-                        animator.setDuration(300);
-                        animator.setRepeatCount(0);
-//                        animator.start();
-                    }
-                }
                 break;
             case PAUSE:
                 showHide(true);
-                if (mComPassView != null) {
-                    ObjectAnimator animator = null;
-
-                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",0.5f,1);
-                    animator.setDuration(500);
-                    animator.setRepeatCount(0);
-//                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",0.754f,1);
-                    animator.setDuration(500);
-                    animator.setRepeatCount(0);
-//                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", VIEW_ROTATION_DEGREES,0);
-                    animator.setInterpolator(new DecelerateInterpolator(4));
-                    animator.setDuration(500);
-                    animator.setRepeatCount(0);
-                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha",0,1);
-                    animator.setInterpolator(new DecelerateInterpolator(1));
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.setRepeatCount(0);
-                    animator.start();
-
-                    mComPassView.enableCut(false);
-//                    mComPassView.setCut(60);
-                    if (mViewParent != null) {
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "Y",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
-                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, -VIEW_TOP_DRIVING_Y);
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
-//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",-40);
-                        animator.setInterpolator(new LinearInterpolator());
-//                        mComPassView.setTranslationY();
-                        animator.setDuration(300);
-                        animator.setRepeatCount(0);
-//                        animator.start();
-                    }
-                }
                 break;
             default:
                 break;
         }
     }
+
+//    public void changeDriveState(DriveState state) {
+//        if (mViewParent != null) {
+//            VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
+//            VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
+//        }
+//
+//        AnimationSet animationSet = new AnimationSet(true);
+//        switch (state){
+//            case DRIVING:
+//                showHide(false);
+//                if (mComPassView != null) {
+//                    ObjectAnimator animator = null;
+//
+//                    animationSet.setDuration(VIEW_ANIMATION_DURATION);
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",1,0.5f);
+//                    animator.setDuration(1000);
+//                    animator.setRepeatCount(0);
+////                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",1,0.754f);
+//                    animator.setDuration(VIEW_ANIMATION_DURATION/4);
+//                    animator.setInterpolator(new DecelerateInterpolator(4));
+//                    animator.setRepeatCount(0);
+////                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", 0, VIEW_ROTATION_DEGREES);
+//                    animator.setInterpolator(new DecelerateInterpolator(1));
+//                    animator.setDuration(VIEW_ANIMATION_DURATION);
+//                    animator.setRepeatCount(0);
+//                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha", 1,0);
+//                    animator.setInterpolator(new DecelerateInterpolator(1));
+//                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
+//                    animator.setRepeatCount(0);
+//                    animator.start();
+//
+//                    mComPassView.enableCut(true);
+//                    mComPassView.setCut(60);
+//
+//                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Cut", -180,60);
+//                    animator.setInterpolator(new LinearInterpolator());
+//                    animator.setDuration(VIEW_ANIMATION_DURATION/2);
+//                    animator.setRepeatCount(0);
+////                    animator.start();
+//
+//                    /*animator = ObjectAnimator.ofFloat(mComPassView, "X", 0, 50);
+//                    animator.setDuration(1000);
+//                    animator.setRepeatCount(0);
+//                    animator.start();*/
+//                    Log.e("compassdraw", VIEW_PARRENT_HEIGHT +",   "+ VIEW_NOT_DRIVING_HEIGHT +",   "+ VIEW_DRIVING_HEIGHT);
+//                    if (mComPassView != null) {
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "Y", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", 40);
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",10);
+//                        animator.setInterpolator(new LinearInterpolator());
+//                        animator.setDuration(300);
+//                        animator.setRepeatCount(0);
+////                        animator.start();
+//                    }
+//                }
+//                break;
+//            case PAUSE:
+//                showHide(true);
+//                if (mComPassView != null) {
+//                    ObjectAnimator animator = null;
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleY",0.5f,1);
+//                    animator.setDuration(500);
+//                    animator.setRepeatCount(0);
+////                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView,"ScaleX",0.754f,1);
+//                    animator.setDuration(500);
+//                    animator.setRepeatCount(0);
+////                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", VIEW_ROTATION_DEGREES,0);
+//                    animator.setInterpolator(new DecelerateInterpolator(4));
+//                    animator.setDuration(500);
+//                    animator.setRepeatCount(0);
+//                    animator.start();
+//
+//                    animator = ObjectAnimator.ofFloat(mDirectionTextView, "Alpha",0,1);
+//                    animator.setInterpolator(new DecelerateInterpolator(1));
+//                    animator.setDuration(VIEW_ANIMATION_DURATION);
+//                    animator.setRepeatCount(0);
+//                    animator.start();
+//
+//                    mComPassView.enableCut(false);
+////                    mComPassView.setCut(60);
+//                    if (mViewParent != null) {
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "Y",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+//                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, -VIEW_TOP_DRIVING_Y);
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+////                        animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",-40);
+//                        animator.setInterpolator(new LinearInterpolator());
+////                        mComPassView.setTranslationY();
+//                        animator.setDuration(300);
+//                        animator.setRepeatCount(0);
+////                        animator.start();
+//                    }
+//                }
+//                break;
+//            default:
+//                break;
+//        }
+//    }
 
     @Override
     public void doDraw() {

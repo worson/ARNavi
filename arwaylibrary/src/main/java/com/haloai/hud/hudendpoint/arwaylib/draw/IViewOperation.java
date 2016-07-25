@@ -21,4 +21,9 @@ public interface IViewOperation {
      */
     public void setView(Context context, View view);
 
+    /**
+     * 重置相关View的状态和显示
+     */
+    public void resetView();
+
 }

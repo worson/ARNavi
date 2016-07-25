@@ -21,6 +21,8 @@ import com.haloai.hud.utils.HaloLogger;
  * Created by wangshengxing on 16/7/15.
  */
 public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
+    private static final boolean GPS_DEBUG_MODE       = true;
+
     private static GlDrawNaviInfo mGlDrawNaviInfo = new GlDrawNaviInfo();
 
     //bean
@@ -84,19 +86,13 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         if (mRouteBean == null || mCommonBean == null) {
             return null;
         }
-        if(mCommonBean.isNaviEnd()){
-            title = "本次导航结束";
-        }else if(mCommonBean.isYaw()){
-            title = "正在计算偏航路径...";
-        }else if (!isNavingReady()){
-            title = "开始导航";//+NOT_DRAW_TEXT_CONTENT
-            if(mRouteBean.getGpsNumber()<1){
-                title = "GPS 信号弱";
-            }
-        }if (!mRouteBean.isMatchNaviPath()) {
-            HaloLogger.logE("sen_debug_error", "route update ：location 不在path 上");
+        if(mCommonBean.isYaw()){
+            title = "已偏航，路径重新规划中...";
+        }if(GPS_DEBUG_MODE != true && mRouteBean.getGpsNumber()<1){
+            title = "无网络信号，正在搜索...";
+        }/*if (!mRouteBean.isMatchNaviPath()) {
             title = "正在检测行驶方向";
-        }
+        }*/
         return title;
     }
 
@@ -163,6 +159,8 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             if (roadName != null) {
                 String text = "请沿"+roadName+"行驶";
                 mRoadIndicateTextView.setText(text);
+            }else {
+                mRoadIndicateTextView.setText("");
             }
         }
     }
@@ -203,6 +201,8 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         dafaultViewInit();
     }
 
-
-
+    @Override
+    public void resetView() {
+        dafaultViewInit();
+    }
 }

@@ -12,6 +12,7 @@ import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARWayRoadObject;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.utils.HaloLogger;
@@ -590,10 +591,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             PointF openGL = projection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i)));
             path.add(new Vector3(openGL.x, openGL.y, 0));
         }
+        HaloLogger.logE("sen_debug_gl","navi route path size is "+path.size());
+        HaloLogger.logE("sen_debug_gl","navi route path is "+path);
         if (!isPathRepeat(path)) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
+        }else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"arway setPath is repeat path");
         }
     }
 
@@ -626,8 +631,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 mPath.add(new Vector3(v));
             }
         }
-        HaloLogger.logE("sen_debug_gl","navi route path size is "+mPath.size());
-        HaloLogger.logE("sen_debug_gl","navi route path is "+mPath);
+
 
         // TODO: 2016/7/13 path 数据有问题,需要进行特殊处理(绘制文字等界面提示)
         if (mPath.size() < 2) {

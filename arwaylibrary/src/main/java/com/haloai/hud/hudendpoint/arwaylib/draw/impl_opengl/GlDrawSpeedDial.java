@@ -56,15 +56,19 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     }
 
     public void updateSpeedText(int speed){
-        if (mSpeedValueView != null) {
+        /*if (mSpeedValueView != null) {
             mSpeedValueView.setText(speed+"");
-        }
+        }*/
         if (mSpeedView != null) {
             mSpeedView.setSpeed(speed);
         }
     }
 
     public void updateSpeed(int speed){
+        if(mSpeedNumHun==null || mSpeedNumTen==null ||mSpeedNumOne==null){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateSpeed view is null");
+            return;
+        }
         mSpeedNumHun.setVisibility(View.INVISIBLE);
         mSpeedNumTen.setVisibility(View.INVISIBLE);
         int one=speed%10;
@@ -88,10 +92,16 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
             initLayout(context,null,mSpeedView);
             /*mSpeedValueView = (TextView)view.findViewById(R.id.prefix_speed_imageview);
             mSpeedScaleView = (TextView)view.findViewById(R.id.suffix_speed_textview);*/
-            mSpeedNumHun=(ImageView)mSpeedView.findViewById(R.id.speed_num_hun);
-            mSpeedNumTen=(ImageView)mSpeedView.findViewById(R.id.speed_num_ten);
-            mSpeedNumOne=(ImageView)mSpeedView.findViewById(R.id.speed_num_one);
+            mSpeedNumHun=(ImageView)view.findViewById(R.id.speed_num_hun);
+            mSpeedNumTen=(ImageView)view.findViewById(R.id.speed_num_ten);
+            mSpeedNumOne=(ImageView)view.findViewById(R.id.speed_num_one);
         }
+    }
+
+    @Override
+    public void resetView() {
+        updateSpeed(0);
+        updateSpeedDisplay();
     }
 
     @Override
@@ -105,8 +115,9 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     private void updateSpeedDisplay() {
         if (mSpeedBean != null) {
             int speed = mSpeedBean.getSpeed();
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDisplay is ok ,speed is "+speed);
+//            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDisplay is ok ,speed is "+speed);
             updateSpeed(speed);
+            updateSpeedText(speed);
         }else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDisplay is null !");
         }
