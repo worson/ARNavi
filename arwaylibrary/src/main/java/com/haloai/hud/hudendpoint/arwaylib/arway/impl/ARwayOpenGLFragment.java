@@ -15,7 +15,6 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMap.OnCameraChangeListener;
@@ -33,7 +32,6 @@ import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
-import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
@@ -45,9 +43,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
-import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
-import com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView;
-import com.haloai.hud.hudendpoint.arwaylib.view.SpeedView;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
@@ -95,6 +90,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     protected ARwayRenderer mRenderer;
     private boolean mCameraChangeFinish = false;
 
+    //navi
 
 
     public ARwayOpenGLFragment() {
@@ -152,10 +148,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         //init amap navi view
         mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
         mAmapNaviView.onCreate(savedInstanceState);
-        mAmapNaviView.getMap().setOnMapLoadedListener(this);
-        mAmapNaviView.getMap().setOnCameraChangeListener(this);
+
         if (mAmapNaviView.getMap() == null) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"Map is null");
+        }else {
+            mAmapNaviView.getMap().setOnMapLoadedListener(this);
+            mAmapNaviView.getMap().setOnCameraChangeListener(this);
         }
         if (IS_DEBUG_MODE) {
             mAmapNaviView.setVisibility(View.VISIBLE);
@@ -165,6 +163,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.setVisibility(View.INVISIBLE);
         }
         removeAMapNaviView();
+        hideARWay();
         mDrawScene.showHide(false);
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"fragment onCreateView");
         return mLayout;
@@ -186,12 +185,20 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     private void resetNaviStatus(){
+        this.mLastIsReady = false;
+        this.mNeedUpdatePath = false;
+
         mGlDrawNaviInfo.resetView();
         mGlDrawRetainDistance.resetView();
         mGlDrawSpeedDial.resetView();
         mGlDrawCompass.resetView();
 
         onNaviViewUpdate();
+        updateSpeedDialDisplay();
+        updateRetainDistanceDialDisplay();
+        if (ARWayConst.ENABLE_LOG_OUT){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway resetNaviStatus called" );
+        }
     }
 
 
@@ -255,6 +262,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             //mIv_gps_status.setImageBitmap(null);
             //mTv_gps_status.setText("");
             this.mCurrentGpsStatus = GPS_STATUS_FINE;
+        }
+    }
+
+    /**
+     * 开始导航
+     */
+    public void onARWayStart() {
+        if (ARWayConst.ENABLE_TEST_LOG){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onARWayStart called ,begin");
+        }
+        hideARWay();
+        mDrawScene.showHide(false);
+        mGlDrawCompass.showInstant(true);
+        resetNaviStatus();
+        ARWayController.CommonBeanUpdater.setNavingStart(true);
+        if (ARWayConst.ENABLE_TEST_LOG){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onARWayStart called ,end");
         }
     }
 
@@ -374,83 +398,56 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * 路线规划成功或者是偏航后的重新规划后调用该方法重新设置路线图
-     *
      * @param aMapNavi
+     * @return
+     * 0 设置成功
+     * -1 AMapNavi 为空
+     * -2 路径太长
+     * -3 renderer出错
      */
-    public void updatePath(AMapNavi aMapNavi) {
+    public int updatePath(AMapNavi aMapNavi) {
+        int result = -1;
         if (aMapNavi == null) {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updatePath,aMapNavi is null ");
-            return;
+            return result;
         }
         this.mAMapNavi = aMapNavi;
         Projection projection = mAmapNaviView.getMap().getProjection();
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
+                hideARWay();
                 mDrawScene.showHide(false);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath setPath");
-                mRenderer.setPath(projection, naviPath);
+                mGlDrawCompass.showInstant(true);
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath setPath,mode is "+aMapNavi.getNaviPath().getStrategy());
+                if(ARWayConst.ENABLE_LOG_OUT){
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath total poinst size is "+naviPath.getCoordList().size());
+                }
+                if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER){
+                    return -2;
+                }
+                mRenderer.setPath(projection, naviPath,(!mNeedUpdatePath));
+                result=0;
+
             } else {
+                result=-3;
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath Renderer is null");
             }
-            /*List<Vector3> path = getPathPoints(aMapNavi);
-            if (path != null) {
-                ARWayController.ARWayStatusUpdater.resetData();
-                LogI(ARWayConst.INDICATE_LOG_TAG," updatePath called");
-                ARWayController.SceneBeanUpdater.setPath(path)
-                        .setAllLength(aMapNavi.getNaviPath().getAllLength());
-                mRenderer.onDrawScene();
-            }*/
-
-//            resetNaviStatus();
             ARWayController.ARWayStatusUpdater.resetData();
+            resetNaviStatus();
             //更新总距离
             int distance = aMapNavi.getNaviPath().getAllLength();
             ARWayController.NaviInfoBeanUpdate.setPathTotalDistance(distance);
+            ARWayController.CommonBeanUpdater.setNavingStart(true);
             mNeedUpdatePath = false;
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath failed,projection is null?" + (projection == null) + "path is null??" + (naviPath == null));
             mNeedUpdatePath = true;
         }
 
-    }
-
-    public List<Vector3> getPathPoints(AMapNavi aMapNavi){
-        AMapNaviPath aMapNaviPath = aMapNavi.getNaviPath();
-        if (aMapNaviPath == null || aMapNaviPath.getCoordList().size() <= 0) {
-            return null;
-        }
-        int size = aMapNaviPath.getCoordList().size();
-        Projection projection = mAmapNaviView.getMap().getProjection();
-
-        List<Vector3> path = new ArrayList<>(size);
-        for (int i = 0; i < aMapNavi.getNaviPath().getCoordList().size(); i++) {
-            PointF openGL = projection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(aMapNavi.getNaviPath().getCoordList().get(i)));
-            path.add(new Vector3(openGL.x, openGL.y, 0));
-        }
-        if (!isPathRepeat(path)) {
-            mPath.clear();
-            mPath.addAll(path);
-            return mPath;
-        }
-        return null;
+        return result;
 
     }
-
-    private boolean isPathRepeat(List<Vector3> path) {
-        if (path == null || path.size() <= 0 || mPath == null || mPath.size() <= 0) {
-            return false;
-        }
-        for (int i = 0; i < (path.size() >= mPath.size() ? mPath.size() : path.size()); i++) {
-            Vector3 vNew = path.get(i);
-            Vector3 vOld = mPath.get(i);
-            if (!vNew.equals(vOld)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     /**
      * 更新ARway中的导航数据
@@ -467,10 +464,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if(arway.isShown() ){
             mRenderer.setRetainDistance(distance);
         }
-
         onNaviViewUpdate();
 
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
+        if (ARWayConst.ENABLE_LOG_OUT){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
+        }
 
     }
 
@@ -485,16 +483,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             }
         }
         boolean ready = isNavingReady();
-        if(this.mLastIsReady != ready){
+        if((this.mLastIsReady != ready) ){//|| (!arway.isShown())
             if(ready){
-                showARWay();
                 mDrawScene.showHide(true);
                 ARWayController.CommonBeanUpdater.setStartOk(true);
                 switchViewStatus(IDriveStateLister.DriveState.DRIVING);
             }else {
                 mDrawScene.showHide(false);
+                ARWayController.CommonBeanUpdater.setStartOk(false);
                 switchViewStatus(IDriveStateLister.DriveState.PAUSE);
             }
+//            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviViewUpdate ,mLastIsReady is "+mLastIsReady+"    ,"+ready);
             this.mLastIsReady = ready;
         }
     }
@@ -515,7 +514,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 .setCurrentRoadName(info.getCurrentRoadName())
                 .setNextRoadName(info.getNextRoadName())
                 .setPathRetainDistance(info.getPathRetainDistance())
-                .setPathRetainTime(info.getPathRetainTime());
+                .setPathRetainTime(info.getPathRetainTime())
+                .setStepRetainDistance(info.getCurStepRetainDistance());
     }
 
     public void onSpeedUpgraded(float speed) {
@@ -624,6 +624,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         ARWayController.CommonBeanUpdater.setYaw(true);
         updateNaviInfoDisplay();
+        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
     /**
      *
@@ -644,20 +645,31 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     /**
+     * 退出ARway时调用
      * stop to draw hudway
      */
     public void stopDrawHudway() {
-        arriveDestination();
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway onArriveDestination");
+        ARWayController.ARWayStatusUpdater.resetData();
+        resetNaviStatus();
+        arriveDestinationView();
+        /*mDrawScene.showHide();
+        mGlDrawCompass.showInstant(true);*/
+
     }
 
+    /**
+     * 到达目的地
+     */
     public void onArriveDestination() {
-        arriveDestination();
-        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        arriveDestinationView();
     }
 
-    private void arriveDestination(){
+    private void arriveDestinationView(){
+        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
         updateNaviInfoDisplay();
+        updateRetainDistanceDialDisplay();
         mRenderer.arriveDestination();
     }
 
@@ -688,7 +700,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void showARWay() {
 //        mRenderer.continue_();
-        if (arway != null) {
+        if (arway != null && !arway.isShown()) {//
             arway.setVisibility(View.VISIBLE);
         }
 
@@ -756,6 +768,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
     }
 
+    void updateRetainDistanceDialDisplay(){
+        if (mGlDrawRetainDistance != null) {
+            mGlDrawRetainDistance.doDraw();
+        }else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateRetainDistanceDialDisplay ,mGlDrawRetainDistance is null !");
+        }
+    }
+
     void updateSpeedDialDisplay(){
         if (mGlDrawSpeedDial != null) {
             mGlDrawSpeedDial.doDraw();
@@ -769,9 +789,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param state
      */
     public void switchViewStatus(IDriveStateLister.DriveState state){
+        GlDrawRetainDistance.getInstance().changeDriveState(state);
         GlDrawCompass.getInstance().changeDriveState(state);
         GlDrawSpeedDial.getInstance().changeDriveState(state);
-        GlDrawRetainDistance.getInstance().changeDriveState(state);
 
     }
 
@@ -804,6 +824,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mGlDrawRetainDistance.showHide(show);
         }
     }
+
 
 
 }

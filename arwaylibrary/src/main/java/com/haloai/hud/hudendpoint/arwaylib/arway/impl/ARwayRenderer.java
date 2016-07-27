@@ -3,12 +3,14 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
 import android.view.MotionEvent;
 import android.view.animation.LinearInterpolator;
 
 import com.amap.api.maps.Projection;
+import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARWayRoadObject;
@@ -32,11 +34,13 @@ import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
+import org.rajawali3d.primitives.Cylinder;
 import org.rajawali3d.primitives.Line3D;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -63,7 +67,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double CAMERA_OFFSET_X    = 0;
     private static final double CAMERA_OFFSET_Y    = 0;
     private static final double CAMERA_OFFSET_Z    = 0.7;
-    private static final double LOOK_AT_DIST       = 3;
+    private static final double LOOK_AT_DIST       = 2;
     private static final int    INTERSECTION_COUNT = 30;
     private static final double CAMERA_NEAR_PLANE  = 0.5;
     private static final double CAMERA_FAR_PLANE   = 500;
@@ -412,12 +416,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        //        }
         //
         // TODO: 2016/7/18 目前看只有lookAt的位置是正常的,摄像机位置以及被追随物体位置经常过偏过一边
-        //摄像机位置
+
+        /*//摄像机位置
         mSphere.setPosition(new Vector3(pos.x, pos.y, 0));
         //被追随位置
         mSphere2.setPosition(new Vector3(mObject4Chase.getPosition().x, mObject4Chase.getPosition().y, 0));
         //摄像机的lookAt
-        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));
+        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));*/
 
         getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
         getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
@@ -582,18 +587,24 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param projection
      * @param naviPath
      */
-    public void setPath(Projection projection, AMapNaviPath naviPath) {
+    public void setPath(Projection projection, AMapNaviPath naviPath, boolean repeat) {
         if (projection == null || naviPath == null) {
             return;
         }
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"start print ScreenLocation **************************************************\n");
         List<Vector3> path = new ArrayList<>();
         for (int i = 0; i < naviPath.getCoordList().size(); i++) {
-            PointF openGL = projection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i)));
-            path.add(new Vector3(openGL.x, openGL.y, 0));
+            LatLng latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
+            PointF openGL = projection.toOpenGLLocation(latLng);
+            Point p = projection.toScreenLocation(latLng);
+            HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,""+p.x+"\t"+p.y);
+            path.add(new Vector3(openGL.x, -openGL.y, 0));
+
         }
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"start print ScreenLocation **************************************************\n");
         HaloLogger.logE("sen_debug_gl","navi route path size is "+path.size());
         HaloLogger.logE("sen_debug_gl","navi route path is "+path);
-        if (!isPathRepeat(path)) {
+        if (!isPathRepeat(path) || !repeat) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
@@ -625,13 +636,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void setPathAndCalcData(List<Vector3> path, double allLength) {
         clearAllData();
         //此处由于tempPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"start print origin opengle ScreenLocation **************************************************\n");
         for (int i = 0; i < path.size(); i++) {
             Vector3 v = path.get(i);
             if (!containPoint(mPath, v)) {
                 mPath.add(new Vector3(v));
+                HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,""+v.x+"\t"+v.y);
             }
         }
-
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"start print origin opengle ScreenLocation **************************************************\n");
 
         // TODO: 2016/7/13 path 数据有问题,需要进行特殊处理(绘制文字等界面提示)
         if (mPath.size() < 2) {
@@ -646,7 +659,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         for (int i = 0; i < mPath.size() - 2; i++) {
             int distance = (int) (MathUtils.calculateDistance(
                     mPath.get(i).x, mPath.get(i).y, mPath.get(i + 1).x, mPath.get(i + 1).y) * tempBigTime4Calc);
-            HaloLogger.logE("helong_debug", "dist:" + distance);
+            if(ARWayConst.ENABLE_SPECIAL_LOG){
+                HaloLogger.logE("helong_debug", "dist:" + distance);
+            }
             //if the distance 30 time is less than 30,remove second point.
             if (distance <= 300) {
                 mPath.remove(i + 1);
@@ -785,7 +800,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             catmull.calculatePoint(pos, (1.0 * i) / (1.0 * pathLength * CURVE_TIME));
             mPath.add(new Vector3(pos));
         }
-        HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
+        if(ARWayConst.ENABLE_SPECIAL_LOG){
+            HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
+        }
 
         //rotate path with matrix
         double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
@@ -880,6 +897,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //clear not userful data to free memory
         clearUnuseDataAfterInitPathData();
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"start print filter opengle ScreenLocation **************************************************\n");
+        for (int i = 0; i <mPath.size() ; i++) {
+            Vector3 v = mPath.get(i);
+            if(ARWayConst.ENABLE_SPECIAL_LOG){
+                HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,""+v.x+"\t"+v.y);
+            }
+        }
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"end print filter opengle ScreenLocation **************************************************\n");
     }
 
     /**
@@ -946,11 +971,60 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return false;
     }
 
+    private List<Object3D> mDetinationObjects = null;
+
+    private void initDestinationScene(List<Vector3> leftPath, List<Vector3> rightPath) {
+        if (mDetinationObjects != null && mDetinationObjects.size()>0) {
+            for (int i = 0; i < mDetinationObjects.size(); i++) {
+                Object3D o = mDetinationObjects.get(i);
+                if (o != null) {
+                    getCurrentScene().removeChild(o);
+                }
+            }
+
+        }
+        if (mDetinationObjects == null) {
+            mDetinationObjects = new LinkedList<>();
+        }else {
+            mDetinationObjects.clear();
+        }
+        initDestinationObject(leftPath);
+        initDestinationObject(rightPath);
+    }
+
+    private void initDestinationObject(List<Vector3> path) {
+        if (path == null || path.size()<=0) {
+            return;
+        }
+        final Material material = new Material();
+        Cylinder dObject = null;
+        float oScale = 1f;
+        final int pNuber = 10;
+        final int skip = 3;
+        final int cnt = (path.size()-pNuber*skip)>0?path.size()-pNuber*skip:0;
+        for (int i = path.size()-1; i >cnt; i=i-skip) {
+            Vector3 v = path.get(i);
+            if (v != null) {
+                dObject = new Cylinder(2f,0.5f,10,20);
+                dObject.setPosition(v);
+                dObject.setColor(Color.RED);
+                dObject.setMaterial(material);
+                dObject.setScale(new Vector3(oScale,oScale,oScale));
+                dObject.setPosition(0,5,0);
+                getCurrentScene().addChild(dObject);
+
+                mDetinationObjects.add(dObject);
+            }
+        }
+
+    }
+
     private void myInitScene() {
         if (getCurrentScene() == null) {
             return;
         }
 
+//        initDestinationScene(mLeftPath,mRightPath);
         getCurrentScene().clearChildren();
 
 //        getCurrentScene().setBackgroundColor(0x222222);
@@ -959,7 +1033,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        MathUtils.points2path(leftPts, rightPts, mPreChildEndPos, ROAD_WIDTH);
 
         if (mRoadTexture == null) {
-            mRoadTexture = new Texture("route_new", R.drawable.route_new);
+            mRoadTexture = new Texture("route_new", R.drawable.route_new_line);
         }
         //        for (int i = 0; i < mPreChildEndPos.size(); i++) {
         //            //            Stack<Vector3> line = new Stack<>();
@@ -1117,6 +1191,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraAnim.play();*/
     }
 
+
+
     void insertPlane(int beginOfPointIdx, int endOfPointIdx) {
 
         if (mPath == null || mPath.size() <= 0/* || mLeftPath == null || mLeftPath.size() <= 0 || mRightPath == null || mRightPath.size() <= 0*/) {
@@ -1124,7 +1200,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
 
         if (mRoadTexture == null) {
-            mRoadTexture = new Texture("route_new", R.drawable.route_new);
+            mRoadTexture = new Texture("route_new", R.drawable.route_new_line);
         }
         ARWayRoadObject arWayRoadObject = new ARWayRoadObject(mPath.subList(beginOfPointIdx, endOfPointIdx));
         Material material = arWayRoadObject.getMaterial();
@@ -1145,7 +1221,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
 
         if (mRoadTexture == null) {
-            mRoadTexture = new Texture("route_new", R.drawable.route_new);
+            mRoadTexture = new Texture("route_new", R.drawable.route_new_line);
         }
         ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath));
         Material material = arWayRoadObject.getMaterial();

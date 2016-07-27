@@ -11,6 +11,8 @@ import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
@@ -21,11 +23,11 @@ import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
 public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
 
 
+    public float VIEW_BOTTOM_ERROR  = 1f;
+    public int   ANIMA_WIDTH_SCALE  = (int) (VIEW_DRIVING_WIDTH * 1f / VIEW_NOT_DRIVING_WIDTH);
+    public int   ANIMA_HEIGHT_SCALE = (int) (VIEW_DRIVING_HEIGHT * 1f / VIEW_NOT_DRIVING_HEIGHT);
 
-    public static float VIEW_BOTTOM_ERROR = 1f;
-    public static  int ANIMA_WIDTH_SCALE = (int)(VIEW_DRIVING_WIDTH *1f/ VIEW_NOT_DRIVING_WIDTH);
-    public static  int ANIMA_HEIGHT_SCALE = (int)(VIEW_DRIVING_HEIGHT *1f/ VIEW_NOT_DRIVING_HEIGHT);
-
+    private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
 
 
     private  static GlDrawCompass mGlDrawCompass = new GlDrawCompass();
@@ -77,9 +79,9 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         if (view != null) {
             mComPassView = (ComPassView)view.findViewById(R.id.compass_view);
             mDirectionTextView = (TextView) view.findViewById(R.id.diretion_textview);
-            mDirectionTextView.setVisibility(View.INVISIBLE);
 //            mComPassViewGroup = (ViewGroup) view.findViewById(R.id.compass_viewgroup);
             initLayout(context,null,mComPassView);
+            resetView();
 //            mComPassView.setY(100);
 //            bringToFront();
         }
@@ -91,38 +93,39 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         if (mDirectionTextView != null) {
             mDirectionTextView.setText("");
         }
+        if (mComPassView != null) {
+            mComPassView.setRotationX(0);
+        }
     }
 
     public void showHide(boolean show) {
         View[] views = new View[]{mComPassView};//
         ObjectAnimator animator = null;
+        VIEW_ANIMATION_DURATION=1000;
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
             if (v != null) {
                 if (show){
+                    v.setVisibility(View.VISIBLE);
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
-//                    v.setVisibility(View.VISIBLE);
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
+                    animator.setDuration(VIEW_ANIMATION_DURATION-50);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
                     animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.setRepeatCount(0);
                     animator.start();
                 }
             }
         }
     }
-
-    private void bringToFront(){
-        mComPassView.bringToFront();
-        mDirectionTextView.bringToFront();
-    }
-
     @Override
     public void changeDriveState(DriveState state) {
+        ObjectAnimator animator = null;
         if (mViewParent != null) {
             VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
             VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
@@ -130,9 +133,20 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         switch (state){
             case DRIVING:
                 showHide(false);
+                animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", 0, VIEW_ROTATION_DEGREES);
+                animator.setInterpolator(new DecelerateInterpolator(1));
+                animator.setDuration(VIEW_ANIMATION_DURATION);
+                animator.setRepeatCount(0);
+                animator.start();
+
                 break;
             case PAUSE:
                 showHide(true);
+                animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", VIEW_ROTATION_DEGREES, 0);
+                animator.setInterpolator(new DecelerateInterpolator(1));
+                animator.setDuration(VIEW_ANIMATION_DURATION);
+                animator.setRepeatCount(0);
+                animator.start();
                 break;
             default:
                 break;
@@ -253,7 +267,29 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
     @Override
     public void doDraw() {
         super.doDraw();
+        updateDirectionView();
+    }
+
+    private void updateDirectionView() {
+        if (mDirectionTextView != null && mNaviInfoBean != null) {
+            String text = mNaviInfoBean.getNaviText();
+            String[] keywords = new String[]{"东","南","西","北"};
+            String[] actionwords = new String[]{"往","向"};
+
+        }
     }
 
 
+    public void showInstant(boolean show) {
+        if (mComPassView != null) {
+            if(show){
+                mComPassView.setAlpha(1);
+                mComPassView.setVisibility(View.VISIBLE);
+            }else {
+                mComPassView.setAlpha(0);
+                mComPassView.setVisibility(View.INVISIBLE);
+            }
+
+        }
+    }
 }

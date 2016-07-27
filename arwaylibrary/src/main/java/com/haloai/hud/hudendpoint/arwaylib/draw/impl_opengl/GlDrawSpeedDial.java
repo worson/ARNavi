@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.hudendpoint.arwaylib.view.SpeedView;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -29,6 +31,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     private TextView mSpeedValueView = null;
     private TextView mSpeedScaleView = null;
 
+    private ViewGroup mDigitalSpeedViewgroup=null;
     private ImageView mSpeedNumHun;
     private ImageView mSpeedNumTen;
     private ImageView mSpeedNumOne;
@@ -89,9 +92,8 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     public void setView(Context context, View view) {
         if (view != null) {
             mSpeedView = (SpeedView)view.findViewById(R.id.speed_view);
+            mDigitalSpeedViewgroup = (ViewGroup) view.findViewById(R.id.digital_speed_viewgroup);
             initLayout(context,null,mSpeedView);
-            /*mSpeedValueView = (TextView)view.findViewById(R.id.prefix_speed_imageview);
-            mSpeedScaleView = (TextView)view.findViewById(R.id.suffix_speed_textview);*/
             mSpeedNumHun=(ImageView)view.findViewById(R.id.speed_num_hun);
             mSpeedNumTen=(ImageView)view.findViewById(R.id.speed_num_ten);
             mSpeedNumOne=(ImageView)view.findViewById(R.id.speed_num_one);
@@ -100,6 +102,9 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
 
     @Override
     public void resetView() {
+        if (mSpeedView != null) {
+            mSpeedView.setRotationX(0);
+        }
         updateSpeed(0);
         updateSpeedDisplay();
     }
@@ -146,8 +151,12 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
             VIEW_NOT_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.speed_view_pause_width));
             VIEW_NOT_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.speed_view_pause_height));
 
-            VIEW_TOP_NOT_DRIVING_Y = (int)(mResources.getDimension(R.dimen.speed_view_pause_margin_top));
-            VIEW_TOP_DRIVING_Y = (int)(mResources.getDimension(R.dimen.speed_view_driving_margin_top));
+            VIEW_TOP_NOT_DRIVING_Y = 0;
+            if (context != null) {
+                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,20);
+            }else {
+                VIEW_TOP_DRIVING_Y = 30;
+            }
 
         }
     }
@@ -165,22 +174,21 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
                 if (mSpeedView != null) {
                     ObjectAnimator animator = null;
 
-
                     animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", 0, VIEW_ROTATION_DEGREES);
                     animator.setInterpolator(new DecelerateInterpolator(1));
                     animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.setRepeatCount(0);
                     animator.start();
 
-                    Log.e("compassdraw", VIEW_PARRENT_HEIGHT +",   "+ VIEW_NOT_DRIVING_HEIGHT +",   "+ VIEW_DRIVING_HEIGHT);
-                    if (mViewParent != null) {
-                        //                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT), (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT )));
-                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
-                        animator.setInterpolator(new DecelerateInterpolator(4));
-                        animator.setDuration(300);
-                        animator.setRepeatCount(0);
-                        animator.start();
-                    }
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
                 }
                 break;
             case PAUSE:
@@ -189,18 +197,19 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
 
                     animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", VIEW_ROTATION_DEGREES,0);
                     animator.setInterpolator(new DecelerateInterpolator(4));
-                    animator.setDuration(500);
-                    animator.setRepeatCount(0);
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
 
-                    if (mViewParent != null) {
-                        //                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y", (int)(VIEW_PARRENT_HEIGHT -(VIEW_DRIVING_HEIGHT *1)), VIEW_PARRENT_HEIGHT -(VIEW_NOT_DRIVING_HEIGHT));
-                        animator = ObjectAnimator.ofFloat(mSpeedView, "Y",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
-                        animator.setInterpolator(new DecelerateInterpolator(4));
-                        animator.setDuration(300);
-                        animator.setRepeatCount(0);
-                        animator.start();
-                    }
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
                 }
                 break;
             default:

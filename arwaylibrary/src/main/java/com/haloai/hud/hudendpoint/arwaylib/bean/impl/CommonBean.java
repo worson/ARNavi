@@ -7,15 +7,25 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
  */
 public class CommonBean extends SuperBean{
 
-    private boolean mIsYaw = false;
-    private boolean mNaviEnd = false;
-    private boolean mStartOk = false;
+    private boolean mIsYaw       = false;
+    private boolean mNaviEnd     = false;
+    private boolean mStartOk     = false;//起步完成
+    private boolean mNavingStart = false;//开始导航
 
     @Override
     public void reset() {
         mIsYaw = false;
         mNaviEnd = false;
         mStartOk = false;
+        mNavingStart = false;
+    }
+
+    public boolean isNavingStart() {
+        return mNavingStart;
+    }
+
+    public void setNavingStart(boolean navingStart) {
+        mNavingStart = navingStart;
     }
 
     public boolean isYaw() {

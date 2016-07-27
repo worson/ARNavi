@@ -195,6 +195,12 @@ public class ARWayController {
                 mCommonBean.setStartOk(startOk);
             }
         }
+        public static void setNavingStart(boolean navingStart) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setNavingStart(navingStart);
+            }
+        }
+
 
         public static void reset(){
             mCommonBean.reset();

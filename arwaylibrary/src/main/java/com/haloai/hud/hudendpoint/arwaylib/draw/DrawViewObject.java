@@ -11,20 +11,20 @@ import android.view.ViewGroup;
  */
 public abstract class DrawViewObject extends DrawObject implements IViewOperation{
 
-    public static float VIEW_TOP_DRIVING_Y = 40;
-    public static float VIEW_TOP_NOT_DRIVING_Y = 0;
+    public float VIEW_TOP_DRIVING_Y     = 10;
+    public float VIEW_TOP_NOT_DRIVING_Y = 0;
 
-    public static int VIEW_DRIVING_WIDTH  = 192;
-    public static int VIEW_DRIVING_HEIGHT = 120;
+    public int VIEW_DRIVING_WIDTH  = 192;
+    public int VIEW_DRIVING_HEIGHT = 120;
 
-    public static int VIEW_NOT_DRIVING_WIDTH  = 254;
-    public static int VIEW_NOT_DRIVING_HEIGHT = 254;
+    public int VIEW_NOT_DRIVING_WIDTH  = 254;
+    public int VIEW_NOT_DRIVING_HEIGHT = 254;
 
-    public static int VIEW_PARRENT_WIDTH  = 254;
-    public static int VIEW_PARRENT_HEIGHT = 254;
+    public int VIEW_PARRENT_WIDTH  = 254;
+    public int VIEW_PARRENT_HEIGHT = 254;
 
-    public static int VIEW_ROTATION_DEGREES   = 45;
-    public static int VIEW_ANIMATION_DURATION = 1000;
+    public int VIEW_ROTATION_DEGREES   = 60;
+    public int VIEW_ANIMATION_DURATION = 1000;
 
     protected Resources mResources  = null;
     protected ViewGroup mViewParent = null;
