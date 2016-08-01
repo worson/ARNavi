@@ -23,6 +23,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.utils.HaloLogger;
 
 /**
  * author       : 龙;
@@ -34,6 +36,8 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 public class ComPassView extends View implements SensorEventListener {
     private int WIDTH  = 0;
     private int HEIGHT = 0;
+
+    private boolean DEBUG_MODE = false;
 
     //compass draw data
     private long           mStartTime         = 0l;
@@ -48,6 +52,7 @@ public class ComPassView extends View implements SensorEventListener {
     private Path    mCanvasCutPath = null;
     private Paint   mTextPaint     = null;
 
+
     public ComPassView(Context context) {
         super(context);
     }
@@ -59,25 +64,25 @@ public class ComPassView extends View implements SensorEventListener {
         resourceInit();
     }
 
-    private void resourceInit() {
-        mTextPaint = new Paint();
-        mTextPaint.setColor(Color.WHITE);
-        mTextPaint.setStrokeWidth(WIDTH*0.1f);
-        setCanvasCut(false,-60,60);
-    }
-
-
     public ComPassView(Context context, AttributeSet attrs) {
         super(context, attrs);
         final TypedArray a = context.obtainStyledAttributes(
                 attrs, R.styleable.CustomView, 0, 0);
         int width,height;
-        width = (int)a.getDimension(R.styleable.CustomView_custom_height,240);
+        width = (int)a.getDimension(R.styleable.CustomView_custom_width,240);
         height = (int)a.getDimension(R.styleable.CustomView_custom_height,240);
+        HaloLogger.logE("compass_debug","ComPassView init,width is "+width+"    ,height is "+height);
         a.recycle();
         initSensor(context);
         initBitmap(context, width, height);
         resourceInit();
+    }
+
+    private void resourceInit() {
+        mTextPaint = new Paint();
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setStrokeWidth(WIDTH*0.1f);
+        setCanvasCut(false,-60,60);
     }
 
     private void initBitmap(Context context, int width, int height) {
@@ -163,8 +168,10 @@ public class ComPassView extends View implements SensorEventListener {
 //        mCanvasCutPath.lineTo(WIDTH,0);
 
         mCanvasCutPath.close();
-        float r = WIDTH*0.5f/2;
-        mCanvasCutPath.addCircle(c.x,c.y,r, Path.Direction.CCW);
+        if(DEBUG_MODE){
+            float r = WIDTH*0.5f/2;
+            mCanvasCutPath.addCircle(c.x,c.y,r, Path.Direction.CCW);
+        }
     }
 
     private void rotation(PointF src,PointF ref,PointF dest,double radians){
@@ -179,9 +186,14 @@ public class ComPassView extends View implements SensorEventListener {
         dest.x = x;
         dest.y = y;
     }
+
+    private Paint mPaint = new Paint();
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        HaloLogger.logE("compass_debug","ComPassView onDraw,canvas width is "+canvas.getWidth()+"    ,height is "+canvas.getHeight());
+
         if(mIsCutCanvas){
             if (mCanvasCutPath != null) {
                 canvas.clipPath(mCanvasCutPath, Region.Op.INTERSECT);
@@ -193,6 +205,10 @@ public class ComPassView extends View implements SensorEventListener {
         if (!mIsCutCanvas){
             canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
         }
+
+        mPaint.setColor(Color.RED);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,5,mPaint);
 
     }
 
@@ -241,6 +257,8 @@ public class ComPassView extends View implements SensorEventListener {
                 mStartTime = endTime;
                 mStartComPassValue = -degree;
             }
+
+//            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"compassview onSensorChanged ,degress is "+degree);
         }
     }
 

@@ -8,7 +8,7 @@
     </facet>
     <facet type="java-gradle" name="Java-Gradle">
       <configuration>
-        <option name="BUILD_FOLDER_PATH" value="$MODULE_DIR$/ab/build" />
+        <option name="BUILD_FOLDER_PATH" value="$MODULE_DIR$/../../hudlauncher/C:/files/git/arway/arwaylibrary/build" />
         <option name="BUILDABLE" value="false" />
       </configuration>
     </facet>

@@ -971,51 +971,43 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return false;
     }
 
-    private List<Object3D> mDetinationObjects = null;
 
     private void initDestinationScene(List<Vector3> leftPath, List<Vector3> rightPath) {
-        if (mDetinationObjects != null && mDetinationObjects.size()>0) {
-            for (int i = 0; i < mDetinationObjects.size(); i++) {
-                Object3D o = mDetinationObjects.get(i);
-                if (o != null) {
-                    getCurrentScene().removeChild(o);
-                }
-            }
-
-        }
-        if (mDetinationObjects == null) {
-            mDetinationObjects = new LinkedList<>();
-        }else {
-            mDetinationObjects.clear();
-        }
-        initDestinationObject(leftPath);
-        initDestinationObject(rightPath);
+        /*initDestinationObject(leftPath);
+        initDestinationObject(rightPath);*/
     }
 
     private void initDestinationObject(List<Vector3> path) {
         if (path == null || path.size()<=0) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"initDestinationObject called ，path is null");
             return;
         }
         final Material material = new Material();
-        Cylinder dObject = null;
         float oScale = 1f;
+        int objectCnt = 0;
+        final int size = path.size();
         final int pNuber = 10;
-        final int skip = 3;
+        final int skip = 5;
         final int cnt = (path.size()-pNuber*skip)>0?path.size()-pNuber*skip:0;
-        for (int i = path.size()-1; i >cnt; i=i-skip) {
-            Vector3 v = path.get(i);
+        for (int i = path.size()-1; i >cnt; i=i-skip){
+//        for (int i = 0; i <path.size(); i=i+skip) {
+            Vector3 v = null;
+            if (i<size){
+                v = path.get(i);
+            }
             if (v != null) {
-                dObject = new Cylinder(2f,0.5f,10,20);
-                dObject.setPosition(v);
+                Cylinder dObject = null;
+                dObject = new Cylinder(2f,0.05f,10,20);
+                dObject.setPosition(v.x,v.y,1);
                 dObject.setColor(Color.RED);
                 dObject.setMaterial(material);
+//                dObject.rotate(Vector3.Axis.Y,90);
                 dObject.setScale(new Vector3(oScale,oScale,oScale));
-                dObject.setPosition(0,5,0);
                 getCurrentScene().addChild(dObject);
-
-                mDetinationObjects.add(dObject);
+                objectCnt++;
             }
         }
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"initDestinationObject called,path size is "+path.size()+"  , add object size is "+objectCnt);
 
     }
 
@@ -1024,9 +1016,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             return;
         }
 
-//        initDestinationScene(mLeftPath,mRightPath);
+
         getCurrentScene().clearChildren();
 
+        initDestinationScene(mLeftPath,mRightPath);
 //        getCurrentScene().setBackgroundColor(0x222222);
         //        List<Vector3> leftPts = new ArrayList<>();
         //        List<Vector3> rightPts = new ArrayList<>();

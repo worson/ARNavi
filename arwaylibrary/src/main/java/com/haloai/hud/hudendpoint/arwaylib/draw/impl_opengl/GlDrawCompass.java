@@ -15,6 +15,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
+import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
 
 /**
@@ -51,8 +52,11 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             VIEW_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.compass_driving_height));
             VIEW_NOT_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.compass_pause_width));
             VIEW_NOT_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.compass_pause_height));
-            VIEW_TOP_NOT_DRIVING_Y = 0;
-            VIEW_TOP_DRIVING_Y = 10;
+            if (context != null) {
+                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,20);
+            }else {
+                VIEW_TOP_DRIVING_Y = 30;
+            }
 //            VIEW_TOP_DRIVING_Y = VIEW_NOT_DRIVING_WIDTH*0.036f;
         }
     }
@@ -112,7 +116,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
 
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
-                    animator.setDuration(VIEW_ANIMATION_DURATION-50);
+                    animator.setDuration(VIEW_ANIMATION_DURATION-100);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
@@ -139,6 +143,11 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
                 animator.setRepeatCount(0);
                 animator.start();
 
+                animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                animator.setInterpolator(new LinearInterpolator());
+                animator.setDuration(VIEW_ANIMATION_DURATION);
+                animator.start();
+
                 break;
             case PAUSE:
                 showHide(true);
@@ -146,6 +155,11 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
                 animator.setInterpolator(new DecelerateInterpolator(1));
                 animator.setDuration(VIEW_ANIMATION_DURATION);
                 animator.setRepeatCount(0);
+                animator.start();
+
+                animator = ObjectAnimator.ofFloat(mComPassView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                animator.setInterpolator(new LinearInterpolator());
+                animator.setDuration(VIEW_ANIMATION_DURATION);
                 animator.start();
                 break;
             default:
@@ -280,7 +294,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
     }
 
 
-    public void showInstant(boolean show) {
+    public void showHideInstant(boolean show) {
         if (mComPassView != null) {
             if(show){
                 mComPassView.setAlpha(1);

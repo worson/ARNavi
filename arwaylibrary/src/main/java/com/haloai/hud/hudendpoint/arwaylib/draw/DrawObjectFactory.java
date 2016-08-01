@@ -107,14 +107,21 @@ public class DrawObjectFactory {
     public static View createGlDrawObjectLayoutIntance(Context context,ViewGroup container){
         View drawView = null;
         LayoutInflater inflater  = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ViewGroup mLayout = (ViewGroup) inflater.inflate(R.layout.arway_opengl_layout, container, false);
+        ViewGroup mLayout = (ViewGroup) inflater.inflate(R.layout.arway_opengl_layout, container, true);
 
         DrawScene drawScene = (DrawScene)getGlDrawObject(DrawType.GL_SCENE);
 //        drawScene.setView(context,mLayout);
 
         ViewGroup glSurfaceViewgroup = (ViewGroup)mLayout.findViewById(R.id.opengl_viewgroup);
         drawView = drawScene.getViewInstance(context);
-        if (drawView != null && glSurfaceViewgroup != null) {
+
+        if (drawView != null && drawView.getParent()!=null){
+            ViewGroup vg = (ViewGroup) drawView.getParent();
+            if (vg != null) {
+                vg.removeView(drawView);
+            }
+        }
+        if (drawView != null && drawView.getParent() ==null && glSurfaceViewgroup != null) {
             glSurfaceViewgroup.addView(drawView);
         }
 

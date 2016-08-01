@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,6 +31,7 @@ import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
+import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
@@ -42,7 +42,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
@@ -90,7 +89,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     protected ARwayRenderer mRenderer;
     private boolean mCameraChangeFinish = false;
 
-    //navi
+    //navi bean
+    //bean
+    private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+    private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
+    private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
 
 
     public ARwayOpenGLFragment() {
@@ -134,8 +137,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         // Inflate the layout for this fragment
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
-        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, container);
-        mLayout.addView(mainARWayView);
+        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout);
+
+        /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
+            ViewGroup vg = (ViewGroup)mainARWayView.getParent();
+            vg.removeView(mainARWayView);
+        }
+        mLayout.addView(mainARWayView);*/
 
         mRenderSurface = (TextureView) mDrawScene.getViewInstance(mContext);
         mRenderer = (ARwayRenderer) createRenderer();
@@ -274,7 +282,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
         hideARWay();
         mDrawScene.showHide(false);
-        mGlDrawCompass.showInstant(true);
+        mGlDrawCompass.showHideInstant(true);
         resetNaviStatus();
         ARWayController.CommonBeanUpdater.setNavingStart(true);
         if (ARWayConst.ENABLE_TEST_LOG){
@@ -418,7 +426,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             if (mRenderer != null) {
                 hideARWay();
                 mDrawScene.showHide(false);
-                mGlDrawCompass.showInstant(true);
+                mGlDrawCompass.showHideInstant(true);
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath setPath,mode is "+aMapNavi.getNaviPath().getStrategy());
                 if(ARWayConst.ENABLE_LOG_OUT){
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updatePath total poinst size is "+naviPath.getCoordList().size());
@@ -483,15 +491,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             }
         }
         boolean ready = isNavingReady();
-        if((this.mLastIsReady != ready) ){//|| (!arway.isShown())
+        if((this.mLastIsReady != ready) && mCommonBean.isNavingStart() ){//|| (!arway.isShown())
             if(ready){
                 mDrawScene.showHide(true);
                 ARWayController.CommonBeanUpdater.setStartOk(true);
                 switchViewStatus(IDriveStateLister.DriveState.DRIVING);
             }else {
-                mDrawScene.showHide(false);
+                // FIXME: 16/7/30 导航到最后的时候，距离结点的距离会显示为起点的大小 
+                /*mDrawScene.showHide(false);
                 ARWayController.CommonBeanUpdater.setStartOk(false);
-                switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+                switchViewStatus(IDriveStateLister.DriveState.PAUSE);*/
             }
 //            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviViewUpdate ,mLastIsReady is "+mLastIsReady+"    ,"+ready);
             this.mLastIsReady = ready;
@@ -649,12 +658,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * stop to draw hudway
      */
     public void stopDrawHudway() {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway onArriveDestination");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway stopDrawHudway");
         ARWayController.ARWayStatusUpdater.resetData();
         resetNaviStatus();
-        arriveDestinationView();
-        /*mDrawScene.showHide();
-        mGlDrawCompass.showInstant(true);*/
+        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        ARWayController.CommonBeanUpdater.setNaviEnd(true);
+        updateNaviInfoDisplay();
+        updateRetainDistanceDialDisplay();
 
     }
 
@@ -662,12 +672,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 到达目的地
      */
     public void onArriveDestination() {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway onArriveDestination");
         arriveDestinationView();
     }
 
     private void arriveDestinationView(){
-        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        //显示gl 场景
+        GlDrawRetainDistance.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
+        GlDrawSpeedDial.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
+
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
+        ARWayController.CommonBeanUpdater.setNavingStart(false);
         updateNaviInfoDisplay();
         updateRetainDistanceDialDisplay();
         mRenderer.arriveDestination();

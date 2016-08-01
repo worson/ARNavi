@@ -6,10 +6,10 @@
     <dimen name="compass_pause_height">169.3dp</dimen>
 
     <dimen name="speed_view_pause_margin_top">75.67dp</dimen>
-    <dimen name="speed_view_driving_margin_top">110.67dp</dimen>
+    <dimen name="speed_view_driving_margin_top">130.67dp</dimen>
 
     <dimen name="distance_view_pause_margin_top">77.67dp</dimen>
-    <dimen name="distance_view_driving_margin_top">110.67dp</dimen>
+    <dimen name="distance_view_driving_margin_top">130.67dp</dimen>
 
 
     <dimen name="speed_view_pause_width">85.3dp</dimen>

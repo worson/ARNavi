@@ -188,6 +188,21 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
     public void resetView() {
 
     }
+    public void showHideInstant(boolean show) {
+        View[] views = new View[]{mTextureView};//
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    v.setVisibility(View.VISIBLE);
+
+                }else {
+                    v.setVisibility(View.INVISIBLE);
+                }
+
+            }
+        }
+    }
 
     public void showHide(boolean show) {
         View[] views = new View[]{mTextureView};//
@@ -201,7 +216,7 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
                     animator.setDuration(1000);
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
-                    animator.setDuration(1000-50);
+                    animator.setDuration(1000-100);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {

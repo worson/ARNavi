@@ -2,8 +2,8 @@
                 xmlns:custom="http://schemas.android.com/apk/res-auto"
                 xmlns:textureview="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:background="#000000"
                 android:orientation="horizontal">
 
@@ -190,8 +190,8 @@
 
     <RelativeLayout
         android:id="@+id/middle_card_viewgroup"
-        android:layout_width="266.7dp"
-        android:layout_height="185.3dp"
+        android:layout_width="292dp"
+        android:layout_height="fill_parent"
         android:layout_toRightOf="@+id/left_card_viewgroup">
 
         <FrameLayout
@@ -199,25 +199,31 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         </FrameLayout>
-
-        <com.haloai.hud.hudendpoint.arwaylib.view.ComPassView
-            android:id="@+id/compass_view"
+        <RelativeLayout
+            android:id="@+id/compass_viewgroup"
             android:layout_width="@dimen/compass_pause_width"
             android:layout_height="@dimen/compass_pause_height"
             android:layout_marginTop="15dp"
-            android:layout_centerHorizontal="true"
-            android:textColor="#000000"
-            custom:custom_height="@dimen/compass_pause_height"
-            custom:custom_width="@dimen/compass_pause_width">
-        </com.haloai.hud.hudendpoint.arwaylib.view.ComPassView>
-
-        <TextView
-            android:id="@+id/diretion_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="往西\n行驶"
-            android:textColor="#ffffff"/>
+            android:layout_centerHorizontal="true">
+            <com.haloai.hud.hudendpoint.arwaylib.view.ComPassView
+                android:id="@+id/compass_view"
+                android:padding="0dp"
+                android:layout_margin="0dp"
+                android:minHeight="@dimen/compass_pause_height"
+                android:minWidth="@dimen/compass_pause_width"
+                android:layout_width="@dimen/compass_pause_width"
+                android:layout_height="@dimen/compass_pause_height"
+                custom:custom_height="@dimen/compass_pause_height"
+                custom:custom_width="@dimen/compass_pause_width">
+            </com.haloai.hud.hudendpoint.arwaylib.view.ComPassView>
+            <TextView
+                android:id="@+id/diretion_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="往西\n行驶"
+                android:textColor="#ffffff"/>
+        </RelativeLayout>
 
     </RelativeLayout>
 
