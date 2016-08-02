@@ -6,13 +6,12 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 
-import com.haloai.hud.utils.HaloLogger;
-
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * author       : 龙;
@@ -22,9 +21,10 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class MathUtils {
+    private static Matrix mMatrix4Rotate = new Matrix();
+
     public static <VALUE_TYPE extends Number> double getOffsetValue(VALUE_TYPE from, VALUE_TYPE to, long timeOffset, long duration) {
         double offsetValue = ((to.doubleValue() - from.doubleValue()) * (1.0 * timeOffset / duration));
-        HaloLogger.logE("position__", "from:" + from.doubleValue() + ",to:" + to.doubleValue() + ",time_offset:" + timeOffset);
         return offsetValue;
     }
 
@@ -49,20 +49,21 @@ public class MathUtils {
      */
     public static double calculateDistance(Point point1, Point point2) {
         //(y2-y1)^2+(x2-x1)^2=Z^2
-        return calculateDistance(point1.x,point1.y,point2.x,point2.y);
+        return calculateDistance(point1.x, point1.y, point2.x, point2.y);
     }
 
     public static double calculateDistance(PointF point1, PointF point2) {
         //(y2-y1)^2+(x2-x1)^2=Z^2
-        return calculateDistance(point1.x,point1.y,point2.x,point2.y);
+        return calculateDistance(point1.x, point1.y, point2.x, point2.y);
     }
 
-    public static double calculateDistance(double x1,double y1,double x2,double y2){
+    public static double calculateDistance(double x1, double y1, double x2, double y2) {
         return Math.sqrt(Math.pow((y2 - y1), 2) + Math.pow((x2 - x1), 2));
     }
 
     /**
      * 得到两个点连成的线与一个角度之间的插值(正数为向右旋转,负数为向左旋转)
+     *
      * @param preX
      * @param preY
      * @param curX
@@ -91,6 +92,7 @@ public class MathUtils {
     /**
      * 计算三个平面点之间的两个连续矢量方向变化，顺时针方向为正，逆时针方向为负
      * ax,ay,bx,by,cx,cy表示可构成三角形的三个点,对应边了a,b,c,最后求c的角度
+     *
      * @param ax
      * @param ay
      * @param bx
@@ -99,24 +101,24 @@ public class MathUtils {
      * @param cy
      * @return
      */
-    public static double getRotateDegreesWithTwoLines(double ax,double ay,double bx,double by,double cx,double cy){
-        double a,b,c,mx,my,result=0,dgress=0;
-        a = calculateDistance(ax,ay,bx,by);
-        b = calculateDistance(bx,by,cx,cy);
-        c = calculateDistance(ax,ay,cx,cy);
-        if(!isTriangle(a,b,c)){
+    public static double getRotateDegreesWithTwoLines(double ax, double ay, double bx, double by, double cx, double cy) {
+        double a, b, c, mx, my, result = 0, dgress = 0;
+        a = calculateDistance(ax, ay, bx, by);
+        b = calculateDistance(bx, by, cx, cy);
+        c = calculateDistance(ax, ay, cx, cy);
+        if (!isTriangle(a, b, c)) {
             return 0;
-        }else {
-            mx = (ax+cx)/2;//求中点
-            my = (ay+cy)/2;//求中点
-            if((bx==mx) && (by==my)){
+        } else {
+            mx = (ax + cx) / 2;//求中点
+            my = (ay + cy) / 2;//求中点
+            if ((bx == mx) && (by == my)) {
                 return 0;
             }
-            dgress = triangleLength2Degress(c,b,a);
-            if(!triClockWise(ax, ay, bx, by, cx, cy)){//逆时针
-                result = dgress-180;
-            }else{//顺时针
-                result = 180-dgress;
+            dgress = triangleLength2Degress(c, b, a);
+            if (!triClockWise(ax, ay, bx, by, cx, cy)) {//逆时针
+                result = dgress - 180;
+            } else {//顺时针
+                result = 180 - dgress;
             }
         }
         return result;
@@ -124,40 +126,27 @@ public class MathUtils {
 
     /***
      * 判断三角形是否为顺时针方向
+     *
      * @return
      */
-    public static boolean triClockWise(double x1,double y1,double x2,double y2,double x3,double y3){
-        return ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1)) <0;
-    }
-
-    /**
-     * 以某个参照点旋转一个点
-     * @param angle 以弧度计算
-     */
-    public static PointF pointRotate(PointF src,PointF ref,double angle){
-        PointF result = null;
-        PointF rPoint = new PointF(src.x-ref.x,src.y-ref.y);
-        double c=Math.cos(angle);
-        double s=Math.sin(angle);
-        float x=(float)(rPoint.x*c-rPoint.y*s+ref.x);
-        float y=(float)(rPoint.x*s+rPoint.y*c+ref.y);
-        result = new PointF(x,y);
-        return result;
+    public static boolean triClockWise(double x1, double y1, double x2, double y2, double x3, double y3) {
+        return ((x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)) < 0;
     }
 
     /**
      * 以某个参照点逆时针旋转一个点
+     *
      * @param angle 以弧度计算
      */
 
-    public static Vector3 vector3Rotate(Vector3 src, Vector3 ref, double angle){
+    public static Vector3 vector3Rotate(Vector3 src, Vector3 ref, double angle) {
         Vector3 result = null;
-        Vector3 rPoint = new Vector3(src.x-ref.x,src.y-ref.y,src.z);
-        double c=Math.cos(angle);
-        double s=Math.sin(angle);
-        float x=(float)(rPoint.x*c-rPoint.y*s+ref.x);
-        float y=(float)(rPoint.x*s+rPoint.y*c+ref.y);
-        result = new Vector3(x,y,src.z);
+        Vector3 rPoint = new Vector3(src.x - ref.x, src.y - ref.y, src.z);
+        double c = Math.cos(angle);
+        double s = Math.sin(angle);
+        float x = (float) (rPoint.x * c - rPoint.y * s + ref.x);
+        float y = (float) (rPoint.x * s + rPoint.y * c + ref.y);
+        result = new Vector3(x, y, src.z);
         return result;
     }
 
@@ -170,23 +159,23 @@ public class MathUtils {
      * @param c 计算角的邻边
      * @return 参数有误时，返回-1，返回角度在0~180
      */
-    public static double triangleLength2Degress(double a,double b,double c){
-        if(!isTriangle(a,b,c)){
+    public static double triangleLength2Degress(double a, double b, double c) {
+        if (!isTriangle(a, b, c)) {
             return -1;
         }
-        double cosA = (b*b+c*c-a*a)/(2*b*c);
+        double cosA = (b * b + c * c - a * a) / (2 * b * c);
         double dA = Math.toDegrees(Math.acos(cosA));
         return dA;
     }
 
-    public static Vector3 getEulerDegeress(Quaternion qt){
+    public static Vector3 getEulerDegeress(Quaternion qt) {
         Vector3 r = new Vector3();
         boolean reProject = false;
-        double fator = 180/Math.PI;
-        double yaw,roll,pitch;
-        yaw = qt.getYaw()*fator;
-        roll = qt.getRoll()*fator;
-        pitch = qt.getPitch()*fator;
+        double fator = 180 / Math.PI;
+        double yaw, roll, pitch;
+        yaw = qt.getYaw() * fator;
+        roll = qt.getRoll() * fator;
+        pitch = qt.getPitch() * fator;
         r.x = pitch;
         r.y = yaw;
         r.z = roll;
@@ -198,8 +187,8 @@ public class MathUtils {
      *
      * @return
      */
-    public static boolean isTriangle(double a,double b,double c){
-        if((a>0 && a>0 && c>0) && ((a+b)>c && (a+c)>b && (b+c)>a)){
+    public static boolean isTriangle(double a, double b, double c) {
+        if ((a > 0 && a > 0 && c > 0) && ((a + b) > c && (a + c) > b && (b + c) > a)) {
             return true;
         }
         return false;
@@ -207,13 +196,14 @@ public class MathUtils {
 
     /***
      * 顺时针方向重新映射角度
+     *
      * @param from
      * @return 0~360
      */
-    public static double rotateDegrees(double from,double rotate){
-        double to = from+rotate;
-        int n = ((int)to)/360;
-        return to>360?to-360*n:to;
+    public static double rotateDegrees(double from, double rotate) {
+        double to = from + rotate;
+        int n = ((int) to) / 360;
+        return to > 360 ? to - 360 * n : to;
     }
 
     /***
@@ -225,11 +215,11 @@ public class MathUtils {
      * @param y2
      * @return
      */
-    public static float getDegrees(float x, float y, float x2, float y2) {
-        return getDegrees(x,y,x2,y2);
+    public static double getDegrees(float x, float y, float x2, float y2) {
+        return getDegrees((double) x, (double) y, (double) x2, (double) y2);
     }
 
-    public static double getDegrees(double x, double y, double x2, double y2){
+    public static double getDegrees(double x, double y, double x2, double y2) {
         double degrees = 0f;
         if (x2 == x) {
             if (y2 <= y) {
@@ -280,25 +270,21 @@ public class MathUtils {
      */
     public static Bitmap getRotateBitmap(PointF srcPointF, PointF dstPointF, Bitmap crossImage) {
         Matrix matrix = new Matrix();
-//        float cosAB =
-//                (float) (((srcPointF.x * dstPointF.x + srcPointF.y * dstPointF.y) /
-//                        ((Math.sqrt(Math.pow(srcPointF.x,2)+Math.pow(srcPointF.y,2)))*(Math.sqrt(Math.pow(dstPointF.x,2)+Math.pow(dstPointF.y,2))))));
-//        float[] values =
-//                {cosAB, (float) -(1 - Math.pow(cosAB, 2)), 0,
-//                        (float) (1 - Math.pow(cosAB, 2)), cosAB, 0,
-//                        0, 0, 1};
-//        matrix.setValues(values);
-        double degreesSrc = getDegrees(0,0,srcPointF.x,srcPointF.y);
-        double degreesDst = getDegrees(0,0,dstPointF.x,dstPointF.y);
-        matrix.setRotate((float) (degreesSrc-degreesDst));
+        double degreesSrc = getDegrees(0, 0, srcPointF.x, srcPointF.y);
+        double degreesDst = getDegrees(0, 0, dstPointF.x, dstPointF.y);
+        matrix.setRotate((float) (degreesSrc - degreesDst));
         return Bitmap.createBitmap(crossImage, 0, 0, crossImage.getWidth(), crossImage.getHeight(), matrix, true);
     }
 
 
+    public static void points2path(List<Vector3> lineLeft, List<Vector3> lineRight, List<Vector3> prePoints, double pathWidth) {
+        points2path(lineLeft, lineRight, prePoints, pathWidth, pathWidth);
+    }
+
     /**
      * 根据一条线获取该先左右两侧点的集合
      */
-    public static void points2path(List<Vector3> lineLeft, List<Vector3> lineRight, List<Vector3> prePoints, double pathWidth) {
+    public static void points2path(List<Vector3> lineLeft, List<Vector3> lineRight, List<Vector3> prePoints, double leftPathWidth, double rightPathWidth) {
         /**
          A(a,b) B(m,n) BC = L
 
@@ -308,22 +294,19 @@ public class MathUtils {
          y2 = n - L(a-m) /√[(a-m)^2+(b-n)^2]
          */
         //获取所有计算后的点的集合
-
-        double path_width = pathWidth;
-
         //获取一侧点的集合
         ArrayList<Vector3> leftPoints = new ArrayList<>();
         ArrayList<Vector3> rightPoints = new ArrayList<>();
         leftPoints.clear();
-        for(int i=0;i<prePoints.size();i++){
+        for (int i = 0; i < prePoints.size(); i++) {
             Vector3 currentVector3 = prePoints.get(i);
             Vector3 secondVector3;
             double m = currentVector3.x;
             double n = currentVector3.y;
-            if(i==prePoints.size()-1){
-                secondVector3= prePoints.get(i-1);
-            }else{
-                secondVector3= prePoints.get(i+1);
+            if (i == prePoints.size() - 1) {
+                secondVector3 = prePoints.get(i - 1);
+            } else {
+                secondVector3 = prePoints.get(i + 1);
             }
             double a;
             double b;
@@ -347,53 +330,52 @@ public class MathUtils {
 
             //x1,y1为当前点，x2,y2为下一个点
             //m,n为B，a,b为A
-            double x1=m,y1=n;
-            double x2=a,y2=b;
-            if(y2==y1){
-                x = (m - (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                y = (n + (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-            }else if(x2==x1){
-                x = x1-(path_width/2);
+            double x1 = m, y1 = n;
+            double x2 = a, y2 = b;
+            if (y2 == y1) {
+                x = (m - (b - n) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                y = (n + (leftPathWidth) * (a - m) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+            } else if (x2 == x1) {
+                x = x1 - (leftPathWidth);
                 y = y1;
-            }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
-            }else{
-                x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
+            } else if ((x2 < x1 && y2 > y1) || (x2 < x1 && y2 < y1)) {
+                x = (x1 + (leftPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                y = (y1 - (leftPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
+            } else {
+                x = (x1 - (leftPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                y = (y1 + (leftPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
             }
 
-            Vector3 vector3 = new Vector3(x,y,0);
-
+            Vector3 vector3 = new Vector3(x, y, 0);
             //如果不是第一个或者最后一个，那么需要取该点和该点的前一个点继续运算得到x,y，然后取中间值
-            if(i!=0 && i!=prePoints.size()-1){
-                secondVector3 = prePoints.get(i-1);
-                a=secondVector3.x;
-                b=secondVector3.y;
-                x1=m;
-                y1=n;
-                x2=a;
-                y2=b;
-                if(y2==y1){
-                    x =  (m + (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                    y =  (n - (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                }else if(x2==x1){
-                    x = x1-(path_width/2);
+            if (i != 0 && i != prePoints.size() - 1) {
+                secondVector3 = prePoints.get(i - 1);
+                a = secondVector3.x;
+                b = secondVector3.y;
+                x1 = m;
+                y1 = n;
+                x2 = a;
+                y2 = b;
+                if (y2 == y1) {
+                    x = (m + (b - n) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                    y = (n - (leftPathWidth) * (a - m) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                } else if (x2 == x1) {
+                    x = x1 - (leftPathWidth);
                     y = y1;
-                }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                    x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
-                }else{
-                    x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                } else if ((x2 < x1 && y2 > y1) || (x2 < x1 && y2 < y1)) {
+                    x = (x1 - (leftPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                    y = (y1 + (leftPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
+                } else {
+                    x = (x1 + (leftPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                    y = (y1 - (leftPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
                 }
-                vector3.x = (vector3.x+x)/2;
-                vector3.y = (vector3.y+y)/2;
+                vector3.x = (vector3.x + x) / 2;
+                vector3.y = (vector3.y + y) / 2;
             }
-            double dist = calculateDistance(vector3.x,vector3.y,currentVector3.x,currentVector3.y);
-            if(dist<path_width/2){
-                vector3.x = currentVector3.x + path_width/2/dist*(vector3.x-currentVector3.x);
-                vector3.y = currentVector3.y + path_width/2/dist*(vector3.y-currentVector3.y);
+            double dist = calculateDistance(vector3.x, vector3.y, currentVector3.x, currentVector3.y);
+            if (dist < leftPathWidth) {
+                vector3.x = currentVector3.x + leftPathWidth / dist * (vector3.x - currentVector3.x);
+                vector3.y = currentVector3.y + leftPathWidth / dist * (vector3.y - currentVector3.y);
             }
             leftPoints.add(vector3);
 
@@ -401,15 +383,15 @@ public class MathUtils {
 
         //获取另一侧点的集合
         rightPoints.clear();
-        for(int i=0;i<prePoints.size();i++){
+        for (int i = 0; i < prePoints.size(); i++) {
             Vector3 currentVector3 = prePoints.get(i);
             Vector3 secondVector3;
             double m = currentVector3.x;
             double n = currentVector3.y;
-            if(i==prePoints.size()-1){
-                secondVector3= prePoints.get(i-1);
-            }else{
-                secondVector3= prePoints.get(i+1);
+            if (i == prePoints.size() - 1) {
+                secondVector3 = prePoints.get(i - 1);
+            } else {
+                secondVector3 = prePoints.get(i + 1);
             }
             double a;
             double b;
@@ -422,64 +404,64 @@ public class MathUtils {
             //			x =  (m + (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
             //			y =  (n - 50*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
 
-            double x1=m,y1=n;
-            double x2=a,y2=b;
-            if(y2==y1){
-                x =  (m + (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                y =  (n - (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-            }else if(x2==x1){
-                x = x1+(path_width/2);
+            double x1 = m, y1 = n;
+            double x2 = a, y2 = b;
+            if (y2 == y1) {
+                x = (m + (b - n) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                y = (n - (rightPathWidth) * (a - m) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+            } else if (x2 == x1) {
+                x = x1 + (rightPathWidth);
                 y = y1;
-            }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
-            }else{
-                x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
+            } else if ((x2 < x1 && y2 > y1) || (x2 < x1 && y2 < y1)) {
+                x = (x1 - (rightPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                y = (y1 + (rightPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
+            } else {
+                x = (x1 + (rightPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                y = (y1 - (rightPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
             }
 
             Vector3 vector3 = new Vector3(x, y, 0);
 
             //如果不是第一个或者最后一个，那么需要取该点和该点的前一个点继续运算得到x,y，然后取中间值
-            if(i!=0 && i!=prePoints.size()-1){
-                secondVector3 = prePoints.get(i-1);
-                a=secondVector3.x;
-                b=secondVector3.y;
-                x1=m;
-                y1=n;
-                x2=a;
-                y2=b;
-                if(y2==y1){
-                    x =  (m - (b-n) / Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                    y =  (n + (path_width/2)*(a-m) /Math.sqrt(Math.pow((a-m),2)+Math.pow((b-n),2)));
-                }else if(x2==x1){
-                    x = x1+(path_width/2);
+            if (i != 0 && i != prePoints.size() - 1) {
+                secondVector3 = prePoints.get(i - 1);
+                a = secondVector3.x;
+                b = secondVector3.y;
+                x1 = m;
+                y1 = n;
+                x2 = a;
+                y2 = b;
+                if (y2 == y1) {
+                    x = (m - (b - n) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                    y = (n + (rightPathWidth) * (a - m) / Math.sqrt(Math.pow((a - m), 2) + Math.pow((b - n), 2)));
+                } else if (x2 == x1) {
+                    x = x1 + (rightPathWidth);
                     y = y1;
-                }else if((x2<x1 && y2>y1) || (x2<x1 && y2<y1)){
-                    x= (x1+(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1-(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
-                }else{
-                    x= (x1-(path_width/2)*Math.sin(Math.atan((y2-y1)/(x2-x1))));
-                    y= (y1+(path_width/2)*Math.cos(Math.atan((y2-y1)/(x2-x1))));
+                } else if ((x2 < x1 && y2 > y1) || (x2 < x1 && y2 < y1)) {
+                    x = (x1 + (rightPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                    y = (y1 - (rightPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
+                } else {
+                    x = (x1 - (rightPathWidth) * Math.sin(Math.atan((y2 - y1) / (x2 - x1))));
+                    y = (y1 + (rightPathWidth) * Math.cos(Math.atan((y2 - y1) / (x2 - x1))));
                 }
-                vector3.x = (vector3.x+x)/2;
-                vector3.y = (vector3.y+y)/2;
+                vector3.x = (vector3.x + x) / 2;
+                vector3.y = (vector3.y + y) / 2;
             }
-            double dist = calculateDistance(vector3.x,vector3.y,currentVector3.x,currentVector3.y);
-            if(dist<path_width/2){
-                vector3.x = currentVector3.x + path_width/2/dist*(vector3.x-currentVector3.x);
-                vector3.y = currentVector3.y + path_width/2/dist*(vector3.y-currentVector3.y);
+            double dist = calculateDistance(vector3.x, vector3.y, currentVector3.x, currentVector3.y);
+            if (dist < rightPathWidth) {
+                vector3.x = currentVector3.x + rightPathWidth / dist * (vector3.x - currentVector3.x);
+                vector3.y = currentVector3.y + rightPathWidth / dist * (vector3.y - currentVector3.y);
             }
             rightPoints.add(vector3);
         }
 
-        if(leftPoints.size()<=0 || rightPoints.size()<=0){
+        if (leftPoints.size() <= 0 || rightPoints.size() <= 0) {
             return;
         }
 
         //TODO 由于最后一个点的坐标是反向计算出来的，因此它的left和right是反的，在此做交换处理
-        Vector3 temp = leftPoints.remove(leftPoints.size()-1);
-        leftPoints.add(rightPoints.remove(rightPoints.size()-1));
+        Vector3 temp = leftPoints.remove(leftPoints.size() - 1);
+        leftPoints.add(rightPoints.remove(rightPoints.size() - 1));
         rightPoints.add(temp);
 
         lineLeft.clear();
@@ -520,76 +502,100 @@ public class MathUtils {
     }
 
     /**
-     * 得到两点之间的角度 以逆时针方向，0-360
+     * 以某个参照点旋转一个点
+     *
+     * @param angle 以弧度计算
      */
-    public static double pointDegree(PointF p1,PointF p2){
-        double angle = 0;
-        float diffX,diffY;
-        diffX = p2.x - p1.x;
-        diffY = p2.y - p1.y;
-        if (diffX==0){
-            if (diffY>0){
-                return 90;
-            }else {
-                return -90;
-            }
-        }else if(diffY==0){
-            if (diffX>=0){
-                return 0;
-            }else {
-                return 180;
-            }
-        }else {
-            double k = (1.0f*diffY)/diffX;   //斜率
-            double rad  = Math.atan(k); //注意这个角度的范围是 [-pi/2..pi/2], 不是0到90°
-            angle = (rad*180)/Math.PI;
-            if(diffY>0 && diffX<0){
-                angle += 180;
-            }else if(diffY<0 && diffX<0){
-                angle += 180;
-            }else if(diffY<0 && diffX>0){
-                angle += 360;
-            }
-        }
-        return  angle;
+    public static PointF pointRotate(PointF src, PointF ref, double angle) {
+        PointF result = null;
+        PointF rPoint = new PointF(src.x - ref.x, src.y - ref.y);
+        double c = Math.cos(angle);
+        double s = Math.sin(angle);
+        float x = (float) (rPoint.x * c - rPoint.y * s + ref.x);
+        float y = (float) (rPoint.x * s + rPoint.y * c + ref.y);
+        result = new PointF(x, y);
+        return result;
     }
 
     /**
-     * 判断两条线是否相交 a 线段1起点坐标 b 线段1终点坐标 c 线段2起点坐标 d 线段2终点坐标 intersection 相交点坐标
-     * reutrn 是否相交: 0 : 两线平行 -1 : 不平行且未相交 1 : 两线相交
+     * 得到两点之间的角度 以逆时针方向，0-360
      */
+    public static double pointDegree(PointF p1, PointF p2) {
+        double angle = 0;
+        float diffX, diffY;
+        diffX = p2.x - p1.x;
+        diffY = p2.y - p1.y;
+        if (diffX == 0) {
+            if (diffY > 0) {
+                return 90;
+            } else {
+                return -90;
+            }
+        } else if (diffY == 0) {
+            if (diffX >= 0) {
+                return 0;
+            } else {
+                return 180;
+            }
+        } else {
+            double k = (1.0f * diffY) / diffX;   //斜率
+            double rad = Math.atan(k); //注意这个角度的范围是 [-pi/2..pi/2], 不是0到90°
+            angle = (rad * 180) / Math.PI;
+            if (diffY > 0 && diffX < 0) {
+                angle += 180;
+            } else if (diffY < 0 && diffX < 0) {
+                angle += 180;
+            } else if (diffY < 0 && diffX > 0) {
+                angle += 360;
+            }
+        }
+        return angle;
+    }
+
+    public static int getIntersection(Vector3 line1Start, Vector3 line1End, Vector3 line2Start, Vector3 line2End, Vector3 intersectionPoint) {
+        PointF line1Start_ = new PointF((float) line1Start.x, (float) line1Start.y);
+        PointF line1End_ = new PointF((float) line1End.x, (float) line1End.y);
+        PointF line2Start_ = new PointF((float) line2Start.x, (float) line2Start.y);
+        PointF line2End_ = new PointF((float) line2End.x, (float) line2End.y);
+        PointF intersectionPoint_ = new PointF();
+        int result = getIntersection(line1Start_, line1End_, line2Start_, line2End_, intersectionPoint_);
+        intersectionPoint.x = intersectionPoint_.x;
+        intersectionPoint.y = intersectionPoint_.y;
+        return result;
+    }
+
     public static int getIntersection(PointF line1Start, PointF line1End, PointF line2Start, PointF line2End, PointF intersectionPoint) {
         PointF intersection = new PointF(0, 0);
 
         if (Math.abs(line1End.y - line1Start.y) + Math.abs(line1End.x - line1Start.x) + Math.abs(line2End.y - line2Start.y)
                 + Math.abs(line2End.x - line2Start.x) == 0) {
             if ((line2Start.x - line1Start.x) + (line2Start.y - line1Start.y) == 0) {
-//                Log.e("helong_debug", "ABCD是同一个点！");
+                //                Log.e("helong_debug", "ABCD是同一个点！");
             } else {
-//                Log.e("helong_debug","AB是一个点，CD是一个点，且AC不同！");
+                //                Log.e("helong_debug","AB是一个点，CD是一个点，且AC不同！");
             }
             return 0;
         }
 
         if (Math.abs(line1End.y - line1Start.y) + Math.abs(line1End.x - line1Start.x) == 0) {
             if ((line1Start.x - line2End.x) * (line2Start.y - line2End.y) - (line1Start.y - line2End.y) * (line2Start.x - line2End.x) == 0) {
-//                Log.e("helong_debug","A、B是一个点，且在CD线段上！");
+                //                Log.e("helong_debug","A、B是一个点，且在CD线段上！");
             } else {
-//                Log.e("helong_debug","A、B是一个点，且不在CD线段上！");
+                //                Log.e("helong_debug","A、B是一个点，且不在CD线段上！");
             }
             return 0;
         }
         if (Math.abs(line2End.y - line2Start.y) + Math.abs(line2End.x - line2Start.x) == 0) {
             if ((line2End.x - line1End.x) * (line1Start.y - line1End.y) - (line2End.y - line1End.y) * (line1Start.x - line1End.x) == 0) {
-//                Log.e("helong_debug","C、D是一个点，且在AB线段上！");
+                //                Log.e("helong_debug","C、D是一个点，且在AB线段上！");
             } else {
-//                Log.e("helong_debug","C、D是一个点，且不在AB线段上！");
+                //                Log.e("helong_debug","C、D是一个点，且不在AB线段上！");
             }
             return 0;
         }
 
         if ((line1End.y - line1Start.y) * (line2Start.x - line2End.x) - (line1End.x - line1Start.x) * (line2Start.y - line2End.y) == 0) {
-//            Log.e("helong_debug","线段平行，无交点！");
+            //            Log.e("helong_debug","线段平行，无交点！");
             return 0;
         }
 
@@ -605,15 +611,51 @@ public class MathUtils {
                 && (intersection.y - line1Start.y) * (intersection.y - line1End.y) <= 0
                 && (intersection.y - line2Start.y) * (intersection.y - line2End.y) <= 0) {
 
-//            Log.e("helong_debug","线段相交于点(" + intersection.x + "," + intersection.y + ")！");
+            //            Log.e("helong_debug","线段相交于点(" + intersection.x + "," + intersection.y + ")！");
             intersectionPoint.x = intersection.x;
             intersectionPoint.y = intersection.y;
             return 1; // '相交
         } else {
-//            Log.e("helong_debug","线段相交于虚交点(" + intersection.x + "," + intersection.y + ")！");
+            //            Log.e("helong_debug","线段相交于虚交点(" + intersection.x + "," + intersection.y + ")！");
             intersectionPoint.x = intersection.x;
             intersectionPoint.y = intersection.y;
             return -1; // '相交但不在线段上
         }
     }
+
+    /**
+     * 旋转一个坐标按照某个角度
+     *
+     * @param basePoint  旋转的原点
+     * @param coordinate 需要被旋转的坐标
+     * @param degrees    旋转的角度
+     */
+    public static void rotateCoordinate(PointF basePoint, PointF coordinate, double degrees) {
+        Vector3 base = new Vector3(basePoint.x, basePoint.y, 0);
+        Vector3 coord = new Vector3(coordinate.x, coordinate.y, 0);
+        rotateCoordinate(base, coord, degrees);
+        basePoint.x = (float) base.x;
+        basePoint.x = (float) base.y;
+        coordinate.x = (float) coord.x;
+        coordinate.x = (float) coord.y;
+    }
+
+    /**
+     * 旋转一个坐标按照某个角度
+     *
+     * @param basePoint  旋转的原点
+     * @param coordinate 需要被旋转的坐标
+     * @param degrees    旋转的角度
+     */
+    public static void rotateCoordinate(Vector3 basePoint, Vector3 coordinate, double degrees) {
+        if (mMatrix4Rotate == null) {
+            mMatrix4Rotate = new Matrix();
+        }
+        mMatrix4Rotate.setRotate((float) degrees - 180, (float) basePoint.x, (float) basePoint.y);
+        float[] xy = new float[2];
+        mMatrix4Rotate.mapPoints(xy, new float[]{(float) coordinate.x, (float) coordinate.y});
+        coordinate.x = xy[0];
+        coordinate.y = xy[1];
+    }
+    //=====================================end=========================================//
 }

@@ -15,7 +15,8 @@ import java.util.List;
  * @author Created by Mo Bing(mobing@haloai.com) on 15/7/2016.
  */
 public class ARWayRoadObject extends Object3D {
-    private static final double ROAD_WIDTH        = 0.7;
+    private static double LEFT_ROAD_WIDTH = 0.7;
+    private static double RIGHT_ROAD_WIDTH = 0.7;
 
     private List<Vector3> mRoadShapePoints;
     private List<Vector3> mRoadLeftSide;
@@ -23,21 +24,28 @@ public class ARWayRoadObject extends Object3D {
     private int mCountOfPlanes;
     private int mCountOfVerties;
 
-    public ARWayRoadObject(List<Vector3> roadPath) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
+    public ARWayRoadObject(List<Vector3> roadPath, double leftWidth, double rightWidth) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
         super();
         Material material = new Material();
         material.enableTime(true);
         setMaterial(material);
 
+        LEFT_ROAD_WIDTH = leftWidth;
+        RIGHT_ROAD_WIDTH = rightWidth;
+
         mRoadShapePoints = new ArrayList<>(roadPath);
         mRoadLeftSide = new ArrayList<>();
         mRoadRightSide = new ArrayList<>();
-        MathUtils.points2path(mRoadLeftSide, mRoadRightSide, mRoadShapePoints, ROAD_WIDTH);
+        MathUtils.points2path(mRoadLeftSide, mRoadRightSide, mRoadShapePoints, LEFT_ROAD_WIDTH, RIGHT_ROAD_WIDTH);
 
         mCountOfPlanes = mRoadShapePoints.size() - 1;
         mCountOfVerties = mCountOfPlanes * 4;
 
         generateAllVerties();
+    }
+
+    public ARWayRoadObject(List<Vector3> roadPath, double width){
+        this(roadPath, width, width);
     }
 
     public List<Vector3> getmRoadShapePoints() {

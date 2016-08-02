@@ -205,11 +205,11 @@ public class ComPassView extends View implements SensorEventListener {
         if (!mIsCutCanvas){
             canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
         }
-
-        mPaint.setColor(Color.RED);
-        mPaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,5,mPaint);
-
+        if (DEBUG_MODE) {
+            mPaint.setColor(Color.RED);
+            mPaint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,5,mPaint);
+        }
     }
 
 

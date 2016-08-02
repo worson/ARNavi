@@ -46,18 +46,16 @@ import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
 
-import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.IDisplay;
 import org.rajawali3d.view.TextureView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener {
     // form HudAMapFragmentNavigation
     public final static boolean IS_DEBUG_MODE=false;
+
+    private Context mContext;
 
     private static final int GPS_STATUS_FINE         = 0;
     private static final int GPS_STATUS_WEEK         = 1;
@@ -65,11 +63,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     private static final int HANDLER_MSG_UPDATE_PATH = 0;
 
-    private Context mContext;
 
-    private ViewGroup  mNaviView     = null;
-    private AMapNaviView mAmapNaviView = null;
 
+
+    //amap
     private AMapNavi mAMapNavi          = null;
     private boolean  mNeedUpdatePath    = false;
     private boolean  mMapLoaded         = false;
@@ -77,11 +74,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private boolean  mCrossCanShow      = true;
     private int      mCurrentGpsStatus  = GPS_STATUS_FINE;
 
+    private ViewGroup  mNaviView     = null;
+    private AMapNaviView mAmapNaviView = null;
+
     private int mLastNaviIconType = 0;
     private Bitmap mNaviIconBitmap = null;
     private View arway;
 
-    private List<Vector3> mPath = new ArrayList<>();
+
 
     //opengle
     protected ViewGroup           mLayout;
@@ -89,7 +89,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     protected ARwayRenderer mRenderer;
     private boolean mCameraChangeFinish = false;
 
-    //navi bean
     //bean
     private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
     private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
@@ -170,6 +169,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         } else {
             mAmapNaviView.setVisibility(View.INVISIBLE);
         }
+        // FIXME: 16/8/2 移除地图基本保证转换出的opengl坐标是正常的
         removeAMapNaviView();
         hideARWay();
         mDrawScene.showHide(false);
@@ -296,13 +296,19 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param crossimage Bitmap for show cross
      */
     public void showCrossImage(Bitmap crossimage) {
-        if (mCurrentGpsStatus == GPS_STATUS_BAD) {
+        if (crossimage == null){
             ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             return;
         }
         if (crossimage != null) {
-            mCurrentCrossImage = handleCrossImageBack(crossimage);
             if (mCrossCanShow) {
+                if (mNaviInfoBean != null) {
+                    try {
+                        mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
+                    }catch(Exception e){
+                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"showCrossImage ,image set error!! "+e.toString());
+                    }
+                }
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(mCurrentCrossImage);
             } else {
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
@@ -434,7 +440,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER){
                     return -2;
                 }
-                mRenderer.setPath(projection, naviPath,(!mNeedUpdatePath));
+                mRenderer.setPath(projection, naviPath,(!mNeedUpdatePath));//
                 result=0;
 
             } else {
@@ -678,8 +684,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     private void arriveDestinationView(){
         //显示gl 场景
-        GlDrawRetainDistance.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
-        GlDrawSpeedDial.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
+        /*GlDrawRetainDistance.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
+        GlDrawSpeedDial.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);*/
+        switchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        hideARWay();
 
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
         ARWayController.CommonBeanUpdater.setNavingStart(false);
