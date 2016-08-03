@@ -39,6 +39,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
     private TextView  mNaviIndicateTextView = null;
     private TextView  mNaviStatusTextView = null;
     private ViewGroup mNextRoadViewGroup = null;
+    private ViewGroup mIndicateViewGroup = null;
 
 
     public GlDrawNaviInfo() {
@@ -61,12 +62,24 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
     private void updateNaviStatus() {
         String statusText = getNaviStatusText();
+        updateSatusText(statusText);
+    }
+
+    /**
+     * 更新导航异常状态指示
+     * @param text
+     */
+    private void updateSatusText(String text) {
         if (mNaviStatusTextView != null) {
-            if (statusText != null) {
-                mNaviStatusTextView.setVisibility(View.VISIBLE);
-                mNaviStatusTextView.setText(statusText);
+            if (text != null) {
+                if(!mNaviStatusTextView.isShown()){
+                    mNaviStatusTextView.setVisibility(View.VISIBLE);
+                }
+                mNaviStatusTextView.setText(text);
             }else {
-                mNaviStatusTextView.setVisibility(View.INVISIBLE);
+                if(mNaviStatusTextView.isShown()){
+                    mNaviStatusTextView.setVisibility(View.INVISIBLE);
+                }
                 mNaviStatusTextView.setText("");
             }
         }
@@ -87,18 +100,25 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
     }
 
-
+    /**
+     * 显示文本情景：
+     * 无网络
+     *  未偏航时，能正常导航
+     *  偏航时，文字显示
+     *无GPS
+     *  不能更新速度、里程，指南针正常工作
+     * @return
+     */
     public String getNaviStatusText() {
         String title = null;
-        if (mRouteBean == null || mCommonBean == null) {
+        /*if (mCommonBean == null) {
             return null;
         }
-        if(mCommonBean.isYaw()){
-            title = "已偏航，路径重新规划中...";
-        }if(GPS_DEBUG_MODE != true && mRouteBean.getGpsNumber()<1){
+        if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
             title = "无网络信号，正在搜索...";
-        }/*if (!mRouteBean.isMatchNaviPath()) {
-            title = "正在检测行驶方向";
+        }
+        if(!mCommonBean.isGpsWork()){
+            title = "无GPS信号，搜星中...";
         }*/
         return title;
     }
@@ -116,22 +136,27 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
     private void switchDisplay() {
 
         if (isNavingReady()){
-            if (mNaviIndicateTextView != null) {
-                mNaviIndicateTextView.setVisibility(View.INVISIBLE);
-                mRoadNameIndicateTextView.setVisibility(View.INVISIBLE);
-                mRoadDirectionIndicateTextView.setVisibility(View.INVISIBLE);
-            }
-            if (mNextRoadViewGroup != null) {
-                mNextRoadViewGroup.setVisibility(View.VISIBLE);
-            }
+            showHideChild(mIndicateViewGroup,false);
+            showHideChild(mNextRoadViewGroup,true);
         }else {
-            if (mNaviIndicateTextView != null) {
-                mNaviIndicateTextView.setVisibility(View.VISIBLE);
-                mRoadNameIndicateTextView.setVisibility(View.VISIBLE);
-                mRoadDirectionIndicateTextView.setVisibility(View.VISIBLE);
-            }
-            if (mNextRoadViewGroup != null) {
-                mNextRoadViewGroup.setVisibility(View.INVISIBLE);
+            showHideChild(mIndicateViewGroup,true);
+            showHideChild(mNextRoadViewGroup,false);
+        }
+    }
+
+    private void showHideChild(ViewGroup viewGroup,boolean show){
+        if (viewGroup == null) {
+            return;
+        }
+        int cnt = viewGroup.getChildCount();
+        for (int i = 0; i < cnt; i++) {
+            View v = viewGroup.getChildAt(i);
+            if (v != null) {
+                if (show){
+                    v.setVisibility(View.VISIBLE);
+                }else {
+                    v.setVisibility(View.INVISIBLE);
+                }
             }
         }
     }
@@ -221,6 +246,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
     public void setView(Context context, View view) {
         if (view != null) {
             mNextRoadViewGroup = (ViewGroup) view.findViewById(R.id.next_road_viewgroup);
+            mIndicateViewGroup = (ViewGroup) view.findViewById(R.id.navi_indicate_viewgroup);
             mRoadDirectionImageView = (ImageView) view.findViewById(R.id.next_road_direction_imageview);
             mRoadDistanceTextView = (TextView) view.findViewById(R.id.next_road_distance_textview);
             mRoadIndicateTextView = (TextView) view.findViewById(R.id.next_road_indicate_textview);
@@ -232,6 +258,21 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         }
         dafaultViewInit();
     }
+
+    public void showHide(boolean show){
+        View[] views = new View[]{mNextRoadViewGroup,mIndicateViewGroup};
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    v.setVisibility(View.VISIBLE);
+                }else {
+                    v.setVisibility(View.INVISIBLE);
+                }
+            }
+        }
+    }
+
 
     @Override
     public void resetView() {

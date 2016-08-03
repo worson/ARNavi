@@ -201,6 +201,18 @@ public class ARWayController {
             }
         }
 
+        public static void setGpsWork(boolean gpsWork) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setGpsWork(gpsWork);
+            }
+        }
+
+        public static void setHasNetwork(boolean hasNetwork) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setHasNetwork(hasNetwork);
+            }
+        }
+
 
         public static void reset(){
             mCommonBean.reset();

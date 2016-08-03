@@ -101,8 +101,20 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             mComPassView.setRotationX(0);
         }
     }
-
     public void showHide(boolean show) {
+        if (mComPassView != null) {
+            if(show){
+                mComPassView.setAlpha(1);
+                mComPassView.setVisibility(View.VISIBLE);
+            }else {
+                mComPassView.setAlpha(0);
+                mComPassView.setVisibility(View.INVISIBLE);
+            }
+
+        }
+    }
+
+    public void animShowHide(boolean show) {
         View[] views = new View[]{mComPassView};//
         ObjectAnimator animator = null;
         VIEW_ANIMATION_DURATION=1000;
@@ -136,7 +148,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
         }
         switch (state){
             case DRIVING:
-                showHide(false);
+                animShowHide(false);
                 animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", 0, VIEW_ROTATION_DEGREES);
                 animator.setInterpolator(new DecelerateInterpolator(1));
                 animator.setDuration(VIEW_ANIMATION_DURATION);
@@ -150,7 +162,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
 
                 break;
             case PAUSE:
-                showHide(true);
+                animShowHide(true);
                 animator = ObjectAnimator.ofFloat(mComPassView, "RotationX", VIEW_ROTATION_DEGREES, 0);
                 animator.setInterpolator(new DecelerateInterpolator(1));
                 animator.setDuration(VIEW_ANIMATION_DURATION);
@@ -294,16 +306,5 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
     }
 
 
-    public void showHideInstant(boolean show) {
-        if (mComPassView != null) {
-            if(show){
-                mComPassView.setAlpha(1);
-                mComPassView.setVisibility(View.VISIBLE);
-            }else {
-                mComPassView.setAlpha(0);
-                mComPassView.setVisibility(View.INVISIBLE);
-            }
 
-        }
-    }
 }

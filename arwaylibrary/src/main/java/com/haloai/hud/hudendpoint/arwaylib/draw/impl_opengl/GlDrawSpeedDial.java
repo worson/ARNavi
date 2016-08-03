@@ -129,7 +129,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     }
 
     public void showHide(boolean show){
-        View[] views = new View[]{mSpeedView,mSpeedValueView,mSpeedScaleView};
+        View[] views = new View[]{mSpeedView,mSpeedValueView,mSpeedScaleView,mDigitalSpeedViewgroup};
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
             if (v != null) {
