@@ -70,7 +70,7 @@
 -keepattributes Exceptions,InnerClasses,Deprecated,SourceFile,LineNumberTable,EnclosingMethod
 -keep class com.haloai.hud.hudendpoint.arwaylib.ARWayController$*{*;}
 -keep class com.haloai.hud.hudendpoint.arwaylib.ARWayController {*;}
--keep class com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARwayOpenGLFragment {*;}
+-keep class com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayOpenGLFragment {*;}
 
 #如果引用了v4或者v7包
 -dontwarn android.support.**

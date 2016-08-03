@@ -1,7 +1,6 @@
-package com.haloai.hud.hudendpoint.arwaylib.arway.impl;
+package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 
@@ -11,8 +10,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.utils.HaloLogger;
 
-import org.rajawali3d.materials.Material;
-import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import javax.microedition.khronos.egl.EGLConfig;

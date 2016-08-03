@@ -5,7 +5,7 @@
              android:layout_height="fill_parent"
              android:layout_marginTop="20dp"
              android:orientation="horizontal"
-             tools:context="com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARwayOpenGLFragment">
+             tools:context=".arway.impl_gl.ARwayOpenGLFragment">
 
     <com.amap.api.navi.AMapNaviView
         android:id="@+id/amap_navi_amapnaviview"

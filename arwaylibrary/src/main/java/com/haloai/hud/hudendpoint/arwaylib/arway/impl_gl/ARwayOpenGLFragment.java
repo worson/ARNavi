@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.arway.impl;
+package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
 
 import android.app.Fragment;
@@ -84,8 +84,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     //opengle
-    protected ViewGroup           mLayout;
-    protected TextureView         mRenderSurface;
+    protected ViewGroup     mLayout;
+    protected TextureView   mRenderSurface;
     protected ARwayRenderer mRenderer;
     private boolean mCameraChangeFinish = false;
 
