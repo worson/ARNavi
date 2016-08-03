@@ -717,7 +717,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER){
                     return -2;
                 }
-                mRenderer.setPath(projection, naviPath,(!mNeedUpdatePath));//
+                mRenderer.setPath(projection, naviPath,(!mNeedUpdatePath));
                 result=0;
 
             } else {
@@ -777,8 +777,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if((this.mLastIsReady != ready) && mCommonBean.isNavingStart() ){//|| (!arway.isShown())
             if(ready){
                 onNavingView();
-            }else {
-                // FIXME: 16/7/30 导航到最后的时候，距离结点的距离会显示为起点的大小 
+            } else {
+                // FIXME: 16/7/30 导航到最后的时候，距离结点的距离会显示为起点的大小
                 /*mDrawScene.showHide(false);
                 ARWayController.CommonBeanUpdater.setStartOk(false);
                 animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);*/
@@ -798,13 +798,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mNaviIconBitmap = iconBitmap;
             mLastNaviIconType = iconResource;
         }
-        ARWayController.NaviInfoBeanUpdate.setNaviIconBitmap(mNaviIconBitmap).setNaviIcon(iconResource);
+        ARWayController.NaviInfoBeanUpdate.setNaviIconBitmap(mNaviIconBitmap);
         //update arway data
-        ARWayController.NaviInfoBeanUpdate.setNaviIconDist(info.getCurStepRetainDistance())
+        ARWayController.NaviInfoBeanUpdate
+                .setNaviIconDist(info.getCurStepRetainDistance())
                 .setCurrentRoadName(info.getCurrentRoadName())
                 .setNextRoadName(info.getNextRoadName())
                 .setPathRetainDistance(info.getPathRetainDistance())
                 .setPathRetainTime(info.getPathRetainTime())
+                .setNaviIcon(info.getIconType())
                 .setStepRetainDistance(info.getCurStepRetainDistance());
     }
 
