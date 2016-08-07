@@ -430,11 +430,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //
         // TODO: 2016/7/18 目前看只有lookAt的位置是正常的,摄像机位置以及被追随物体位置经常过偏过一边
         //摄像机位置
-//        mSphere.setPosition(new Vector3(pos.x, pos.y, 0));
-//        //被追随位置
-//        mSphere2.setPosition(new Vector3(mObject4Chase.getPosition().x, mObject4Chase.getPosition().y, 0));
-//        //摄像机的lookAt
-//        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));
+        //        mSphere.setPosition(new Vector3(pos.x, pos.y, 0));
+        //        //被追随位置
+        //        mSphere2.setPosition(new Vector3(mObject4Chase.getPosition().x, mObject4Chase.getPosition().y, 0));
+        //        //摄像机的lookAt
+        //        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));
 
         getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
         getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
@@ -621,22 +621,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        HaloLogger.logE("helong_fix____", "degrees:" + divDegrees);
         //        HaloLogger.logE("helong_fix____", "branch line size:" + branchLines.size());
         for (int i = 0; i < 1/*branchLines.size()*/; i++) {
-//            EnlargedCrossProcess.ECBranchLine branch = branchLines.get(i);
-//            //得到的是以路口放大图400*400中心为原点的岔路的相对坐标,还需要:1.像素转Opengl,2.旋转坐标到当前状态,3.考虑坐标太大导致的抖动问题,也就是添加pos部分
-//            if (branch == null) {
-//                continue;
-//            }
-//            List<Point> branchPointsScreen = branch.getLinePoints();
-//            if (branchPointsScreen == null || branchPointsScreen.size() < 2) {
-//                continue;
-//            }
-//            branchPointsOpengl.clear();
-//            //0.坐标过滤
-//            filterBranchCoordinate(branchPointsScreen);
-//            //1.坐标转换
-//            convertScreen2Opengl(branchPointsScreen, branchPointsOpengl, center);
-//            //2.旋转坐标
-//            rotateBranchWithDivDegrees(branchPointsOpengl, divDegrees);
+            //            EnlargedCrossProcess.ECBranchLine branch = branchLines.get(i);
+            //            //得到的是以路口放大图400*400中心为原点的岔路的相对坐标,还需要:1.像素转Opengl,2.旋转坐标到当前状态,3.考虑坐标太大导致的抖动问题,也就是添加pos部分
+            //            if (branch == null) {
+            //                continue;
+            //            }
+            //            List<Point> branchPointsScreen = branch.getLinePoints();
+            //            if (branchPointsScreen == null || branchPointsScreen.size() < 2) {
+            //                continue;
+            //            }
+            //            branchPointsOpengl.clear();
+            //            //0.坐标过滤
+            //            filterBranchCoordinate(branchPointsScreen);
+            //            //1.坐标转换
+            //            convertScreen2Opengl(branchPointsScreen, branchPointsOpengl, center);
+            //            //2.旋转坐标
+            //            rotateBranchWithDivDegrees(branchPointsOpengl, divDegrees);
 
             // TODO: 2016/7/25 模拟假数据来实现路口放大图
             branchPointsOpengl.clear();
@@ -829,55 +829,55 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                  *  其它:从主路copy一条路并按照该路的走向生成岔路(也就是最初做法)
                  * 将生成一条岔路以及岔路的覆盖物抽取成一个方法(岔路坐标,旋转,Plane生成,添加到场景,覆盖物的生成,添加到场景...);
                  */
-//                switch (naviIcon) {
-//                    case 2://tl
-//                        next.setAll(center.x + 5, center.y + 3, center.z);
-//                        fin.setAll(center.x + 10, center.y + 4, center.z);
-//                        break;
-//                    case 6://tlb
-//                        next.setAll(center.x + 5, center.y + 6, center.z);
-//                        fin.setAll(center.x + 10, center.y + 8, center.z);
-//                        break;
-//                    case 4://tlf
-//                        next.setAll(center.x, center.y + 5, center.z);
-//                        fin.setAll(center.x, center.y + 10, center.z);
-//                        break;
-//                    case 8://tb
-//                        next.setAll(center.x + 5, center.y + 4, center.z);
-//                        fin.setAll(center.x + 10, center.y + 6, center.z);
-//                        break;
-//                    case 3://tr
-//                        next.setAll(center.x - 5, center.y + 3, center.z);
-//                        fin.setAll(center.x - 10, center.y + 4, center.z);
-//                        break;
-//                    case 7://trb
-//                        next.setAll(center.x, center.y + 5, center.z);
-//                        fin.setAll(center.x, center.y + 10, center.z);
-//                        break;
-//                    case 5://trf
-//                        next.setAll(center.x, center.y + 5, center.z);
-//                        fin.setAll(center.x, center.y + 10, center.z);
-//                        break;
-//                    case 9://tf
-//                        next.setAll(center.x + 4, center.y + 4, center.z);
-//                        fin.setAll(center.x + 10, center.y + 6, center.z);
-//                        break;
-//                    default://else
-//                        index = (i + 12) < mPath.size() ? (i + 12) : mPath.size() - 1;
-//                        next.setAll(mPath.get(index));
-//                        index = (i + 25) < mPath.size() ? (i + 25) : mPath.size() - 1;
-//                        fin.setAll(mPath.get(index));
-//                        rot = MathUtils.getDegrees(center.x, center.y, next.x, next.y) - 180;
-//                        rot2 = MathUtils.getDegrees(next.x, next.y, fin.x, fin.y) - 180;
-//                        break;
-//                }
-//                if (rot2 > rot) {
-//                    rotation = -25;
-//                } else if (rot2 < rot) {
-//                    rotation = 25;
-//                } else {
-//                    rotation = -getCurrentCamera().getRotZ();
-//                }
+                //                switch (naviIcon) {
+                //                    case 2://tl
+                //                        next.setAll(center.x + 5, center.y + 3, center.z);
+                //                        fin.setAll(center.x + 10, center.y + 4, center.z);
+                //                        break;
+                //                    case 6://tlb
+                //                        next.setAll(center.x + 5, center.y + 6, center.z);
+                //                        fin.setAll(center.x + 10, center.y + 8, center.z);
+                //                        break;
+                //                    case 4://tlf
+                //                        next.setAll(center.x, center.y + 5, center.z);
+                //                        fin.setAll(center.x, center.y + 10, center.z);
+                //                        break;
+                //                    case 8://tb
+                //                        next.setAll(center.x + 5, center.y + 4, center.z);
+                //                        fin.setAll(center.x + 10, center.y + 6, center.z);
+                //                        break;
+                //                    case 3://tr
+                //                        next.setAll(center.x - 5, center.y + 3, center.z);
+                //                        fin.setAll(center.x - 10, center.y + 4, center.z);
+                //                        break;
+                //                    case 7://trb
+                //                        next.setAll(center.x, center.y + 5, center.z);
+                //                        fin.setAll(center.x, center.y + 10, center.z);
+                //                        break;
+                //                    case 5://trf
+                //                        next.setAll(center.x, center.y + 5, center.z);
+                //                        fin.setAll(center.x, center.y + 10, center.z);
+                //                        break;
+                //                    case 9://tf
+                //                        next.setAll(center.x + 4, center.y + 4, center.z);
+                //                        fin.setAll(center.x + 10, center.y + 6, center.z);
+                //                        break;
+                //                    default://else
+                //                        index = (i + 12) < mPath.size() ? (i + 12) : mPath.size() - 1;
+                //                        next.setAll(mPath.get(index));
+                //                        index = (i + 25) < mPath.size() ? (i + 25) : mPath.size() - 1;
+                //                        fin.setAll(mPath.get(index));
+                //                        rot = MathUtils.getDegrees(center.x, center.y, next.x, next.y) - 180;
+                //                        rot2 = MathUtils.getDegrees(next.x, next.y, fin.x, fin.y) - 180;
+                //                        break;
+                //                }
+                //                if (rot2 > rot) {
+                //                    rotation = -25;
+                //                } else if (rot2 < rot) {
+                //                    rotation = 25;
+                //                } else {
+                //                    rotation = -getCurrentCamera().getRotZ();
+                //                }
 
                 // TODO: 2016/8/3 翻转从主路copy出来的一段路,作为岔路显示,效果可能会更加自然多样,因此上述代码是不起作用的
                 index = (i + 15) < mPath.size() ? (i + 15) : mPath.size() - 1;
@@ -1249,21 +1249,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param naviPath
      */
     public void setPath(Projection projection, AMapNaviPath naviPath, boolean repeat) {
-        /*if (projection == null || naviPath == null) {
-            return;
-        }
-        List<Vector3> path = new ArrayList<>();
-        for (int i = 0; i < naviPath.getCoordList().size(); i++) {
-            PointF openGL = projection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i)));
-            //openGL.y轴坐标被翻转过,因此需要使用它的倒数
-            path.add(new Vector3(openGL.x, -openGL.y, 0));
-        }
-
-        if (!isPathRepeat(path)) {
-            mOriginalPath.clear();
-            mOriginalPath.addAll(path);
-            setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
-        }*/
         if (projection == null || naviPath == null) {
             return;
         }
@@ -1278,7 +1263,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
-        }else {
+        } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
         }
     }
@@ -1340,6 +1325,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
         }
         HaloLogger.logE("helong_debug", "next size:" + mPath.size());
+
+        // TODO: 2016/8/7 在Path最开始时增加一段直线,用于放置岔路,显示更好的效果
+        Vector3 fakePoint = new Vector3();
+        Vector3 v0_ = mPath.get(0);
+        Vector3 v1_ = mPath.get(1);
+        double div = 100.0 / BIGGER_TIME / (MathUtils.calculateDistance(v0_.x, v0_.y, v1_.x, v1_.y));
+        HaloLogger.logE("helong_debug___","div:"+div);
+        fakePoint.x = v0_.x + (v0_.x - v1_.x) * div;
+        fakePoint.y = v0_.y + (v0_.y - v1_.y) * div;
+        mPath.add(0,fakePoint);
 
         //save the offsetXY between point and point.
         for (int i = 1; i < mPath.size(); i++) {
@@ -1493,6 +1488,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mPath.get(i).y -= offsetY;
         }
 
+        /*// TODO: 2016/8/7 处理Path数据使其在刚开始时就处于有问题的状态
+        for (int i = 0; i < CURVE_TIME * 5; i++) {
+            mPath.remove(0);
+        }
+        HaloLogger.logE("helong_debug___", "start=================");
+        for (int i = 0; i < CURVE_TIME * 5; i++) {
+            HaloLogger.logE("helong_debug___", mPath.get(i).x + "," + mPath.get(i).y);
+        }
+        HaloLogger.logE("helong_debug___", "end===================");*/
+
         //calc totalDist in opengl
         mTotalLength = allLength;
         mTotalDistance = 0f;
@@ -1508,8 +1513,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
         }
 
+        // TODO: 2016/8/7 由于Path中增加了一个点,因此总长度需要更新
+        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
+        double distFake2First = mDist2FinalPoint.get(0);
+        HaloLogger.logE("helong_debug___","0:"+distFake2First);
+        HaloLogger.logE("helong_debug___","1:"+mDist2FinalPoint.get(1));
         //mLength2Distance表示一米在openGL当前场景中有多大
-        mLength2DistanceScale = mTotalDistance / mTotalLength;
+        mLength2DistanceScale = (mTotalDistance - distFake2First) / mTotalLength;
+        mTotalLength += distFake2First / mLength2DistanceScale;
+        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
 
         //save every point to final point`s dist m and opengl
         double lastDistance = 0.0;
@@ -1557,7 +1569,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mChildPathes.add(childPath);
         }
 
-        //set flag with true when data is inited
+        //set flag with true indicates(表示) data is inited
         mCanInitScene = true;
         //如果Rajawali自身的初始化场景完毕,那么就可以进行我们自己的场景初始化(目前就是绘制道路,并进行贴图移动)
         if (mIsInitScene) {
