@@ -713,4 +713,55 @@ public class MathUtils {
         return (y2 - y1) / (x2 - x1);
     }
 
+    /***
+     * 按照一定比例缩放整条Path,缩放的基点是Path的第一个点
+     *
+     * @param path
+     * @param zoom
+     */
+    public static void zoomPath(List<Vector3> path, double zoom) {
+        List<Vector3> offsets = new ArrayList<>();
+        for (int i = 1; i < path.size(); i++) {
+            Vector3 v0 = path.get(i - 1);
+            Vector3 v1 = path.get(i);
+            Vector3 offset = new Vector3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
+            offsets.add(offset);
+        }
+        for (int i = 1; i < path.size(); i++) {
+            Vector3 v0 = path.get(i - 1);
+            Vector3 v1 = path.get(i);
+            Vector3 offset = offsets.get(i - 1);
+            v1.x = v0.x + offset.x * zoom;
+            v1.y = v0.y + offset.y * zoom;
+            v1.z = v0.z + offset.z * zoom;
+        }
+    }
+
+    /**
+     *
+     * @param path
+     * @param moveTo
+     */
+    public static void movePath(List<Vector3> path, Vector3 moveTo) {
+        Vector3 v0 = path.get(0);
+        Vector3 offset = new Vector3(moveTo.x - v0.x, moveTo.y - v0.y, moveTo.z - v0.z);
+        movePath(path, offset.x, offset.y, offset.z);
+    }
+
+    /**
+     *
+     * @param path
+     * @param moveByX
+     * @param moveByY
+     * @param moveByZ
+     */
+    public static void movePath(List<Vector3> path, double moveByX, double moveByY, double moveByZ) {
+        for (int j = 0; j < path.size(); j++) {
+            Vector3 v = path.get(j);
+            v.x += moveByX;
+            v.y += moveByY;
+            v.z += moveByZ;
+        }
+    }
+
 }

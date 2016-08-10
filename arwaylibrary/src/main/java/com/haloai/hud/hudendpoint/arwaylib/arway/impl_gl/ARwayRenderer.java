@@ -69,7 +69,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double CAMERA_OFFSET_X    = 0;
     private static final double CAMERA_OFFSET_Y    = 0;
     private static final double CAMERA_OFFSET_Z    = 0.8;
-    private static final double LOOK_AT_DIST       = 1.8;
+    private static final double LOOK_AT_DIST       = 1.6;
     private static final int    INTERSECTION_COUNT = 30;
     private static final double CAMERA_NEAR_PLANE  = 0.5;
     private static final double CAMERA_FAR_PLANE   = 25;
@@ -111,7 +111,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //constantly data 实时数据
     private long    mStartTime       = 0l;
     private double  mStartLength     = 0.0;
-    private int     mCurIndexInPath  = 0;//这个值只是代表我们当前位置处于该index之后,但是否紧挨着不能确定;
+    private int     mCurIndexInPath  = 0;
     private Vector3 mRealCurPosition = new Vector3();
 
     //about animation
@@ -386,7 +386,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //        HaloLogger.logE("helong_fix____", "lookAt:" + lookAt);
         getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
-        ////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
+        /*////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
         //
         //        //        rotX = 180/Math.PI*qt.getRoll();
         //        //        rotZ = 180/Math.PI*qt.getPitch();
@@ -415,7 +415,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         handleLookAt(lookAtRotation);
         getCurrentCamera().setRotZ(lookAtRotation.z + mTestRotZ);
         getCurrentCamera().setRotY(lookAtRotation.y + mTestRotY);
-        getCurrentCamera().setRotX(lookAtRotation.x + mTestRotX);
+        getCurrentCamera().setRotX(lookAtRotation.x + mTestRotX);*/
 
         //        HaloLogger.logE("helong_fix_____", "orientation_rotX:" + (lookAtRotation.x + mTestRotX));
         //        HaloLogger.logE("helong_fix_____", "orientation_rotY:" + (lookAtRotation.y + mTestRotY));
@@ -613,9 +613,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         rotation = getCenterAndNext(naviIcon, center, next, fin, leftPath, rightPath, intersectPath, length);
         //divDegrees = getDivDegrees(center, next, mainRoadTailend);
         List<Vector3> branchPointsOpengl = new ArrayList<>();
-        HaloLogger.logE("helong_fix____", "========================branch start=========================");
-        HaloLogger.logE("helong_fix____", "center:" + center);
-        HaloLogger.logE("helong_fix____", "naviIcon:" + naviIcon);
+        List<Vector3> branchPointsOpengl2 = new ArrayList<>();
         //        HaloLogger.logE("helong_fix____", "next:" + next);
         //        HaloLogger.logE("helong_fix____", "length:" + length);
         //        HaloLogger.logE("helong_fix____", "degrees:" + divDegrees);
@@ -640,6 +638,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
             // TODO: 2016/7/25 模拟假数据来实现路口放大图
             branchPointsOpengl.clear();
+            branchPointsOpengl2.clear();
             boolean isSimulation = false;
             if (branchPointsOpengl.size() <= 0) {
                 isSimulation = true;
@@ -655,58 +654,33 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 catmullRomCurve3D.calculatePoint(v, (1.0 * j) / (catmullRomCurve3D.getNumPoints() * 5));
                 branchPointsOpengl.add(v);
             }
-
+            Vector3 offset = null;
             rotateBranchWithDivDegreesTest(branchPointsOpengl, rotation + 180);
-            /*Sphere sp = new Sphere(0.04f, 24, 24);
-            sp.setMaterial(new Material());
-            sp.setPosition(new Vector3(center));
-            sp.setColor(0xff00ff);
-            getCurrentScene().addChild(sp);
-            sp = new Sphere(0.04f, 24, 24);
-            sp.setMaterial(new Material());
-            sp.setPosition(new Vector3(next));
-            sp.setColor(0x00ffff);
-            getCurrentScene().addChild(sp);*/
+            for (int j = 0; j < branchPointsOpengl.size()/*/3*/; j++) {
+                /*Vector3 v = branchPointsOpengl.get(j);
+                if(j==0){
+                    Vector3 target = branchPointsOpengl.get(branchPointsOpengl.size()/5);
+                    offset = new Vector3(v.x-target.x,v.y-target.y,v.z-target.z);
+                }
+                branchPointsOpengl2.add(new Vector3(v.x-offset.x,v.y-offset.y,v.z-offset.z));*/
+                branchPointsOpengl2.add(new Vector3(branchPointsOpengl.get(j)));
+            }
+            rotateBranchWithDivDegreesTest(branchPointsOpengl2, rotation + 180);
 
             //3.计算岔路pos,并通过设置posZ轴值来降低岔路高度,避免覆盖
             Vector3 pos = new Vector3();
-            calcPosition(branchPointsOpengl, pos);
-            HaloLogger.logE("helong_fix____", "result rotZ:" + rotation);
-            HaloLogger.logE("helong_fix____", "result branch:" + branchPointsOpengl);
-            HaloLogger.logE("helong_fix____", "result pos:" + pos);
+            calcPosition(branchPointsOpengl, pos, BRANCH_LINE_Z);
             insertPlane(branchPointsOpengl, pos, ROAD_WIDTH, 2);
+            calcPosition(branchPointsOpengl2, pos, BRANCH_LINE_Z - 0.01);
+            //insertPlane(branchPointsOpengl2, pos, ROAD_WIDTH, 2);
 
-            //            pos = new Vector3();
-            //            calcPosition(intersectPath, pos);
-            //            pos.z = 0.01;
-            //                        insertPlane(intersectPath, pos, ROAD_WIDTH / 2, 3);
-            //            if (rotation < 0) {
-            //                insertPlane(intersectPath, pos, ROAD_WIDTH / 3, 0, 3);
-            //            } else {
-            //                insertPlane(intersectPath, pos, 0, ROAD_WIDTH / 3, 3);
-            //            }
             for (int j = 0; j < intersectPath.size() - 1; j++) {
                 insertRajawaliPlane(new Vector3(intersectPath.get(j)), new Vector3(intersectPath.get(j + 1)));
             }
-
-            //            Vector3 intersect1 = intersectPath.get(0);
-            //            Vector3 intersect2 = intersectPath.get(intersectPath.size() - 1);
-            //            Sphere sp = new Sphere(0.03f, 24, 24);
-            //            sp.setMaterial(new Material());
-            //            sp.setColor(0x00ffff);
-            //            sp.setPosition(new Vector3(pos.x + intersect1.x, pos.y + intersect1.y, 0.011));
-            //            getCurrentScene().addChild(sp);
-            //
-            //            sp = new Sphere(0.03f, 24, 24);
-            //            sp.setMaterial(new Material());
-            //            sp.setColor(0xff00ff);
-            //            sp.setPosition(new Vector3(pos.x + intersect2.x, pos.y + intersect2.y, 0.011));
-            //            getCurrentScene().addChild(sp);
             if (isSimulation) {
                 break;
             }
         }
-        HaloLogger.logE("helong_fix____", "========================branch end===========================");
     }
 
     private void insertRajawaliPlane(Vector3 v1, Vector3 v2) {
@@ -762,13 +736,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param branchPointsOpengl
      * @param pos
      */
-    private void calcPosition(List<Vector3> branchPointsOpengl, Vector3 pos) {
+    private void calcPosition(List<Vector3> branchPointsOpengl, Vector3 pos, double z) {
         if (branchPointsOpengl == null || branchPointsOpengl.size() <= 0) {
             return;
         }
         pos.setAll(branchPointsOpengl.get(0));
         //降低岔路高度,避免覆盖主路
-        pos.z = BRANCH_LINE_Z;
+        pos.z = z;
         for (Vector3 v : branchPointsOpengl) {
             v.x -= pos.x;
             v.y -= pos.y;
@@ -797,7 +771,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      */
     private double getCenterAndNext(int naviIcon, Vector3 center, Vector3 next, Vector3 fin, List<Vector3> leftPath, List<Vector3> rightPath, List<Vector3> intersectPath, double length) {
         // TODO: 2016/7/28 由于目前获取中心点总是提前了,因此此处做乘以1.3的应急处理来减少错误误差
-        double dist300 = length * 1.3 * mLength2DistanceScale;
+        double dist300 = length * 1.2 * mLength2DistanceScale;
         double rotation = 0;
         Vector3 intersect = new Vector3();
         Vector3 intersect2 = new Vector3();
@@ -880,9 +854,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 //                }
 
                 // TODO: 2016/8/3 翻转从主路copy出来的一段路,作为岔路显示,效果可能会更加自然多样,因此上述代码是不起作用的
-                index = (i + 15) < mPath.size() ? (i + 15) : mPath.size() - 1;
+                index = (i + 10) < mPath.size() ? (i + 10) : mPath.size() - 1;
                 next.setAll(mPath.get(index));
-                index = (i + 30) < mPath.size() ? (i + 30) : mPath.size() - 1;
+                index = (i + 20) < mPath.size() ? (i + 20) : mPath.size() - 1;
                 fin.setAll(mPath.get(index));
                 rot = MathUtils.getDegrees(center.x, center.y, next.x, next.y) - 180;
                 rot2 = MathUtils.getDegrees(next.x, next.y, fin.x, fin.y) - 180;
@@ -908,6 +882,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                         } else {
                             rotation = 35;
                         }
+                        break;
+                }
+
+                switch (naviIcon) {
+                    case 2://tl
+                    case 3://tr
+                        center.setAll(next);
+                        next.setAll(fin);
+                        fin.x = next.x + (next.x - center.x) * (10 / MathUtils.calculateDistance(next.x, next.y, center.x, center.y));
+                        fin.y = next.y + (next.y - center.y) * (10 / MathUtils.calculateDistance(next.x, next.y, center.x, center.y));
+                        rotation /= 2;
                         break;
                 }
 
@@ -1262,6 +1247,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (!isPathRepeat(path) || !repeat) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
+            for(int i=0;i<mOriginalPath.size();i++)
+            HaloLogger.logE("helong_debug_____",mOriginalPath.get(i).x+","+mOriginalPath.get(i).y);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
@@ -1326,7 +1313,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         HaloLogger.logE("helong_debug", "next size:" + mPath.size());
 
-        // TODO: 2016/8/7 在Path最开始时增加一段直线,用于放置岔路,显示更好的效果
+        /*// TODO: 2016/8/7 在Path最开始时增加一段直线,用于放置岔路,显示更好的效果
         Vector3 fakePoint = new Vector3();
         Vector3 v0_ = mPath.get(0);
         Vector3 v1_ = mPath.get(1);
@@ -1334,7 +1321,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("helong_debug___","div:"+div);
         fakePoint.x = v0_.x + (v0_.x - v1_.x) * div;
         fakePoint.y = v0_.y + (v0_.y - v1_.y) * div;
-        mPath.add(0,fakePoint);
+        mPath.add(0,fakePoint);*/
 
         //save the offsetXY between point and point.
         for (int i = 1; i < mPath.size(); i++) {
@@ -1513,15 +1500,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
         }
 
-        // TODO: 2016/8/7 由于Path中增加了一个点,因此总长度需要更新
-        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
-        double distFake2First = mDist2FinalPoint.get(0);
-        HaloLogger.logE("helong_debug___","0:"+distFake2First);
-        HaloLogger.logE("helong_debug___","1:"+mDist2FinalPoint.get(1));
-        //mLength2Distance表示一米在openGL当前场景中有多大
-        mLength2DistanceScale = (mTotalDistance - distFake2First) / mTotalLength;
-        mTotalLength += distFake2First / mLength2DistanceScale;
-        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
+        //        // TODO: 2016/8/7 由于Path中增加了一个点,因此总长度需要更新
+        //        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
+        //        double distFake2First = mDist2FinalPoint.get(0);
+        //        HaloLogger.logE("helong_debug___","0:"+distFake2First);
+        //        HaloLogger.logE("helong_debug___","1:"+mDist2FinalPoint.get(1));
+        //        //mLength2Distance表示一米在openGL当前场景中有多大
+        mLength2DistanceScale = (mTotalDistance/* - distFake2First*/) / mTotalLength;
+        //        mTotalLength += distFake2First / mLength2DistanceScale;
+        //        HaloLogger.logE("helong_debug___","length:"+mTotalLength);
 
         //save every point to final point`s dist m and opengl
         double lastDistance = 0.0;
@@ -1568,6 +1555,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mChildPathPositions.add(beginPosOfChildPath);
             mChildPathes.add(childPath);
         }
+
+        /*HaloLogger.logE("helong_debug___", "start=============");
+        for (int i = 0; i < mPath.size(); i++)
+            HaloLogger.logE("helong_debug___", mPath.get(i).x + "," + mPath.get(i).y);
+        HaloLogger.logE("helong_debug___", "end===============");*/
 
         //set flag with true indicates(表示) data is inited
         mCanInitScene = true;
@@ -1716,6 +1708,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
         //        ), mObject4Chase);
         getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
+//        firstPersonCamera.setUpAxis(Vector3.Axis.Y);
 
         for (int i = 0; i < mChildPathPositions.size(); i++) {
             insertPlane(mChildPathes.get(i), mChildPathPositions.get(i), ROAD_WIDTH, 1);
@@ -2077,9 +2070,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
     }
 
-    private RotateOnAxisAnimation createRotateAnim(Vector3.Axis axis, double degrees, Long duration, ATransformable3D object3D) {
+    private RotateOnAxisAnimation createRotateAnim(Vector3.Axis axis, double degrees, Long duration, ATransformable3D transformable3D) {
         RotateOnAxisAnimation anim = new RotateOnAxisAnimation(axis, degrees);
-        anim.setTransformable3D(object3D);
+        anim.setTransformable3D(transformable3D);
         anim.setDurationMilliseconds(duration);
         anim.setInterpolator(new LinearInterpolator());
         anim.setRepeatMode(Animation.RepeatMode.NONE);
@@ -2279,6 +2272,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 mRotateAnims.get(mRotateAnimIndex++).play();
                 return;
             }
+            /*// TODO: 2016/8/7 TEST 新的旋转动画方式测试
+            if (mRotateAnimIndex < mTranslateAnimIndex) {
+                mRotateAnims.get(mRotateAnimIndex++).play();
+            }
+            return;*/
         }
     }
 
