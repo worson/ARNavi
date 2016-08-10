@@ -26,6 +26,8 @@ import com.haloai.hud.utils.HaloLogger;
 public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister{
     private static GlDrawSpeedDial mGlDrawSpeedDial = new GlDrawSpeedDial();
 
+    private final float CHILD_VIEW_TOP_FACTOR = 1.3f;
+
     //view
     private SpeedView mSpeedView = null;
     private TextView mSpeedValueView = null;
@@ -184,10 +186,22 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
 
-                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+
 
                 }
                 break;
@@ -205,10 +219,23 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
 
-                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+
+                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY",VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR, VIEW_TOP_NOT_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+
 
                 }
                 break;

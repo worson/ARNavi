@@ -136,7 +136,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         // Inflate the layout for this fragment
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
-        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout);
+        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout,R.layout.arway_opengl_layout);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
             ViewGroup vg = (ViewGroup)mainARWayView.getParent();
@@ -276,6 +276,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             }
         }
 
+        if(!hidden){
+            showHideSpeedPanel(true);
+        }
         removeAMapNaviView();
         if (!hidden) {
             addAMapNaviView();

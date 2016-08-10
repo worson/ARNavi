@@ -238,27 +238,32 @@ public class ComPassView extends View implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-            float degree = event.values[0];
-            //first time
-            if (mStartTime == 0) {
-                mStartTime = System.currentTimeMillis();
-                mStartComPassValue = -degree;
-            } else {
-                if (mRotateAnim != null && mRotateAnim.isRunning()) {
-                    mRotateAnim.pause();
-                    mRotateAnim.cancel();
+            float degree = (event.values[0]+90)%360;
+            if(false){
+                //first time
+                if (mStartTime == 0) {
+                    mStartTime = System.currentTimeMillis();
+                    mStartComPassValue = -degree;
+                } else {
+                    if (mRotateAnim != null && mRotateAnim.isRunning()) {
+                        mRotateAnim.pause();
+                        mRotateAnim.cancel();
+                    }
+                    long endTime = System.currentTimeMillis();
+                    mRotateAnim = ObjectAnimator.ofFloat(this, "rotation", mStartComPassValue, -degree);
+                    mRotateAnim.setDuration(endTime - mStartTime);
+                    mRotateAnim.setRepeatCount(0);
+                    mRotateAnim.start();
+
+                    mStartTime = endTime;
+                    mStartComPassValue = -degree;
                 }
-                long endTime = System.currentTimeMillis();
-                mRotateAnim = ObjectAnimator.ofFloat(this, "rotation", mStartComPassValue, -degree);
-                mRotateAnim.setDuration(endTime - mStartTime);
-                mRotateAnim.setRepeatCount(0);
-                mRotateAnim.start();
-
-                mStartTime = endTime;
-                mStartComPassValue = -degree;
+            }else {
+                setRotation(-(degree));
             }
-
-//            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"compassview onSensorChanged ,degress is "+degree);
+            if (DEBUG_MODE){
+                HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"compassview onSensorChanged ,degress is "+degree);
+            }
         }
     }
 

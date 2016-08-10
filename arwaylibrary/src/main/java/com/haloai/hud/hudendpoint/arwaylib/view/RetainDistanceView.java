@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.view;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -25,16 +27,18 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
  * project_name : ComPassDemo;
  */
 public class RetainDistanceView extends View {
-    private int WIDTH                   = 0;
-    private int    HEIGHT               = 0;
-    private float  mTotalDistance       = 0;
-    private float  mRetainDistance      = 0;
-    private double mOutsideCircleRadius = 0;
-    private RectF  mSpeedRectF          = null;
-    private Bitmap mOutsideBitmap       = null;
-    private Bitmap mInsideBitmap        = null;
-    private Bitmap mPointBitmap         = null;
-    private Bitmap mInsideClipBitmap    = null;
+    private int            WIDTH                = 0;
+    private int            HEIGHT               = 0;
+    private float          mTotalDistance       = 0;
+    private float          mRetainDistance      = 0;
+    private double         mOutsideCircleRadius = 0;
+    private RectF          mSpeedRectF          = null;
+    private Bitmap         mOutsideBitmap       = null;
+    private Bitmap         mInsideBitmap        = null;
+    private Bitmap         mPointBitmap         = null;
+    private Bitmap         mInsideClipBitmap    = null;
+    private float          mCurrentDistance     = 0;
+    private ObjectAnimator mLocalAnim           = null;
 
     public RetainDistanceView(Context context) {
         super(context);
@@ -193,4 +197,29 @@ public class RetainDistanceView extends View {
         mRetainDistance = retainDistance;
         invalidate();
     }
+
+    public void setRetainDistanceAnim(float retainDistance) {
+        if (mLocalAnim != null && mLocalAnim.isRunning()) {
+            mLocalAnim.pause();
+            mLocalAnim.cancel();
+        }
+        if (retainDistance != mCurrentDistance){
+
+            ObjectAnimator.ofFloat(this, "RetainDistance", mCurrentDistance, retainDistance);
+            mLocalAnim.setDuration(500);
+            mLocalAnim.setRepeatCount(0);
+            mLocalAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    Float f= (Float) animation.getAnimatedValue();
+                    if (f != null) {
+                        mCurrentDistance = f.floatValue();
+                    }
+                }
+            });
+            mLocalAnim.start();
+        }
+
+    }
+
 }

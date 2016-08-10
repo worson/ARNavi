@@ -24,6 +24,7 @@ import com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView;
 public class GlDrawRetainDistance extends DrawViewObject implements IDriveStateLister {
     private static GlDrawRetainDistance mGlDrawRetainDistance = new GlDrawRetainDistance();
 
+    private final float CHILD_VIEW_TOP_FACTOR = 1.3f;
     //view
     private TextView mRetainTimeTextView = null;
     private TextView mRetainTimeScaleTextView = null;
@@ -60,7 +61,7 @@ public class GlDrawRetainDistance extends DrawViewObject implements IDriveStateL
 
             VIEW_TOP_NOT_DRIVING_Y = 0;
             if (context != null) {
-                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,20);
+                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,23);
             }else {
                 VIEW_TOP_DRIVING_Y = 30;
             }
@@ -168,10 +169,21 @@ public class GlDrawRetainDistance extends DrawViewObject implements IDriveStateL
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
 
-                    animator = ObjectAnimator.ofFloat(mRetainTimeViewGroup, "TranslationY",VIEW_TOP_NOT_DRIVING_Y,VIEW_TOP_DRIVING_Y);
+                    animator = ObjectAnimator.ofFloat(mRetainDistanceView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mRetainDistanceView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mRetainTimeViewGroup, "TranslationY",VIEW_TOP_NOT_DRIVING_Y,VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
 
 
 
@@ -187,10 +199,23 @@ public class GlDrawRetainDistance extends DrawViewObject implements IDriveStateL
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
 
-                    animator = ObjectAnimator.ofFloat(mRetainTimeViewGroup, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                    animator = ObjectAnimator.ofFloat(mRetainDistanceView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setDuration(VIEW_ANIMATION_DURATION);
                     animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mRetainDistanceView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+                    animator = ObjectAnimator.ofFloat(mRetainTimeViewGroup, "TranslationY",VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR, VIEW_TOP_NOT_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(VIEW_ANIMATION_DURATION);
+                    animator.start();
+
+
+
 
                     break;
                 default:

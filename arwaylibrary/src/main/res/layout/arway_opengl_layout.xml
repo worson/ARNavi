@@ -9,7 +9,7 @@
 
     <RelativeLayout
         android:id="@+id/left_card_viewgroup"
-        android:layout_width="133.3dp"
+        android:layout_width="134dp"
         android:layout_height="match_parent"
         android:background="#000000">
 

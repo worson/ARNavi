@@ -10,6 +10,8 @@ import android.view.ViewGroup;
  * Created by 龙 on 2016/4/29.
  */
 public abstract class DrawViewObject extends DrawObject implements IViewOperation{
+    public float VIEW_GOAL_SCALE_X = 1.1f;
+    public float VIEW_GOAL_SCALE_Y = 1.45f;
 
     public float VIEW_TOP_DRIVING_Y     = 10;
     public float VIEW_TOP_NOT_DRIVING_Y = 0;
