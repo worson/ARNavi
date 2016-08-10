@@ -8,7 +8,7 @@
     <dimen name="speed_view_pause_margin_top">75.67dp</dimen>
     <dimen name="speed_view_driving_margin_top">130.67dp</dimen>
 
-    <dimen name="distance_view_pause_margin_top">77.67dp</dimen>
+    <dimen name="distance_view_pause_margin_top">80.67dp</dimen>
     <dimen name="distance_view_driving_margin_top">130.67dp</dimen>
 
 

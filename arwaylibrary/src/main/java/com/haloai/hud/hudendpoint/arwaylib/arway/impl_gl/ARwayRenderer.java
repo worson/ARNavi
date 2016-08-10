@@ -25,6 +25,7 @@ import org.rajawali3d.animation.Animation;
 import org.rajawali3d.animation.IAnimationListener;
 import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.SplineTranslateAnimation3D;
+import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.cameras.NewFirstPersonCamera;
 import org.rajawali3d.curves.CatmullRomCurve3D;
 import org.rajawali3d.curves.CompoundCurve3D;
@@ -68,8 +69,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double ROAD_WIDTH         = 0.4;
     private static final double CAMERA_OFFSET_X    = 0;
     private static final double CAMERA_OFFSET_Y    = 0;
-    private static final double CAMERA_OFFSET_Z    = 0.8;
-    private static final double LOOK_AT_DIST       = 1.6;
+    private static final double CAMERA_OFFSET_Z    = 0.6;
+    private static final double CAMERA_CUT_OFFSET    = 0.7;
+    private static final double LOOK_AT_DIST       = 1.3;
     private static final int    INTERSECTION_COUNT = 30;
     private static final double CAMERA_NEAR_PLANE  = 0.5;
     private static final double CAMERA_FAR_PLANE   = 25;
@@ -179,14 +181,57 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         super.onRenderSurfaceDestroyed(surface);
     }
 
+    private void updateCamera(ATransformable3D transObject){
+        Camera camera = getCurrentCamera();
+        Vector3 location = transObject.getPosition();
+        Vector3 position = new Vector3(location.x,location.y,CAMERA_OFFSET_Z);
+        Vector3 lookat = new Vector3(0,0,0);
+        findCameraLookatAndPosition(location,transObject.getRotZ(),LOOK_AT_DIST,position,lookat);
+        camera.setPosition(position);
+        camera.setLookAt(lookat);
+
+        mSphere.setPosition(lookat);
+        mSphere1.setPosition(location);
+
+    }
+
+    private void findCameraLookatAndPosition(Vector3 location,double yaw,double dist,Vector3 position,Vector3 lookat){
+        if (location == null || position == null ||lookat == null) {
+            return;
+        }
+
+        final double LOOK_OFFSET = dist;
+        final double CAMERA_OFFSET = -CAMERA_CUT_OFFSET;
+        double offsetY=0,offsetX=0;
+        double rYaw = yaw;
+        Vector3 cPos = new Vector3(location);
+
+        offsetX = LOOK_OFFSET*Math.sin(rYaw);
+        offsetY = LOOK_OFFSET*Math.cos(rYaw);
+        lookat.x = cPos.x + offsetX;
+        lookat.y = cPos.y + offsetY;
+
+        offsetX = CAMERA_OFFSET*Math.sin(rYaw);
+        offsetY = CAMERA_OFFSET*Math.cos(rYaw);
+
+        position.x = cPos.x + offsetX;
+        position.y = cPos.y + offsetY;
+
+    }
+
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
         if (!mIsMyInitScene) {
             return;
         }
 
+        if (mObject4Chase != null) {
+            updateCamera(mObject4Chase);
+        }
+
         //         TODO: 2016/7/14
         //                Vector3 pos = getCurrentCamera().getPosition();
+
         Quaternion qt = new Quaternion();
         getCurrentCamera().getCameraOrientation(qt);
         HaloLogger.logE("helong_fix_", "camera_quaternion:" + qt);
@@ -242,7 +287,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //         dst.x = src.x+offX;
         //         dst.y = src.y+offY;
         //         */
-        Vector3 lookAt = new Vector3();
+
+
+        /*Vector3 lookAt = new Vector3();
         Vector3 nextPoint = mPath.get(mCurIndexInPath + 1);
         double dist = MathUtils.calculateDistance(pos.x, pos.y, nextPoint.x, nextPoint.y);
         if (dist >= LOOK_AT_DIST) {
@@ -268,7 +315,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     }
                 }
             }
-        }
+        }*/
 
         //        lookAt.x = pos.x + mTestPosX + Math.sin(rotX / 180 * Math.PI) * LOOK_AT_DIST;
         //        lookAt.y = pos.y + mTestPosY + Math.cos(rotX / 180 * Math.PI) * LOOK_AT_DIST;
@@ -385,8 +432,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        }
 
         //        HaloLogger.logE("helong_fix____", "lookAt:" + lookAt);
-        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
-        /*////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
+//        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
+        ////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
         //
         //        //        rotX = 180/Math.PI*qt.getRoll();
         //        //        rotZ = 180/Math.PI*qt.getPitch();
@@ -396,7 +443,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotY:" + rotY);
         //
         //        //将设置好的lookAt通过计算填充到orientation上
-        getCurrentCamera().calculateModelMatrix(null);
+//        getCurrentCamera().calculateModelMatrix(null);
 
         getCurrentCamera().getOrientation(qt);
 
@@ -411,7 +458,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //                HaloLogger.logE("helong_fix_", "next_orientation_rotX:" + (rotX+rotationX));
         //                HaloLogger.logE("helong_fix_", "next_orientation_rotY:" + rotY);
 
-        Vector3 lookAtRotation = new Vector3(rotX, rotY, rotZ);
+        /*Vector3 lookAtRotation = new Vector3(rotX, rotY, rotZ);
         handleLookAt(lookAtRotation);
         getCurrentCamera().setRotZ(lookAtRotation.z + mTestRotZ);
         getCurrentCamera().setRotY(lookAtRotation.y + mTestRotY);
@@ -1707,9 +1754,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        NewChaseCamera firstPersonCamera = new NewChaseCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
         //        ), mObject4Chase);
-        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
-//        firstPersonCamera.setUpAxis(Vector3.Axis.Y);
+//        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
 
+        getCurrentCamera().setUpAxis(Vector3.Axis.Z);
         for (int i = 0; i < mChildPathPositions.size(); i++) {
             insertPlane(mChildPathes.get(i), mChildPathPositions.get(i), ROAD_WIDTH, 1);
         }

@@ -104,10 +104,10 @@ public class DrawObjectFactory {
      * @param context
      * @return
      */
-    public static View createGlDrawObjectLayoutIntance(Context context,ViewGroup container){
+    public static View createGlDrawObjectLayoutIntance(Context context,ViewGroup container,int layoutid){
         View drawView = null;
         LayoutInflater inflater  = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        ViewGroup mLayout = (ViewGroup) inflater.inflate(R.layout.arway_opengl_layout, container, true);
+        ViewGroup mLayout = (ViewGroup) inflater.inflate(layoutid, container, true);
 
         DrawScene drawScene = (DrawScene)getGlDrawObject(DrawType.GL_SCENE);
 //        drawScene.setView(context,mLayout);
