@@ -16,6 +16,7 @@ public class ARWayConst {
 
     //open gl
     public static final double DEFAULT_CAMERA_Z = 15;
+    public static final boolean IS_DEBUG_SCENE = true;
 
     //NAVING
     public static final int NAVI_CAR_START_DISTANCE = 50;
