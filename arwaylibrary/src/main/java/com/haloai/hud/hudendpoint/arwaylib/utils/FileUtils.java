@@ -15,15 +15,19 @@ import java.io.IOException;
  * project_name : hudlauncher;
  */
 public class FileUtils {
-    public static byte[] bitmap2Bytes2(Bitmap bm) {
+    public static byte[] bitmap2Bytes(Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.PNG, 100, baos);//png类型
         return baos.toByteArray();
     }
 
     // 写到sdcard中
-    public static void write2(byte[] bs, String fileDir, String filename) throws IOException {
-        File file = new File(fileDir + filename);
+    public static void write(byte[] bs, String fileDir, String filename) throws IOException {
+        File file = new File(fileDir);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        file = new File(fileDir + filename);
         if (!file.exists()) {
             file.createNewFile();
         }
