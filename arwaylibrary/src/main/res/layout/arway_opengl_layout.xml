@@ -197,20 +197,20 @@
         <FrameLayout
             android:id="@+id/opengl_viewgroup"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/arway_black">
         </FrameLayout>
         <RelativeLayout
             android:id="@+id/compass_viewgroup"
             android:layout_width="@dimen/compass_pause_width"
-            android:layout_height="@dimen/compass_pause_height"
+            android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
+            android:padding="0dp"
             android:layout_centerHorizontal="true">
             <com.haloai.hud.hudendpoint.arwaylib.view.ComPassView
                 android:id="@+id/compass_view"
                 android:padding="0dp"
                 android:layout_margin="0dp"
-                android:minHeight="@dimen/compass_pause_height"
-                android:minWidth="@dimen/compass_pause_width"
                 android:layout_width="@dimen/compass_pause_width"
                 android:layout_height="@dimen/compass_pause_height"
                 custom:custom_height="@dimen/compass_pause_height"
@@ -221,6 +221,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:paddingLeft="2dp"
+                android:paddingBottom="1dp"
                 android:text="往西\n行驶"
                 android:textColor="#ffffff"/>
         </RelativeLayout>

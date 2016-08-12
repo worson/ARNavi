@@ -63,7 +63,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double OBJ_4_CHASE_Z      = 0;
     private static final double BIGGER_TIME        = 1000000.0;
     private static final double CAMERA_MIN_LENGTH  = 20;
-    private static final int    FRAME_RATE         = 10;
+    private static final int    FRAME_RATE         = 20;
     private static final int    CURVE_TIME         = 30;
     private static final double LOGIC_ROAD_WIDTH   = 0.4;
     private static final double ROAD_WIDTH         = 0.4;
@@ -87,13 +87,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private List<Vector3>       mLeftPath           = new ArrayList<>();
     private List<Vector3>       mRightPath          = new ArrayList<>();
     private List<Double>        mOffsetX            = new ArrayList<>();
-    private List<Double>        mOffsetY            = new ArrayList<>();
-    private List<Double>        mDist2FinalPoint    = new ArrayList<>();
-    private List<Double>        mLength2FinalPoint  = new ArrayList<>();
-    private List<Integer>       mCurIndexes         = new ArrayList<>();
-    private List<Vector3>       mPreChildEndPos     = new ArrayList<>();
-    private List<Vector3>       mChildPathPositions = new ArrayList<>();
-    private List<List<Vector3>> mChildPathes        = new ArrayList<>();
+    private List<Double>        mOffsetY             = new ArrayList<>();
+    private List<Double>        mDist2FinalPoint     = new ArrayList<>();
+    private List<Double>        mLength2FinalPoint   = new ArrayList<>();
+    private List<Integer>       mCurIndexes          = new ArrayList<>();
+    private List<Vector3>       mPreChildEndPos      = new ArrayList<>();
+    private List<Vector3>       mChildPathPositions  = new ArrayList<>();
+    private List<List<Vector3>> mChildPathes         = new ArrayList<>();
+    private List<Vector3>       mLastThroughPosition = new ArrayList<>();
 
     //rajawali about
     private Line3D   mLine3D             = null;
@@ -160,6 +161,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();
 
+//        getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
 
         if (!mIsMyInitScene && mCanInitScene) {
@@ -1635,6 +1637,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mRotateAnims.clear();
         mChildPathPositions.clear();
         mChildPathes.clear();
+        mLastThroughPosition.clear();
         mTranslateAnimIndex = 0;
         mRotateAnimIndex = 0;
         mTotalDistance = 0f;
@@ -1732,7 +1735,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mSphere1.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mSphere1.setMaterial(new Material());
         mSphere1.setColor(Color.RED);
-        getCurrentScene().addChild(mSphere1);
+        if(ARWayConst.IS_DEBUG_SCENE){
+            getCurrentScene().addChild(mSphere1);
+        }
 
         mSphere2 = new Sphere(0.05f, 24, 24);
         mSphere2.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
@@ -1956,6 +1961,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             mCameraAnim.unregisterListener(this);
         }
+        Object3D chaseObject = mObject4Chase;
+        //观察到原始durqation基本在4000以上,因此设置PERTENSION_TIME的值为1000,也就是使用更长的动画时间来减少停滞的情况发生
+        long duration = endTime - mStartTime + PRETENSION_TIME;
+        Vector3 cameraVector3 = chaseObject.getPosition();
+        Vector3 startPosition = new Vector3(cameraVector3.x, cameraVector3.y, 0);
+        List<Vector3> throughPosition = new ArrayList<>();
+        Vector3 endPosition = new Vector3();
+
+        //上一次的动画未完成
+        if (mTranslateAnims.size() > (mTranslateAnimIndex+1)){
+            if (mLastThroughPosition != null && mLastThroughPosition.size()>mTranslateAnimIndex){
+                int cnt = mLastThroughPosition.size();
+                for (int i = mTranslateAnimIndex+1; i < cnt ; i++) {
+                    throughPosition.add(new Vector3(mLastThroughPosition.get(i)));
+                }
+            }
+        }
+        mLastThroughPosition.clear();
+
         if (mTranslateAnims != null && mTranslateAnims.size() > 0) {
             for (int i = 0; i < mTranslateAnims.size(); i++) {
                 if (mTranslateAnims.get(i).isPlaying()) {
@@ -1980,15 +2004,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             mRotateAnims.clear();
         }
-        //观察到原始durqation基本在4000以上,因此设置PERTENSION_TIME的值为1000,也就是使用更长的动画时间来减少停滞的情况发生
-        long duration = endTime - mStartTime + PRETENSION_TIME;
-        Vector3 cameraVector3 = mObject4Chase.getPosition();
-//        Vector3 cameraVector3 = getCurrentCamera().getPosition();
-        Vector3 startPosition = new Vector3(cameraVector3.x, cameraVector3.y, 0);
-        List<Vector3> throughPosition = new ArrayList<>();
-        Vector3 endPosition = new Vector3();
+
 
         setEndAndThroughPosition(mPath, mLength2FinalPoint, mStartLength, endLength, endPosition, throughPosition);
+        mLastThroughPosition.add(new Vector3(startPosition));
+        mLastThroughPosition.addAll(throughPosition);
+        mLastThroughPosition.add(new Vector3(endPosition));
+
         startAnimation2(startPosition, throughPosition, endPosition, duration);
 
         mRealCurPosition.setAll(endPosition);
@@ -2322,7 +2344,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (mTranslateAnims != null && mTranslateAnims.size() > 0 && mTranslateAnimIndex < mTranslateAnims.size() && mTranslateAnimIndex >= 1) {
             if (animation == mTranslateAnims.get(mTranslateAnimIndex - 1)) {
                 animation.unregisterListener(this);
-                mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
+                if(mCurIndexes.size()>mTranslateAnimIndex){
+                    mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
+                }
                 mTranslateAnims.get(mTranslateAnimIndex++).play();
                 return;
             }

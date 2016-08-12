@@ -26,8 +26,10 @@ import com.haloai.hud.utils.HaloLogger;
 public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister{
     private static GlDrawSpeedDial mGlDrawSpeedDial = new GlDrawSpeedDial();
 
+    private int SPEED_VIEW_ANIMATION_DURATION = 1000;
     private final float CHILD_VIEW_TOP_FACTOR = 1.3f;
 
+    private ObjectAnimator mSpeedViewAnim = null;
     //view
     private SpeedView mSpeedView = null;
     private TextView mSpeedValueView = null;
@@ -64,12 +66,6 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
         /*if (mSpeedValueView != null) {
             mSpeedValueView.setText(speed+"");
         }*/
-        if (mSpeedView != null) {
-            mSpeedView.setSpeed(speed);
-        }
-    }
-
-    public void updateSpeed(int speed){
         if(mSpeedNumHun==null || mSpeedNumTen==null ||mSpeedNumOne==null){
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateSpeed view is null");
             return;
@@ -87,6 +83,20 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
                 int hun=(speed/100)%10;
                 mSpeedNumHun.setImageResource(mSpeedNumImg[hun]);
             }
+        }
+
+    }
+    public void updateSpeed(int speed){
+        if (mSpeedView != null) {
+            if (mSpeedViewAnim != null && mSpeedViewAnim.isRunning()) {
+                mSpeedViewAnim.pause();
+                mSpeedViewAnim.cancel();
+            }
+            mSpeedViewAnim = ObjectAnimator.ofFloat(mSpeedView, "Speed", mSpeedView.getSpeed(), speed);
+            mSpeedViewAnim.setDuration(SPEED_VIEW_ANIMATION_DURATION);
+            mSpeedViewAnim.setRepeatCount(0);
+            mSpeedViewAnim.start();
+//            mSpeedView.setSpeed(speed);
         }
     }
 

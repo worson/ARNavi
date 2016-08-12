@@ -191,4 +191,8 @@ public class SpeedView extends View {
         mSpeed = speed;
         invalidate();
     }
+
+    public float getSpeed() {
+        return mSpeed;
+    }
 }
