@@ -1296,8 +1296,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (!isPathRepeat(path) || !repeat) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
-            for(int i=0;i<mOriginalPath.size();i++)
-            HaloLogger.logE("helong_debug_____",mOriginalPath.get(i).x+","+mOriginalPath.get(i).y);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
