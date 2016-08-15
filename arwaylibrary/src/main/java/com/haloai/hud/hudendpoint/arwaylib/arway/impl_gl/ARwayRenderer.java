@@ -89,13 +89,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private List<Vector3>       mLeftPath           = new ArrayList<>();
     private List<Vector3>       mRightPath          = new ArrayList<>();
     private List<Double>        mOffsetX            = new ArrayList<>();
-    private List<Double>        mOffsetY            = new ArrayList<>();
-    private List<Double>        mDist2FinalPoint    = new ArrayList<>();
-    private List<Double>        mLength2FinalPoint  = new ArrayList<>();
-    private List<Integer>       mCurIndexes         = new ArrayList<>();
-    private List<Vector3>       mPreChildEndPos     = new ArrayList<>();
-    private List<Vector3>       mChildPathPositions = new ArrayList<>();
-    private List<List<Vector3>> mChildPathes        = new ArrayList<>();
+    private List<Double>        mOffsetY             = new ArrayList<>();
+    private List<Double>        mDist2FinalPoint     = new ArrayList<>();
+    private List<Double>        mLength2FinalPoint   = new ArrayList<>();
+    private List<Integer>       mCurIndexes          = new ArrayList<>();
+    private List<Vector3>       mPreChildEndPos      = new ArrayList<>();
+    private List<Vector3>       mChildPathPositions  = new ArrayList<>();
+    private List<List<Vector3>> mChildPathes         = new ArrayList<>();
+    private List<Vector3>       mLastThroughPosition = new ArrayList<>();
 
     //rajawali about
     private Line3D   mLine3D             = null;
@@ -162,6 +163,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();
 
+//        getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
 
         if (!mIsMyInitScene && mCanInitScene) {
@@ -1693,6 +1695,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mRotateAnims.clear();
         mChildPathPositions.clear();
         mChildPathes.clear();
+        mLastThroughPosition.clear();
         mTranslateAnimIndex = 0;
         mRotateAnimIndex = 0;
         mTotalDistance = 0f;
@@ -1781,19 +1784,26 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mSphere.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mSphere.setMaterial(new Material());
         mSphere.setColor(0xff0000);
-        getCurrentScene().addChild(mSphere);
+        if(ARWayConst.IS_DEBUG_SCENE){
+            getCurrentScene().addChild(mSphere);
+        }
+
 
         mSphere1 = new Sphere(0.05f, 24, 24);
         mSphere1.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mSphere1.setMaterial(new Material());
         mSphere1.setColor(Color.RED);
-        getCurrentScene().addChild(mSphere1);
+        if(ARWayConst.IS_DEBUG_SCENE){
+            getCurrentScene().addChild(mSphere1);
+        }
 
         mSphere2 = new Sphere(0.05f, 24, 24);
         mSphere2.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mSphere2.setMaterial(new Material());
         mSphere2.setColor(0x00ff00);
-        getCurrentScene().addChild(mSphere2);
+        if(ARWayConst.IS_DEBUG_SCENE){
+            getCurrentScene().addChild(mSphere2);
+        }
 
         //        mObject4Chase = new Object3D();
         //        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
@@ -1801,7 +1811,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase = new Sphere(0.0001f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
-        getCurrentScene().addChild(mObject4Chase);
+        if(ARWayConst.IS_DEBUG_SCENE){
+            getCurrentScene().addChild(mObject4Chase);
+        }
 
         //        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
@@ -2020,10 +2032,32 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             mCameraAnim.unregisterListener(this);
         }
+        Object3D chaseObject = mObject4Chase;
+        //观察到原始durqation基本在4000以上,因此设置PERTENSION_TIME的值为1000,也就是使用更长的动画时间来减少停滞的情况发生
+        long duration = endTime - mStartTime + PRETENSION_TIME;
+        Vector3 cameraVector3 = chaseObject.getPosition();
+        Vector3 startPosition = new Vector3(cameraVector3.x, cameraVector3.y, 0);
+        List<Vector3> throughPosition = new ArrayList<>();
+        Vector3 endPosition = new Vector3();
+
+        //上一次的动画未完成
+        if (mTranslateAnims.size() > (mTranslateAnimIndex+1)){
+            if (mLastThroughPosition != null && mLastThroughPosition.size()>mTranslateAnimIndex){
+                int cnt = mLastThroughPosition.size();
+                for (int i = mTranslateAnimIndex+1; i < cnt ; i++) {
+                    throughPosition.add(new Vector3(mLastThroughPosition.get(i)));
+                }
+            }
+        }
+        mLastThroughPosition.clear();
+
         if (mTranslateAnims != null && mTranslateAnims.size() > 0) {
             for (int i = 0; i < mTranslateAnims.size(); i++) {
                 if (mTranslateAnims.get(i).isPlaying()) {
                     mTranslateAnims.get(i).pause();
+                    if(ARWayConst.ENABLE_TEST_LOG){
+                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"*************mTranslateAnims translate anim stop !!!!!!!!!!!******************");
+                    }
                 }
                 mTranslateAnims.get(i).unregisterListener(this);
             }
@@ -2033,19 +2067,21 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             for (int i = 0; i < mRotateAnims.size(); i++) {
                 if (mRotateAnims.get(i).isPlaying()) {
                     mRotateAnims.get(i).pause();
+                    if(ARWayConst.ENABLE_TEST_LOG){
+                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"*************mRotateAnims rotate anim stop !!!!!!!!!!!******************");
+                    }
                 }
                 mRotateAnims.get(i).unregisterListener(this);
             }
             mRotateAnims.clear();
         }
-        //观察到原始durqation基本在4000以上,因此设置PERTENSION_TIME的值为1000,也就是使用更长的动画时间来减少停滞的情况发生
-        long duration = endTime - mStartTime + PRETENSION_TIME;
-        Vector3 cameraVector3 = getCurrentCamera().getPosition();
-        Vector3 startPosition = new Vector3(cameraVector3.x, cameraVector3.y, 0);
-        List<Vector3> throughPosition = new ArrayList<>();
-        Vector3 endPosition = new Vector3();
+
 
         setEndAndThroughPosition(mPath, mLength2FinalPoint, mStartLength, endLength, endPosition, throughPosition);
+        mLastThroughPosition.add(new Vector3(startPosition));
+        mLastThroughPosition.addAll(throughPosition);
+        mLastThroughPosition.add(new Vector3(endPosition));
+
         startAnimation2(startPosition, throughPosition, endPosition, duration);
 
         mRealCurPosition.setAll(endPosition);
@@ -2379,7 +2415,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (mTranslateAnims != null && mTranslateAnims.size() > 0 && mTranslateAnimIndex < mTranslateAnims.size() && mTranslateAnimIndex >= 1) {
             if (animation == mTranslateAnims.get(mTranslateAnimIndex - 1)) {
                 animation.unregisterListener(this);
-                mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
+                if(mCurIndexes.size()>mTranslateAnimIndex){
+                    mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
+                }
                 mTranslateAnims.get(mTranslateAnimIndex++).play();
                 return;
             }

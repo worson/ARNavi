@@ -349,6 +349,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         hideARWay();
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
+        mGlDrawCompass.onNaviStart();
         // TODO: 16/8/2 确保不会切换错乱
         animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
@@ -357,13 +358,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 导航中时界面控制
      */
     private void onNavingView(){
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNavingView called");
         ARWayController.CommonBeanUpdater.setStartOk(true);
 
         mGlDrawSpeedDial.showHide(true);
         mGlDrawRetainDistance.showHide(true);
         mGlDrawNaviInfo.showHide(true);
 
-        mGlDrawCompass.animShowHide(false);
+        mGlDrawCompass.showHide(true);
+//        mGlDrawCompass.animShowHide(false);
         mDrawScene.animShowHide(true);
         animSwitchViewStatus(IDriveStateLister.DriveState.DRIVING);
 
@@ -688,6 +691,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (mGlDrawNaviInfo != null) {
             mGlDrawNaviInfo.doDraw();
         }
+        if (mGlDrawCompass != null) {
+            mGlDrawCompass.doDraw();
+        }
     }
 
     /**
@@ -753,12 +759,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             return;
         }
         updateNaviInfoDate(info);
+        onNaviViewUpdate();
 
         int distance = info.getPathRetainDistance();
         if(arway.isShown() ){
             mRenderer.setRetainDistance(distance);
         }
-        onNaviViewUpdate();
+
 
         if (ARWayConst.ENABLE_LOG_OUT){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
@@ -779,6 +786,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         boolean ready = isNavingReady();
         if((this.mLastIsReady != ready) && mCommonBean.isNavingStart() ){//|| (!arway.isShown())
             if(ready){
+//                mDrawScene.animShowHide(true);
                 onNavingView();
             } else {
                 // FIXME: 16/7/30 导航到最后的时候，距离结点的距离会显示为起点的大小

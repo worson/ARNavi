@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -13,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Region;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -39,18 +41,28 @@ public class ComPassView extends View implements SensorEventListener {
 
     private boolean DEBUG_MODE = false;
 
+
+    private Paint mPaint = new Paint();
+    private Paint mBackgroundPaint = new Paint();
+
+
     //compass draw data
     private long           mStartTime         = 0l;
     private float          mStartComPassValue = 0f;
     private ObjectAnimator mRotateAnim        = null;
+
+    private float mCurrentRotationX = 0;
+    private float mCurrentDegree = 0;
 
     private Bitmap mComPassOutsideRingBitmap = null;
     private Bitmap mComPassDestArrowBitmap   = null;
     private int    mDestDirection            = 0;
 
     private boolean mIsCutCanvas   = false;
+    private int mCurrentCutDegree   = 0;
     private Path    mCanvasCutPath = null;
     private Paint   mTextPaint     = null;
+    private boolean enableDirectionArrow = false;
 
 
     public ComPassView(Context context) {
@@ -82,7 +94,13 @@ public class ComPassView extends View implements SensorEventListener {
         mTextPaint = new Paint();
         mTextPaint.setColor(Color.WHITE);
         mTextPaint.setStrokeWidth(WIDTH*0.1f);
-        setCanvasCut(false,-60,60);
+        enableCut(false);
+        setCutDegree(60);
+
+        mBackgroundPaint.setColor(Color.BLACK);
+        mBackgroundPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+//        enableDirectionArrow(true);
     }
 
     private void initBitmap(Context context, int width, int height) {
@@ -116,23 +134,30 @@ public class ComPassView extends View implements SensorEventListener {
         invalidate();
     }
 
-    public void setCut(int degress){
-        setCanvasCut(mIsCutCanvas,-degress,degress);
+    public void enableDirectionArrow(boolean enableDirectionArrow) {
+        this.enableDirectionArrow = enableDirectionArrow;
+        invalidate();
+    }
+
+    public void setCutDegree(int degree){
+        mCurrentCutDegree =degree;
+        setCanvasCut(mIsCutCanvas,-degree,degree);
     }
 
     private void setCanvasCut(boolean cut,int from,int to) {
         mIsCutCanvas = cut;
-        if(mIsCutCanvas){
-            initCanvasCutPath(from,to);
-        }
+        updateCanvasCutPath(from,to);
         invalidate();
     }
 
+    private void rUpdateCanvasCutPath() {
+        updateCanvasCutPath(-mCurrentCutDegree,mCurrentCutDegree);
+    }
     /**
      * @param from 逆时针起始角
      *
      * */
-    private void initCanvasCutPath(int from, int to) {
+    private void updateCanvasCutPath(int from, int to) {
         PointF lu,ld,ru,rd,c;
         double dfrom =  Math.toRadians(from);
         double dto = Math.toRadians(to);
@@ -152,6 +177,13 @@ public class ComPassView extends View implements SensorEventListener {
         }else {
             mCanvasCutPath.reset();
         }
+        PointF[] rPath = new PointF[]{lu,ld,c,rd,ru};
+        PointF rotationCenter = new PointF(c.x,c.y);
+        for (int i = 0; i <rPath.length ; i++) {
+            PointF rp = rPath[i];
+            rotation(rp,rotationCenter,rp,Math.toRadians(mCurrentDegree));
+        }
+
         mCanvasCutPath.moveTo(lu.x,lu.y);
         PointF[] path = new PointF[]{ld,c,rd,ru};
 
@@ -159,7 +191,7 @@ public class ComPassView extends View implements SensorEventListener {
             PointF p = path[i];
             mCanvasCutPath.lineTo(p.x,p.y);
         }
-//        HaloLogger.logE("sen_debug_c",path[0]+"\t"+path[1]+"\t"+path[2]+"\t"+path[3]+"\t");
+        mCanvasCutPath.addCircle(c.x,c.y,WIDTH*0.225f, Path.Direction.CCW);
 
 //        mCanvasCutPath.reset();
 //        mCanvasCutPath.lineTo(0,0);
@@ -186,33 +218,68 @@ public class ComPassView extends View implements SensorEventListener {
         dest.x = x;
         dest.y = y;
     }
-
-    private Paint mPaint = new Paint();
+    public static void setRotateMatrix4Canvas(float translateX,float translateY,float offsetY,float rotateXDegrees,float rotateYDegrees,float rotateZDegrees, Canvas canvas) {
+        final Camera camera = new Camera();
+//        @SuppressWarnings("deprecation")
+//        final Matrix matrix = canvas.getMatrix();
+        final Matrix matrix = new Matrix();
+        // save the camera status for restore
+        camera.save();
+        // around X rotate N degrees
+        //		camera.rotateX(50);
+        //		camera.translate(0.0f, -100f, 0.0f);
+        camera.rotateX(rotateXDegrees);
+        camera.rotateY(rotateYDegrees);
+        camera.rotateZ(rotateZDegrees);
+        camera.translate(0.0f, offsetY, 0.0f);
+        //x = -500 则为摄像头向右移动
+        //y = 200 则为摄像头向下移动
+        //z = 500 则为摄像头向高处移动
+        // get the matrix from camera
+        camera.getMatrix(matrix);
+        // restore camera from the next time
+        camera.restore();
+//        matrix.preTranslate(-translateX, -translateY);
+        matrix.postTranslate(translateX, translateY);
+        canvas.setMatrix(matrix);
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        HaloLogger.logE("compass_debug","ComPassView onDraw,canvas width is "+canvas.getWidth()+"    ,height is "+canvas.getHeight());
 
-        if(mIsCutCanvas){
+        if(DEBUG_MODE){
+            HaloLogger.logE("compass_debug","ComPassView onDraw,canvas width is "+canvas.getWidth()+"    ,height is "+canvas.getHeight());
+        }
+        PointF center = new PointF(canvas.getWidth() / 2, canvas.getHeight() / 2);
+        Matrix directionmatrix = new Matrix();
+        float degree = -mCurrentDegree;
+        directionmatrix.setRotate(degree,center.x,center.y);
+
+        float bScale = 0.85f;
+        float r = mComPassOutsideRingBitmap.getWidth()/2;
+        canvas.drawCircle(center.x,center.y,r*bScale,mBackgroundPaint);
+        canvas.drawRect(new RectF(r*(1-bScale),center.y,r*(1+bScale),2*r),mBackgroundPaint);
+        /*if(mIsCutCanvas){
             if (mCanvasCutPath != null) {
                 canvas.clipPath(mCanvasCutPath, Region.Op.INTERSECT);
             }
-        }
-        canvas.drawBitmap(mComPassOutsideRingBitmap, 0, 0, null);
+        }*/
+        canvas.drawBitmap(mComPassOutsideRingBitmap, directionmatrix, null);
         Matrix matrix = new Matrix();
-        matrix.setRotate(mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
-        if (!mIsCutCanvas){
-            canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
+        matrix.setRotate(degree+mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
+        if (true || !mIsCutCanvas){
+            if(enableDirectionArrow){
+                canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
+            }
         }
         if (DEBUG_MODE) {
             mPaint.setColor(Color.RED);
             mPaint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,5,mPaint);
         }
+
     }
-
-
 
 
     public void setDestDegree(int degree) {
@@ -238,7 +305,12 @@ public class ComPassView extends View implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-            float degree = (event.values[0]+90)%360;
+            float degree = (event.values[0]-90)%360;
+            mCurrentDegree = degree;
+            if(mIsCutCanvas){
+                rUpdateCanvasCutPath();
+            }
+//            rUpdateRotationX();
             if(false){
                 //first time
                 if (mStartTime == 0) {
@@ -259,12 +331,13 @@ public class ComPassView extends View implements SensorEventListener {
                     mStartComPassValue = -degree;
                 }
             }else {
-                setRotation(-(degree));
+//                setRotation(-(degree));
             }
             if (DEBUG_MODE){
                 HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"compassview onSensorChanged ,degress is "+degree);
             }
         }
+        invalidate();
     }
 
     @Override
