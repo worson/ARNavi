@@ -12,6 +12,8 @@ import android.view.animation.LinearInterpolator;
 
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviPath;
+import com.amap.api.navi.model.AMapNaviStep;
+import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
@@ -26,7 +28,6 @@ import org.rajawali3d.animation.IAnimationListener;
 import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.SplineTranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
-import org.rajawali3d.cameras.NewFirstPersonCamera;
 import org.rajawali3d.curves.CatmullRomCurve3D;
 import org.rajawali3d.curves.CompoundCurve3D;
 import org.rajawali3d.curves.LinearBezierCurve3D;
@@ -70,7 +71,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double CAMERA_OFFSET_X    = 0;
     private static final double CAMERA_OFFSET_Y    = 0;
     private static final double CAMERA_OFFSET_Z    = 0.6;
-    private static final double CAMERA_CUT_OFFSET    = 0.7;
+    private static final double CAMERA_CUT_OFFSET  = 0.7;
     private static final double LOOK_AT_DIST       = 1.3;
     private static final int    INTERSECTION_COUNT = 30;
     private static final double CAMERA_NEAR_PLANE  = 0.5;
@@ -83,6 +84,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //list data
     private List<Vector3>       mPath               = new ArrayList<>();
+    private List<Integer>       mMaybeCenterIndex   = new ArrayList<>();
     private List<Vector3>       mOriginalPath       = new ArrayList<>();
     private List<Vector3>       mLeftPath           = new ArrayList<>();
     private List<Vector3>       mRightPath          = new ArrayList<>();
@@ -181,12 +183,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         super.onRenderSurfaceDestroyed(surface);
     }
 
-    private void updateCamera(ATransformable3D transObject){
+    private void updateCamera(ATransformable3D transObject) {
         Camera camera = getCurrentCamera();
         Vector3 location = transObject.getPosition();
-        Vector3 position = new Vector3(location.x,location.y,CAMERA_OFFSET_Z);
-        Vector3 lookat = new Vector3(0,0,0);
-        findCameraLookatAndPosition(location,transObject.getRotZ(),LOOK_AT_DIST,position,lookat);
+        Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
+        Vector3 lookat = new Vector3(0, 0, 0);
+        findCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
         camera.setPosition(position);
         camera.setLookAt(lookat);
 
@@ -195,24 +197,24 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     }
 
-    private void findCameraLookatAndPosition(Vector3 location,double yaw,double dist,Vector3 position,Vector3 lookat){
-        if (location == null || position == null ||lookat == null) {
+    private void findCameraLookatAndPosition(Vector3 location, double yaw, double dist, Vector3 position, Vector3 lookat) {
+        if (location == null || position == null || lookat == null) {
             return;
         }
 
         final double LOOK_OFFSET = dist;
         final double CAMERA_OFFSET = -CAMERA_CUT_OFFSET;
-        double offsetY=0,offsetX=0;
+        double offsetY = 0, offsetX = 0;
         double rYaw = yaw;
         Vector3 cPos = new Vector3(location);
 
-        offsetX = LOOK_OFFSET*Math.sin(rYaw);
-        offsetY = LOOK_OFFSET*Math.cos(rYaw);
+        offsetX = LOOK_OFFSET * Math.sin(rYaw);
+        offsetY = LOOK_OFFSET * Math.cos(rYaw);
         lookat.x = cPos.x + offsetX;
         lookat.y = cPos.y + offsetY;
 
-        offsetX = CAMERA_OFFSET*Math.sin(rYaw);
-        offsetY = CAMERA_OFFSET*Math.cos(rYaw);
+        offsetX = CAMERA_OFFSET * Math.sin(rYaw);
+        offsetY = CAMERA_OFFSET * Math.cos(rYaw);
 
         position.x = cPos.x + offsetX;
         position.y = cPos.y + offsetY;
@@ -432,7 +434,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        }
 
         //        HaloLogger.logE("helong_fix____", "lookAt:" + lookAt);
-//        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
+        //        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
         ////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
         //
         //        //        rotX = 180/Math.PI*qt.getRoll();
@@ -443,7 +445,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotY:" + rotY);
         //
         //        //将设置好的lookAt通过计算填充到orientation上
-//        getCurrentCamera().calculateModelMatrix(null);
+        //        getCurrentCamera().calculateModelMatrix(null);
 
         getCurrentCamera().getOrientation(qt);
 
@@ -1291,10 +1293,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             path.add(new Vector3(openGL.x, -openGL.y, 0));
         }
 
+        List<AMapNaviStep> steps = naviPath.getSteps();
+        int centerStartIndex = 0;
+        List<Integer> maybeCenterIndex = new ArrayList<>();
+        maybeCenterIndex.clear();
+        for (int i = 0; i < naviPath.getStepsCount(); i++) {
+            NaviLatLng naviLatLng = steps.get(i).getCoords().get(steps.get(i).getCoords().size() - 1);
+            for (int j = centerStartIndex; j < naviPath.getCoordList().size(); j++) {
+                if (naviPath.getCoordList().get(j).equals(naviLatLng)) {
+                    maybeCenterIndex.add(j);
+                    centerStartIndex = j + 1;
+                    break;
+                }
+            }
+        }
+
         if (!isPathRepeat(path) || !repeat) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
-            setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
+            setPathAndCalcData(mOriginalPath, maybeCenterIndex, naviPath.getAllLength());
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
         }
@@ -1324,19 +1341,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 设置导航的路线以及路线总长度(单位为米)
      *
      * @param path
+     * @param maybeCenterIndex
      * @param allLength
      */
-    private void setPathAndCalcData(List<Vector3> path, double allLength) {
+    private void setPathAndCalcData(List<Vector3> path, List<Integer> maybeCenterIndex, double allLength) {
         clearAllData();
-        //此处由于tempPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
+        mMaybeCenterIndex.addAll(maybeCenterIndex);
+        //此处由于mPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
+        int alreadyRemoveCount = 0;
         for (int i = 0; i < path.size(); i++) {
             Vector3 v = path.get(i);
             if (!containPoint(mPath, v)) {
                 mPath.add(new Vector3(v));
+            }else{
+                updateCenterOrCenterPrePoint(mMaybeCenterIndex, i-alreadyRemoveCount);
+                alreadyRemoveCount++;
             }
         }
-
-        // TODO: 2016/7/13 path 数据有问题,需要进行特殊处理(绘制文字等界面提示)
         if (mPath.size() < 2) {
             mPath.clear();
             return;
@@ -1349,10 +1370,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         for (int i = 0; i < mPath.size() - 2; i++) {
             int distance = (int) (MathUtils.calculateDistance(
                     mPath.get(i).x, mPath.get(i).y, mPath.get(i + 1).x, mPath.get(i + 1).y) * tempBigTime4Calc);
-            HaloLogger.logE("helong_debug", "dist:" + distance);
+            boolean maybeCenterOrPre = maybeCenterOrCenterPrePoint(mMaybeCenterIndex, i + 1);
             //if the distance 30 time is less than 30,remove second point.
-            if (distance <= 300) {
+            if (!maybeCenterOrPre && distance <= 300) {
                 mPath.remove(i + 1);
+                updateCenterOrCenterPrePoint(mMaybeCenterIndex, i + 1);
                 i--;
             }
         }
@@ -1493,12 +1515,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         catmull.addPoint(new Vector3(mPath.get(mPath.size() - 1)));
         catmull.reparametrizeForUniformDistribution(50);
         mPath.clear();
-        for (int i = 0; i < pathLength * CURVE_TIME; i++) {
+        for (int i = 0; i <= pathLength * CURVE_TIME; i++) {
             Vector3 pos = new Vector3();
             catmull.calculatePoint(pos, (1.0 * i) / (1.0 * pathLength * CURVE_TIME));
             mPath.add(new Vector3(pos));
         }
-        HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
+        for (int i = 0; i < mMaybeCenterIndex.size(); i++) {
+            // FIXME: 2016/8/12
+            mMaybeCenterIndex.set(i, mMaybeCenterIndex.get(i) * CURVE_TIME);
+        }
+        HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
 
         //rotate path with matrix
         double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
@@ -1618,10 +1644,44 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     /**
+     * 更新保存中心点的数组(当Path中元素被删除时,对应的某些元素角标会变化)
+     *
+     * @param maybeCenterIndex
+     * @param index
+     */
+    private void updateCenterOrCenterPrePoint(List<Integer> maybeCenterIndex, int index) {
+        for (int i = 0; i < maybeCenterIndex.size(); i++) {
+            if (maybeCenterIndex.get(i) > index) {
+                for (int j = i; j < maybeCenterIndex.size(); j++) {
+                    maybeCenterIndex.set(j, maybeCenterIndex.get(j) - 1);
+                }
+                return;
+            }
+        }
+    }
+
+    /**
+     * 判断Path中的index是否为一个中心点或者中心点的前一个点的坐标
+     *
+     * @param maybeCenterIndex
+     * @param index
+     * @return
+     */
+    private boolean maybeCenterOrCenterPrePoint(List<Integer> maybeCenterIndex, int index) {
+        for (int i = 0; i < maybeCenterIndex.size(); i++) {
+            if (index == maybeCenterIndex.get(i) || index == maybeCenterIndex.get(i) - 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * clear data about draw arway!
      */
     private void clearAllData() {
         mPath.clear();
+        mMaybeCenterIndex.clear();
         mLeftPath.clear();
         mRightPath.clear();
         mOffsetX.clear();
@@ -1673,7 +1733,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @return true表示包含, false表示不包含
      */
     private boolean containPoint(List<Vector3> path, Vector3 v) {
-        for (int i = 0; i < path.size(); i++) {
+        for (int i = path.size() - 1; i >= 0; i--) {
             if (path.get(i).equals(v)) {
                 return true;
             }
@@ -1743,20 +1803,33 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase.setMaterial(new Material());
         getCurrentScene().addChild(mObject4Chase);
 
-        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
-                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
-        ), mObject4Chase);
+        //        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
+        //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
+        //        ), mObject4Chase);
         //        ChaseCamera firstPersonCamera = new ChaseCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
         //        ), mObject4Chase);
         //        NewChaseCamera firstPersonCamera = new NewChaseCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
         //        ), mObject4Chase);
-//        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
+        //        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
 
         getCurrentCamera().setUpAxis(Vector3.Axis.Z);
         for (int i = 0; i < mChildPathPositions.size(); i++) {
             insertPlane(mChildPathes.get(i), mChildPathPositions.get(i), ROAD_WIDTH, 1);
+        }
+
+        for (int i = 0; i < mMaybeCenterIndex.size(); i++) {
+            Sphere sp = new Sphere(0.05f, 24, 24);
+            sp.setMaterial(new Material());
+            sp.setColor(0xff00ff);
+            sp.setPosition(new Vector3(mPath.get(mMaybeCenterIndex.get(i) - 1)));
+            getCurrentScene().addChild(sp);
+            sp = new Sphere(0.05f, 24, 24);
+            sp.setMaterial(new Material());
+            sp.setColor(0x00ffff);
+            sp.setPosition(new Vector3(mPath.get(mMaybeCenterIndex.get(i))));
+            getCurrentScene().addChild(sp);
         }
 
         //        Material maHo = new Material();

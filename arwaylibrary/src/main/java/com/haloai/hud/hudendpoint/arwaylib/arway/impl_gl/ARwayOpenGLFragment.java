@@ -708,7 +708,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         this.mAMapNavi = aMapNavi;
         Projection projection = mAmapNaviView.getMap().getProjection();
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
-        HaloLogger.logE("helong_debug__","step size:"+naviPath.getStepsCount());
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
