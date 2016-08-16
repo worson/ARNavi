@@ -225,6 +225,12 @@
                 android:paddingBottom="1dp"
                 android:text="往西\n行驶"
                 android:textColor="#ffffff"/>
+            <com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView
+                android:id="@+id/compass_ouletview"
+                android:layout_centerInParent="true"
+                android:layout_width="@dimen/compass_pause_width"
+                android:layout_height="@dimen/compass_pause_height">
+            </com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView>
         </RelativeLayout>
 
     </RelativeLayout>

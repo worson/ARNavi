@@ -28,6 +28,9 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.utils.HaloLogger;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * author       : 龙;
  * date         : 2016/7/6;
@@ -40,6 +43,7 @@ public class ComPassView extends View implements SensorEventListener {
     private int HEIGHT = 0;
 
     private boolean DEBUG_MODE = false;
+    private boolean DISPLAY_ARROW = false;
 
 
     private Paint mPaint = new Paint();
@@ -64,6 +68,11 @@ public class ComPassView extends View implements SensorEventListener {
     private Paint   mTextPaint     = null;
     private boolean enableDirectionArrow = false;
 
+    private List<CompassLister> mCompassListers = new ArrayList<>();
+
+    public interface CompassLister{
+        public void degreeChanged(float degree);
+    }
 
     public ComPassView(Context context) {
         super(context);
@@ -100,14 +109,17 @@ public class ComPassView extends View implements SensorEventListener {
         mBackgroundPaint.setColor(Color.BLACK);
         mBackgroundPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
+        mCompassListers.clear();
+
 //        enableDirectionArrow(true);
     }
 
     private void initBitmap(Context context, int width, int height) {
         WIDTH = width;
         HEIGHT = height;
-        mComPassOutsideRingBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.compass_outside_ring2);
-        Bitmap target = Bitmap.createBitmap(width, height, mComPassOutsideRingBitmap.getConfig());
+        float scale = 1f;
+        mComPassOutsideRingBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.compass_outside_ring_v3);
+        Bitmap target = Bitmap.createBitmap((int)(width*scale), (int)(height*scale), mComPassOutsideRingBitmap.getConfig());
         Canvas temp_canvas = new Canvas(target);
         temp_canvas.drawBitmap(mComPassOutsideRingBitmap, null, new Rect(0, 0, target.getWidth(), target.getHeight()), null);
         mComPassOutsideRingBitmap = target;
@@ -129,6 +141,12 @@ public class ComPassView extends View implements SensorEventListener {
         sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_FASTEST);
     }
 
+    public void addLister(CompassLister lister){
+        if(mCompassListers.contains(lister)){
+            return;
+        }
+        mCompassListers.add(lister);
+    }
     public void enableCut(boolean cut){
         mIsCutCanvas = cut;
         invalidate();
@@ -136,7 +154,7 @@ public class ComPassView extends View implements SensorEventListener {
 
     public void enableDirectionArrow(boolean enableDirectionArrow) {
         this.enableDirectionArrow = enableDirectionArrow;
-        invalidate();
+//        invalidate();
     }
 
     public void setCutDegree(int degree){
@@ -268,7 +286,7 @@ public class ComPassView extends View implements SensorEventListener {
         canvas.drawBitmap(mComPassOutsideRingBitmap, directionmatrix, null);
         Matrix matrix = new Matrix();
         matrix.setRotate(degree+mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
-        if (true || !mIsCutCanvas){
+        if (DISPLAY_ARROW || !mIsCutCanvas){
             if(enableDirectionArrow){
                 canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
             }
@@ -276,7 +294,7 @@ public class ComPassView extends View implements SensorEventListener {
         if (DEBUG_MODE) {
             mPaint.setColor(Color.RED);
             mPaint.setStyle(Paint.Style.FILL);
-            canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,5,mPaint);
+            canvas.drawCircle(canvas.getWidth() / 2, canvas.getHeight() / 2,canvas.getHeight()*0.03f,mPaint);
         }
 
     }
@@ -305,7 +323,12 @@ public class ComPassView extends View implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-            float degree = (event.values[0]-90)%360;
+            float degree = (event.values[0]-90+360)%360;
+            for(CompassLister compassLister : mCompassListers){
+                if (compassLister != null) {
+                    compassLister.degreeChanged(degree);
+                }
+            }
             mCurrentDegree = degree;
             if(mIsCutCanvas){
                 rUpdateCanvasCutPath();
