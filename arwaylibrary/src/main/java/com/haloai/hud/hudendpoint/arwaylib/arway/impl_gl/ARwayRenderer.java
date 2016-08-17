@@ -1365,6 +1365,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param allLength
      */
     private void setPathAndCalcData(List<Vector3> path, double allLength) {
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"setPathAndCalcData start");
         clearAllData();
         //此处由于mPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
         for (int i = 0; i < path.size(); i++) {
@@ -1682,6 +1683,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCanInitScene = false;
         mObject4Chase = null;
         System.gc();
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"setPathAndCalcData end");
     }
 
     /**
