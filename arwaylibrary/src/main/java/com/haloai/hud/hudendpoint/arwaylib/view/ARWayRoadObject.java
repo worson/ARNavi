@@ -6,6 +6,8 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
@@ -23,12 +25,13 @@ public class ARWayRoadObject extends Object3D {
     private List<Vector3> mRoadRightSide;
     private int mCountOfPlanes;
     private int mCountOfVerties;
+    private static Material mMaterial= new Material();
+    private static Boolean mIsMaterialAddTexture = false;
 
-    public ARWayRoadObject(List<Vector3> roadPath, double leftWidth, double rightWidth) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
+    public ARWayRoadObject(List<Vector3> roadPath, double leftWidth, double rightWidth, Texture route_main) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
         super();
-        Material material = new Material();
-        material.enableTime(true);
-        setMaterial(material);
+        mMaterial.enableTime(true);
+        setMaterial(mMaterial);
 
         LEFT_ROAD_WIDTH = leftWidth;
         RIGHT_ROAD_WIDTH = rightWidth;
@@ -41,11 +44,28 @@ public class ARWayRoadObject extends Object3D {
         mCountOfPlanes = mRoadShapePoints.size() - 1;
         mCountOfVerties = mCountOfPlanes * 4;
 
+        if(!mIsMaterialAddTexture){
+            mMaterial.setColor(0);
+            try {
+                mMaterial.addTexture(route_main);
+            } catch (ATexture.TextureException e) {
+                e.printStackTrace();
+            }
+            mIsMaterialAddTexture = true;
+        }
+
         generateAllVerties();
     }
 
-    public ARWayRoadObject(List<Vector3> roadPath, double width){
-        this(roadPath, width, width);
+    /**
+     * 在试图释放ARWayObject对象前,需要调用该方法,否则MaterialManager的单例对象会继续持有ARWayObject的Material对象
+     * 导致在运行时间增加后,对内存的消耗逐渐增大
+     */
+    public void removeMaterial(){
+        //MaterialManager.getInstance().removeMaterial(mMaterial);
+        //MaterialManager.getInstance().taskRemove(mMaterial);
+        //mMaterial = null;
+        //System.gc();
     }
 
     public List<Vector3> getmRoadShapePoints() {
@@ -139,4 +159,10 @@ public class ARWayRoadObject extends Object3D {
         setBlendingEnabled(false);
 
     }
+
+    /*@Override
+    public void destroy() {
+        super.destroy();
+
+    }*/
 }

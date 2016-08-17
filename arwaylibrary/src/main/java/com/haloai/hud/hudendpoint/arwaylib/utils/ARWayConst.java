@@ -22,6 +22,6 @@ public class ARWayConst {
     //NAVING
     public static final int NAVI_CAR_START_DISTANCE = 50;
 
-    public static final boolean NAVI_ENABLE_RESTRICT_DISTANCE  = true;
+    public static final boolean NAVI_ENABLE_RESTRICT_DISTANCE  = false;
     public static final int     NAVI_MAX_RESTRICT_POINT_NUMBER = 5000;
 }

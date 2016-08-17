@@ -285,6 +285,9 @@ public class MathUtils {
      * 根据一条线获取该先左右两侧点的集合
      */
     public static void points2path(List<Vector3> lineLeft, List<Vector3> lineRight, List<Vector3> prePoints, double leftPathWidth, double rightPathWidth) {
+        if(prePoints.size()<2){
+            return;
+        }
         /**
          A(a,b) B(m,n) BC = L
 

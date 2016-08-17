@@ -233,6 +233,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if(mNeedUpdatePath ) {//&& mCameraChangeFinish
             if (mAMapNavi != null) {
                 LogI(ARWayConst.INDICATE_LOG_TAG," onMapLoaded updatePath called");
+                HaloLogger.logE("helong_debug","updatePath pro!=null");
                 updatePath(mAMapNavi);
 
             }else {
@@ -499,7 +500,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         onNavingStopView();
 
-
+        if(mRenderer!=null){
+            mRenderer.onNaviStop();
+            //            SystemClock.sleep(200);
+        }
     }
 
     /**
@@ -512,8 +516,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         ARWayController.CommonBeanUpdater.setNavingStart(false);
 
         onNavingEndView();
-
-        mRenderer.arriveDestination();
+        if(mRenderer!=null) {
+            mRenderer.arriveDestination();
+            //            SystemClock.sleep(200);
+        }
     }
 
     /**
@@ -702,11 +708,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @return
      * 0 设置成功
      * -1 AMapNavi 为空
-     * -2 路径太长
+     * -2 路径太长(dead)
      * -3 renderer出错
      */
     public int updatePath(AMapNavi aMapNavi) {
         int result = -1;
+        /*if(true){
+            return result;
+        }*/
         if (aMapNavi == null) {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updatePath,aMapNavi is null ");
             return result;
@@ -714,6 +723,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         this.mAMapNavi = aMapNavi;
         Projection projection = mAmapNaviView.getMap().getProjection();
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
+        HaloLogger.logE("helong_debug","updatePath");
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
@@ -762,10 +772,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         onNaviViewUpdate();
 
         int distance = info.getPathRetainDistance();
-        if(arway.isShown() ){
+        if(arway.isShown()){
             mRenderer.setRetainDistance(distance);
         }
-
 
         if (ARWayConst.ENABLE_LOG_OUT){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
@@ -855,6 +864,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void hideARWay() {
 //        mRenderer.pause();
         if (arway != null) {
+//            ViewGroup vg = (ViewGroup) arway.getParent();
+//            vg.removeView(arway);
             arway.setVisibility(View.INVISIBLE);
         }
 
