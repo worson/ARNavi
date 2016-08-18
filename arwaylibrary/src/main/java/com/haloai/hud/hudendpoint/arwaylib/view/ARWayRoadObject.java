@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.view;
 
 import android.graphics.Color;
 
+import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 
 import org.rajawali3d.Object3D;
@@ -11,12 +12,18 @@ import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 15/7/2016.
  */
 public class ARWayRoadObject extends Object3D {
+    public static String ARWAY_ROAD_TYPE_MAIN = "route_main";
+    public static String ARWAY_ROAD_TYPE_BRANCH = "route_branch";
+    public static String ARWAY_ROAD_TYPE_BRANCH_BLACK = "route_branch_black";
+
     private static double LEFT_ROAD_WIDTH = 0.7;
     private static double RIGHT_ROAD_WIDTH = 0.7;
 
@@ -25,13 +32,18 @@ public class ARWayRoadObject extends Object3D {
     private List<Vector3> mRoadRightSide;
     private int mCountOfPlanes;
     private int mCountOfVerties;
-    private static Material mMaterial= new Material();
-    private static Boolean mIsMaterialAddTexture = false;
+    private static Map<String, Material> sMaterialMap;
 
-    public ARWayRoadObject(List<Vector3> roadPath, double leftWidth, double rightWidth, Texture route_main) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
+    public ARWayRoadObject(List<Vector3> roadPath, double leftWidth, double rightWidth, String roadType) {//, List<Vector3> roadLeftSide, List<Vector3> roadRightSide) {
         super();
-        mMaterial.enableTime(true);
-        setMaterial(mMaterial);
+
+        if (sMaterialMap == null) {
+            sMaterialMap = new HashMap<>();
+            addMaterialViaRoadType(ARWAY_ROAD_TYPE_MAIN, R.drawable.route_new_line);
+            addMaterialViaRoadType(ARWAY_ROAD_TYPE_BRANCH, R.drawable.route_new_branch);
+            addMaterialViaRoadType(ARWAY_ROAD_TYPE_BRANCH_BLACK, R.drawable.route_new_red);
+        }
+        setMaterial(sMaterialMap.get(roadType));
 
         LEFT_ROAD_WIDTH = leftWidth;
         RIGHT_ROAD_WIDTH = rightWidth;
@@ -44,17 +56,20 @@ public class ARWayRoadObject extends Object3D {
         mCountOfPlanes = mRoadShapePoints.size() - 1;
         mCountOfVerties = mCountOfPlanes * 4;
 
-        if(!mIsMaterialAddTexture){
-            mMaterial.setColor(0);
-            try {
-                mMaterial.addTexture(route_main);
-            } catch (ATexture.TextureException e) {
-                e.printStackTrace();
-            }
-            mIsMaterialAddTexture = true;
-        }
-
         generateAllVerties();
+    }
+
+    private void addMaterialViaRoadType(String roadType, int textureResourceId) {
+        Material material = new Material();
+        material.setColor(0);
+        material.enableTime(true);
+        Texture texture = new Texture(roadType, textureResourceId);
+        try {
+            material.addTexture(texture);
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+        sMaterialMap.put(roadType, material);
     }
 
     /**

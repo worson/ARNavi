@@ -11,7 +11,6 @@ import android.view.animation.LinearInterpolator;
 
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviPath;
-import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -1940,11 +1939,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         if (mBranchBlackTexture == null) {
             mBranchBlackTexture = new Texture("route_branch_black", R.drawable.route_new_red);
-        }*/
+        }
         if (mMainRoadTexture == null) {
             mMainRoadTexture = new Texture("route_main", R.drawable.route_new_line);
-        }
-        ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, mMainRoadTexture);
+        }*/
+        String roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_MAIN;
+        if (type == 2)
+            roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH;
+        else if (type == 3)
+            roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH_BLACK;
+        ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         /*Material material = arWayRoadObject.getMaterial();
         material.setColor(0);
         try {
