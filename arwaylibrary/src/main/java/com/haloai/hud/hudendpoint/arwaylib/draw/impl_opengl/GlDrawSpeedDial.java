@@ -20,6 +20,9 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.hudendpoint.arwaylib.view.SpeedView;
 import com.haloai.hud.utils.HaloLogger;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by wangshengxing on 16/7/15.
  */
@@ -34,6 +37,9 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     private SpeedView mSpeedView = null;
     private TextView mSpeedValueView = null;
     private TextView mSpeedScaleView = null;
+
+    private List<ObjectAnimator> mDrivingStateAnimators = new LinkedList<>();
+    private List<ObjectAnimator> mPauseStateAnimators = new LinkedList<>();
 
     private ViewGroup mDigitalSpeedViewgroup=null;
     private ImageView mSpeedNumHun;
@@ -172,85 +178,94 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
 
         }
     }
-    
+    public void changeDriveState(DriveState state) {
+        changeDriveState(state,VIEW_ANIMATION_DURATION);
+    }
 
-    @Override
-    public void changeDriveState(IDriveStateLister.DriveState state) {
+    public void changeDriveState(IDriveStateLister.DriveState state,int duration) {
         if (mViewParent != null) {
             VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
             VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
         }
 
+        List<ObjectAnimator> animators = null;
+        ObjectAnimator animator = null;
+
         switch (state){
             case DRIVING:
-                if (mSpeedView != null) {
-                    ObjectAnimator animator = null;
+                animators = mDrivingStateAnimators;
+                if (animators != null && animators.size()<1) {
+                    if (mSpeedView != null) {
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", 0, VIEW_ROTATION_DEGREES);
+                        animator.setInterpolator(new DecelerateInterpolator(1));
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", 0, VIEW_ROTATION_DEGREES);
-                    animator.setInterpolator(new DecelerateInterpolator(1));
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
-
-                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
-
-
-
+                        animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
+                    }
                 }
                 break;
             case PAUSE:
-                if (mSpeedView != null) {
-                    ObjectAnimator animator = null;
+                animators = mPauseStateAnimators;
+                if (animators != null && animators.size()<1) {
+                    if (mSpeedView != null) {
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", VIEW_ROTATION_DEGREES,0);
+                        animator.setInterpolator(new DecelerateInterpolator(4));
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "RotationX", VIEW_ROTATION_DEGREES,0);
-                    animator.setInterpolator(new DecelerateInterpolator(4));
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
+                        animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
 
-                    animator = ObjectAnimator.ofFloat(mSpeedView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
-
-
-                    animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY",VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR, VIEW_TOP_NOT_DRIVING_Y);
-                    animator.setInterpolator(new LinearInterpolator());
-                    animator.setDuration(VIEW_ANIMATION_DURATION);
-                    animator.start();
-
-
-
+                        animator = ObjectAnimator.ofFloat(mDigitalSpeedViewgroup, "TranslationY",VIEW_TOP_DRIVING_Y*CHILD_VIEW_TOP_FACTOR, VIEW_TOP_NOT_DRIVING_Y);
+                        animator.setInterpolator(new LinearInterpolator());
+                        animator.setDuration(duration);
+                        animators.add(animator);
+                    }
                 }
+
                 break;
             default:
                 break;
+        }
+        if (animators != null) {
+            for (ObjectAnimator a: animators){
+                if(a.isStarted()){
+                    a.cancel();
+                }
+                a.setDuration(duration);
+                a.start();
+            }
         }
     }
 

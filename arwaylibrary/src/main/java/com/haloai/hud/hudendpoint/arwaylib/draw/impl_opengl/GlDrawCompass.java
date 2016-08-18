@@ -21,6 +21,9 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
 import com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by wangshengxing on 16/7/15.
  */
@@ -48,6 +51,9 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
     private  ComPassView       mComPassView       = null;
     private CompassOutletView mCompassOutletView = null;
     private  TextView          mDirectionTextView = null;
+
+    private List<ObjectAnimator> mDrivingStateAnimators = new LinkedList<>();
+    private List<ObjectAnimator> mPauseStateAnimators   = new LinkedList<>();
 
     @Override
     protected void initLayout(Context context, ViewGroup parent, View view) {
@@ -149,14 +155,19 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             }
         }
     }
-    @Override
     public void changeDriveState(DriveState state) {
-        ObjectAnimator animator = null;
+        changeDriveState(state,VIEW_ANIMATION_DURATION);
+    }
+
+
+    public void changeDriveState(DriveState state,int duration) {
         if (mViewParent != null) {
             VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
             VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
         }
         View animView = mComPassViewGroup;
+        List<ObjectAnimator> animators = null;
+        ObjectAnimator animator = null;
         switch (state){
             case DRIVING:
 //                animShowHide(false);
@@ -165,26 +176,30 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
                     mCompassOutletView.enableSloping(true);
                 }
                 onNaving();
-                animator = ObjectAnimator.ofFloat(animView, "RotationX", 0, VIEW_ROTATION_DEGREES);
-                animator.setInterpolator(new DecelerateInterpolator(1));
-                animator.setDuration((int)(VIEW_ANIMATION_DURATION*0.66f));
-                animator.setRepeatCount(0);
-                animator.start();
+                animators = mDrivingStateAnimators;
+                if (animators != null && animators.size()<1) {
+                    animator = ObjectAnimator.ofFloat(animView, "RotationX", 0, VIEW_ROTATION_DEGREES);
+                    animator.setInterpolator(new DecelerateInterpolator(1));
+                    animator.setDuration((int)(duration*0.66f));
+                    animator.setRepeatCount(0);
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration((int)(VIEW_ANIMATION_DURATION*0.66f));
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "TranslationY", VIEW_TOP_NOT_DRIVING_Y, VIEW_TOP_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration((int)(duration*0.66f));
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration((int)(VIEW_ANIMATION_DURATION*0.66f));
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "ScaleX", 1, VIEW_GOAL_SCALE_X);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration((int)(duration*0.66f));
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration((int)(VIEW_ANIMATION_DURATION*0.66f));
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "ScaleY", 1, VIEW_GOAL_SCALE_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration((int)(duration*0.66f));
+                    animators.add(animator);
+                }
+
 
 
                 break;
@@ -194,29 +209,42 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
                 if (mCompassOutletView != null) {
                     mCompassOutletView.enableSloping(false);
                 }
-                animator = ObjectAnimator.ofFloat(animView, "RotationX", VIEW_ROTATION_DEGREES, 0);
-                animator.setInterpolator(new DecelerateInterpolator(1));
-                animator.setDuration(VIEW_ANIMATION_DURATION);
-                animator.setRepeatCount(0);
-                animator.start();
+                animators = mPauseStateAnimators;
+                if (animators != null && animators.size()<1) {
+                    animator = ObjectAnimator.ofFloat(animView, "RotationX", VIEW_ROTATION_DEGREES, 0);
+                    animator.setInterpolator(new DecelerateInterpolator(1));
+                    animator.setDuration(duration);
+                    animator.setRepeatCount(0);
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration(VIEW_ANIMATION_DURATION);
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "TranslationY",VIEW_TOP_DRIVING_Y, VIEW_TOP_NOT_DRIVING_Y);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(duration);
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration(VIEW_ANIMATION_DURATION);
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "ScaleX", VIEW_GOAL_SCALE_X, 1);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(duration);
+                    animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(animView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
-                animator.setInterpolator(new LinearInterpolator());
-                animator.setDuration(VIEW_ANIMATION_DURATION);
-                animator.start();
+                    animator = ObjectAnimator.ofFloat(animView, "ScaleY", VIEW_GOAL_SCALE_Y, 1);
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setDuration(duration);
+                    animators.add(animator);
+                }
+
                 break;
             default:
                 break;
+        }
+        if (animators != null) {
+            for (ObjectAnimator a: animators){
+                if(a.isStarted()){
+                    a.cancel();
+                }
+                a.setDuration(duration);
+                a.start();
+            }
         }
     }
 

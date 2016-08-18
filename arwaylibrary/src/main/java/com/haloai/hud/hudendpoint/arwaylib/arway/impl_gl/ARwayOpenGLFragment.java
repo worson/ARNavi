@@ -351,8 +351,22 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
         mGlDrawCompass.onNaviStart();
+        quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
+
+
+//        animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
+    }
+
+    /***
+     * 导航开始时界面控制
+     */
+    private void prepareNavingStartView(){
+        hideARWay();
+        mDrawScene.animShowHide(false);
+        mGlDrawCompass.showHide(true);
+        mGlDrawCompass.onNaviStart();
         // TODO: 16/8/2 确保不会切换错乱
-        animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
 
     /***
@@ -483,6 +497,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         ARWayController.CommonBeanUpdater.setNavingStart(true);
 
+    }
+    /**
+     * 开始导航前准备操作
+     */
+    public void prepareARWayStart() {
+        if (ARWayConst.ENABLE_TEST_LOG){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"prepareARWayStart called ");
+        }
+        prepareNavingStartView();
+        resetNaviStatus();
     }
 
     /**
@@ -968,6 +992,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         GlDrawRetainDistance.getInstance().changeDriveState(state);
         GlDrawCompass.getInstance().changeDriveState(state);
         GlDrawSpeedDial.getInstance().changeDriveState(state);
+
+    }
+
+    public void quickSwitchViewStatus(IDriveStateLister.DriveState state){
+        int duration = 1;
+        GlDrawRetainDistance.getInstance().changeDriveState(state,duration);
+        GlDrawCompass.getInstance().changeDriveState(state,duration);
+        GlDrawSpeedDial.getInstance().changeDriveState(state,duration);
 
     }
 
