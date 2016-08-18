@@ -70,6 +70,11 @@ public class ComPassView extends View implements SensorEventListener {
 
     private List<CompassLister> mCompassListers = new ArrayList<>();
 
+    private float BACKGROUND_CIRCLE_FATOR = 0.88f;
+    private Matrix mDirectionmatrix = new Matrix();
+    private Matrix mArrorMatrix = new Matrix();
+
+
     public interface CompassLister{
         public void degreeChanged(float degree);
     }
@@ -138,7 +143,7 @@ public class ComPassView extends View implements SensorEventListener {
         // 注册传感器(Sensor.TYPE_ORIENTATION(方向传感器);SENSOR_DELAY_FASTEST(0毫秒延迟);
         // SENSOR_DELAY_GAME(20,000毫秒延迟)、SENSOR_DELAY_UI(60,000毫秒延迟))
         // 如果不采用SENSOR_DELAY_FASTEST的话,在0度和360左右之间做动画会有反向转一大圈的感觉
-        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_FASTEST);
+        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
     }
 
     public void addLister(CompassLister lister){
@@ -270,25 +275,29 @@ public class ComPassView extends View implements SensorEventListener {
             HaloLogger.logE("compass_debug","ComPassView onDraw,canvas width is "+canvas.getWidth()+"    ,height is "+canvas.getHeight());
         }
         PointF center = new PointF(canvas.getWidth() / 2, canvas.getHeight() / 2);
-        Matrix directionmatrix = new Matrix();
-        float degree = -mCurrentDegree;
-        directionmatrix.setRotate(degree,center.x,center.y);
+        mDirectionmatrix.reset();
 
-        float bScale = 0.85f;
+        float degree = -mCurrentDegree;
+        mDirectionmatrix.setRotate(degree,center.x,center.y);
+
+
+
         float r = mComPassOutsideRingBitmap.getWidth()/2;
-        canvas.drawCircle(center.x,center.y,r*bScale,mBackgroundPaint);
-        canvas.drawRect(new RectF(r*(1-bScale),center.y,r*(1+bScale),2*r),mBackgroundPaint);
+        canvas.drawCircle(center.x,center.y,r*BACKGROUND_CIRCLE_FATOR,mBackgroundPaint);
+//        canvas.drawRect(new RectF(r*(1-bScale),center.y,r*(1+bScale),2*r),mBackgroundPaint);
+
         /*if(mIsCutCanvas){
             if (mCanvasCutPath != null) {
                 canvas.clipPath(mCanvasCutPath, Region.Op.INTERSECT);
             }
         }*/
-        canvas.drawBitmap(mComPassOutsideRingBitmap, directionmatrix, null);
-        Matrix matrix = new Matrix();
-        matrix.setRotate(degree+mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
+        canvas.drawBitmap(mComPassOutsideRingBitmap, mDirectionmatrix, null);
+
         if (DISPLAY_ARROW || !mIsCutCanvas){
             if(enableDirectionArrow){
-                canvas.drawBitmap(mComPassDestArrowBitmap, matrix, null);
+                mArrorMatrix.reset();
+                mArrorMatrix.setRotate(degree+mDestDirection, canvas.getWidth() / 2, canvas.getHeight() / 2);
+                canvas.drawBitmap(mComPassDestArrowBitmap, mArrorMatrix, null);
             }
         }
         if (DEBUG_MODE) {

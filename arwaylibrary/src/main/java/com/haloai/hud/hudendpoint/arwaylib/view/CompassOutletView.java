@@ -25,16 +25,32 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 public class CompassOutletView extends View implements ComPassView.CompassLister{
     private boolean DEBUG_MODE     = false;
     private boolean EXTERN_SENSOR  = true;
+
+
+    private boolean mIsSloping = false;
+    private boolean mFirstInit = true;
+
+
+    private float mDegree = 0;
+
+    private int[] TEXTS_DEGREE = new int[]{270,0,90,180};
+    private final float  VIEW_SCALE_FACTOR = 0.65f;
+    private static final int  DEFAULUT_TEXTPAINT_SIZE = 10;
+
+    private PointF mLeftCenter ;
+    private PointF mRightCenter ;
+    private PointF mUpCenter ;
+    private PointF mBottomCenter ;
+    private PointF mCenter ;
+
+    private Path mTextPath = new Path();
     private Paint   mTextPaint     = new TextPaint();
     private Paint   mTestPaint     = new TextPaint();
     private int     mTextPaintSise = 10;
 
-    private boolean mIsSloping = false;
 
-    private float mDegree = 0;
-    private final float  VIEW_SCALE_FACTOR = 0.65f;
-    private static final int  DEFAULUT_TEXTPAINT_SIZE = 10;
 
+    private String[] mDirectionText = new String[]{"西","北","东","南"};
 
 
     public CompassOutletView(Context context, AttributeSet attrs) {
@@ -71,6 +87,8 @@ public class CompassOutletView extends View implements ComPassView.CompassLister
     }
 
     private void initResource(Context context) {
+        mFirstInit = true;
+
         mTextPaint.setColor(Color.WHITE);
         mTextPaint.setStyle(Paint.Style.STROKE);
         mTextPaintSise = DisplayUtil.sp2px(context,DEFAULUT_TEXTPAINT_SIZE);
@@ -85,8 +103,11 @@ public class CompassOutletView extends View implements ComPassView.CompassLister
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        float scale = 1;
-        initSize(canvas.getWidth()*scale,canvas.getHeight()*scale);
+        if(true){
+            mFirstInit = false;
+            float scale = 1;
+            initSize(canvas.getWidth()*scale,canvas.getHeight()*scale);
+        }
         rotatePoints();
         drawText(canvas);
         if(DEBUG_MODE){
@@ -111,59 +132,50 @@ public class CompassOutletView extends View implements ComPassView.CompassLister
         mIsSloping = enable;
         invalidate();
     }
-
     private void drawText(Canvas canvas) {
         if (canvas == null) {
             return;
         }
-        Path textPath = new Path();
+
         Rect rect = getTextRect("东",mTextPaint);
 
         PointF[] points = new PointF[]{mLeftCenter,mUpCenter,mRightCenter,mBottomCenter};
-        int[] degrees = new int[]{270,0,90,180};
 
         for (int i = 0; i < mDirectionText.length; i++) {
             PointF p = points[i];
-            float degree = degrees[i]+90;
+            float degree = TEXTS_DEGREE[i]+90;
             RectF textRect = new RectF(p.x,p.y,p.x+rect.width(),p.y+rect.height());
             PointF offset = new PointF(-rect.width()/2,-rect.height()/2);
             offset.y += Math.sin(Math.toRadians(degree));
             offset.x += Math.cos(Math.toRadians(degree));
             moveRectF(textRect,offset.x,offset.y);
 
-            textPath.reset();
-            textPath.moveTo(textRect.left,textRect.bottom);
-            textPath.lineTo(textRect.right,textRect.bottom);
+            mTextPath.reset();
+            mTextPath.moveTo(textRect.left,textRect.bottom);
+            mTextPath.lineTo(textRect.right,textRect.bottom);
             if (mIsSloping){
-                double tdegree = (degrees[i]-mDegree+360+180)%360;
+                /*double tdegree = (degrees[i]-mDegree+360+180)%360;
                 tdegree = tdegree>180?tdegree-360:tdegree;
-                double scale = (1+0.59f*Math.abs(1-tdegree/180));//Math.cos(Math.toRadians(tdegree/2))
-                scale = 1.5f;
+                double scale = (1+0.59f*Math.abs(1-tdegree/180));//Math.cos(Math.toRadians(tdegree/2))*/
+                double scale = 1.5f;
                 mTextPaint.setTextSize((float)(mTextPaintSise*scale));
             }else {
                 mTextPaint.setTextSize(mTextPaintSise);
             }
-            canvas.drawTextOnPath(mDirectionText[i],textPath,0,0,mTextPaint);
+            canvas.drawTextOnPath(mDirectionText[i],mTextPath,0,0,mTextPaint);
             if(DEBUG_MODE){
                 canvas.drawCircle(p.x,p.y,mTextPaintSise*0.1f,mTestPaint);
             }
         }
     }
 
-    private PointF mLeftCenter ;
-    private PointF mRightCenter ;
-    private PointF mUpCenter ;
-    private PointF mBottomCenter ;
-    private PointF mCenter ;
-
-    private String[] mDirectionText = new String[]{"西","北","东","南"};
-
     private void rotatePoints() {
         PointF[] rPath = new PointF[]{mLeftCenter,mRightCenter,mUpCenter,mBottomCenter};
+        double radius = Math.toRadians(mDegree);
         PointF rotationCenter = mCenter;
         for (int i = 0; i <rPath.length ; i++) {
             PointF rp = rPath[i];
-            rotationPointF(rp,rotationCenter,rp,Math.toRadians(mDegree));
+            rotationPointF(rp,rotationCenter,rp,radius);
         }
     }
 

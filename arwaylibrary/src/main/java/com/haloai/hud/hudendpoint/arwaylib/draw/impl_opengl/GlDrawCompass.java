@@ -58,7 +58,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             VIEW_NOT_DRIVING_WIDTH = (int)(mResources.getDimension(R.dimen.compass_pause_width));
             VIEW_NOT_DRIVING_HEIGHT = (int)(mResources.getDimension(R.dimen.compass_pause_height));
             if (context != null) {
-                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,40);//上一版50刚好
+                VIEW_TOP_DRIVING_Y = DisplayUtil.dip2px(context,50);//上一版50刚好
             }else {
                 VIEW_TOP_DRIVING_Y = 30;
             }
