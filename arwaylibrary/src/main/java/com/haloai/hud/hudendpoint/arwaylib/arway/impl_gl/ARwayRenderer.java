@@ -1270,6 +1270,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     public void onNaviStop() {
         arriveDestination();
+        mOriginalPath.clear();
     }
 
     /**
@@ -1308,6 +1309,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        getCurrentScene().clearChildren();
         //        getCurrentScene().performFrameTasks();
         clearAllData();
+        mOriginalPath.clear();
         System.gc();
     }
 
@@ -1328,7 +1330,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             path.add(new Vector3(openGL.x, -openGL.y, 0));
         }
 
-        if (!isPathRepeat(path) || !repeat) {
+        if (!repeat || !isPathRepeat(path)) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
             setPathAndCalcData(mOriginalPath, naviPath.getAllLength());

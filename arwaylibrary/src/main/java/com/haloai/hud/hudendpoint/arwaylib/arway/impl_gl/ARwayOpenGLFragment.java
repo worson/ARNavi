@@ -492,6 +492,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (ARWayConst.ENABLE_TEST_LOG){
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onARWayStart called ");
         }
+        mNeedUpdatePath = true;
         onNavingStartView();
         resetNaviStatus();
 
