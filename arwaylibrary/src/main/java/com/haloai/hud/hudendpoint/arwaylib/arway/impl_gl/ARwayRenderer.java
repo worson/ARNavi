@@ -1684,7 +1684,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCanInitScene = false;
         mObject4Chase = null;
         System.gc();
-        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"setPathAndCalcData end");
     }
 
     /**
@@ -2034,7 +2033,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mTranslateAnims translate anim stop !!!!!!!!!!!******************");
                     }
                 }
-                mTranslateAnims.get(i).unregisterListener(this);
+                //TODO 此处不能直接取消注册,否则有可能会引发多线程问题,导致Animation处报角标越界
+                //mTranslateAnims.get(i).unregisterListener(this);
                 //不加这句在程序运行时间过长时会导致内存泄漏,场景本身持有了大量的动画对象
                 getCurrentScene().unregisterAnimation(mTranslateAnims.get(i));
             }
@@ -2048,7 +2048,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mRotateAnims rotate anim stop !!!!!!!!!!!******************");
                     }
                 }
-                mRotateAnims.get(i).unregisterListener(this);
+                //mRotateAnims.get(i).unregisterListener(this);
                 //不加这句在程序运行时间过长时会导致内存泄漏,场景本身持有了大量的动画对象
                 getCurrentScene().unregisterAnimation(mRotateAnims.get(i));
             }
@@ -2396,7 +2396,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     public void onAnimationEnd(Animation animation) {
         if (mTranslateAnims != null && mTranslateAnims.size() > 0 && mTranslateAnimIndex < mTranslateAnims.size() && mTranslateAnimIndex >= 1) {
             if (animation == mTranslateAnims.get(mTranslateAnimIndex - 1)) {
-                animation.unregisterListener(this);
+//                animation.unregisterListener(this);
                 if (mCurIndexes.size() > mTranslateAnimIndex) {
                     mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
                 }
@@ -2406,7 +2406,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         if (mRotateAnims != null && mRotateAnims.size() > 0 && mRotateAnimIndex < mRotateAnims.size() && mRotateAnimIndex >= 1) {
             if (animation == mRotateAnims.get(mRotateAnimIndex - 1)) {
-                animation.unregisterListener(this);
+//                animation.unregisterListener(this);
                 mRotateAnims.get(mRotateAnimIndex++).play();
                 return;
             }

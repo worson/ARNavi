@@ -195,7 +195,9 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
             View v = views[i];
             if (v != null) {
                 if (show){
-                    v.setVisibility(View.VISIBLE);
+                    if(!v.isShown()){
+                        v.setVisibility(View.VISIBLE);
+                    }
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
                     animator.setDuration(1000);
                 }else {

@@ -152,6 +152,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         mNaviView = mLayout;
         arway = mRenderSurface;
+        arway.setVisibility(View.VISIBLE);
         //init amap navi view
         mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
         mAmapNaviView.onCreate(savedInstanceState);
@@ -178,6 +179,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     }
 
     public void initAMapNaviView() {
+        HaloLogger.logE("helong_debug_____","init amap navi view");
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
         viewOptions.setNaviNight(true);
         viewOptions.setLayoutVisible(false);
@@ -527,7 +529,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         if(mRenderer!=null){
             mRenderer.onNaviStop();
-            //            SystemClock.sleep(200);
         }
     }
 
@@ -543,7 +544,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         onNavingEndView();
         if(mRenderer!=null) {
             mRenderer.arriveDestination();
-            //            SystemClock.sleep(200);
         }
     }
 
@@ -892,6 +892,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //            ViewGroup vg = (ViewGroup) arway.getParent();
 //            vg.removeView(arway);
             arway.setVisibility(View.INVISIBLE);
+//            arway.setAlpha(0.1f);
         }
 
     }
@@ -903,6 +904,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //        mRenderer.continue_();
         if (arway != null && !arway.isShown()) {//
             arway.setVisibility(View.VISIBLE);
+            arway.setAlpha(1);
         }
 
     }
@@ -917,38 +919,25 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     @Override
     public void onCameraChangeFinish(CameraPosition arg0) {
+        HaloLogger.logE("helong_debug_____","init amap navi view");
         if(ARWayConst.ENABLE_LOG_OUT){
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onCameraChangeFinish called");
         }
-        mCameraChangeFinish=true;
-        if(mNeedUpdatePath && mCameraChangeFinish) {
-            LogI(ARWayConst.INDICATE_LOG_TAG," onCameraChangeFinish updatePath called");
-//            mHandler.postDelayed(mUpdatePathRunable,3000);
-//            mHandler.sendEmptyMessage(HANDLER_MSG_UPDATE_PATH);
-            /*if (mAMapNavi != null) {
-                LogI(ARWayConst.INDICATE_LOG_TAG," onCameraChangeFinish updatePath called");
-                updatePath(mAMapNavi);
-
-            }else {
-                LogI(ARWayConst.ERROR_LOG_TAG,"onCameraChangeFinish updatePath 不成功!!!!!!!");
-            }*/
-
-        }
+        mCameraChangeFinish = true;
         initAMapNaviView();
-
     }
 
     public void removeAMapNaviView() {
-        if (mAmapNaviView != null && mAmapNaviView.getParent() != null) {
+        /*if (mAmapNaviView != null && mAmapNaviView.getParent() != null) {
             ViewGroup parent = (ViewGroup) mAmapNaviView.getParent();
             parent.removeView(mAmapNaviView);
-        }
+        }*/
     }
 
     public void addAMapNaviView() {
         if (mAmapNaviView != null) {
             removeAMapNaviView();
-//            mNaviView.addView(mAmapNaviView);
+            mNaviView.addView(mAmapNaviView);
         }
     }
 
