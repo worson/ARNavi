@@ -13,6 +13,7 @@ import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.view.ARWayRoadObject;
 import com.haloai.hud.utils.HaloLogger;
@@ -144,6 +145,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mIsInitScene   = false;
     private boolean mIsMyInitScene = false;
     private boolean mCanInitScene  = false;
+
+    //image handle
+    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -647,6 +651,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (length <= 0 || !mIsMyInitScene) {
             return;
         }
+
+        // Point mainRoadTailend = new Point();
+        // int centerPointIndex = getCenterPointIndex();
+        // List<EnlargedCrossProcess.ECBranchLine> ecBranchLines = mEnlargedCrossProcess.recognizeBranchInECImage(crossimage, centerPointIndex, mainRoadTailend);
+        // setEnlargeCrossBranchLines(ecBranchLines, mainRoadTailend, mCurStepRetainDistance, mNaviIcon);
+
+
         double divDegrees = 0;
         double rotation = 0;
         Vector3 center = new Vector3();
@@ -728,6 +739,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 break;
             }
         }
+    }
+
+    private int getCenterPointIndex() {
+        return 0;
     }
 
     private Plane insertRajawaliPlane(Vector3 v1, Vector3 v2) {

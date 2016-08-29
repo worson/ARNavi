@@ -928,10 +928,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     }
 
     public void removeAMapNaviView() {
-        /*if (mAmapNaviView != null && mAmapNaviView.getParent() != null) {
+        if (mAmapNaviView != null && mAmapNaviView.getParent() != null) {
             ViewGroup parent = (ViewGroup) mAmapNaviView.getParent();
             parent.removeView(mAmapNaviView);
-        }*/
+        }
     }
 
     public void addAMapNaviView() {
