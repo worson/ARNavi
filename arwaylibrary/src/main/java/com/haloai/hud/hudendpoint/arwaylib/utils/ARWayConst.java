@@ -10,7 +10,7 @@ public class ARWayConst {
     public static String  ERROR_LOG_TAG = "sen_debug_gl";
     public static String  SPECIAL_LOG_TAG = "matlab";
     public static boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
-    public static boolean ENABLE_FAST_LOG = true;//ARWAY 输出log
+    public static boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
     public static boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
     public static boolean ENABLE_TEST_LOG = true;//ARWAY 输出测试log
 
