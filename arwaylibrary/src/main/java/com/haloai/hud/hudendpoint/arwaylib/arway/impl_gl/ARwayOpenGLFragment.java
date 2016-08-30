@@ -142,6 +142,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         mNaviView = mLayout;
         arway = mRenderSurface;
+        arway.setVisibility(View.VISIBLE);
         //init amap navi view
         mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
         mAmapNaviView.onCreate(savedInstanceState);
@@ -185,30 +186,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     }
 
     public void initAMapNaviView() {
-
-        /*AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
-        if(ARWayConst.ENABLE_LOG_OUT && AMAP_OPTIONS_LOGOUT){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,String.format("amapview options , curZoom is %d,curTilt is %d",viewOptions.getZoom(),viewOptions.getTilt()));
-        }
-        viewOptions.setNaviNight(true);
-        viewOptions.setNaviViewTopic(AMapNaviViewOptions.BLUE_COLOR_TOPIC);
-        viewOptions.setCrossDisplayShow(false);
-
-        int curZoom = (int)viewOptions.getZoom();
-        int curTilt = (int)viewOptions.getTilt();
-        float targetZoomLevel = 10;
-        if (curZoom != targetZoomLevel || curTilt != 0.0) {
-            *//*cameraPos = CameraPosition.builder(cameraPos).tilt(0).zoom(maxZoomLevel).build();
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPos);
-            aMap.moveCamera(cameraUpdate);*//*
-
-            viewOptions.setZoom((int)targetZoomLevel);
-            viewOptions.setTilt(0);
-            mAmapNaviView.setViewOptions(viewOptions);
-        }*/
-
-
-
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
         viewOptions.setNaviNight(true);
         viewOptions.setLayoutVisible(false);
@@ -577,7 +554,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         if(mRenderer!=null){
             mRenderer.onNaviStop();
-            //            SystemClock.sleep(200);
         }
     }
 
@@ -593,7 +569,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         onNavingEndView();
         if(mRenderer!=null) {
             mRenderer.arriveDestination();
-            //            SystemClock.sleep(200);
         }
     }
 
@@ -997,6 +972,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //            ViewGroup vg = (ViewGroup) arway.getParent();
 //            vg.removeView(arway);
             arway.setVisibility(View.INVISIBLE);
+//            arway.setAlpha(0.1f);
         }
 
     }
@@ -1008,6 +984,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //        mRenderer.continue_();
         if (arway != null && !arway.isShown()) {//
             arway.setVisibility(View.VISIBLE);
+            arway.setAlpha(1);
         }
 
     }
@@ -1044,7 +1021,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             rUpdatePath(mAMapNavi);
         }
         initAMapNaviView();
-
     }
 
     public void removeAMapNaviView() {
