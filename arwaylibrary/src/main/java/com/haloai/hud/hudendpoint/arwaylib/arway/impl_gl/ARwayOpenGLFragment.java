@@ -28,6 +28,8 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.arway.INaviUpdater;
+import com.haloai.hud.hudendpoint.arwaylib.arway.IStateContoller;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
@@ -52,10 +54,10 @@ import org.rajawali3d.view.TextureView;
 import java.io.ByteArrayOutputStream;
 
 
-public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener {
+public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater {
     private static final String TAG                  = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
-    public final static boolean IS_DEBUG_MODE        =false;
+    public final static boolean IS_DEBUG_MODE        =true;
     private static final boolean AMAP_OPTIONS_LOGOUT = true;
     private static final boolean IS_SCREEN_SHOOT     = true;
 
@@ -622,7 +624,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * gps搜星个发生变化
      * @param satelliteNum
      */
-    public void setSatelliteNum(int satelliteNum) {
+    private void setSatelliteNum(int satelliteNum) {
         //TODO 为了在室内也能正常测试使用导航功能,如果没有下面这句,则导航中会一直处于信号差不可用状态,上线记得删除
 //        ARWayController.SceneBeanUpdater.setGpsNumber(satelliteNum);
         if (satelliteNum <= 0) {
