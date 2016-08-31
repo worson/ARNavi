@@ -42,6 +42,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
@@ -81,6 +82,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private Bitmap mNaviIconBitmap = null;
     private View arway;
 
+    private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
 
 
     //opengle
@@ -93,6 +95,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
     private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
     private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+    private int mCurrentPathStep = 0;
 
 
     public ARwayOpenGLFragment() {
@@ -246,6 +249,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     }
+
+
 
     private void LogI(String tag, String msg) {
         HaloLogger.logE(tag,msg);
@@ -614,15 +619,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param crossimage Bitmap for show cross
      */
     public void showCrossImage(Bitmap crossimage) {
+
         if (crossimage == null){
             ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             return;
         }
+        mCrossPathManager.handleCrossInfo(mCurrentPathStep,crossimage.getWidth(),crossimage.getHeight());
         if (crossimage != null) {
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
                     try {
-                        mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
+                        mRenderer.setEnlargeCrossBranchLines(crossimage);
+                        //mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
                     }catch(Exception e){
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"showCrossImage ,image set error!! "+e.toString());
                     }
@@ -750,6 +758,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
         HaloLogger.logE("helong_debug","updatePath");
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
+            mCrossPathManager.parseNaviPathInfo(naviPath,projection);
             if (mRenderer != null) {
                 hideARWay();
                 mDrawScene.animShowHide(false);
@@ -793,6 +802,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (info == null) {
             return;
         }
+        mCurrentPathStep = info.getCurStep();
         updateNaviInfoDate(info);
         onNaviViewUpdate();
 

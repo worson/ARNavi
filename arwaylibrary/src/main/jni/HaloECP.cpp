@@ -12,6 +12,7 @@
 #include <iostream>
 #include <dirent.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "algorithm.h"
 
@@ -23,28 +24,44 @@ using namespace std;
 //
 
 #define LOG_TAG "HaloAI_ECP_Lib"
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
+//#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
 
 int searchHopPoint(cv::Mat image, int * x, int * y);
 
 JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetBranchRoads
-        (JNIEnv * env, jobject javaSelf, jlong ecImage, jint centerPointIndex, jobject mainRoadTailEnd)
+        (JNIEnv * env, jobject javaSelf, jlong ecImage, jint centerPointIndex, jobjectArray mainRoadArr)
 {
     LOGD("nativeGetBranchRoad enter!!!");
 
     Mat matRoadImg = *(Mat*)ecImage;
     vector<vector<Point2i> > vecPointSet;
     vector<Point2i> vecMainRoad;
-    int res = GetCrossRoadPoint(matRoadImg, vecPointSet, centerPointIndex, vecMainRoad);
+    int mainRoadArrSize = env->GetArrayLength(mainRoadArr);
+    LOGD("mainRoadArr.size=%d",(int)mainRoadArrSize/2);
+    LOGD("mainRoadArr test");
+    for (int j = 0; j < mainRoadArrSize/2; j+=2) {
+        jstring string_x = (jstring)(env->GetObjectArrayElement(mainRoadArr, j*2));
+        const char * chars_x =  env->GetStringUTFChars(string_x, 0);
+        jstring string_y = (jstring)(env->GetObjectArrayElement(mainRoadArr, j*2+1));
+        const char * chars_y =  env->GetStringUTFChars(string_y, 0);
+        Point2i point;
+        point.x=atoi(chars_x);
+        point.y=atoi(chars_y);
+        vecMainRoad.push_back(point);
+        env->ReleaseStringUTFChars(string_x, chars_x);
+        env->ReleaseStringUTFChars(string_y, chars_y);
+        LOGD("point.x = %d,point.y = %d",(int)point.x,(int)point.y);
+    }
+    int res = GetCrossRoadPoint(matRoadImg, vecMainRoad, centerPointIndex, vecPointSet);
     LOGD("vecPointSet.size=%d", (int)vecPointSet.size());
     jobjectArray retBranchRoads = NULL;
-    if (!res && vecMainRoad.size() == 2) {
+    if (!res/* && vecMainRoad.size() == 2*/) {
         //Set the main road tail end.
-        jclass clazz = env->GetObjectClass(mainRoadTailEnd);
+        /*jclass clazz = env->GetObjectClass(mainRoadTailEnd);
         jfieldID xField = env->GetFieldID(clazz, "x", "I");
         jfieldID yField = env->GetFieldID(clazz, "y", "I");
         env->SetIntField(mainRoadTailEnd, xField, vecMainRoad[1].x);
-        env->SetIntField(mainRoadTailEnd, yField, vecMainRoad[1].y);
+        env->SetIntField(mainRoadTailEnd, yField, vecMainRoad[1].y);*/
 
         //Construct the string of all branch path points
         retBranchRoads = env->NewObjectArray(vecPointSet.size(), env->FindClass("java/lang/String"), 0);

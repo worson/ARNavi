@@ -13,7 +13,7 @@ android {
         sourceSets.main.jni.srcDirs = []
         ndk {
             moduleName "HaloECP" // Halo enlarged cross image process lib.
-            ldLibs "dl", "log" // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
+            ldLibs "dl", "log", "Algorithm" // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
 ////            stl "stlport_shared"
         }
     }

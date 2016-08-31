@@ -64,11 +64,11 @@ using namespace std;
 #define IS_SHOW_MAINROAD	0						// 控制是否显示图像，画主路时的图像
 #define IS_SHOW_ASSISTROAD	0						// 控制是否显示图像，画辅路时的图像
 
-#define IS_SHOW_DEBUG_TEST	1						// 控制是否显示图像，调试时的图像
+#define IS_SHOW_DEBUG_TEST	0						// 控制是否显示图像，调试时的图像
 
 #define IS_SAVE_ROAD		0						// 控制是否保存路径
 #define IS_SAVE_MERGEROAD	0					// 控制是否保存主路和岔路的合成路径
-#define IS_PRINT_TIME		1						// 控制是否打印时间
+#define IS_PRINT_TIME		0						// 控制是否打印时间
 
 #define CROSSIMAGE_W	400			// 路口放大图宽度
 #define CROSSIMAGE_H	400			// 路口放大图高度
@@ -77,7 +77,7 @@ using namespace std;
 #define IMAGE_SHOW_NUM_BYROW	2			// 控制一幅大图中一排可显示的小图个数
 
 
-#define IS_TEST_DEBUG	1			// 测试标签
+#define IS_TEST_DEBUG	0			// 测试标签
 
 
 /*
@@ -158,6 +158,7 @@ int SortPoint(vector<Point2i>& vecLinePoint,int nRow, int nCol);
 	[in]const Mat& matBw - 参与统计的图像(二值图)
 	[out]Mat_<int>& matStatisticMap - 二值图上每个像素点对应的非零点个数，即统计表格数据
 	[out]vector<int>& vecStaticValue - 统计结果
+	[out]vector<int>& vecCenterDis - 记录每个点覆盖窗口有效像素点的中心离窗口中心的距离
 	[out]Point2i& ptMaxStatisticPt - 最大统计值对应的坐标点，即箭头点
 	[out]int& nMaxStaticVs - 最大统计值
 	[out]int& nMaxIndex - 最大统计值在点集中的位置
@@ -167,8 +168,9 @@ int SortPoint(vector<Point2i>& vecLinePoint,int nRow, int nCol);
 	在统计表格数据中，每个白色像素点对应真实的统计值，黑色像素点不参与统计，对应值一律置为初值nRow*nCol，
 	nCol、nRow对应图像的宽、高
 */
-int GetStatisticValue(const vector<Point2i>& vecPoint, const Mat& matBw, Mat_<int>& matStatisticMap,
-				   vector<int>& vecStatisticValue, Point2i& ptMaxStatisticPt, int& nMaxStatisticVs, int& nMaxIndex);
+/* int GetStatisticValue(const vector<Point2i>& vecPoint, const Mat& matBw, Mat_<int>& matStatisticMap,
+				   vector<int>& vecStatisticValue, vector<int>& vecCenterDis,
+				   Point2i& ptMaxStatisticPt, int& nMaxStatisticVs, int& nMaxIndex); */
 
 
 /*
@@ -284,7 +286,7 @@ int DrawPoint(const vector<Point2i>& vecPoint, Scalar scColorV, int nPointSize, 
 返回：
 	0 - 正常，其他 - 异常
 */
-int DrawCrossRoadsLine(const vector<vector<Point2i>>& vecCrossRoadPoint, 
+int DrawCrossRoadsLine(const vector<vector<Point2i> >& vecCrossRoadPoint,
 	Mat& matCrossRoadLine);
 
 /*
@@ -330,16 +332,32 @@ int GetMainRoadScreenPoint(TiXmlElement* pElement,
 int GetNodeXY(TiXmlElement* pElement, Point2i& ptXY);
 #endif
 
+
+/*
+功能：
+	获取主路辅路
+参数：
+	[in]const Mat& matSrcImage - 导航图像，RGB图像
+	[out]vector<Point2i>& vecMainRoadPt - 主路点
+	[out]vector<vector<Point2i> >& vecAssistRoadPt - 辅路点
+	[out]Mat& matMainRoadImageBw - 主路二值图
+	[out]Mat& matDotLinesImageBw - 虚线点二值图
+返回：
+	0 - 正常，其他 - 异常
+*/
+/* int GetAllRoads(const Mat& matSrcImage, vector<Point2i>& vecMainRoadPt, vector<vector<Point2i> >& vecAssistRoadPt, 
+				Mat& matMainRoadImageBw, Mat& matDotLinesImageBw); */
+
 /*
 功能：
 	通过模板过滤图像
 参数：
-	[in]const Mat& matSrcImage - 导航图像，RGB图像
+	[in]const Mat& matRoadBw - 导航道路图像，二值图像
 	[out]Mat& matFilterImage - 过滤后的图像
 返回：
 	0 - 正常，其他 - 异常
 */
-int FilterImageByTemplate(const Mat& matSrcImage, Mat& matFilterImage);
+int FilterImageByTemplate(const Mat& matRoadBw, Mat& matFilterImage);
 
 // 判断元素是否在vector中，true 在，false - 不在
 bool IsBelongToVector(const vector<int> &vecInts, int nElement);
@@ -365,4 +383,15 @@ int MergeVector(const vector<vector<int> >& vecSrcSet, vector<vector<int> >& vec
 返回：
 	0 - 正常，1 - 无中心线，即图全黑，其他 - 异常
 */
-int GetMainRoadCenterLine(const Mat& matMainRoadBW, vector<Point2i>& vecCenterLinePt, int& nCenterPointIndex);
+//int GetMainRoadCenterLine(const Mat& matMainRoadBW, vector<Point2i>& vecCenterLinePt, int& nCenterPointIndex);
+
+/*
+功能：
+	获取中心点坐标
+参数：
+	[in]vector<Point2i> vecPoints - 点集坐标
+	[out]Point2i& ptCenter - 中心点坐标	
+返回：
+	0 - 正常，其他 - 异常
+*/
+//int GetCenterPt(const vector<Point2i>& vecPoints, Point2i& ptCenter);

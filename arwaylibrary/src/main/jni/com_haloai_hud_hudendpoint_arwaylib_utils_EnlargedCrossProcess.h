@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
  * Method:    nativeGetBranchRoads
- * Signature: (JILcom/haloai/hud/hudendpoint/arwaylib/utils/EnlargedCrossProcess/PointA;)[Ljava/lang/String;
+ * Signature: (JI[Ljava/lang/String;)[Ljava/lang/String;
  */
 JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetBranchRoads
-  (JNIEnv *, jobject, jlong, jint, jobject);
+  (JNIEnv *, jobject, jlong, jint, jobjectArray);
 
 /*
  * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess

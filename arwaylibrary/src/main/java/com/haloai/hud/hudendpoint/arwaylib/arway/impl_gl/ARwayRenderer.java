@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -12,6 +13,7 @@ import android.view.animation.LinearInterpolator;
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -148,6 +150,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //image handle
     private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+    private        CrossPathManager     mCrossPathManager     = CrossPathManager.getInstance();
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -644,6 +647,62 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //====================================handle cross image start========================================//
 
+    public void setEnlargeCrossBranchLines(Bitmap crossImage) {
+        if (crossImage == null) {
+            return;
+        }
+        int centerPointIndex = getCenterPointIndex();
+        String[] mainRoadArr = getMainRoadArr();
+        /*// TODO: 2016/8/30 在屏幕坐标转换工作完成前,使用模拟数据测试
+        centerPointIndex = 1;
+        mainRoadArr = new String[6];
+        mainRoadArr[0]="200";
+        mainRoadArr[1]="400";
+        mainRoadArr[2]="200";
+        mainRoadArr[3]="200";
+        mainRoadArr[4]="200";
+        mainRoadArr[5]="0";*/
+        List<EnlargedCrossProcess.ECBranchLine> ecBranchLines =
+                mEnlargedCrossProcess.recognizeBranchInECImage(crossImage, centerPointIndex, mainRoadArr);
+        for (int i = 0; i < ecBranchLines.size(); i++) {
+            EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
+            List<Point> line = ecb.getLinePoints();
+            HaloLogger.logE("branch line", "line start");
+            for (Point point : line) {
+                HaloLogger.logE("branch line", "point:" + point.x + "," + point.y);
+            }
+            HaloLogger.logE("branch line", "line end");
+        }
+    }
+
+    /**
+     * 获取传入JNI部分的主路点坐标集合
+     * 格式:[x1,y1,x2,y2...xn,yn]
+     *
+     * @return
+     */
+    private String[] getMainRoadArr() {
+        List<Point> screenPoint = mCrossPathManager.getScreenPoints();
+        String[] mainRoadArr = new String[screenPoint.size() * 2];
+        for (int i = 0; i < screenPoint.size(); i++) {
+            mainRoadArr[i * 2] = "" + screenPoint.get(i).x;
+            mainRoadArr[i * 2 + 1] = "" + screenPoint.get(i).y;
+            HaloLogger.logE("main_road_arr",""+screenPoint.get(i).x);
+            HaloLogger.logE("main_road_arr",""+screenPoint.get(i).y);
+        }
+        return mainRoadArr;
+    }
+
+    /**
+     * 获取当前中心点所在的下标
+     *
+     * @return
+     */
+    private int getCenterPointIndex() {
+        return mCrossPathManager.getCenterPointIndex();
+    }
+
+
     /**
      * 通过岔路点的集合以及路口放大图中箭头位置的点的坐标会实现将岔路添加到场景中
      */
@@ -651,12 +710,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (length <= 0 || !mIsMyInitScene) {
             return;
         }
-
-        // Point mainRoadTailend = new Point();
-        // int centerPointIndex = getCenterPointIndex();
-        // List<EnlargedCrossProcess.ECBranchLine> ecBranchLines = mEnlargedCrossProcess.recognizeBranchInECImage(crossimage, centerPointIndex, mainRoadTailend);
-        // setEnlargeCrossBranchLines(ecBranchLines, mainRoadTailend, mCurStepRetainDistance, mNaviIcon);
-
 
         double divDegrees = 0;
         double rotation = 0;
@@ -739,10 +792,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 break;
             }
         }
-    }
-
-    private int getCenterPointIndex() {
-        return 0;
     }
 
     private Plane insertRajawaliPlane(Vector3 v1, Vector3 v2) {
@@ -1381,7 +1430,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param allLength
      */
     private void setPathAndCalcData(List<Vector3> path, double allLength) {
-        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"setPathAndCalcData start");
+        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG, "setPathAndCalcData start");
         clearAllData();
         //此处由于mPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
         for (int i = 0; i < path.size(); i++) {
@@ -2411,7 +2460,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     public void onAnimationEnd(Animation animation) {
         if (mTranslateAnims != null && mTranslateAnims.size() > 0 && mTranslateAnimIndex < mTranslateAnims.size() && mTranslateAnimIndex >= 1) {
             if (animation == mTranslateAnims.get(mTranslateAnimIndex - 1)) {
-//                animation.unregisterListener(this);
+                //                animation.unregisterListener(this);
                 if (mCurIndexes.size() > mTranslateAnimIndex) {
                     mCurIndexInPath = mCurIndexes.get(mTranslateAnimIndex);
                 }
@@ -2421,7 +2470,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         if (mRotateAnims != null && mRotateAnims.size() > 0 && mRotateAnimIndex < mRotateAnims.size() && mRotateAnimIndex >= 1) {
             if (animation == mRotateAnims.get(mRotateAnimIndex - 1)) {
-//                animation.unregisterListener(this);
+                //                animation.unregisterListener(this);
                 mRotateAnims.get(mRotateAnimIndex++).play();
                 return;
             }
