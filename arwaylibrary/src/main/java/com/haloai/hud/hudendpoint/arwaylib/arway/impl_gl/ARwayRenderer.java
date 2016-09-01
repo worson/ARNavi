@@ -657,26 +657,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         int centerPointIndex = getCenterPointIndex();
         String[] mainRoadArr = getMainRoadArr();
-        /*// TODO: 2016/8/30 在屏幕坐标转换工作完成前,使用模拟数据测试
-        centerPointIndex = 1;
-        mainRoadArr = new String[6];
-        mainRoadArr[0]="200";
-        mainRoadArr[1]="400";
-        mainRoadArr[2]="200";
-        mainRoadArr[3]="200";
-        mainRoadArr[4]="200";
-        mainRoadArr[5]="0";*/
         List<EnlargedCrossProcess.ECBranchLine> ecBranchLines =
                 mEnlargedCrossProcess.recognizeBranchInECImage(crossImage, centerPointIndex, mainRoadArr);
+        HaloLogger.logE("cross_image_handle","==========================================");
+        HaloLogger.logE("cross_image_handle","center:"+mainRoadArr[centerPointIndex*2]+","+mainRoadArr[centerPointIndex*2+1]);
         for (int i = 0; i < ecBranchLines.size(); i++) {
             EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
             List<Point> line = ecb.getLinePoints();
-            HaloLogger.logE("branch line", "line start");
-            for (Point point : line) {
-                HaloLogger.logE("branch line", "point:" + point.x + "," + point.y);
+            HaloLogger.logE("cross_image_handle","cross_image_start");
+            for(int j=0;j<line.size();j++) {
+                HaloLogger.logE("cross_image_handle",line.get(j).x+","+line.get(j).y);
             }
-            HaloLogger.logE("branch line", "line end");
+            HaloLogger.logE("cross_image_handle","cross_image_end");
         }
+        HaloLogger.logE("cross_image_handle","==========================================");
     }
 
     /**

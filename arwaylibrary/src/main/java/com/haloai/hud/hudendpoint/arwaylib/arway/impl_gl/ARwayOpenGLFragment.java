@@ -58,7 +58,7 @@ import java.io.IOException;
 public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater {
     private static final String TAG                  = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
-    public final static boolean IS_DEBUG_MODE        =true;
+    public final static boolean IS_DEBUG_MODE        = false;
     private static final boolean AMAP_OPTIONS_LOGOUT = true;
     private static final boolean IS_SCREEN_SHOOT     = true;
 
@@ -629,7 +629,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * gps搜星个发生变化
      * @param satelliteNum
      */
-    private void setSatelliteNum(int satelliteNum) {
+    public void setSatelliteNum(int satelliteNum) {
         //TODO 为了在室内也能正常测试使用导航功能,如果没有下面这句,则导航中会一直处于信号差不可用状态,上线记得删除
 //        ARWayController.SceneBeanUpdater.setGpsNumber(satelliteNum);
         if (satelliteNum <= 0) {

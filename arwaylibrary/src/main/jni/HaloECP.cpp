@@ -24,22 +24,22 @@ using namespace std;
 //
 
 #define LOG_TAG "HaloAI_ECP_Lib"
-//#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
+#define LOGD_ANDROID(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
 
 int searchHopPoint(cv::Mat image, int * x, int * y);
 
 JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetBranchRoads
         (JNIEnv * env, jobject javaSelf, jlong ecImage, jint centerPointIndex, jobjectArray mainRoadArr)
 {
-    LOGD("nativeGetBranchRoad enter!!!");
+    LOGD_ANDROID("nativeGetBranchRoad enter!!!");
 
     Mat matRoadImg = *(Mat*)ecImage;
     vector<vector<Point2i> > vecPointSet;
     vector<Point2i> vecMainRoad;
     int mainRoadArrSize = env->GetArrayLength(mainRoadArr);
-    LOGD("mainRoadArr.size=%d",(int)mainRoadArrSize/2);
-    LOGD("mainRoadArr test");
-    for (int j = 0; j < mainRoadArrSize/2; j+=2) {
+    LOGD_ANDROID("mainRoadArr.size=%d",(int)mainRoadArrSize/2);
+    LOGD_ANDROID("centerPointIndex=%d",(int)centerPointIndex);
+    for (int j = 0; j < mainRoadArrSize/2; j++) {
         jstring string_x = (jstring)(env->GetObjectArrayElement(mainRoadArr, j*2));
         const char * chars_x =  env->GetStringUTFChars(string_x, 0);
         jstring string_y = (jstring)(env->GetObjectArrayElement(mainRoadArr, j*2+1));
@@ -50,10 +50,10 @@ JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_En
         vecMainRoad.push_back(point);
         env->ReleaseStringUTFChars(string_x, chars_x);
         env->ReleaseStringUTFChars(string_y, chars_y);
-        LOGD("point.x = %d,point.y = %d",(int)point.x,(int)point.y);
+        LOGD_ANDROID("point.x = %d,point.y = %d",(int)point.x,(int)point.y);
     }
     int res = GetCrossRoadPoint(matRoadImg, vecMainRoad, centerPointIndex, vecPointSet);
-    LOGD("vecPointSet.size=%d", (int)vecPointSet.size());
+    LOGD_ANDROID("vecPointSet.size=%d", (int)vecPointSet.size());
     jobjectArray retBranchRoads = NULL;
     if (!res/* && vecMainRoad.size() == 2*/) {
         //Set the main road tail end.
@@ -69,29 +69,29 @@ JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_En
         std::stringstream branchRoadPrintedValues;
         for (int i = 0; i < vecPointSet.size(); i++) {
             vector<Point2i> branchRoad = vecPointSet.at(i);
-            LOGD("branch-%d, the size is %d", i, (int)branchRoad.size());
+            LOGD_ANDROID("branch-%d, the size is %d", i, (int)branchRoad.size());
             for (int j=0; j<branchRoad.size(); j++) {
-                if (j != 0) {
+                if (i+j != 0) {
                     branchRoadPrintedValues << ",";
                 }
                 branchRoadPrintedValues << branchRoad[j].x << "," << branchRoad[j].y;
 //                branchRoadPrintedValues += ",";
 //                branchRoadPrintedValues += branchRoad[j].y;
             }
-            LOGD("branchString is %s", branchRoadPrintedValues.str().c_str());
+            LOGD_ANDROID("branchString is %s", branchRoadPrintedValues.str().c_str());
             jstring jstr = env->NewStringUTF(branchRoadPrintedValues.str().c_str());
             env->SetObjectArrayElement(retBranchRoads, i, jstr);
         }
     }
 
-    LOGD("nativeGetBranchRoad leave!!!");
+    LOGD_ANDROID("nativeGetBranchRoad leave!!!");
     return retBranchRoads;
 }
 
 JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetHopPointInCrossImage
   (JNIEnv * env, jobject javaThis, jlong ecImage, jobject returnObj)
 {
-    LOGD("nativeGetFirstTurnPointInCrossImage enter!!");
+    LOGD_ANDROID("nativeGetFirstTurnPointInCrossImage enter!!");
 
     // Get the class of the input object
     jclass clazz = env->GetObjectClass(returnObj);
@@ -111,11 +111,11 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
         env->SetIntField(returnObj, xField, x);
         env->SetIntField(returnObj, yField, y);
     } else {
-        LOGD("nativeGetFirstTurnPointInCrossImage leave!!! no found.");
+        LOGD_ANDROID("nativeGetFirstTurnPointInCrossImage leave!!! no found.");
         return -1;
     }
 
-    LOGD("nativeGetFirstTurnPointInCrossImage leave!!!");
+    LOGD_ANDROID("nativeGetFirstTurnPointInCrossImage leave!!!");
     return 0;
 }
 
@@ -127,7 +127,7 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
  */
 cv::Mat thinImage(const cv::Mat & src, const int maxIterations)
 {
-    LOGD("thinImage enter");
+    LOGD_ANDROID("thinImage enter");
     assert(src.type() == CV_8UC1);
     cv::Mat dst;
     int width  = src.cols;
@@ -256,14 +256,14 @@ cv::Mat thinImage(const cv::Mat & src, const int maxIterations)
         }
     }
 
-    LOGD("thinImage leave");
+    LOGD_ANDROID("thinImage leave");
 
     return dst;
 }
 
 void splitMainRoad(Mat crossRoadImage, Mat mainRoadImage)
 {
-    LOGD("splitMainRoad enter");
+    LOGD_ANDROID("splitMainRoad enter");
     int ffillMode = 1;
     int loDiff = 20, upDiff = 20;
     int connectivity = 8;
@@ -276,7 +276,7 @@ void splitMainRoad(Mat crossRoadImage, Mat mainRoadImage)
     b1 = rgb[0];
     g1 = rgb[1];
     r1 = rgb[2];
-    LOGD("r=%d g=%d b=%d", r1, g1, b1);
+    LOGD_ANDROID("r=%d g=%d b=%d", r1, g1, b1);
 
     Point seed = Point(200, 200);
     int lo = loDiff;//ffillMode == 0 ? 0 : loDiff;
@@ -292,16 +292,16 @@ void splitMainRoad(Mat crossRoadImage, Mat mainRoadImage)
     int area;
 
 //    threshold(mainRoadImage, mainRoadImage, 1, 128, THRESH_BINARY);
-    LOGD("splitMainRoad 111111");
+    LOGD_ANDROID("splitMainRoad 111111");
     area = floodFill(crossRoadImage, mainRoadImage, seed, newVal, &ccomp, Scalar(lo, lo, lo),
                      Scalar(up, up, up), flags);
-    LOGD("splitMainRoad leave");
+    LOGD_ANDROID("splitMainRoad leave");
 }
 
 int searchHopPoint(cv::Mat image, int *resX, int *resY)
 {
 
-    LOGD("searchHopPoint enter");
+    LOGD_ANDROID("searchHopPoint enter");
     //用floodFill找到蓝色主路，得到的是主路像素值为255
     Mat mainRoadImage;
     mainRoadImage.create(image.rows+2, image.cols+2, CV_8UC1);
@@ -346,10 +346,10 @@ int searchHopPoint(cv::Mat image, int *resX, int *resY)
     }
 
     if (!found) {
-        LOGD("searchHopPoint leave, no found anything.");
+        LOGD_ANDROID("searchHopPoint leave, no found anything.");
         return -1;
     }
 
-    LOGD("searchHopPoint. Found the hop point. x=%d, y=%d", *resX, *resY);
+    LOGD_ANDROID("searchHopPoint. Found the hop point. x=%d, y=%d", *resX, *resY);
     return 0;
 }
