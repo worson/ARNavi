@@ -165,7 +165,9 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         if (mNaviIndicateTextView != null) {
             if (mNaviInfoBean != null) {
                 String text = mNaviInfoBean.getNaviText();
-                HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateNaviIndicate navi text is "+text);
+                if(ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG){
+                    HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateNaviIndicate navi text is "+text);
+                }
                 String display = "";
                 String roadName = "";
                 String roadDirection = "";
@@ -181,7 +183,9 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
                                 roadDirection = display.substring(cIndex+1,dIndex+2);
                             }
                         }
-                        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateNaviIndicate display text is "+display+" ,roadName is "+roadName+"  ,roadDirection is"+roadDirection);
+                        if(ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG){
+                            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateNaviIndicate display text is "+display+" ,roadName is "+roadName+"  ,roadDirection is"+roadDirection);
+                        }
 
                     }
                 }

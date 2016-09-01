@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
 import com.amap.api.maps.Projection;
+import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
@@ -75,6 +76,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double CAMERA_FAR_PLANE   = 25;
     private static final int    CHILD_PATH_SIZE    = 20;
     private static final long   PRETENSION_TIME    = 1000;
+    private static final boolean DEBUG_MODE        = true;
+    private static final boolean IS_MOVE_PATH          = false;
+    public static final float  OPENGL_SCALE_FACTOR = 0.0023f;
     private static       int    SCREEN_WIDTH       = 0;
     private static       int    SCREEN_HEIGHT      = 0;
     private static final double BRANCH_LINE_Z      = -0.01;
@@ -1388,10 +1392,27 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             return;
         }
         List<Vector3> path = new ArrayList<>();
+        int skip = naviPath.getCoordList().size()/40;
+        LatLng latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(0));
+        PointF startOpengl = projection.toOpenGLLocation(latLng);
+        Vector3 startVector3 = new Vector3(startOpengl.x, -startOpengl.y, 0);
         for (int i = 0; i < naviPath.getCoordList().size(); i++) {
-            PointF openGL = projection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i)));
+            latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
+            PointF openGL = projection.toOpenGLLocation(latLng);
             //openGL.y轴坐标被翻转过,因此需要使用它的倒数
-            path.add(new Vector3(openGL.x, -openGL.y, 0));
+            Vector3 v = new Vector3(openGL.x*OPENGL_SCALE_FACTOR, -openGL.y*OPENGL_SCALE_FACTOR, 0);
+            /*if (IS_MOVE_PATH){
+                v.x -= startVector3.x;
+                v.y -= startVector3.y;
+                v.z -= startVector3.z;
+            }*/
+            path.add(v);
+            if(DEBUG_MODE){
+                if(i%skip == 0){
+                    Point p = projection.toScreenLocation(latLng);
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("setPath ,opengl point is (%16s,%16s),screen point is(%16d,%16d)",v.x,v.y,p.x,p.y));
+                }
+            }
         }
 
         if (!repeat || !isPathRepeat(path)) {
