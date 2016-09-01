@@ -43,8 +43,8 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
+import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
-import com.haloai.hud.utils.FileUtils;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
 
@@ -52,7 +52,7 @@ import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.IDisplay;
 import org.rajawali3d.view.TextureView;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 
 public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater {
@@ -762,11 +762,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mGlDrawCompass.doDraw();
         }
     }
-    public byte[] bitmap2Bytes2(Bitmap bm) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.PNG, 100, baos);//png类型
-        return baos.toByteArray();
-    }
 
     private void saveAmapViewBitmap(){
         if(IS_SCREEN_SHOOT){
@@ -776,7 +771,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.getMap().getMapScreenShot(new AMap.OnMapScreenShotListener() {
                 @Override
                 public void onMapScreenShot(Bitmap bitmap) {
-                    FileUtils.write2File(bitmap2Bytes2(bitmap), path, "cross_image_" + time+"_shoot" + ".png");
+                    try {
+                        FileUtils.write(FileUtils.bitmap2Bytes(bitmap), path, "cross_image_" + time+"_shoot" + ".png");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
