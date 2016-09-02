@@ -659,8 +659,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         String[] mainRoadArr = getMainRoadArr();
         List<EnlargedCrossProcess.ECBranchLine> ecBranchLines =
                 mEnlargedCrossProcess.recognizeBranchInECImage(crossImage, centerPointIndex, mainRoadArr);
-        HaloLogger.logE("cross_image_handle","==========================================");
-        HaloLogger.logE("cross_image_handle","center:"+mainRoadArr[centerPointIndex*2]+","+mainRoadArr[centerPointIndex*2+1]);
+        HaloLogger.logE("cross_image_handle","start==========================================");
+        //HaloLogger.logE("cross_image_handle","center:"+mainRoadArr[centerPointIndex*2]+","+mainRoadArr[centerPointIndex*2+1]);
+        HaloLogger.logE("cross_image_handle","size:"+(ecBranchLines==null?"null":ecBranchLines.size()));
         for (int i = 0; i < ecBranchLines.size(); i++) {
             EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
             List<Point> line = ecb.getLinePoints();
@@ -670,7 +671,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             HaloLogger.logE("cross_image_handle","cross_image_end");
         }
-        HaloLogger.logE("cross_image_handle","==========================================");
+        HaloLogger.logE("cross_image_handle","end============================================");
     }
 
     /**
