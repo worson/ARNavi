@@ -14,7 +14,6 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
-import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.view.ARWayRoadObject;
 import com.haloai.hud.utils.HaloLogger;
@@ -58,7 +57,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double ANIMATION_LENGTH   = 30;
     private static final double OBJ_4_CHASE_Z      = 0;
-    private static final double BIGGER_TIME        = 1000000.0;
+    private static final double BIGGER_TIME        = 1000000.0*0.0023f;
     private static final double CAMERA_MIN_LENGTH  = 20;
     private static final int    FRAME_RATE         = 10;
     private static final int    CURVE_TIME         = 30;
@@ -76,7 +75,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final long   PRETENSION_TIME    = 1000;
     private static final boolean DEBUG_MODE        = true;
     private static final boolean IS_MOVE_PATH          = false;
-    public static final float  OPENGL_SCALE_FACTOR = 0.0023f;
     private static       int    SCREEN_WIDTH       = 0;
     private static       int    SCREEN_HEIGHT      = 0;
     private static final double BRANCH_LINE_Z      = -0.01;
@@ -151,7 +149,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mCanInitScene  = false;
 
     //image handle
-    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+    //private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -1351,7 +1349,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
             PointF openGL = projection.toOpenGLLocation(latLng);
             //openGL.y轴坐标被翻转过,因此需要使用它的倒数
-            Vector3 v = new Vector3(openGL.x*OPENGL_SCALE_FACTOR, -openGL.y*OPENGL_SCALE_FACTOR, 0);
+            Vector3 v = new Vector3(openGL.x, -openGL.y, 0);
             /*if (IS_MOVE_PATH){
                 v.x -= startVector3.x;
                 v.y -= startVector3.y;
@@ -1360,8 +1358,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             path.add(v);
             if(DEBUG_MODE){
                 if(i%skip == 0){
-                    Point p = projection.toScreenLocation(latLng);
-                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("setPath ,opengl point is (%16s,%16s),screen point is(%16d,%16d)",v.x,v.y,p.x,p.y));
+                    if(ARWayConst.ENABLE_FAST_LOG){
+                        Point p = projection.toScreenLocation(latLng);
+                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("setPath ,opengl point is (%16s,%16s),screen point is(%16d,%16d)",v.x,v.y,p.x,p.y));
+                    }
                 }
             }
         }
@@ -1772,7 +1772,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return false;
     }
 
-    private void myInitScene() {
+    private void  myInitScene() {
         /*mCurScene = new Scene(this);
         mCurScene.resetGLState();
         addAndSwitchScene(mCurScene);
