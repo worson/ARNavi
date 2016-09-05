@@ -1692,7 +1692,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return false;
     }
 
-    private void myInitScene() {
+    private void  myInitScene() {
         /*mCurScene = new Scene(this);
         mCurScene.resetGLState();
         addAndSwitchScene(mCurScene);
