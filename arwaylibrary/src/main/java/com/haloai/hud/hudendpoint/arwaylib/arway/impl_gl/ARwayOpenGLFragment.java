@@ -42,7 +42,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
@@ -92,9 +91,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private int mLastNaviIconType = 0;
     private Bitmap mNaviIconBitmap = null;
     private View arway;
-
-    private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
-
 
     //opengle
     protected ViewGroup     mLayout;
@@ -652,11 +648,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             return;
         }
-        mCrossPathManager.handleCrossInfo(mCurrentPathStep,crossimage.getWidth(),crossimage.getHeight());
         if (crossimage != null) {
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
                     try {
+                        mRenderer.handleCrossInfo(mCurrentPathStep,crossimage.getWidth(),crossimage.getHeight());
                         mRenderer.setEnlargeCrossBranchLines(crossimage);
                         //mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
                     }catch(Exception e){
@@ -839,7 +835,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
         HaloLogger.logE("helong_debug","updatePath");
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
-            mCrossPathManager.parseNaviPathInfo(naviPath,projection);
             if (mRenderer != null) {
                 hideARWay();
                 mDrawScene.animShowHide(false);
