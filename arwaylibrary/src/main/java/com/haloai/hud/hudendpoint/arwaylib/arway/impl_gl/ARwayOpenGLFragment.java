@@ -257,6 +257,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 initAMapNaviView();
             }
         };
+<<<<<<< HEAD
 
         MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
             @Override
@@ -265,6 +266,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             }
         };
 
+=======
+
+        MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
+            @Override
+            public void projectionOk() {
+                rUpdatePath(mAMapNavi);
+            }
+        };
+
+>>>>>>> develop_opengl
         mMapProjectionMachine.init(updateMapViewCall,projectionOkCall);
     }
 

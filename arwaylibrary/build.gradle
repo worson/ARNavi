@@ -65,8 +65,13 @@ dependencies {
     debugCompile 'com.android.support:support-v4:21.0.3'
 //    compile(name: 'openCVLibrary300-release', ext: 'aar')
     //    debugCompile(name: 'rajawali-debug', ext: 'aar')
+<<<<<<< HEAD
     //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
     //    compile project(':rajawali')
     compile project(':endpointsSharedLib')
+=======
+    //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
+//    compile project(':rajawali')
+>>>>>>> develop_opengl
     compile project(':openCVLibrary300')
 }
