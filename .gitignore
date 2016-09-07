@@ -22,6 +22,8 @@ tags
 # generated files
 bin/
 gen/
+.idea/
+build/
 
 # Eclipse setting files
 .settings/
@@ -30,3 +32,4 @@ gen/
 *.classpath
 *.project
 *.properties
+*.iml
