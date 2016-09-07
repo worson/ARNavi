@@ -9,11 +9,34 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
+
+        sourceSets.main.jni.srcDirs = []
+        ndk {
+            moduleName "HaloECP" // Halo enlarged cross image process lib.
+            ldLibs "dl", "log", "Algorithm" // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
+////            stl "stlport_shared"
+        }
     }
     buildTypes {
         release {
+            // 不显示Log
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            // apk优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources true
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            ndk {
+                moduleName "HaloECP"
+                abiFilters "armeabi"
+            }
+        }
+        debug {
+            ndk {
+                moduleName "HaloECP"
+                abiFilters "armeabi"
+            }
         }
     }
 }
@@ -38,10 +61,17 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile project(':endpointsSharedLib')
     compile 'com.android.support:appcompat-v7:21.0.3'
     debugCompile 'com.android.support:support-v4:21.0.3'
+//    compile(name: 'openCVLibrary300-release', ext: 'aar')
     //    debugCompile(name: 'rajawali-debug', ext: 'aar')
+<<<<<<< HEAD
+    //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
+    //    compile project(':rajawali')
+    compile project(':endpointsSharedLib')
+=======
     //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
 //    compile project(':rajawali')
+>>>>>>> develop_opengl
+    compile project(':openCVLibrary300')
 }

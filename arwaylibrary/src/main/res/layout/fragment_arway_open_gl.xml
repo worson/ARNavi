@@ -1,9 +1,11 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:textureview="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context="com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARwayOpenGLFragment">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:textureview="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+             android:layout_marginTop="25dp"
+             android:orientation="horizontal"
+             tools:context=".arway.impl_gl.ARwayOpenGLFragment">
 
     <com.amap.api.navi.AMapNaviView
         android:id="@+id/amap_navi_amapnaviview"
@@ -20,4 +22,4 @@
     />-->
     <!--textureview:frameRate="60.0"-->
     <!--textureview:renderMode="RENDER_WHEN_DIRTY"-->
-</RelativeLayout>
+</FrameLayout>

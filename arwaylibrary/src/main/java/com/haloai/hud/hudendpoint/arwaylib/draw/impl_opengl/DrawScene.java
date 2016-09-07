@@ -1,7 +1,12 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Color;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.widget.RelativeLayout;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
@@ -12,7 +17,7 @@ import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SceneCalculator;
 import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SceneResult;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IOpenglFrame;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.SuperFrameData;
+import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
 import com.haloai.hud.hudendpoint.arwaylib.framedata.impl_opengl.SceneFrameData;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGalore;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGaloreMaterialPlugin;
@@ -29,6 +34,7 @@ import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.scene.Scene;
+import org.rajawali3d.view.TextureView;
 
 import java.util.List;
 import java.util.Stack;
@@ -36,7 +42,7 @@ import java.util.Stack;
 /**
  * Created by wangshengxing on 16/7/10.
  */
-public class DrawScene extends DrawObject implements IOpenglFrame {
+public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperation{
 
     // draw contorl
     private boolean isDrawPlan = false;
@@ -61,6 +67,18 @@ public class DrawScene extends DrawObject implements IOpenglFrame {
 
     public static DrawScene getInstance() {
         return mDrawScene;
+    }
+
+    private TextureView mTextureView;
+
+    @Override
+    public View getViewInstance(Context context) {
+        if (mTextureView == null) {
+            mTextureView = new TextureView(context);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            mTextureView.setLayoutParams(params);
+        }
+        return mTextureView;
     }
 
     @Override
@@ -154,6 +172,60 @@ public class DrawScene extends DrawObject implements IOpenglFrame {
 //            HaloLogger.logE("helong_debug_","degrees:"+MathUtils.getDegrees(v1.x,v1.y,v2.x,v2.y));
 //            plane.setRotZ(MathUtils.getDegrees(v1.x, v1.y, v2.x, v2.y));
                 scene.addChild(plane);
+            }
+        }
+    }
+
+    @Override
+    public void setView(Context context, View view) {
+        if (view != null) {
+//            mTextureView =(TextureView) view.findViewById(R.id.rajwali_surface);
+        }
+
+    }
+
+    @Override
+    public void resetView() {
+
+    }
+    public void animShowHide(boolean show) {
+        View[] views = new View[]{mTextureView};//
+        ObjectAnimator animator = null;
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    if(!v.isShown()){
+                        v.setVisibility(View.VISIBLE);
+                    }
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
+                    animator.setDuration(1000);
+                }else {
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
+                    animator.setDuration(1000-100);
+//                    v.setVisibility(View.INVISIBLE);
+                }
+                if (animator != null) {
+                    animator.setInterpolator(new LinearInterpolator());
+                    animator.setRepeatCount(0);
+                    animator.start();
+                }
+            }
+        }
+    }
+
+    public void showHide(boolean show) {
+        View[] views = new View[]{mTextureView};//
+        for (int i = 0; i <views.length ; i++) {
+            View v = views[i];
+            if (v != null) {
+                if (show){
+                    v.setVisibility(View.VISIBLE);
+
+                }else {
+                    v.setVisibility(View.INVISIBLE);
+                }
+
             }
         }
     }

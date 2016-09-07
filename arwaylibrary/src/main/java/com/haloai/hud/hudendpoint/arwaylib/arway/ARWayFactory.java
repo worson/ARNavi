@@ -4,7 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 
 import com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARWaySurfaceView;
-import com.haloai.hud.hudendpoint.arwaylib.arway.impl.ARwayOpenGLFragment;
+import com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayOpenGLFragment;
 
 /**
  * author       : 龙;

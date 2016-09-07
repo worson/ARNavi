@@ -9,9 +9,18 @@ import org.rajawali3d.renderer.Renderer;
  * Created by 龙 on 2016/4/29.
  */
 public class DrawObject {
+    public  void doDraw(){
+
+    }
+
+    public  void doDraw(Context context){
+
+    }
+
     public  void doDraw(Context context, Canvas canvas){
 
     }
+
     public  void doDraw(Context context, Renderer renderer){
 
     }

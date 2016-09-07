@@ -39,11 +39,11 @@ public class RouteResult extends SuperResult{
     public         AMapNaviLocation       mCurrentLocation      = null;
     public         boolean                mFlag                 = false;
     public boolean mFakeOver;
-    public int mGpsNumber = 0;
-    public String mNaviText = null;
+    public int     mGpsNumber       = 0;
+    public String  mNaviText        = null;
     public boolean mIsMatchNaviPath = true;
-    public boolean mIsYaw = false;
-    public boolean mNaviEnd = false;
+    public boolean mIsYaw           = false;
+    public boolean mNaviEnd         = false;
 
     private RouteResult() {}
 
