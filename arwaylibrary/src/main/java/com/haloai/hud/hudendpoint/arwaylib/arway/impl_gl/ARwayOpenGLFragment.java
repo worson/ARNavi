@@ -122,6 +122,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     // var
     private boolean mLastIsReady    = false;
 
+    //navi
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -188,7 +191,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onViewStateRestored");
     }
 
-    public void initAMapNaviView() {
+    public boolean initAMapNaviView() {
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
         viewOptions.setNaviNight(true);
         viewOptions.setLayoutVisible(false);
@@ -224,7 +227,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             cameraPos = CameraPosition.builder(cameraPos).tilt(0).zoom(maxZoomLevel).build();
             CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(cameraPos);
             aMap.moveCamera(cameraUpdate);
+            return false;
         }
+        return true;
 
     }
 
@@ -257,8 +262,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     {
         MapProjectionMachine.UpdateMapViewCall updateMapViewCall = new MapProjectionMachine.UpdateMapViewCall() {
             @Override
-            public void updateMapView() {
-                initAMapNaviView();
+            public boolean updateMapView() {
+                return initAMapNaviView();
             }
         };
 
@@ -268,8 +273,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 rUpdatePath(mAMapNavi);
             }
         };
-
         mMapProjectionMachine.init(updateMapViewCall,projectionOkCall);
+
     }
 
 
@@ -673,7 +678,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
                     try {
-                        mRenderer.setEnlargeCrossBranchLines(crossimage);
+//                        mRenderer.setEnlargeCrossBranchLines(crossimage);
                         //mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
                     }catch(Exception e){
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"showCrossImage ,image set error!! "+e.toString());
