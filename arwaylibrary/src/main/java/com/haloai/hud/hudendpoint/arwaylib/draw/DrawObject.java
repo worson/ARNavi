@@ -9,6 +9,7 @@ import org.rajawali3d.renderer.Renderer;
  * Created by 龙 on 2016/4/29.
  */
 public class DrawObject {
+    // TODO: 2016/9/7
     public  void doDraw(){
 
     }

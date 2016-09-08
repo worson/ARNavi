@@ -7,6 +7,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
  * detail       : 该bean用于更新指南针表盘
  */
 public class CameraBean extends SuperBean {
+    // TODO: 2016/9/7  
     //高德，自车方向（单位度），以正北为基准，顺时针增加
     private int mDirection;
 

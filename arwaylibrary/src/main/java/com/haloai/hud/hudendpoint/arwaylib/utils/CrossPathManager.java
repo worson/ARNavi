@@ -140,13 +140,20 @@ public class CrossPathManager {
                     p.y = xy[1];
                 }
             }*/
-            HaloLogger.logE("branch_line","cross start=============");
+            HaloLogger.logE("branch_line", "cross start=============");
             for (List<PointF> naviStepOpengl : mNaviStepsOpengl) {
                 for (PointF pointF : naviStepOpengl) {
-                    HaloLogger.logE("branch_line",pointF.x+","+pointF.y);
+                    HaloLogger.logE("branch_line", pointF.x + "," + pointF.y);
                 }
             }
-            HaloLogger.logE("branch_line","cross end===============");
+            HaloLogger.logE("branch_line", "cross end===============");
+            HaloLogger.logE("branch_line", "screen start=============");
+            for (List<Point> naviStepScreen : mNaviStepsScreen) {
+                for (Point point : naviStepScreen) {
+                    HaloLogger.logE("branch_line", point.x + "," + point.y);
+                }
+            }
+            HaloLogger.logE("branch_line", "screen end===============");
             /*Matrix matrix = new Matrix();
             matrix.setRotate((float) rotateZ - 180, mNaviStepsOpengl.get(0).get(0).x, mNaviStepsOpengl.get(0).get(0).y);
             for (int i = 1; i < mPath.size(); i++) {
@@ -384,6 +391,7 @@ public class CrossPathManager {
             HaloLogger.logE(TAG, "getBranchLines faild , centerPointIndex < 0 or centerPointIndex >= mainRoadArr.length / 2!");
             return null;
         }
+
         List<EnlargedCrossProcess.ECBranchLine> ecBranchLines =
                 mEnlargedCrossProcess.recognizeBranchInECImage(crossImage, centerPointIndex, mainRoadArr);
         if (ecBranchLines == null || ecBranchLines.size() <= 0) {
@@ -391,21 +399,32 @@ public class CrossPathManager {
             return null;
         }
         //过滤岔路点每隔10个点取一个
-        for (int i = 0; i < ecBranchLines.size(); i++) {
+        /*for (int i = 0; i < ecBranchLines.size(); i++) {
             EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
             List<Point> line = ecb.getLinePoints();
             for (int j = 0, count = 0; j < line.size(); j++) {
-                if (count++%10 != 0) {
+                if (count++ % 10 != 0) {
                     line.remove(j--);
                 }
             }
+        }*/
+        for (EnlargedCrossProcess.ECBranchLine ecb : ecBranchLines) {
+            HaloLogger.logE("branch_handle", "=========return start=========");
+            int count = 0;
+            for (Point p : ecb.getLinePoints()) {
+                if(count%10==0) {
+                    HaloLogger.logE("branch_handle", p.x + "," + p.y);
+                }
+                count++;
+            }
+            HaloLogger.logE("branch_handle", "==========return end==========");
         }
         List<List<Vector3>> branchLines = new ArrayList<>();
         double scale = calcScaleFromScreen2Opengl(mainRoadArr, centerPointIndex);
         for (int i = 0; i < ecBranchLines.size(); i++) {
+            //计算比例转换返回的岔路坐标到Opengl坐标, 并添加到场景中
             EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
             List<Point> line = ecb.getLinePoints();
-            //计算比例转换返回的岔路坐标到Opengl坐标, 并添加到场景中
             Point centerScreenPoint = getCenterPoint();
             PointF centerOpenglPoint = getCenterPointOpengl();
             line.add(0, centerScreenPoint);
@@ -457,11 +476,21 @@ public class CrossPathManager {
      * @return
      */
     private String[] getMainRoadArr() {
-        List<Point> screenPoint = getScreenPoints();
-        String[] mainRoadArr = new String[screenPoint.size() * 2];
-        for (int i = 0; i < screenPoint.size(); i++) {
-            mainRoadArr[i * 2] = "" + screenPoint.get(i).x;
-            mainRoadArr[i * 2 + 1] = "" + screenPoint.get(i).y;
+        List<Point> screenPoints = getScreenPoints();
+        // TODO: 2016/9/6 test
+        HaloLogger.logE("branch_handle", "=========ori start=========");
+        int centerPointIndex = getCenterPointIndex();
+        int startIndex = centerPointIndex-4>=0?centerPointIndex-4:0;
+        int endIndex = centerPointIndex+4<=screenPoints.size()?centerPointIndex+4:screenPoints.size();
+        for (int i=startIndex;i<endIndex;i++) {
+            Point p = screenPoints.get(i);
+            HaloLogger.logE("branch_handle", p.x + "," + p.y);
+        }
+        HaloLogger.logE("branch_handle", "==========ori end==========");
+        String[] mainRoadArr = new String[screenPoints.size() * 2];
+        for (int i = 0; i < screenPoints.size(); i++) {
+            mainRoadArr[i * 2] = "" + screenPoints.get(i).x;
+            mainRoadArr[i * 2 + 1] = "" + screenPoints.get(i).y;
         }
         return mainRoadArr;
     }
