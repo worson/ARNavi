@@ -24,21 +24,28 @@ using namespace std;
 //
 
 #define LOG_TAG "HaloAI_ECP_Lib"
+#define LOG_TAG_ERROR "branch_handle"
 #define LOGD_ANDROID(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
+#define LOGE_ANDROID(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG_ERROR, __VA_ARGS__))
 
 int searchHopPoint(cv::Mat image, int * x, int * y);
 
+static int g_nIndex = 0;
 JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetBranchRoads
         (JNIEnv * env, jobject javaSelf, jlong ecImage, jint centerPointIndex, jobjectArray mainRoadArr)
 {
     LOGD_ANDROID("nativeGetBranchRoad enter!!!");
 
     Mat matRoadImg = *(Mat*)ecImage;
+
+
+
     vector<vector<Point2i> > vecPointSet;
     vector<Point2i> vecMainRoad;
     int mainRoadArrSize = env->GetArrayLength(mainRoadArr);
     LOGD_ANDROID("mainRoadArr.size=%d",(int)mainRoadArrSize/2);
     LOGD_ANDROID("centerPointIndex=%d",(int)centerPointIndex);
+    //LOGE_ANDROID("==============haloecp start==========");
     for (int j = 0; j < mainRoadArrSize/2; j++) {
         jstring string_x = (jstring)(env->GetObjectArrayElement(mainRoadArr, j*2));
         const char * chars_x =  env->GetStringUTFChars(string_x, 0);
@@ -51,9 +58,43 @@ JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_En
         env->ReleaseStringUTFChars(string_x, chars_x);
         env->ReleaseStringUTFChars(string_y, chars_y);
         LOGD_ANDROID("point.x = %d,point.y = %d",(int)point.x,(int)point.y);
+        //LOGE_ANDROID("%d,%d",(int)point.x,(int)point.y);
     }
+
+
+    //======test==========
+#if 1
+    Mat matTestScreen(matRoadImg.rows,matRoadImg.cols,CV_8UC3);
+    matTestScreen.setTo(0);
+    int nRet = DrawPoint(vecMainRoad,Scalar(0,0,255),2,matTestScreen);
+
+
+    Mat matTempMerge;
+    vector<Mat> vecMatTemp;
+    vecMatTemp.clear();
+    vecMatTemp.push_back(matRoadImg);
+    vecMatTemp.push_back(matTestScreen);
+    nRet = MergeMat(vecMatTemp, matTempMerge);
+
+
+    char cTemp[100];
+    sprintf(cTemp,"//sdcard//testimage//helong//MergeImg-%d.bmp",g_nIndex++);
+    imwrite(cTemp,matTempMerge);
+#endif
+
+    //======================
+
+    //LOGE_ANDROID("==============haloecp end============");
     int res = GetCrossRoadPoint(matRoadImg, vecMainRoad, centerPointIndex, vecPointSet);
     LOGD_ANDROID("vecPointSet.size=%d", (int)vecPointSet.size());
+    /*for(int j=0;j<(int)vecPointSet.size();j++){
+        LOGE_ANDROID("==============return start==========");
+        vector<Point2i> temp = vecPointSet.at(j);
+        for(int k=0;k<(int)temp.size();k++){
+            LOGE_ANDROID("%d,%d",temp[k].x,temp[k].y);
+        }
+        LOGE_ANDROID("==============return end============");
+    }*/
     jobjectArray retBranchRoads = NULL;
     if (!res/* && vecMainRoad.size() == 2*/) {
         //Set the main road tail end.

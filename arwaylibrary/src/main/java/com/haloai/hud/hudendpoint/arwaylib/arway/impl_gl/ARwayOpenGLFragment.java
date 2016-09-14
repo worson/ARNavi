@@ -34,6 +34,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
+import com.haloai.hud.hudendpoint.arwaylib.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
@@ -96,10 +97,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private boolean mCameraChangeFinish = false;
 
     //bean
-    private static NaviInfoBean mNaviInfoBean    = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
-    private static RouteBean    mRouteBean       = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
-    private static CommonBean   mCommonBean      = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
-    private        int          mCurrentPathStep = 0;
+    private static NaviInfoBean            mNaviInfoBean            = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+    private static RouteBean               mRouteBean               = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
+    private static CommonBean              mCommonBean              = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+    private        int                     mCurrentPathStep         = 0;
+    private static CrossImageDataCollector mCrossImageDataCollector = new CrossImageDataCollector();
 
 
     public ARwayOpenGLFragment() {
@@ -468,6 +470,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         updateNaviInfoDisplay();
         updateRetainDistanceDialDisplay();
 
+        // TODO: 2016/9/7
+        mCrossImageDataCollector.endNavigation();
     }
 
 
@@ -672,14 +676,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (crossimage != null) {
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
+                    String bitmapFileName = null;
                     try {
-                        HaloLogger.logE("branch_handle","save a new cross image");
-                        FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
+                        HaloLogger.logE("branch_handle", "save a new cross image");
+                        bitmapFileName = System.currentTimeMillis() + ".png";
+                        FileUtils.write(FileUtils.bitmap2Bytes(crossimage), "/sdcard/testimage/oricrossimage/", bitmapFileName);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     mRenderer.handleCrossInfo(mCurrentPathStep, crossimage.getWidth(), crossimage.getHeight());
                     mRenderer.setEnlargeCrossBranchLines(crossimage);
+                    // TODO: 2016/9/7
+                    mRenderer.addCrossImageData2Collector("/sdcard/testimage/oricrossimage/",bitmapFileName,mCrossImageDataCollector);
                 }
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(mCurrentCrossImage);
             } else {
@@ -701,14 +709,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         Canvas c = new Canvas(newBmp);
 
         // get the int for the colour which needs to be removed
-        Paint mPaint = new Paint();// 去锯齿
-        mPaint.setAntiAlias(true);// 防抖动
-        mPaint.setDither(true);// 图像过滤
-        mPaint.setFilterBitmap(true);
-        mPaint.setARGB(255, 0, 0, 0); // ARGB for the color to replace
+        Paint paint = new Paint();// 去锯齿
+        paint.setAntiAlias(true);// 防抖动
+        paint.setDither(true);// 图像过滤
+        paint.setFilterBitmap(true);
+        paint.setARGB(255, 0, 0, 0); // ARGB for the color to replace
 
-        mPaint.setXfermode(new AvoidXfermode(0x616161, 50, AvoidXfermode.Mode.TARGET));
-        c.drawPaint(mPaint);
+        paint.setXfermode(new AvoidXfermode(0x616161, 50, AvoidXfermode.Mode.TARGET));
+        c.drawPaint(paint);
 
         return newBmp;
     }
@@ -755,6 +763,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             mRenderer.continue_();
             ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         }*/
+        if(arway.isShown()){
+            mRenderer.onLocationChange(location);
+        }
     }
 
     /**
@@ -854,6 +865,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     return -2;
                 }
                 mRenderer.setPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
+                // TODO: 2016/9/7
+                mCrossImageDataCollector.startNavigation(naviPath.getCoordList());
                 result = 0;
 
             } else {
@@ -896,7 +909,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         int distance = info.getPathRetainDistance();
         if (arway.isShown()) {
-            mRenderer.setRetainDistance(distance);
+            mRenderer.onLocationChange(info);
         }
 
         if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {

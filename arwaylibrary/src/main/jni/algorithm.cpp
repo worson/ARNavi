@@ -3,6 +3,7 @@
 
 #include "algorithm.h"
 
+static int g_nIndex = 0;
 int GetCrossRoadPoint(const Mat& matRoadImg, const vector<Point2i>& vecMainRoadScreenPoint, int nCenterPointIndex,
 					  vector<vector<Point2i> >& vecCrossRoadPointSet)
 {	
@@ -14,6 +15,19 @@ int GetCrossRoadPoint(const Mat& matRoadImg, const vector<Point2i>& vecMainRoadS
 	}
 
 #if IS_PRINT_TIME
+	#if 1		// =========test==============
+		Mat matTempTest(matRoadImg.rows,matRoadImg.cols,CV_8UC3);
+		int nTRet = DrawPoint(vecMainRoadScreenPoint,Scalar(0,0,255),2,matTempTest);
+		if (nTRet<0)
+		{
+			return -1;
+		}
+
+		char cTemp[100];
+		sprintf(cTemp,"//sdcard//testimage//helong//ScreenPoint-%d.bmp",g_nIndex++);
+		imwrite(cTemp,matTempTest);
+	#endif
+
 	double uDuration = 0;
 	clock_t ckStart, ckStart0, ckEnd;
 
@@ -120,9 +134,15 @@ int GetCrossRoadPoint(const Mat& matRoadImg, const vector<Point2i>& vecMainRoadS
 	#ifndef IS_WINDOWS_VER
 		LOGD("Preprocess - Get DottedLine & dilate： %f ms", uDuration*1000);
 		LOGD("Preprocess total time： %f ms", uDuration0*1000);
+		#if 0
+			char cTemp[100];
+			sprintf(cTemp,"//sdcard//testimage//helong//test-%d.bmp",g_nIndex++);
+			imwrite(cTemp,matDottedLineBwI*255);
+		#endif
 	#else
 		printf("Preprocess - Get DottedLine & dilate： %f ms\n", uDuration*1000);
 		printf("Preprocess total time： %f ms\n", uDuration0*1000);
+
 	#endif
 #endif
 
@@ -571,6 +591,26 @@ int GetCrossRoadPoint(const Mat& matRoadImg, const vector<Point2i>& vecMainRoadS
 		return -1;
 	}
 
+
+#if 0		// =========test==============
+	Mat matTempTestLine(nRow,nCol,CV_8UC3);
+	matTempTestLine.setTo(0);
+	nRet = DrawCrossRoadsLine(vecCrossAssistSet,matTempTestLine);
+	if (nRet<0)
+	{
+		return -1;
+	}
+	Mat matTempTestLine1(nRow,nCol,CV_8UC3);
+	nRet = DrawPoint(vecMainRoadScreenPoint,Scalar(0,0,255),2,matTempTestLine1);
+	if (nRet<0)
+	{
+		return -1;
+	}
+
+	char cTemp[100];
+	sprintf(cTemp,"//sdcard//testimage//helong//test-%d.bmp",g_nIndex++);
+	imwrite(cTemp,matTempTestLine+matTempTestLine1);
+#endif
 
 #if IS_SHOW_CROSSROAD
 	// 保存数据
@@ -1999,7 +2039,8 @@ int DrawCrossRoadsLine(const vector<vector<Point2i> >& vecCrossRoadPoint,
 	for (int i = 0; i < nNum; i++)
 	{		
 		vecTemp = vecCrossRoadPoint[i];
-		nRet = DrawLine(vecTemp, scColorV, nLineW, matCrossRoadLine);
+		//nRet = DrawLine(vecTemp, scColorV, nLineW, matCrossRoadLine);
+		nRet = DrawPoint(vecTemp, scColorV, nLineW, matCrossRoadLine);
 		if (nRet<0)
 		{
 			return -1;

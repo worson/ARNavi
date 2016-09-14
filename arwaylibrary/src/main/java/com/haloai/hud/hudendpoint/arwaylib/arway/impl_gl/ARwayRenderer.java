@@ -9,13 +9,18 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
+import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.Projection;
 import com.amap.api.maps.model.LatLng;
+import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
+import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
+import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.view.ARWayRoadObject;
 import com.haloai.hud.utils.HaloLogger;
@@ -74,7 +79,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  CAMERA_NEAR_PLANE  = 0.5;
     private static final double  CAMERA_FAR_PLANE   = 25;
     private static final int     CHILD_PATH_SIZE    = 20;
-    private static final long    PRETENSION_TIME    = 1000;
     private static final boolean DEBUG_MODE         = true;
     private static final boolean IS_MOVE_PATH       = false;
     private static       int     SCREEN_WIDTH       = 0;
@@ -554,6 +558,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     public void handleCrossInfo(int currentPathStep, int width, int height) {
         mCrossPathManager.handleCrossInfo(currentPathStep, width, height);
     }
+
+    public void addCrossImageData2Collector(String filePath, String bitmapFileName, CrossImageDataCollector crossImageDataCollector) {
+        mCrossPathManager.addCrossImageData2Collector(filePath, bitmapFileName, crossImageDataCollector);
+    }
+
     //====================================new handle cross image end============================================
 
 
@@ -1262,7 +1271,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     if (projection != null) {
                         LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
                         Point p = projection.toScreenLocation(latLng);
-                        stepScreenPoints.add(new Point(p.x,-p.y));
+                        stepScreenPoints.add(new Point(p.x, -p.y));
                         PointF pf = projection.toOpenGLLocation(latLng);
                         stepOpenglPoints.add(new PointF(pf.x, -pf.y));
                         Vector3 v = new Vector3(pf.x, -pf.y, 0);
@@ -1695,7 +1704,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return false;
     }
 
-    private void  myInitScene() {
+    private void myInitScene() {
         /*mCurScene = new Scene(this);
         mCurScene.resetGLState();
         addAndSwitchScene(mCurScene);
@@ -1932,6 +1941,55 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return insertARWayObject(littlePath, position, width, width, type);
     }
 
+    private LatLng mPreLocation = null;
+    private LatLng mCurLocation = null;
+    private long   mLastTime    = 0;
+
+    public void onLocationChange(AMapNaviLocation location) {
+        if (mLastTime != 0 && System.currentTimeMillis() - mLastTime < 2000) {
+            return;
+        }
+        mLastTime = System.currentTimeMillis();
+        LatLng latLng = DrawUtils.naviLatLng2LatLng(location.getCoord());
+        if (mPreLocation == null) {
+            return;
+        }
+        double retainDist = 0;
+        if (mCurLocation == null) {
+            mCurLocation = latLng;
+        } else {
+            if (!latLng.equals(mCurLocation)) {
+                mPreLocation = mCurLocation;
+                mCurLocation = latLng;
+            } else {
+                return;
+            }
+        }
+        retainDist = mStartLength - AMapUtils.calculateLineDistance(mCurLocation, mPreLocation);
+        setRetainDistance(retainDist);
+    }
+
+    public void onLocationChange(NaviInfo info) {
+        if (mLastTime != 0 && System.currentTimeMillis() - mLastTime < 2000) {
+            return;
+        }
+        mLastTime = System.currentTimeMillis();
+        LatLng latLng = DrawUtils.naviLatLng2LatLng(info.getCoord());
+        if (mPreLocation == null) {
+            mPreLocation = latLng;
+        } else if (mCurLocation == null) {
+            mCurLocation = latLng;
+        } else {
+            if (!latLng.equals(mCurLocation)) {
+                mPreLocation = mCurLocation;
+                mCurLocation = latLng;
+            } else {
+                return;
+            }
+        }
+        setRetainDistance(info.getPathRetainDistance());
+    }
+
     public void setRetainDistance(double endLength) {
         if (endLength > mLength2FinalPoint.get(0)) {
             return;
@@ -1967,8 +2025,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mCameraAnim.unregisterListener(this);
         }
         Object3D chaseObject = mObject4Chase;
-        //观察到原始durqation基本在4000以上,因此设置PERTENSION_TIME的值为1000,也就是使用更长的动画时间来减少停滞的情况发生
-        long duration = endTime - mStartTime + PRETENSION_TIME;
+        long duration = endTime - mStartTime;
         Vector3 cameraVector3 = chaseObject.getPosition();
         Vector3 startPosition = new Vector3(cameraVector3.x, cameraVector3.y, 0);
         List<Vector3> throughPosition = new ArrayList<>();

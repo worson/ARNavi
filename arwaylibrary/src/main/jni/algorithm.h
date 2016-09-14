@@ -9,6 +9,12 @@
 #include <math.h>
 #include <algorithm>
 
+#include <opencv2/core/cvstd.hpp>
+#include <opencv2/core/utility.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/core/mat.hpp>
+
 
 #ifdef IS_WINDOWS_VER
 	#include "opencv2/highgui/highgui.hpp"
@@ -68,7 +74,7 @@ using namespace std;
 
 #define IS_SAVE_ROAD		0						// 控制是否保存路径
 #define IS_SAVE_MERGEROAD	0					// 控制是否保存主路和岔路的合成路径
-#define IS_PRINT_TIME		0						// 控制是否打印时间
+#define IS_PRINT_TIME		1						// 控制是否打印时间
 
 #define CROSSIMAGE_W	400			// 路口放大图宽度
 #define CROSSIMAGE_H	400			// 路口放大图高度
