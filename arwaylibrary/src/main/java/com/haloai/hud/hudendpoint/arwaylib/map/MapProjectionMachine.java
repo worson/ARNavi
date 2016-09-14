@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.map;
 
+import android.util.Log;
+
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -7,8 +9,11 @@ import com.haloai.hud.utils.HaloLogger;
  * Created by wangshengxing on 16/9/3.
  */
 public class MapProjectionMachine {
+
+    private static final String TAG = MapProjectionMachine.class.getSimpleName();
+
     public interface UpdateMapViewCall{
-        public void updateMapView();
+        public boolean updateMapView();
     }
 
     public interface ProjectionOkCall{
@@ -25,6 +30,8 @@ public class MapProjectionMachine {
     public boolean mNeedUpdatePath           = false; //判断需要更新到render中去,更新path后自动关闭，开始导航、偏航时开启
     public boolean mForceUpdateNaviView4Path = false; //更新地图样式比例可转换oepngl点和屏幕点，需要更新path时打开开关，更新后则关闭
     public boolean mIsMapLoaded              = false; //地图未加载成功,成功后值不再改变
+
+    public boolean mScaledOk = false;
 
     private UpdateMapViewCall mUpdateMapViewCall = null;
     private ProjectionOkCall mProjectionOkCall = null;
@@ -110,6 +117,7 @@ public class MapProjectionMachine {
                 machine.mIsMapLoaded =true;
             }
             if(machine.mNeedUpdatePath ) {
+                Log.e(TAG, String.format("mMaploadState,need update path"));
                 machine.updateContext();
             }
             machine.getUpdateMapViewCall().updateMapView();
@@ -119,17 +127,28 @@ public class MapProjectionMachine {
         @Override
         public void handle(MapProjectionMachine machine) {
             machine.updateContext();
+            machine.mScaledOk = false;
         }
     };
 
     private MapProjectionState mMapScaledState = new MapProjectionState() {
         @Override
         public void handle(MapProjectionMachine machine) {
-            if(machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path){
-                machine.mForceUpdateNaviView4Path = false;
-                machine.getProjectionOkCall().projectionOk();
+            if (machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path) {
+                if (machine.mScaledOk) {
+                    machine.mForceUpdateNaviView4Path = false;
+                    machine.getProjectionOkCall().projectionOk();
+                    machine.mNeedUpdatePath = false;
+                    Log.e(TAG, String.format("mMapScaledState,path updated!"));
+                } else {
+                    Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
+                }
             }
-            machine.getUpdateMapViewCall().updateMapView();
+            machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
         }
+
+
     };
 }
+
+

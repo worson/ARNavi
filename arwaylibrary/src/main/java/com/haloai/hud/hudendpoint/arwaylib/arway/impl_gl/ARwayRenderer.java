@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
@@ -62,29 +63,30 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
-    private static final double  ANIMATION_LENGTH   = 30;
-    private static final double  OBJ_4_CHASE_Z      = 0;
-    public static final  double  BIGGER_TIME        = 1000000.0 * 0.0023;
-    private static final double  CAMERA_MIN_LENGTH  = 20;
-    private static final int     FRAME_RATE         = 10;
-    private static final int     CURVE_TIME         = 30;
-    private static final double  LOGIC_ROAD_WIDTH   = 0.4;
-    private static final double  ROAD_WIDTH         = 0.4;
-    private static final double  CAMERA_OFFSET_X    = 0;
-    private static final double  CAMERA_OFFSET_Y    = 0;
-    private static final double  CAMERA_OFFSET_Z    = 0.6;
-    private static final double  CAMERA_CUT_OFFSET  = 0.7;
-    private static final double  LOOK_AT_DIST       = 1.3;
-    private static final int     INTERSECTION_COUNT = 30;
-    private static final double  CAMERA_NEAR_PLANE  = 0.5;
-    private static final double  CAMERA_FAR_PLANE   = 25;
-    private static final int     CHILD_PATH_SIZE    = 20;
-    private static final boolean DEBUG_MODE         = true;
-    private static final boolean IS_MOVE_PATH       = false;
-    private static       int     SCREEN_WIDTH       = 0;
-    private static       int     SCREEN_HEIGHT      = 0;
-    private static final double  BRANCH_LINE_Z      = -0.01;
-    private static final double  ADD_PLANE_LENGTH   = 600;
+    private static final double ANIMATION_LENGTH   = 30;
+    private static final double OBJ_4_CHASE_Z      = 0;
+    private static final double BIGGER_TIME        = 1000000.0*0.0023f;
+    private static final double CAMERA_MIN_LENGTH  = 20;
+    private static final int    FRAME_RATE         = 10;
+    private static final int    CURVE_TIME         = 30;
+    private static final double LOGIC_ROAD_WIDTH   = 0.4;
+    private static final double ROAD_WIDTH         = 0.4;
+    private static final double CAMERA_OFFSET_X    = 0;
+    private static final double CAMERA_OFFSET_Y    = 0;
+    private static final double CAMERA_OFFSET_Z    = 0.6;
+    private static final double CAMERA_CUT_OFFSET  = 0.7;
+    private static final double LOOK_AT_DIST       = 1.3;
+    private static final int    INTERSECTION_COUNT = 30;
+    private static final double CAMERA_NEAR_PLANE  = 0.5;
+    private static final double CAMERA_FAR_PLANE   = 25;
+    private static final int    CHILD_PATH_SIZE    = 20;
+    private static final long   PRETENSION_TIME    = 1000;
+    private static final boolean DEBUG_MODE        = false;
+    private static final boolean IS_MOVE_PATH          = false;
+    private static       int    SCREEN_WIDTH       = 0;
+    private static       int    SCREEN_HEIGHT      = 0;
+    private static final double BRANCH_LINE_Z      = -0.01;
+    private static final double ADD_PLANE_LENGTH   = 600;
     private static final String  TAG                = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
 
     //list data
@@ -156,7 +158,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mCanMyInitScene = false;
 
     //image handle
-    private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
+//    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+    private        CrossPathManager     mCrossPathManager     = CrossPathManager.getInstance();
+    private double mObject4ChaseStartOrientation = 0;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -530,29 +534,30 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //====================================new handle cross image start==========================================
     public void setEnlargeCrossBranchLines(Bitmap crossImage) {
-        if (crossImage == null) {
-            HaloLogger.logE(TAG, "getBrachLines faild , CrossImage is null!");
-            return;
-        }
-        List<List<Vector3>> branchLines = mCrossPathManager.setEnlargeCrossBranchLiens(crossImage);
-        if (branchLines == null || branchLines.size() <= 0) {
-            HaloLogger.logE(TAG, "setEnlargeCrossBranchLines is error , do not get the branch line!");
-        }
-        for (List<Vector3> branchLine : branchLines) {
-            Vector3 pos = branchLine.get(0);
-            HaloLogger.logE("branch_line", "=============start===============");
-            for (Vector3 v : branchLine) {
-                HaloLogger.logE("branch_line", v.x + "," + v.y);
-                v.x -= pos.x;
-                v.y -= pos.y;
-                v.z -= pos.z;
-            }
-            HaloLogger.logE("branch_line", "==============end================");
-            if (!mIsMyInitScene) {
-                return;
-            }
-            insertARWayObject(branchLine, pos, ROAD_WIDTH, 2);
-        }
+
+//        if (crossImage == null) {
+//            HaloLogger.logE(TAG, "getBrachLines faild , CrossImage is null!");
+//            return;
+//        }
+//        List<List<Vector3>> branchLines = mCrossPathManager.setEnlargeCrossBranchLiens(crossImage);
+//        if (branchLines == null || branchLines.size() <= 0) {
+//            HaloLogger.logE(TAG, "setEnlargeCrossBranchLines is error , do not get the branch line!");
+//        }
+//        for (List<Vector3> branchLine : branchLines) {
+//            Vector3 pos = branchLine.get(0);
+//            HaloLogger.logE("branch_line", "=============start===============");
+//            for (Vector3 v : branchLine) {
+//                HaloLogger.logE("branch_line", v.x + "," + v.y);
+//                v.x -= pos.x;
+//                v.y -= pos.y;
+//                v.z -= pos.z;
+//            }
+//            HaloLogger.logE("branch_line", "==============end================");
+//            if (!mIsMyInitScene) {
+//                return;
+//            }
+//            insertARWayObject(branchLine, pos, ROAD_WIDTH, 2);
+//        }
     }
 
     public void handleCrossInfo(int currentPathStep, int width, int height) {
@@ -1479,7 +1484,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //rotate path with matrix
         double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
-        /*Matrix matrix = new Matrix();
+        mObject4ChaseStartOrientation = rotateZ;
+        Matrix matrix = new Matrix();
         matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
         for (int i = 1; i < mPath.size(); i++) {
             Vector3 v = mPath.get(i);
@@ -1487,7 +1493,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
             v.x = xy[0];
             v.y = xy[1];
-        }*/
+        }
 
         int pathLength = mPath.size();
         CatmullRomCurve3D catmull = new CatmullRomCurve3D();
@@ -1791,6 +1797,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase = new Sphere(0.0001f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
+//        mObject4Chase.setRotZ(mObject4ChaseStartOrientation-180);
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
         }
@@ -2046,7 +2053,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             for (int i = 0; i < mTranslateAnims.size(); i++) {
                 if (mTranslateAnims.get(i).isPlaying()) {
                     mTranslateAnims.get(i).pause();
-                    if (ARWayConst.ENABLE_TEST_LOG) {
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mTranslateAnims translate anim stop !!!!!!!!!!!******************");
                     }
                 }
@@ -2061,7 +2068,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             for (int i = 0; i < mRotateAnims.size(); i++) {
                 if (mRotateAnims.get(i).isPlaying()) {
                     mRotateAnims.get(i).pause();
-                    if (ARWayConst.ENABLE_TEST_LOG) {
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mRotateAnims rotate anim stop !!!!!!!!!!!******************");
                     }
                 }
@@ -2095,9 +2102,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     splitPath2LittlePathesWithIndexAndLength(mPath, mChildPathPositions, mChildPathes,
                                                              mStartAddPlaneIndex, mRetainTotalLength - mEndLength);
                     addPlane2Scene();
-                    HaloLogger.logE("helong_debug", "add plane,move length:" + (mRetainTotalLength - mEndLength) + ",mStartAddPlaneIndex:" + mStartAddPlaneIndex);
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
+                        HaloLogger.logE("helong_debug", "add plane,move length:" + (mRetainTotalLength - mEndLength) + ",mStartAddPlaneIndex:" + mStartAddPlaneIndex);
+                    }
                     mRetainTotalLength = mEndLength;
-                    HaloLogger.logE("helong_debug", "over time:" + (System.currentTimeMillis() - time));
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
+                        HaloLogger.logE("helong_debug", "over time:" + (System.currentTimeMillis() - time));
+                    }
                 }
             }.start();
         }

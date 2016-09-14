@@ -31,7 +31,7 @@ public class CrossPathManager {
     private CrossPathManager() {}
 
     private static CrossPathManager     mInstance             = new CrossPathManager();
-    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+//    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
 
     public static CrossPathManager getInstance() {
         return mInstance;
@@ -386,7 +386,7 @@ public class CrossPathManager {
         return true;
     }
 
-    public List<List<Vector3>> setEnlargeCrossBranchLiens(Bitmap crossImage) {
+    /*public List<List<Vector3>> setEnlargeCrossBranchLiens(Bitmap crossImage) {
         int centerPointIndex = getCenterPointIndex();
         String[] mainRoadArr = getMainRoadArr();
         if (centerPointIndex < 0 || centerPointIndex >= mainRoadArr.length / 2) {
@@ -466,7 +466,7 @@ public class CrossPathManager {
             branchLines.add(branchLine);
         }
         return branchLines;
-    }
+    }*/
 
     private double calcScaleFromScreen2Opengl(String[] mainRoadArr, int centerPointIndex) {
         PointF centerPointOpengl = getCenterPointOpengl();
