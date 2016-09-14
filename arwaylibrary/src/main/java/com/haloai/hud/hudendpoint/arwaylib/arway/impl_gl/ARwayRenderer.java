@@ -13,6 +13,8 @@ import android.view.animation.LinearInterpolator;
 import com.amap.api.maps.Projection;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviPath;
+import com.amap.api.navi.model.AMapNaviStep;
+import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
@@ -81,6 +83,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static       int    SCREEN_HEIGHT      = 0;
     private static final double BRANCH_LINE_Z      = -0.01;
     private static final double ADD_PLANE_LENGTH   = 600;
+    private static final String  TAG                = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
 
     //list data
     private List<Vector3>         mPath                = new ArrayList<>();
@@ -146,13 +149,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //ps:mIsInitScene代表Rajawali自己初始化场景是否完成
     //ps:mIsMyInitScene代表我们得到数据后去add元素到场景中是否完成
     //ps:mCanInitScene代表我们是否能够去add元素到场景中(满足一下条件即可:1.数据到来setPath被调用 2.本次数据未被加载成元素添加到场景中)
-    private boolean mIsInitScene   = false;
-    private boolean mIsMyInitScene = false;
-    private boolean mCanInitScene  = false;
+    private boolean mIsInitScene    = false;
+    private boolean mIsMyInitScene  = false;
+    private boolean mCanMyInitScene = false;
 
     //image handle
 //    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
     private        CrossPathManager     mCrossPathManager     = CrossPathManager.getInstance();
+    private double mObject4ChaseStartOrientation = 0;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -179,7 +183,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
 
-        if (!mIsMyInitScene && mCanInitScene) {
+        if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
     }
@@ -497,131 +501,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         super.onRender(ellapsedRealtime, deltaTime);
     }
 
-    // TODO: 2016/7/21 TEST
-    private void handleLookAt(Vector3 rotation) {
-        //        if (Math.abs(lookAt.x) < 80 && Math.abs(lookAt.x) > 60) {
-        //            if(Math.abs(lookAt.y)>Math.abs(lookAt.z)){
-        //                lookAt.z = -lookAt.y;
-        //            }else{
-        //                lookAt.y = -lookAt.z;
-        //            }
-        //        }else if(Math.abs(lookAt.z) < 80 && Math.abs(lookAt.z) > 60){
-        //            if(Math.abs(lookAt.x)>Math.abs(lookAt.y)){
-        //                lookAt.y = -lookAt.x;
-        //            }else{
-        //                lookAt.x = -lookAt.y;
-        //            }
-        //        }else{
-        //            if(Math.abs(lookAt.x)>Math.abs(lookAt.z)){
-        //                lookAt.z = -lookAt.x;
-        //            }else{
-        //                lookAt.x = -lookAt.z;
-        //            }
-        //        }
-        double xTo70 = Math.abs(70 - (Math.abs(rotation.x)));
-        double yTo70 = Math.abs(70 - (Math.abs(rotation.y)));
-        double zTo70 = Math.abs(70 - (Math.abs(rotation.z)));
-        //        HaloLogger.logE("helong_fix_____", "lookat:" + rotation);
-        //        HaloLogger.logE("helong_fix_____", "fix:xTo70:" + xTo70 + ",yTo70:" + yTo70 + ",zTo70:" + zTo70);
-        if (Math.min(xTo70, Math.min(yTo70, zTo70)) == yTo70 && Math.abs(yTo70) < 10) {
-            //x轴最接近70
-            //            lookAt.y = lookAt.y < 0 ? -76 : 76/*Math.abs(lookAt.y) > 76 ? 76 : lookAt.y*/;
-            //            if (Math.abs(lookAt.x) > Math.abs(lookAt.z)) {
-            //                if ((lookAt.z < 0 && lookAt.x >= 0) || (lookAt.z >= 0 && lookAt.x < 0)) {
-            //                    //符号不同
-            //                    lookAt.z = -lookAt.x;
-            //                } else {
-            //                    //符号相同
-            //                    lookAt.z = lookAt.x;
-            //                }
-            //            } else {
-            //                if ((lookAt.z < 0 && lookAt.x >= 0) || (lookAt.z >= 0 && lookAt.x < 0)) {
-            //                    //符号不同
-            //                    lookAt.x = -lookAt.z;
-            //                } else {
-            //                    //符号相同
-            //                    lookAt.x = lookAt.z;
-            //                }
-            //            }
-
-
-            if (Math.abs(rotation.x) > Math.abs(rotation.z)) {
-                if (rotation.y < 0) {
-                    //符号不同
-                    rotation.z = -rotation.x;
-                } else {
-                    //符号相同
-                    rotation.z = rotation.x;
-                }
-            } else {
-                if (rotation.y < 0) {
-                    //符号不同
-                    rotation.x = -rotation.z;
-                } else {
-                    //符号相同
-                    rotation.x = rotation.z;
-                }
-            }
-
-            //            HaloLogger.logE("helong_fix_____", "y_fix:" + rotation);
-        } else if (Math.min(xTo70, Math.min(yTo70, zTo70)) == zTo70 && Math.abs(zTo70) < 10) {
-            //z轴最接近70,目前测试未发现Y轴代表倾斜的情况,因此暂时不考虑Y轴为70,目前逻辑不是X即认为为Z
-            //            lookAt.z = lookAt.z < 0 ? -76 : 76/*Math.abs(lookAt.z) > 76 ? -76 : lookAt.z*/;
-            //            if (Math.abs(lookAt.x) > Math.abs(lookAt.y)) {
-            //                lookAt.y = -lookAt.x;
-            //            } else {
-            //                lookAt.x = -lookAt.y;
-            //            }
-            //            if (Math.abs(lookAt.x) > Math.abs(lookAt.y)) {
-            //                if ((lookAt.y < 0 && lookAt.x >= 0) || (lookAt.y >= 0 && lookAt.x < 0)) {
-            //                    //符号不同
-            //                    lookAt.y = -lookAt.x;
-            //                } else {
-            //                    //符号相同
-            //                    lookAt.y = lookAt.x;
-            //                }
-            //            } else {
-            //                if ((lookAt.y < 0 && lookAt.x >= 0) || (lookAt.y >= 0 && lookAt.x < 0)) {
-            //                    //符号不同
-            //                    lookAt.x = -lookAt.y;
-            //                } else {
-            //                    //符号相同
-            //                    lookAt.x = lookAt.y;
-            //                }
-            //            }
-
-
-            if (Math.abs(rotation.x) > Math.abs(rotation.y)) {
-                if (rotation.z < 0) {
-                    //符号不同
-                    rotation.y = -rotation.x;
-                } else {
-                    //符号相同
-                    rotation.y = rotation.x;
-                }
-            } else {
-                if (rotation.z < 0) {
-                    //符号不同
-                    rotation.x = -rotation.y;
-                } else {
-                    //符号相同
-                    rotation.x = rotation.y;
-                }
-            }
-
-            //            HaloLogger.logE("helong_fix_____", "z_fix:" + rotation);
-        } /*else if (Math.min(xTo70, Math.min(yTo70, zTo70)) == xTo70 && Math.abs(xTo70) < 10) {
-            //lookAt.x = ;
-//            if (Math.abs(lookAt.y) > Math.abs(lookAt.z)) {
-//                lookAt.z = -lookAt.y;
-//            } else {
-//                lookAt.y = -lookAt.z;
-//            }
-
-            HaloLogger.logE("helong_fix_____", "x_fix:" + lookAt);
-        }*/
-    }
-
     @Override
     public void onOffsetsChanged(float v, float v1, float v2, float v3, int i, int i1) {
 
@@ -649,54 +528,38 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //====================================handle cross image start========================================//
 
+    //====================================new handle cross image start==========================================
     public void setEnlargeCrossBranchLines(Bitmap crossImage) {
-       /* if (crossImage == null) {
-            return;
-        }
-        int centerPointIndex = getCenterPointIndex();
-        String[] mainRoadArr = getMainRoadArr();
-        List<EnlargedCrossProcess.ECBranchLine> ecBranchLines =
-                mEnlargedCrossProcess.recognizeBranchInECImage(crossImage, centerPointIndex, mainRoadArr);
-        HaloLogger.logE("cross_image_handle","==========================================");
-        HaloLogger.logE("cross_image_handle","center:"+mainRoadArr[centerPointIndex*2]+","+mainRoadArr[centerPointIndex*2+1]);
-        for (int i = 0; i < ecBranchLines.size(); i++) {
-            EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
-            List<Point> line = ecb.getLinePoints();
-            HaloLogger.logE("cross_image_handle","cross_image_start");
-            for(int j=0;j<line.size();j++) {
-                HaloLogger.logE("cross_image_handle",line.get(j).x+","+line.get(j).y);
-            }
-            HaloLogger.logE("cross_image_handle","cross_image_end");
-        }
-        HaloLogger.logE("cross_image_handle","==========================================");*/
+
+//        if (crossImage == null) {
+//            HaloLogger.logE(TAG, "getBrachLines faild , CrossImage is null!");
+//            return;
+//        }
+//        List<List<Vector3>> branchLines = mCrossPathManager.setEnlargeCrossBranchLiens(crossImage);
+//        if (branchLines == null || branchLines.size() <= 0) {
+//            HaloLogger.logE(TAG, "setEnlargeCrossBranchLines is error , do not get the branch line!");
+//        }
+//        for (List<Vector3> branchLine : branchLines) {
+//            Vector3 pos = branchLine.get(0);
+//            HaloLogger.logE("branch_line", "=============start===============");
+//            for (Vector3 v : branchLine) {
+//                HaloLogger.logE("branch_line", v.x + "," + v.y);
+//                v.x -= pos.x;
+//                v.y -= pos.y;
+//                v.z -= pos.z;
+//            }
+//            HaloLogger.logE("branch_line", "==============end================");
+//            if (!mIsMyInitScene) {
+//                return;
+//            }
+//            insertARWayObject(branchLine, pos, ROAD_WIDTH, 2);
+//        }
     }
 
-    /**
-     * 获取传入JNI部分的主路点坐标集合
-     * 格式:[x1,y1,x2,y2...xn,yn]
-     *
-     * @return
-     */
-    private String[] getMainRoadArr() {
-        List<Point> screenPoint = mCrossPathManager.getScreenPoints();
-        String[] mainRoadArr = new String[screenPoint.size() * 2];
-        for (int i = 0; i < screenPoint.size(); i++) {
-            mainRoadArr[i * 2] = "" + screenPoint.get(i).x;
-            mainRoadArr[i * 2 + 1] = "" + screenPoint.get(i).y;
-            HaloLogger.logE("main_road_arr",""+screenPoint.get(i).x);
-            HaloLogger.logE("main_road_arr",""+screenPoint.get(i).y);
-        }
-        return mainRoadArr;
+    public void handleCrossInfo(int currentPathStep, int width, int height) {
+        mCrossPathManager.handleCrossInfo(currentPathStep, width, height);
     }
-
-    /**
-     * 获取当前中心点所在的下标
-     *
-     * @return
-     */
-    private int getCenterPointIndex() {
-        return mCrossPathManager.getCenterPointIndex();
-    }
+    //====================================new handle cross image end============================================
 
 
     /**
@@ -1384,35 +1247,45 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             return;
         }
         List<Vector3> path = new ArrayList<>();
-        int skip = naviPath.getCoordList().size()/40;
-        LatLng latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(0));
-        PointF startOpengl = projection.toOpenGLLocation(latLng);
-        Vector3 startVector3 = new Vector3(startOpengl.x, -startOpengl.y, 0);
-        for (int i = 0; i < naviPath.getCoordList().size(); i++) {
-            latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
+        List<List<Point>> naviStepsScreen = new ArrayList<>();
+        List<List<PointF>> naviStepsOpengl = new ArrayList<>();
+        /*for (int i = 0; i < naviPath.getCoordList().size(); i++) {
+            //renderer
+            LatLng latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
             PointF openGL = projection.toOpenGLLocation(latLng);
             //openGL.y轴坐标被翻转过,因此需要使用它的倒数
             Vector3 v = new Vector3(openGL.x, -openGL.y, 0);
-            /*if (IS_MOVE_PATH){
-                v.x -= startVector3.x;
-                v.y -= startVector3.y;
-                v.z -= startVector3.z;
-            }*/
             path.add(v);
-            if(DEBUG_MODE){
-                if(i%skip == 0){
-                    if(ARWayConst.ENABLE_FAST_LOG){
+
+            //crossPathManager
+        }*/
+        for (AMapNaviStep step : naviPath.getSteps()) {
+            if (step != null) {
+                List<Point> stepScreenPoints = new ArrayList<>();
+                List<PointF> stepOpenglPoints = new ArrayList<>();
+                for (NaviLatLng coord : step.getCoords()) {
+                    if (projection != null) {
+                        LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
                         Point p = projection.toScreenLocation(latLng);
-                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("setPath ,opengl point is (%16s,%16s),screen point is(%16d,%16d)",v.x,v.y,p.x,p.y));
+                        stepScreenPoints.add(new Point(p.x,-p.y));
+                        PointF pf = projection.toOpenGLLocation(latLng);
+                        stepOpenglPoints.add(new PointF(pf.x, -pf.y));
+                        Vector3 v = new Vector3(pf.x, -pf.y, 0);
+                        path.add(v);
                     }
                 }
+                if (stepScreenPoints.size() > 0) {
+                    naviStepsScreen.add(stepScreenPoints);
+                    naviStepsOpengl.add(stepOpenglPoints);
+                }
             }
+
         }
 
         if (!repeat || !isPathRepeat(path)) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
-            setPathAndCalcData(mOriginalPath, naviPath.getAllLength());
+            setPathAndCalcData(mOriginalPath, naviPath.getAllLength(), naviStepsScreen, naviStepsOpengl);
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
         }
@@ -1443,8 +1316,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      *
      * @param path
      * @param allLength
+     * @param naviStepsScreen
+     * @param naviStepsOpengl
      */
-    private void setPathAndCalcData(List<Vector3> path, double allLength) {
+    private void setPathAndCalcData(List<Vector3> path, double allLength, List<List<Point>> naviStepsScreen, List<List<PointF>> naviStepsOpengl) {
         HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG, "setPathAndCalcData start");
         clearAllData();
         //此处由于mPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
@@ -1454,6 +1329,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 mPath.add(new Vector3(v));
             }
         }
+        path.clear();
+        path = null;
         if (mPath.size() < 2) {
             mPath.clear();
             return;
@@ -1588,6 +1465,27 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        tempPath.clear();
         //        HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
 
+        //move to screen center
+        double offsetX = mPath.get(0).x - 0;
+        double offsetY = mPath.get(0).y - 0;
+        for (int i = 0; i < mPath.size(); i++) {
+            mPath.get(i).x -= offsetX;
+            mPath.get(i).y -= offsetY;
+        }
+
+        //rotate path with matrix
+        double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
+        mObject4ChaseStartOrientation = rotateZ;
+        Matrix matrix = new Matrix();
+        matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
+        for (int i = 1; i < mPath.size(); i++) {
+            Vector3 v = mPath.get(i);
+            float[] xy = new float[2];
+            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
+            v.x = xy[0];
+            v.y = xy[1];
+        }
+
         int pathLength = mPath.size();
         CatmullRomCurve3D catmull = new CatmullRomCurve3D();
         //controll point 1
@@ -1605,26 +1503,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mPath.add(new Vector3(pos));
         }
         HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
-
-        //rotate path with matrix
-        double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
-        Matrix matrix = new Matrix();
-        matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
-        for (int i = 1; i < mPath.size(); i++) {
-            Vector3 v = mPath.get(i);
-            float[] xy = new float[2];
-            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
-            v.x = xy[0];
-            v.y = xy[1];
-        }
-
-        //move to screen center
-        double offsetX = mPath.get(0).x - 0;
-        double offsetY = mPath.get(0).y - 0;
-        for (int i = 0; i < mPath.size(); i++) {
-            mPath.get(i).x -= offsetX;
-            mPath.get(i).y -= offsetY;
-        }
 
         //calc totalDist in opengl
         mTotalLength = allLength;
@@ -1667,9 +1545,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //将path切割成N个小path分别加载到场景中
         splitPath2LittlePathesWithIndexAndLength(mPath, mChildPathPositions, mChildPathes, mStartAddPlaneIndex, ADD_PLANE_LENGTH);
 
+        HaloLogger.logE("branch_line", "path start=========");
+        for (Vector3 v : mPath) {
+            HaloLogger.logE("branch_line", v.x + "," + v.y);
+        }
+        HaloLogger.logE("branch_line", "path end===========");
+
+        //同步这些操作到CrossPathManager中
+        mCrossPathManager.parseNaviPathInfo(naviStepsScreen, naviStepsOpengl, BIGGER_TIME, rotateZ);
 
         //set flag with true indicates(表示) data is inited
-        mCanInitScene = true;
+        mCanMyInitScene = true;
         //如果Rajawali自身的初始化场景完毕,那么就可以进行我们自己的场景初始化(目前就是绘制道路,并进行贴图移动)
         if (mIsInitScene) {
             myInitScene();
@@ -1760,7 +1646,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mStartAddPlaneIndex = 0;
         mRetainTotalLength = 0;
         mIsMyInitScene = false;
-        mCanInitScene = false;
+        mCanMyInitScene = false;
         mObject4Chase = null;
         System.gc();
     }
@@ -1902,6 +1788,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase = new Sphere(0.0001f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
+//        mObject4Chase.setRotZ(mObject4ChaseStartOrientation-180);
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
         }
@@ -1972,7 +1859,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //update flag
         mIsMyInitScene = true;
-        mCanInitScene = false;
+        mCanMyInitScene = false;
 
         clearUnuseDataAfterMyInitScene();
     }
@@ -2074,11 +1961,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //防止回退
         long endTime = System.currentTimeMillis();
-        if (mStartLength <= endLength || endTime - mStartTime < 4000) {
+        if (mStartLength <= endLength/* || endTime - mStartTime < 4000*/) {
             return;
         }
 
         //到此表示返回的数据满足动画要求
+        // TODO: 2016/9/7  
         if (mCameraAnim != null) {
             if (mCameraAnim.isPlaying()) {
                 mCameraAnim.pause();
@@ -2151,6 +2039,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             new Thread() {
                 @Override
                 public void run() {
+                    // TODO: 2016/9/7
                     long time = System.currentTimeMillis();
                     removePlaneFromScene();
                     splitPath2LittlePathesWithIndexAndLength(mPath, mChildPathPositions, mChildPathes,

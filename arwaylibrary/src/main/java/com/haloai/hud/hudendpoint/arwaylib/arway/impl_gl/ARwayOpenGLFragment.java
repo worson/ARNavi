@@ -43,7 +43,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.map.MapProjectionMachine;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
@@ -59,15 +58,15 @@ import java.io.IOException;
 public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater /*,INaviDisplayPresenter*/ {
     private static final String TAG                  = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
-    public final static boolean IS_DEBUG_MODE        =false;
+    public final static  boolean IS_DEBUG_MODE       = false;
     private static final boolean AMAP_OPTIONS_LOGOUT = true;
     private static final boolean IS_SCREEN_SHOOT     = true;
 
     private Context mContext;
 
-    private static final int GPS_STATUS_FINE         = 0;
-    private static final int GPS_STATUS_WEEK         = 1;
-    private static final int GPS_STATUS_BAD          = 2;
+    private static final int GPS_STATUS_FINE = 0;
+    private static final int GPS_STATUS_WEEK = 1;
+    private static final int GPS_STATUS_BAD  = 2;
 
     private static final int HANDLER_MSG_UPDATE_PATH = 0;
 
@@ -78,20 +77,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
 
     //amap
-    private AMapNavi mAMapNavi               = null;
-    private Bitmap   mCurrentCrossImage      = null;
-    private boolean  mCrossCanShow           = true;
-    private int      mCurrentGpsStatus       = GPS_STATUS_FINE;
+    private AMapNavi mAMapNavi          = null;
+    private Bitmap   mCurrentCrossImage = null;
+    private boolean  mCrossCanShow      = true;
+    private int      mCurrentGpsStatus  = GPS_STATUS_FINE;
 
-    private ViewGroup  mNaviView     = null;
+    private ViewGroup    mNaviView     = null;
     private AMapNaviView mAmapNaviView = null;
 
-    private int mLastNaviIconType = 0;
-    private Bitmap mNaviIconBitmap = null;
+    private int    mLastNaviIconType = 0;
+    private Bitmap mNaviIconBitmap   = null;
     private View arway;
-
-    private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
-
 
     //opengle
     protected ViewGroup     mLayout;
@@ -100,26 +96,26 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private boolean mCameraChangeFinish = false;
 
     //bean
-    private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
-    private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
-    private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
-    private int mCurrentPathStep = 0;
+    private static NaviInfoBean mNaviInfoBean    = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+    private static RouteBean    mRouteBean       = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
+    private static CommonBean   mCommonBean      = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+    private        int          mCurrentPathStep = 0;
 
 
     public ARwayOpenGLFragment() {
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"fragment 正在初始化");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "fragment 正在初始化");
         // Required empty public constructor
     }
 
     //draw object
-    private DrawScene            mDrawScene            = (DrawScene)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.GL_SCENE);
-    private GlDrawCompass        mGlDrawCompass        = (GlDrawCompass)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.COMPASS);
-    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
-    private GlDrawSpeedDial      mGlDrawSpeedDial      = (GlDrawSpeedDial)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.SPEED);
-    private GlDrawRetainDistance mGlDrawRetainDistance = (GlDrawRetainDistance)DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.RETAIN_DISTANCE);
+    private DrawScene            mDrawScene            = (DrawScene) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.GL_SCENE);
+    private GlDrawCompass        mGlDrawCompass        = (GlDrawCompass) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.COMPASS);
+    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
+    private GlDrawSpeedDial      mGlDrawSpeedDial      = (GlDrawSpeedDial) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.SPEED);
+    private GlDrawRetainDistance mGlDrawRetainDistance = (GlDrawRetainDistance) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.RETAIN_DISTANCE);
 
     // var
-    private boolean mLastIsReady    = false;
+    private boolean mLastIsReady = false;
 
     //navi
 
@@ -131,7 +127,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         // Inflate the layout for this fragment
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
-        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout,R.layout.arway_opengl_layout);
+        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.arway_opengl_layout);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
             ViewGroup vg = (ViewGroup)mainARWayView.getParent();
@@ -153,8 +149,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mAmapNaviView.onCreate(savedInstanceState);
 
         if (mAmapNaviView.getMap() == null) {
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"Map is null");
-        }else {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "Map is null");
+        } else {
             mAmapNaviView.getMap().setOnMapLoadedListener(this);
             mAmapNaviView.getMap().setOnCameraChangeListener(this);
         }
@@ -166,14 +162,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.setVisibility(View.INVISIBLE);
         }
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
-        if(ARWayConst.ENABLE_LOG_OUT && AMAP_OPTIONS_LOGOUT){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,String.format("onCreateView,amapview options , curZoom is %d,curTilt is %d",viewOptions.getZoom(),viewOptions.getTilt()));
+        if (ARWayConst.ENABLE_LOG_OUT && AMAP_OPTIONS_LOGOUT) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, String.format("onCreateView,amapview options , curZoom is %d,curTilt is %d", viewOptions.getZoom(), viewOptions.getTilt()));
         }
         // FIXME: 16/8/2 移除地图基本保证转换出的opengl坐标是正常的
-//        removeAMapNaviView();
+        //        removeAMapNaviView();
         hideARWay();
         mDrawScene.animShowHide(false);
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onCreateView");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreateView");
         return mLayout;
     }
 
@@ -181,13 +177,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onCreate");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreate");
     }
 
     @Override
     public void onViewStateRestored(Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onViewStateRestored");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onViewStateRestored");
     }
 
     public boolean initAMapNaviView() {
@@ -234,7 +230,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     @Override
     public void onMapLoaded() {
-//        initAMapNaviView();
+        //        initAMapNaviView();
         mAmapNaviView.getMap().showMapText(false);
         // TODO: 16/7/22 需要更新版本
         mAmapNaviView.getMap().showBuildings(false);
@@ -243,7 +239,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         mMapProjectionMachine.work(MapProjectionMachine.Operation.MAP_LOADED);
 
-        LogI(ARWayConst.INDICATE_LOG_TAG,"地图加载成功");
+        LogI(ARWayConst.INDICATE_LOG_TAG, "地图加载成功");
         /*if(mNeedUpdatePath ) {//&& mCameraChangeFinish
             if (mAMapNavi != null) {
                 LogI(ARWayConst.INDICATE_LOG_TAG," onMapLoaded updatePath called");
@@ -258,6 +254,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     }
 
     private MapProjectionMachine mMapProjectionMachine = new MapProjectionMachine();
+
     {
         MapProjectionMachine.UpdateMapViewCall updateMapViewCall = new MapProjectionMachine.UpdateMapViewCall() {
             @Override
@@ -273,13 +270,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             }
         };
         mMapProjectionMachine.init(updateMapViewCall,projectionOkCall);
-
     }
 
 
-
     private void LogI(String tag, String msg) {
-        HaloLogger.logE(tag,msg);
+        HaloLogger.logE(tag, msg);
     }
 
     @Override
@@ -287,14 +282,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         super.onResume();
         mRenderer.onResume();
         mAmapNaviView.onResume();
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onResume");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onResume");
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mAmapNaviView.onDestroy();
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onDestroyView");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onDestroyView");
     }
 
     @Override
@@ -302,7 +297,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         super.onPause();
         mRenderer.onPause();
         mAmapNaviView.onPause();
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onPause");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onPause");
     }
 
     @Override
@@ -313,19 +308,19 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onHiddenChanged ");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onHiddenChanged ");
         if (mNaviView != null) {
             if (hidden) {
-//                mRenderer.pause();
+                //                mRenderer.pause();
                 mCurrentCrossImage = null;
                 mCrossCanShow = true;
             } else {
-//                mRenderer.continue_();
+                //                mRenderer.continue_();
 
             }
         }
 
-        if(!hidden){
+        if (!hidden) {
             showHideSpeedPanel(true);
         }
         removeAMapNaviView();
@@ -338,12 +333,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mAmapNaviView.onSaveInstanceState(outState);
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"naving fragment onSaveInstanceState");
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onSaveInstanceState");
     }
 
     @Override
     public ISurfaceRenderer createRenderer() {
-//        return new ARwayOpenGLRenderer(getActivity(),this);
+        //        return new ARwayOpenGLRenderer(getActivity(),this);
         return new ARwayRenderer(getActivity());
     }
 
@@ -360,9 +355,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 更新状态和界面,不做动画切换
      */
 
-    private void resetNaviStatus(){
-        if (ARWayConst.ENABLE_LOG_OUT){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway resetNaviStatus called" );
+    private void resetNaviStatus() {
+        if (ARWayConst.ENABLE_LOG_OUT) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway resetNaviStatus called");
         }
 
         resetNaviResource();
@@ -377,7 +372,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 重置导航的资源
      */
-    private void resetNaviResource(){
+    private void resetNaviResource() {
         this.mLastIsReady = false;
         mMapProjectionMachine.setNeedUpdatePath(false);
         mMapProjectionMachine.setForceUpdateNaviView4Path(false);
@@ -386,7 +381,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 重置的显示
      */
-    private void resetNaviDisplay(){
+    private void resetNaviDisplay() {
         mGlDrawNaviInfo.resetView();
         mGlDrawRetainDistance.resetView();
         mGlDrawSpeedDial.resetView();
@@ -396,7 +391,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 导航开始时界面控制
      */
-    private void onNavingStartView(){
+    private void onNavingStartView() {
         hideARWay();
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
@@ -404,13 +399,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
 
 
-//        animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
+        //        animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
 
     /***
      * 导航开始时界面控制
      */
-    private void prepareNavingStartView(){
+    private void prepareNavingStartView() {
         hideARWay();
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
@@ -422,8 +417,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 导航中时界面控制
      */
-    private void onNavingView(){
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNavingView called");
+    private void onNavingView() {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onNavingView called");
         ARWayController.CommonBeanUpdater.setStartOk(true);
 
         mGlDrawSpeedDial.showHide(true);
@@ -431,7 +426,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mGlDrawNaviInfo.showHide(true);
 
         mGlDrawCompass.showHide(true);
-//        mGlDrawCompass.animShowHide(false);
+        //        mGlDrawCompass.animShowHide(false);
         mDrawScene.animShowHide(true);
         animSwitchViewStatus(IDriveStateLister.DriveState.DRIVING);
 
@@ -455,7 +450,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 导航结束时界面控制
      */
-    private void onNavingEndView(){
+    private void onNavingEndView() {
         //显示gl 场景
         /*GlDrawRetainDistance.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
         GlDrawSpeedDial.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);*/
@@ -470,7 +465,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 导航退出时界面控制
      */
-    private void onNavingStopView(){
+    private void onNavingStopView() {
         animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
         hideARWay();
 
@@ -483,7 +478,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 偏航开始时界面控制
      */
-    private void onYawStartView(){
+    private void onYawStartView() {
         //切换显示地图
         /*addAMapNaviView();
         mAmapNaviView.setVisibility(View.VISIBLE);
@@ -497,23 +492,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     /***
      * 偏航结束时界面控制
      */
-    private void onYawEndView(){
+    private void onYawEndView() {
         //切换隐藏地图
         /*mAmapNaviView.setVisibility(View.INVISIBLE);
         mAmapNaviView.setAlpha(0);
         showARWay();*/
 
-//        onNavingView();
+        //        onNavingView();
     }
 
     /***
      * 导航的环境：GPS、网络，生变变化时的界面更新
      * 显示情景：
      * 无网络
-     *  未偏航时，能正常导航
-     *  偏航时，文字显示
-     *无GPS
-     *  不能更新速度、里程，指南针正常工作
+     * 未偏航时，能正常导航
+     * 偏航时，文字显示
+     * 无GPS
+     * 不能更新速度、里程，指南针正常工作
      */
     private void onNavingContextChangedView() {
         // TODO: 16/8/2 sen
@@ -539,23 +534,24 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 只改变显示的模式，不改变显示数据的内容
      */
     public void onARWayStart() {
-        if (ARWayConst.ENABLE_TEST_LOG){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onARWayStart called ");
+        if (ARWayConst.ENABLE_TEST_LOG) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onARWayStart called ");
         }
         onNavingStartView();
-//        resetNaviStatus();
-//        ARWayController.ARWayStatusUpdater.resetData();
+        //        resetNaviStatus();
+        //        ARWayController.ARWayStatusUpdater.resetData();
         ARWayController.CommonBeanUpdater.setNavingStart(true);
         // TODO: 16/8/30 与path的实际更新位置保持一致
         mMapProjectionMachine.setNeedUpdatePath(true);
 
     }
+
     /**
      * 开始导航前准备操作
      */
     public void prepareARWayStart() {
-        if (ARWayConst.ENABLE_TEST_LOG){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"prepareARWayStart called ");
+        if (ARWayConst.ENABLE_TEST_LOG) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "prepareARWayStart called ");
         }
         prepareNavingStartView();
         resetNaviStatus();
@@ -576,7 +572,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
         onNavingStopView();
 
-        if(mRenderer!=null){
+        if (mRenderer != null) {
             mRenderer.onNaviStop();
         }
     }
@@ -591,13 +587,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         ARWayController.CommonBeanUpdater.setNavingStart(false);
 
         onNavingEndView();
-        if(mRenderer!=null) {
+        if (mRenderer != null) {
             mRenderer.arriveDestination();
         }
     }
 
     /**
-     *更新偏航开始画面
+     * 更新偏航开始画面
      */
     public void updateYawStart(){
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawStart");
@@ -615,9 +611,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         ARWayController.CommonBeanUpdater.setYaw(true);
         onYawStartView();
     }
+
     /**
-     *
-     *更新偏般结束界面
+     * 更新偏般结束界面
      */
     public void updateYawEnd(){
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawEnd");
@@ -630,8 +626,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mMapProjectionMachine.setNeedUpdatePath(true);
         onYawEndView();
     }
+
     /**
      * 导航开始或偏航路径计算失败时回调
+     *
      * @param errorInfo
      */
     public void onNaviCalculateRouteFailure(int errorInfo) {
@@ -640,29 +638,32 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * gps状态发生变化时回调
+     *
      * @param work 是否工作
      */
-    public void onGpsStatusChanged(boolean work){
+    public void onGpsStatusChanged(boolean work) {
         ARWayController.CommonBeanUpdater.setGpsWork(work);
         onNavingContextChangedView();
     }
 
     /**
      * 网络发生变化时回调
+     *
      * @param work 是否工作
      */
-    public void onNetworkStatusChanged(boolean work){
+    public void onNetworkStatusChanged(boolean work) {
         ARWayController.CommonBeanUpdater.setHasNetwork(work);
         onNavingContextChangedView();
     }
 
     /**
      * gps搜星个发生变化
+     *
      * @param satelliteNum
      */
     public void setSatelliteNum(int satelliteNum) {
         //TODO 为了在室内也能正常测试使用导航功能,如果没有下面这句,则导航中会一直处于信号差不可用状态,上线记得删除
-//        ARWayController.SceneBeanUpdater.setGpsNumber(satelliteNum);
+        //        ARWayController.SceneBeanUpdater.setGpsNumber(satelliteNum);
         if (satelliteNum <= 0) {
             this.mCurrentGpsStatus = GPS_STATUS_BAD;
         } else if (satelliteNum < 5) {
@@ -679,20 +680,22 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void showCrossImage(Bitmap crossimage) {
 
-        if (crossimage == null){
+        if (crossimage == null) {
             ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             return;
         }
-        mCrossPathManager.handleCrossInfo(mCurrentPathStep,crossimage.getWidth(),crossimage.getHeight());
         if (crossimage != null) {
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
-                    try {
-//                        mRenderer.setEnlargeCrossBranchLines(crossimage);
-                        //mRenderer.setEnlargeCrossBranchLines(mNaviInfoBean.getStepRetainDistance(), mNaviInfoBean.getNaviIcon());
-                    }catch(Exception e){
-                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"showCrossImage ,image set error!! "+e.toString());
-                    }
+                    /*try {
+
+                        HaloLogger.logE("branch_handle","save a new cross image");
+                         FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }*/
+                    mRenderer.handleCrossInfo(mCurrentPathStep, crossimage.getWidth(), crossimage.getHeight());
+                    mRenderer.setEnlargeCrossBranchLines(crossimage);
                 }
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(mCurrentCrossImage);
             } else {
@@ -760,7 +763,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void updateLocation(AMapNaviLocation location) {
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
-//        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
+        //        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         /*if (mCurrentGpsStatus != GPS_STATUS_FINE) {
             HaloLogger.logE("sen_debug_location","onLocationChanged ,but gps star is 0");
             mRenderer.pause();
@@ -777,14 +780,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param curStep
      */
     public void updateCurPointIndex(int curPoint, int curStep) {
-//        ARWayController.SceneBeanUpdater.setCurrentPoint(curPoint);
-//        ARWayController.SceneBeanUpdater.setCurrentStep(curStep);
+        //        ARWayController.SceneBeanUpdater.setCurrentPoint(curPoint);
+        //        ARWayController.SceneBeanUpdater.setCurrentStep(curStep);
     }
 
     /***
      * // 导航中的文字提示，可用于语音播报,
-     * */
-    public void updateNaviText(NavigationSDKAdapter.NavigationNotifier.NaviTextType textType, String text){
+     */
+    public void updateNaviText(NavigationSDKAdapter.NavigationNotifier.NaviTextType textType, String text) {
         ARWayController.NaviInfoBeanUpdate.setNaviText(text);
         if (mGlDrawNaviInfo != null) {
             mGlDrawNaviInfo.doDraw();
@@ -794,8 +797,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
     }
 
-    private void saveAmapViewBitmap(){
-        if(IS_SCREEN_SHOOT){
+    private void saveAmapViewBitmap() {
+        if (IS_SCREEN_SHOOT) {
             final String path = mFolderPath + "image/";
             final long time = System.currentTimeMillis();
             String name = "projcetion_image_" + time + ".png";
@@ -803,7 +806,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 @Override
                 public void onMapScreenShot(Bitmap bitmap) {
                     try {
-                        FileUtils.write(FileUtils.bitmap2Bytes(bitmap), path, "cross_image_" + time+"_shoot" + ".png");
+                        FileUtils.write(FileUtils.bitmap2Bytes(bitmap), path, "cross_image_" + time + "_shoot" + ".png");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -819,24 +822,25 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * 外部接口，更新导航path
+     *
      * @param aMapNavi
      */
     public void updatePath(AMapNavi aMapNavi) {
         this.mAMapNavi = aMapNavi;
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updatePath called");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updatePath called");
     }
 
     public void onNaviStarted() {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviStarted called");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onNaviStarted called");
         mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
     }
 
 
     /**
      * 路线规划成功或者是偏航后的重新规划后调用该方法重新设置路线图
+     *
      * @param aMapNavi
-     * @return
-     * 0 设置成功
+     * @return 0 设置成功
      * -1 AMapNavi 为空
      * -2 路径太长(dead)
      * -3 renderer出错
@@ -847,23 +851,22 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             return result;
         }*/
         if (aMapNavi == null) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"rUpdatePath,aMapNavi is null ");
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "rUpdatePath,aMapNavi is null ");
             return result;
         }
         Projection projection = mAmapNaviView.getMap().getProjection();
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
-        HaloLogger.logE("helong_debug","updatePath");
+        HaloLogger.logE("helong_debug", "updatePath");
         if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
-            mCrossPathManager.parseNaviPathInfo(naviPath,projection);
             if (mRenderer != null) {
                 hideARWay();
                 mDrawScene.animShowHide(false);
                 mGlDrawCompass.showHide(true);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath setPath,mode is "+aMapNavi.getNaviPath().getStrategy());
-                if(ARWayConst.ENABLE_LOG_OUT){
-                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is "+naviPath.getCoordList().size());
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath setPath,mode is " + aMapNavi.getNaviPath().getStrategy());
+                if (ARWayConst.ENABLE_LOG_OUT) {
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
                 }
-                if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER){
+                if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER) {
                     return -2;
                 }
                 mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
@@ -871,7 +874,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 // TODO: 16/9/13 测试直接起步
                 onNavingView();
             } else {
-                result=-3;
+                result = -3;
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath Renderer is null");
             }
             // TODO: 16/9/5 此处不能重置所有数据，这样会造成显示成功的naviinfo信息被清空
@@ -879,8 +882,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             * 重新发起导航：数据在stopDrawHudway只清除
             * 偏航时：
             * */
-//            ARWayController.ARWayStatusUpdater.resetData();
-//            resetNaviStatus();
+            //            ARWayController.ARWayStatusUpdater.resetData();
+            //            resetNaviStatus();
             //更新总距离
             int distance = aMapNavi.getNaviPath().getAllLength();
             ARWayController.NaviInfoBeanUpdate.setPathTotalDistance(distance);
@@ -900,7 +903,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      *
      * @param info
      */
-    public void updateNaviInfo(NaviInfo info){
+    public void updateNaviInfo(NaviInfo info) {
         if (info == null) {
             return;
         }
@@ -909,12 +912,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         onNaviViewUpdate();
 
         int distance = info.getPathRetainDistance();
-        if(arway.isShown()){
+        if (arway.isShown()) {
             mRenderer.setRetainDistance(distance);
         }
 
-        if (ARWayConst.ENABLE_LOG_OUT  && ARWayConst.ENABLE_FAST_LOG){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateNaviInfo called , distance is "+distance);
+        if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updateNaviInfo called , distance is " + distance);
         }
 
     }
@@ -935,7 +938,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 //                mDrawScene.animShowHide(true);
 //                onNavingView();
             }
-//            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviViewUpdate ,mLastIsReady is "+mLastIsReady+"    ,"+ready);
+            //            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviViewUpdate ,mLastIsReady is "+mLastIsReady+"    ,"+ready);
             this.mLastIsReady = ready;
         }
     }
@@ -977,7 +980,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (mCurrentGpsStatus != GPS_STATUS_BAD) {
             str = nextRoadName;
         }
-//        ARWayController.SceneBeanUpdater.setNextRoadName(str, nextRoadType);
+        //        ARWayController.SceneBeanUpdater.setNextRoadName(str, nextRoadType);
     }
 
 
@@ -985,19 +988,19 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * startHomeAnimator to draw hudway
      */
     public void startDrawHudway() {
-//        mRenderer.start();
+        //        mRenderer.start();
     }
 
     /**
      * hide ARWay
      */
     public void hideARWay() {
-//        mRenderer.pause();
+        //        mRenderer.pause();
         if (arway != null) {
-//            ViewGroup vg = (ViewGroup) arway.getParent();
-//            vg.removeView(arway);
+            //            ViewGroup vg = (ViewGroup) arway.getParent();
+            //            vg.removeView(arway);
             arway.setVisibility(View.INVISIBLE);
-//            arway.setAlpha(0.1f);
+            //            arway.setAlpha(0.1f);
         }
 
     }
@@ -1006,7 +1009,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * show ARWay
      */
     public void showARWay() {
-//        mRenderer.continue_();
+        //        mRenderer.continue_();
         if (arway != null && !arway.isShown()) {//
             arway.setVisibility(View.VISIBLE);
             arway.setAlpha(1);
@@ -1016,16 +1019,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
-        if(ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onCameraChange called");
+        if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onCameraChange called");
         }
         mCameraChangeFinish = false;
     }
 
     @Override
     public void onCameraChangeFinish(CameraPosition arg0) {
-        if(ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onCameraChangeFinish called");
+        if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onCameraChangeFinish called");
         }
         mMapProjectionMachine.work(MapProjectionMachine.Operation.MAP_SCALED);
 
@@ -1052,63 +1055,66 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * 是否起步超过一定距离
+     *
      * @return
      */
     private boolean isNavingReady() {
-        NaviInfoBean naviBean = (NaviInfoBean)BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+        NaviInfoBean naviBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
         int totalDistance = naviBean.getPathTotalDistance();
         int distance = naviBean.getPathRetainDistance();
-        return totalDistance>=distance && (totalDistance-distance)> ARWayConst.NAVI_CAR_START_DISTANCE;
+        return totalDistance >= distance && (totalDistance - distance) > ARWayConst.NAVI_CAR_START_DISTANCE;
     }
 
-    void updateNaviInfoDisplay(){
+    void updateNaviInfoDisplay() {
         if (mGlDrawNaviInfo != null) {
             mGlDrawNaviInfo.doDraw();
         }
     }
 
-    void updateRetainDistanceDialDisplay(){
+    void updateRetainDistanceDialDisplay() {
         if (mGlDrawRetainDistance != null) {
             mGlDrawRetainDistance.doDraw();
-        }else {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateRetainDistanceDialDisplay ,mGlDrawRetainDistance is null !");
+        } else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updateRetainDistanceDialDisplay ,mGlDrawRetainDistance is null !");
         }
     }
 
-    void updateSpeedDialDisplay(){
+    void updateSpeedDialDisplay() {
         if (mGlDrawSpeedDial != null) {
             mGlDrawSpeedDial.doDraw();
-        }else {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updateSpeedDialDisplay ,mGlDrawSpeedDial is null !");
+        } else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updateSpeedDialDisplay ,mGlDrawSpeedDial is null !");
         }
     }
 
     /***
      * 切换驾车起步和驾驶后view显示
+     *
      * @param state
      */
-    public void animSwitchViewStatus(IDriveStateLister.DriveState state){
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"animSwitchViewStatus ,state is "+state);
+    public void animSwitchViewStatus(IDriveStateLister.DriveState state) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "animSwitchViewStatus ,state is " + state);
         GlDrawRetainDistance.getInstance().changeDriveState(state);
         GlDrawCompass.getInstance().changeDriveState(state);
         GlDrawSpeedDial.getInstance().changeDriveState(state);
 
     }
 
-    public void quickSwitchViewStatus(IDriveStateLister.DriveState state){
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"quickSwitchViewStatus ,state is "+state);
+    public void quickSwitchViewStatus(IDriveStateLister.DriveState state) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "quickSwitchViewStatus ,state is " + state);
         int duration = 1;
-        GlDrawRetainDistance.getInstance().changeDriveState(state,duration);
-        GlDrawCompass.getInstance().changeDriveState(state,duration);
-        GlDrawSpeedDial.getInstance().changeDriveState(state,duration);
+        GlDrawRetainDistance.getInstance().changeDriveState(state, duration);
+        GlDrawCompass.getInstance().changeDriveState(state, duration);
+        GlDrawSpeedDial.getInstance().changeDriveState(state, duration);
 
     }
 
     /**
      * 配合主工程是否显示表盘
+     *
      * @param show
      */
-    public void showHideSpeedPanel(boolean show){
+    public void showHideSpeedPanel(boolean show) {
         if (mGlDrawSpeedDial != null) {
             mGlDrawSpeedDial.showHide(show);
         }
@@ -1116,9 +1122,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * 显示显示指南针
+     *
      * @param show
      */
-    public void showHideCompass(boolean show){
+    public void showHideCompass(boolean show) {
         if (mGlDrawCompass != null) {
             mGlDrawCompass.animShowHide(show);
         }
@@ -1126,14 +1133,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     /**
      * 是否显示里程表盘
+     *
      * @param show
      */
-    public void showHideDistancePanel(boolean show){
+    public void showHideDistancePanel(boolean show) {
         if (mGlDrawRetainDistance != null) {
             mGlDrawRetainDistance.showHide(show);
         }
     }
-
 
 
 }

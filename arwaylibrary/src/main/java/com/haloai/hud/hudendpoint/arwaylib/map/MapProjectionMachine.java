@@ -117,6 +117,7 @@ public class MapProjectionMachine {
                 machine.mIsMapLoaded =true;
             }
             if(machine.mNeedUpdatePath ) {
+                Log.e(TAG, String.format("mMaploadState,need update path"));
                 machine.updateContext();
             }
             machine.getUpdateMapViewCall().updateMapView();
@@ -138,6 +139,7 @@ public class MapProjectionMachine {
                     machine.mForceUpdateNaviView4Path = false;
                     machine.getProjectionOkCall().projectionOk();
                     machine.mNeedUpdatePath = false;
+                    Log.e(TAG, String.format("mMapScaledState,path updated!"));
                 } else {
                     Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
                 }
