@@ -16,7 +16,6 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
-import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.view.ARWayRoadObject;
 import com.haloai.hud.utils.HaloLogger;
@@ -76,7 +75,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double CAMERA_FAR_PLANE   = 25;
     private static final int    CHILD_PATH_SIZE    = 20;
     private static final long   PRETENSION_TIME    = 1000;
-    private static final boolean DEBUG_MODE        = true;
+    private static final boolean DEBUG_MODE        = false;
     private static final boolean IS_MOVE_PATH          = false;
     private static       int    SCREEN_WIDTH       = 0;
     private static       int    SCREEN_HEIGHT      = 0;
@@ -152,7 +151,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mCanInitScene  = false;
 
     //image handle
-    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+//    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
     private        CrossPathManager     mCrossPathManager     = CrossPathManager.getInstance();
 
     public ARwayRenderer(Context context) {
@@ -651,7 +650,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //====================================handle cross image start========================================//
 
     public void setEnlargeCrossBranchLines(Bitmap crossImage) {
-        if (crossImage == null) {
+       /* if (crossImage == null) {
             return;
         }
         int centerPointIndex = getCenterPointIndex();
@@ -669,7 +668,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             HaloLogger.logE("cross_image_handle","cross_image_end");
         }
-        HaloLogger.logE("cross_image_handle","==========================================");
+        HaloLogger.logE("cross_image_handle","==========================================");*/
     }
 
     /**
@@ -2109,7 +2108,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             for (int i = 0; i < mTranslateAnims.size(); i++) {
                 if (mTranslateAnims.get(i).isPlaying()) {
                     mTranslateAnims.get(i).pause();
-                    if (ARWayConst.ENABLE_TEST_LOG) {
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mTranslateAnims translate anim stop !!!!!!!!!!!******************");
                     }
                 }
@@ -2124,7 +2123,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             for (int i = 0; i < mRotateAnims.size(); i++) {
                 if (mRotateAnims.get(i).isPlaying()) {
                     mRotateAnims.get(i).pause();
-                    if (ARWayConst.ENABLE_TEST_LOG) {
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
                         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "*************mRotateAnims rotate anim stop !!!!!!!!!!!******************");
                     }
                 }
@@ -2157,9 +2156,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     splitPath2LittlePathesWithIndexAndLength(mPath, mChildPathPositions, mChildPathes,
                                                              mStartAddPlaneIndex, mRetainTotalLength - mEndLength);
                     addPlane2Scene();
-                    HaloLogger.logE("helong_debug", "add plane,move length:" + (mRetainTotalLength - mEndLength) + ",mStartAddPlaneIndex:" + mStartAddPlaneIndex);
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
+                        HaloLogger.logE("helong_debug", "add plane,move length:" + (mRetainTotalLength - mEndLength) + ",mStartAddPlaneIndex:" + mStartAddPlaneIndex);
+                    }
                     mRetainTotalLength = mEndLength;
-                    HaloLogger.logE("helong_debug", "over time:" + (System.currentTimeMillis() - time));
+                    if (ARWayConst.ENABLE_TEST_LOG && ARWayConst.ENABLE_FAST_LOG) {
+                        HaloLogger.logE("helong_debug", "over time:" + (System.currentTimeMillis() - time));
+                    }
                 }
             }.start();
         }

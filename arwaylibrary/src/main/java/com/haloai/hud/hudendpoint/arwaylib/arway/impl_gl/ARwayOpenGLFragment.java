@@ -53,11 +53,10 @@ import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.IDisplay;
 import org.rajawali3d.view.TextureView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 
-public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater {
+public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoadedListener, OnCameraChangeListener ,IStateContoller ,INaviUpdater /*,INaviDisplayPresenter*/ {
     private static final String TAG                  = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
     public final static boolean IS_DEBUG_MODE        =false;
@@ -601,11 +600,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      *更新偏航开始画面
      */
     public void updateYawStart(){
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawStart");
         mRenderer.yawStart();
+
+        if(mCommonBean.isYaw()){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawStart,already yaw");
+            return;
+        }
 
         ARWayController.ARWayStatusUpdater.resetData();
         resetNaviStatus();
 
+        mMapProjectionMachine.setNeedUpdatePath(true);
         ARWayController.CommonBeanUpdater.setYaw(true);
         onYawStartView();
     }
@@ -614,7 +620,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      *更新偏般结束界面
      */
     public void updateYawEnd(){
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawEnd");
         mRenderer.yawEnd();
+        if(!mCommonBean.isYaw()){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawStart,state is not yaw");
+        }
         ARWayController.CommonBeanUpdater.setYaw(false);
 
         mMapProjectionMachine.setNeedUpdatePath(true);
@@ -858,7 +868,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 }
                 mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
                 result=0;
-
+                // TODO: 16/9/13 测试直接起步
+                onNavingView();
             } else {
                 result=-3;
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath Renderer is null");
@@ -922,12 +933,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if((this.mLastIsReady != ready) && mCommonBean.isNavingStart() ){//|| (!arway.isShown())
             if(ready){
 //                mDrawScene.animShowHide(true);
-                onNavingView();
-            } else {
-                // FIXME: 16/7/30 导航到最后的时候，距离结点的距离会显示为起点的大小
-                /*mDrawScene.showHide(false);
-                ARWayController.CommonBeanUpdater.setStartOk(false);
-                animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);*/
+//                onNavingView();
             }
 //            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviViewUpdate ,mLastIsReady is "+mLastIsReady+"    ,"+ready);
             this.mLastIsReady = ready;
@@ -935,10 +941,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     }
 
     private void updateNaviInfoDate(NaviInfo info) {
-        // TODO: 16/7/10 sen ,需要引用主工程的转向标资源
         int iconResource = ShareDrawables.getNaviDirectionId(info.getIconType());//info
         Bitmap iconBitmap = null;
-        // TODO: 16/6/22 应该不会内存溢出
         if(mLastNaviIconType !=iconResource &&  iconResource != 0){
             iconBitmap = BitmapFactory.decodeResource(getActivity().getResources(), iconResource);
             mNaviIconBitmap = iconBitmap;
