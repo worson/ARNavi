@@ -10,7 +10,7 @@ import com.haloai.hud.utils.HaloLogger;
  */
 public class MapProjectionMachine {
 
-    private static final String TAG = MapProjectionMachine.class.getSimpleName();
+    private static final String TAG =ARWayConst.ERROR_LOG_TAG ;//MapProjectionMachine.class.getSimpleName()
 
     public interface UpdateMapViewCall{
         public boolean updateMapView();
@@ -67,6 +67,7 @@ public class MapProjectionMachine {
     public void updateContext(){
         if(mNeedUpdatePath){//是最新的路径，需要更新到render中去
             if(!mIsMapLoaded){ //地图未加载成功，压根等地图加载成功后，重新调用
+                mForceUpdateNaviView4Path = false;
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"updatePath 地图未加载成功，正在等待...");
             }else {//更新地图样式比例可转换oepngl点和屏幕点
                 mForceUpdateNaviView4Path = true;
@@ -83,6 +84,7 @@ public class MapProjectionMachine {
     }
 
     public void setNeedUpdatePath(boolean needUpdatePath) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"setNeedUpdatePath ,isneed "+needUpdatePath);
         mNeedUpdatePath = needUpdatePath;
     }
 
@@ -134,17 +136,18 @@ public class MapProjectionMachine {
     private MapProjectionState mMapScaledState = new MapProjectionState() {
         @Override
         public void handle(MapProjectionMachine machine) {
+            machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
             if (machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path) {
                 if (machine.mScaledOk) {
+                    Log.e(TAG, String.format("mMapScaledState,path updated!"));
                     machine.mForceUpdateNaviView4Path = false;
                     machine.getProjectionOkCall().projectionOk();
                     machine.mNeedUpdatePath = false;
-                    Log.e(TAG, String.format("mMapScaledState,path updated!"));
                 } else {
                     Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
                 }
             }
-            machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
+
         }
 
 

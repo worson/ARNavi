@@ -1789,6 +1789,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
 //        mObject4Chase.setRotZ(mObject4ChaseStartOrientation-180);
+        RotateOnAxisAnimation anim = new RotateOnAxisAnimation(Vector3.Axis.Z, mObject4ChaseStartOrientation);
+        anim.setTransformable3D(mObject4Chase);
+        anim.setDurationMilliseconds(1);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatMode(Animation.RepeatMode.NONE);
+        getCurrentScene().registerAnimation(anim);
+        anim.play();
+
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
         }
@@ -1915,6 +1923,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH;
         else if (type == 3)
             roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH_BLACK;
+//        ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         /*Material material = arWayRoadObject.getMaterial();
         material.setColor(0);

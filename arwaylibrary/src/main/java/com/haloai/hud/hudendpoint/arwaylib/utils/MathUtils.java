@@ -6,6 +6,8 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
+
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 
@@ -274,6 +276,57 @@ public class MathUtils {
         double degreesDst = getDegrees(0, 0, dstPointF.x, dstPointF.y);
         matrix.setRotate((float) (degreesSrc - degreesDst));
         return Bitmap.createBitmap(crossImage, 0, 0, crossImage.getWidth(), crossImage.getHeight(), matrix, true);
+    }
+
+    /**
+     *
+     * @param refX
+     * @param refY
+     * @param x
+     * @param y
+     * @param result
+     * @param degrees 逆时针旋转一个角度
+     */
+    public static void rotateAround(double refX, double refY, double x, double y, PointD result,double degrees) {
+        double rX = x - refX;
+        double rY = y - refY;
+        double c = Math.cos(degrees);
+        double s = Math.sin(degrees);
+        result.x = (rX * c - rY * s)+refX;
+        result.y = (rX * s + rY * c)+refY;
+    }
+
+    public static void rotatePath(List<Vector3> path,List<Vector3> rotatePath,double refX, double refY,double degrees){
+        if (path == null || rotatePath == null) {
+            return;
+        }
+        rotatePath.clear();
+        PointD pointD = new PointD();
+        for(Vector3 p:path){
+            rotateAround(refX,refY,p.x,p.y,pointD,degrees);
+            rotatePath.add(new Vector3(pointD.x,pointD.y,0));
+        }
+
+    }
+
+
+    public static void expandPath(double x1, double y1, double x2, double y2, PointD left1, PointD left2, PointD right1, PointD right2, double radius){
+        double degree = Math.PI/2;
+        double distance = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+        left1.x = x1+(x2-x1)*radius/distance;
+        left1.y = y1+(y2-y1)*radius/distance;
+        right1.set(left1);
+
+        left2.x = x2+(x1-x2)*radius/distance;
+        left2.y = y2+(y1-y2)*radius/distance;
+        right2.set(left2);
+
+        rotateAround(x1,y1,left1.x,left1.y,left1,degree);
+        rotateAround(x1,y1,right1.x,right1.y,right1,-degree);
+
+        rotateAround(x2,y2,left2.x,left2.y,left2,-degree);
+        rotateAround(x2,y2,right2.x,right2.y,right2,+degree);
+
     }
 
 

@@ -261,6 +261,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             public boolean updateMapView() {
                 return initAMapNaviView();
             }
+
         };
 
         MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
@@ -608,6 +609,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         resetNaviStatus();
 
         mMapProjectionMachine.setNeedUpdatePath(true);
+        mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
         ARWayController.CommonBeanUpdater.setYaw(true);
         onYawStartView();
     }
