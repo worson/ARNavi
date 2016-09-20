@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
@@ -20,9 +19,7 @@ import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.utils.HaloLogger;
@@ -70,7 +67,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  BIGGER_TIME        = 1000000.0 * 0.0023f;
     private static final double  CAMERA_MIN_LENGTH  = 20;
     private static final int     FRAME_RATE         = 10;
-    private static final int     CURVE_TIME         = 30;
+    private static final int     CURVE_TIME         = 5;
     private static final double  LOGIC_ROAD_WIDTH   = 0.4;
     private static final double  ROAD_WIDTH         = 0.4;
     private static final double  CAMERA_OFFSET_X    = 0;
@@ -81,14 +78,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final int     INTERSECTION_COUNT = 30;
     private static final double  CAMERA_NEAR_PLANE  = 0.5;
     private static final double  CAMERA_FAR_PLANE   = 25;
-    private static final int     CHILD_PATH_SIZE    = 20;
+    private static final int     CHILD_PATH_SIZE    = 4;
     private static final long    PRETENSION_TIME    = 1000;
     private static final boolean DEBUG_MODE         = false;
     private static final boolean IS_MOVE_PATH       = false;
     private static       int     SCREEN_WIDTH       = 0;
     private static       int     SCREEN_HEIGHT      = 0;
     private static final double  BRANCH_LINE_Z      = -0.01;
-    private static final double  ADD_PLANE_LENGTH   = 600;
+    private static final double  ADD_PLANE_LENGTH   = Double.MAX_VALUE;
     private static final String  TAG                = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
 
     //list data
@@ -158,8 +155,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mCanMyInitScene = false;
 
     //image handle
-    //    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
-    private CrossPathManager mCrossPathManager             = CrossPathManager.getInstance();
+    //private CrossPathManager mCrossPathManager             = CrossPathManager.getInstance();
     private double           mObject4ChaseStartOrientation = 0;
     private Projection       mProjection                   = null;
 
@@ -210,12 +206,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void updateCamera(ATransformable3D transObject) {
         Camera camera = getCurrentCamera();
         Vector3 location = transObject.getPosition();
-        Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z + 3);
+        Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
         findCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
         HaloLogger.logE("cross_handle__","old:"+position);
         camera.setPosition(position);
-        //camera.setLookAt(lookat);
+        camera.setLookAt(lookat);
     }
 
     private void findCameraLookatAndPosition(Vector3 cPos, double yaw, double dist, Vector3 position, Vector3 lookat) {
@@ -256,7 +252,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //此时的speed表示每秒移动多少opengl中的距离
         speed = speed / 3.6 * mLength2DistanceScale;
         double dist = speed * deltaTime;
-        while (curIndexAfter < mPath.size()) {
+        while (curIndexAfter+1 < mPath.size()) {
             Vector3 nextV = mPath.get(curIndexAfter + 1);
             double temp = MathUtils.calculateDistance(pos.x, pos.y, nextV.x, nextV.y);
             if (temp > dist) {
@@ -288,8 +284,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 //        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientatio,mObject4Chase orientation is Rotx=%s,Roty=%s,RotZ=%s",mObject4Chase.getRotX(),mObject4Chase.getRotY(), mObject4Chase.getRotZ()));
         if (mObject4Chase != null) {
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
-            updateCamera_New(deltaTime);
-            //updateCamera(mObject4Chase);
+            //updateCamera_New(deltaTime);
+            updateCamera(mObject4Chase);
         }
 
         //        Quaternion qt = new Quaternion();
@@ -608,7 +604,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     public void handleCrossInfo(int currentPathStep, int width, int height) {
-        mCrossPathManager.handleCrossInfo(currentPathStep, width, height);
+        //mCrossPathManager.handleCrossInfo(currentPathStep, width, height);
     }
 
     /*public void addCrossImageData2Collector(String filePath, String bitmapFileName, CrossImageDataCollector crossImageDataCollector) {
@@ -1650,7 +1646,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("branch_line", "path end===========");
 
         //同步这些操作到CrossPathManager中
-        mCrossPathManager.parseNaviPathInfo(naviStepsScreen, naviStepsOpengl, BIGGER_TIME, rotateZ);
+        //mCrossPathManager.parseNaviPathInfo(naviStepsScreen, naviStepsOpengl, BIGGER_TIME, rotateZ);
 
         //set flag with true indicates(表示) data is inited
         mCanMyInitScene = true;
@@ -1996,7 +1992,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     /**
      * 从场景中移除道路(每次移除小于300m的最大距离)
      */
-    private void removePlaneFromScene() {
+    /*private void removePlaneFromScene() {
         int size = mMainRoadObjects.size() / 3;
         List<ARWayRoadObject> toRemovedList = mMainRoadObjects.subList(0, size);
         for (int i = 0; i < size; i++) {
@@ -2006,7 +2002,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mMainRoadObjects.remove(toRemovedList);
         toRemovedList.clear();
         clearUnuseDataAfterRemovePlaneFromScene();
-    }
+    }*/
 
     private ARWayRoadObject insertARWayObject(List<Vector3> littlePath, Vector3 position, double leftWidth, double rightWidth, int type) {
 
@@ -2237,7 +2233,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mStartLength = endLength;
         mEndLength = endLength;
 
-        if (mRetainTotalLength - endLength >= ADD_PLANE_LENGTH / 2) {
+        /*if (mRetainTotalLength - endLength >= ADD_PLANE_LENGTH / 2) {
             new Thread() {
                 @Override
                 public void run() {
@@ -2256,7 +2252,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     }
                 }
             }.start();
-        }
+        }*/
     }
 
     private void startAnimation2(Vector3 startPosition, List<Vector3> throughPosition, Vector3 endPosition, long duration) {

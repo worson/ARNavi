@@ -69,5 +69,5 @@ dependencies {
     //    compile project(':rajawali')
     //    compile project(':openCVLibrary300')
     compile project(':endpointsSharedLib')
-    compile project(':openCVLibrary300')
+    //     compile project(':openCVLibrary300')
 }
