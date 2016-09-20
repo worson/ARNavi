@@ -31,7 +31,7 @@ public class CrossPathManager {
     private CrossPathManager() {}
 
     private static CrossPathManager     mInstance             = new CrossPathManager();
-//    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
+    private static EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
 
     public static CrossPathManager getInstance() {
         return mInstance;
@@ -386,7 +386,7 @@ public class CrossPathManager {
         return true;
     }
 
-    /*public List<List<Vector3>> setEnlargeCrossBranchLiens(Bitmap crossImage) {
+    public List<List<Vector3>> setEnlargeCrossBranchLiens(Bitmap crossImage) {
         int centerPointIndex = getCenterPointIndex();
         String[] mainRoadArr = getMainRoadArr();
         if (centerPointIndex < 0 || centerPointIndex >= mainRoadArr.length / 2) {
@@ -410,21 +410,19 @@ public class CrossPathManager {
             HaloLogger.logE(TAG, "getBranchLines faild , ecBranchLines == null or ecBranchLines.size() <= 0!");
             return null;
         }
-        //过滤岔路点每隔10个点取一个
+        //过滤岔路点每隔10个点取一个,并对得到的岔路数据进行Y轴取反操作
         for (int i = 0; i < ecBranchLines.size(); i++) {
+            // TODO: 2016/9/8
+            HaloLogger.logE("branch_handle", "=========return start=========");
             EnlargedCrossProcess.ECBranchLine ecb = ecBranchLines.get(i);
             List<Point> line = ecb.getLinePoints();
             for (int j = 0, count = 0; j < line.size(); j++) {
                 if (count++ % 10 != 0) {
                     line.remove(j--);
+                }else{
+                    HaloLogger.logE("branch_handle", line.get(j).x + "," + line.get(j).y);
+                    line.get(j).y=-line.get(j).y;
                 }
-            }
-        }
-        // TODO: 2016/9/8
-        for (EnlargedCrossProcess.ECBranchLine ecb : ecBranchLines) {
-            HaloLogger.logE("branch_handle", "=========return start=========");
-            for (Point p : ecb.getLinePoints()) {
-                HaloLogger.logE("branch_handle", p.x + "," + p.y);
             }
             HaloLogger.logE("branch_handle", "==========return end==========");
         }
@@ -436,7 +434,7 @@ public class CrossPathManager {
             List<Point> line = ecb.getLinePoints();
             Point centerScreenPoint = getCenterPoint();
             PointF centerOpenglPoint = getCenterPointOpengl();
-            line.add(0, centerScreenPoint);
+            //line.add(0, centerScreenPoint);
             List<Vector3> branchLine = new ArrayList<>();
             for (Point point : line) {
                 Vector3 v = new Vector3(point.x, point.y, 0);
@@ -466,7 +464,7 @@ public class CrossPathManager {
             branchLines.add(branchLine);
         }
         return branchLines;
-    }*/
+    }
 
     private double calcScaleFromScreen2Opengl(String[] mainRoadArr, int centerPointIndex) {
         PointF centerPointOpengl = getCenterPointOpengl();

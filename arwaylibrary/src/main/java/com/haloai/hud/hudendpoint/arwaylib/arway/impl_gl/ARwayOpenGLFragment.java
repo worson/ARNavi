@@ -628,6 +628,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         ARWayController.CommonBeanUpdater.setYaw(false);
 
         mMapProjectionMachine.setNeedUpdatePath(true);
+        mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
         onYawEndView();
     }
 
@@ -691,17 +692,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (crossimage != null) {
             if (mCrossCanShow) {
                 if (mNaviInfoBean != null) {
-                    /*try {
-
-                        HaloLogger.logE("branch_handle","save a new cross image");
+                    try {
+                         HaloLogger.logE("branch_handle","save a new cross image");
                          FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
                     } catch (IOException e) {
                         e.printStackTrace();
-                    }*/
+                    }
                     mRenderer.handleCrossInfo(mCurrentPathStep, crossimage.getWidth(), crossimage.getHeight());
                     mRenderer.setEnlargeCrossBranchLines(crossimage);
                     // TODO: 2016/9/7
-                    mRenderer.addCrossImageData2Collector("/sdcard/testimage/oricrossimage/",bitmapFileName,mCrossImageDataCollector);
+                    //mRenderer.addCrossImageData2Collector("/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png",mCrossImageDataCollector);
                 }
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(mCurrentCrossImage);
             } else {

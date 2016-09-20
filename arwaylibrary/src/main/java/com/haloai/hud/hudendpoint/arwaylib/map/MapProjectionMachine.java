@@ -134,6 +134,7 @@ public class MapProjectionMachine {
     private MapProjectionState mMapScaledState = new MapProjectionState() {
         @Override
         public void handle(MapProjectionMachine machine) {
+            machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
             if (machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path) {
                 if (machine.mScaledOk) {
                     machine.mForceUpdateNaviView4Path = false;
@@ -144,7 +145,6 @@ public class MapProjectionMachine {
                     Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
                 }
             }
-            machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
         }
 
 

@@ -545,13 +545,27 @@ int GetCrossRoadPoint(const Mat& matRoadImg, const vector<Point2i>& vecMainRoadS
 
 	//vecCrossRoadPointSet = vecCrossAssistSet;
 
+
 	int nNum = vecCrossAssistSet.size();
 	if (nNum<=0)
 	{
 		return -1;
 	}
-	
-	// 在所有中心点之前的形状点中，获取刚好满足要求的形状点下标，要求：距离中心点大于n个像素
+
+	/*
+	// ================y轴镜像====================
+	for(int i=0; i<nNum; i++)
+	{
+		for(int j=0; j<vecCrossAssistSet[i].size(); j++)
+		{
+			vecCrossAssistSet[i][j].y = nRow - vecCrossAssistSet[i][j].y;
+		}
+	}
+	//=================end,y轴镜像====================
+	*/
+
+
+		// 在所有中心点之前的形状点中，获取刚好满足要求的形状点下标，要求：距离中心点大于n个像素
 	int nCenterPrePtIndex = 0;		// 记录中心点前第一个满足要求的形状点的下标
 	float fTemp = 0.f;
 	bool bFlag = false;

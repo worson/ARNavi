@@ -59,14 +59,15 @@ android {
 }*/
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:21.0.3'
     debugCompile 'com.android.support:support-v4:21.0.3'
-//    compile(name: 'openCVLibrary300-release', ext: 'aar')
+    //    compile(name: 'openCVLibrary300-release', ext: 'aar')
     //    debugCompile(name: 'rajawali-debug', ext: 'aar')
     //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
-//    compile project(':rajawali')
-//    compile project(':openCVLibrary300')
+    //    compile project(':rajawali')
+    //    compile project(':openCVLibrary300')
     compile project(':endpointsSharedLib')
+    compile project(':openCVLibrary300')
 }
