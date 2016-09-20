@@ -208,6 +208,19 @@ public class MathUtils {
         return to > 360 ? to - 360 * n : to;
     }
 
+    /**
+     * 获取两个屏幕点的连线与水平线之间的弧度
+     * @param x
+     * @param y
+     * @param x2
+     * @param y2
+     * @return
+     */
+    public static double getRadian(double x, double y, double x2, double y2) {
+        return Math.atan2(y2-y,x2-x);
+    }
+
+
     /***
      * 获取两个屏幕点的连线与水平线之间的距离
      *

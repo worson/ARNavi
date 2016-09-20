@@ -5,7 +5,11 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
  */
 public class ARWayConst {
 
-    //log
+    public static boolean IS_DARW_ARWAY = false; //是否偏航时清空显示数据
+    //disiplay
+    public static boolean IS_YAW_CLEAR_DISPLAY = false; //是否偏航时清空显示数据
+
+    // debug log
     public static String  INDICATE_LOG_TAG = "sen_debug_gl";
     public static String  ERROR_LOG_TAG = "sen_debug_gl";
     public static String  SPECIAL_LOG_TAG = "matlab";

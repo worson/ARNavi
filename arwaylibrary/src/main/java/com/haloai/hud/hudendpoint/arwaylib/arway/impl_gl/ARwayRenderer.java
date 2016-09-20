@@ -15,6 +15,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
@@ -240,7 +241,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (!mIsMyInitScene) {
             return;
         }
-
+//        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientatio,mObject4Chase orientation is Rotx=%s,Roty=%s,RotZ=%s",mObject4Chase.getRotX(),mObject4Chase.getRotY(), mObject4Chase.getRotZ()));
         if (mObject4Chase != null) {
             updateCamera(mObject4Chase);
         }
@@ -1336,9 +1337,39 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             return;
         }
 
+        //move to screen center
+        double offsetX = mPath.get(0).x - 0;
+        double offsetY = mPath.get(0).y - 0;
+        for (int i = 0; i < mPath.size(); i++) {
+            mPath.get(i).x -= offsetX;
+            mPath.get(i).y -= offsetY;
+
+//            HaloLogger.logE("test_print_all_path",String.format("%s  %s",mPath.get(i).x,mPath.get(i).y));
+        }
+
+        //rotate path with matrix
+//        double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(1).x, mPath.get(1).y);
+        /*if(false){
+            Matrix matrix = new Matrix();
+            matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
+            Vector3 ref = new Vector3(mPath.get(0));
+            float[] xy = new float[2];
+            PointD rotatePoint = new PointD();
+            for (int i = 1; i < mPath.size(); i++) {
+                Vector3 v = mPath.get(i);
+//            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
+                MathUtils.rotateAround(ref.x,ref.y,v.x,v.y,rotatePoint,Math.toRadians(rotateZ - 180));
+                v.x = rotatePoint.x;
+                v.y = rotatePoint.y;
+                HaloLogger.logE("test_print_all_path",String.format("%s  %s",v.x,v.y));
+            }
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientation,rotated  first point is %s,second point is %s",mPath.get(0),mPath.get(1)));
+        }*/
+
         //clear the points because that points is too close
         HaloLogger.logE("helong_debug", "pre size:" + mPath.size());
         int tempBigTime4Calc = 30000000;
+
         //保留path中头尾两个点不被删除
         for (int i = 0; i < mPath.size() - 2; i++) {
             int distance = (int) (MathUtils.calculateDistance(
@@ -1465,26 +1496,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        tempPath.clear();
         //        HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
 
-        //move to screen center
-        double offsetX = mPath.get(0).x - 0;
-        double offsetY = mPath.get(0).y - 0;
-        for (int i = 0; i < mPath.size(); i++) {
-            mPath.get(i).x -= offsetX;
-            mPath.get(i).y -= offsetY;
-        }
-
-        //rotate path with matrix
-        double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
-        mObject4ChaseStartOrientation = rotateZ;
-        Matrix matrix = new Matrix();
-        matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
-        for (int i = 1; i < mPath.size(); i++) {
-            Vector3 v = mPath.get(i);
-            float[] xy = new float[2];
-            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
-            v.x = xy[0];
-            v.y = xy[1];
-        }
 
         int pathLength = mPath.size();
         CatmullRomCurve3D catmull = new CatmullRomCurve3D();
@@ -1503,6 +1514,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mPath.add(new Vector3(pos));
         }
         HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
+
+        Vector3 p1 = mPath.get(0);
+        Vector3 p2 = mPath.get(1);
+        for (int i = 1; i < mPath.size(); i++) {
+            if(!p1.equals(mPath.get(i))){
+                p2 = mPath.get(i);
+                break;
+            }
+        }
+        double rotateZ = (Math.toDegrees(MathUtils.getRadian(p1.x, p1.y, p2.x, p2.y))+270)%360;
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientation,origin  first point is %s,second point is %s",p1,p2));
+        mObject4ChaseStartOrientation = rotateZ;
+
 
         //calc totalDist in opengl
         mTotalLength = allLength;
@@ -1782,20 +1806,21 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             getCurrentScene().addChild(mSphere2);
         }*/
 
+
         //        mObject4Chase = new Object3D();
         //        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         //        mObject4Chase.setMaterial(new Material());
         mObject4Chase = new Sphere(0.0001f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
-//        mObject4Chase.setRotZ(mObject4ChaseStartOrientation-180);
-        RotateOnAxisAnimation anim = new RotateOnAxisAnimation(Vector3.Axis.Z, mObject4ChaseStartOrientation);
-        anim.setTransformable3D(mObject4Chase);
-        anim.setDurationMilliseconds(1);
-        anim.setInterpolator(new LinearInterpolator());
-        anim.setRepeatMode(Animation.RepeatMode.NONE);
-        getCurrentScene().registerAnimation(anim);
-        anim.play();
+        mObject4Chase.setRotation(0,0,0);
+        mObject4Chase.setRotation(Vector3.Axis.Z,-mObject4ChaseStartOrientation);
+
+        Camera cCamera = getCurrentCamera();
+        cCamera.enableLookAt();
+        cCamera.setUpAxis(Vector3.Axis.Z);
+        cCamera.setRotation(0,0,0);
+        updateCamera(mObject4Chase);
 
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
@@ -1812,7 +1837,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        ), mObject4Chase);
         //        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
 
-        getCurrentCamera().setUpAxis(Vector3.Axis.Z);
+
 
         addPlane2Scene();
 
