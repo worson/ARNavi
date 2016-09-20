@@ -34,14 +34,15 @@ public class ARWayRoadObject extends SuperRoadObject {
     public static String ARWAY_ROAD_TYPE_BRANCH       = "route_branch";
     public static String ARWAY_ROAD_TYPE_BRANCH_BLACK = "route_branch_black";
 
-    private float ROAD_WIDTH = 0.7f;
-    private static int CIRCLE_SEGMENT = 16;
+    private float            mRoadWidth     = 0.7f;
+    private static final int CIRCLE_SEGMENT = 16;
 
 
     private        int                   mRoadShapePointsCount;
     private        List<Vector3>         mRoadShapePoints;
     private        int                   mCountOfPlanes;
     private        int                   mCountOfVerties;
+
     private static Map<String, Material> sMaterialMap;
 
     private final float PI = (float) Math.PI;
@@ -49,15 +50,18 @@ public class ARWayRoadObject extends SuperRoadObject {
     private Material mMaterial = null;
 
     private ObjectElement mObjectElement;
-
+    private static Material mRoadMaterial = new Material();
+    static {
+        mRoadMaterial.useVertexColors(true);
+    }
 
     public ARWayRoadObject(List<Vector3> roadPath, float width, int color) {
         super(roadPath, width,color);
-        ROAD_WIDTH =  width;
+        mRoadWidth =  width;
         mRoadShapePoints = new ArrayList<>(roadPath);
         mRoadShapePointsCount = mRoadShapePoints.size();
 
-        ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(roadPath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,ROAD_WIDTH/2,0,color);
+        ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,color);
         addVerties(circleAndPlaneElement);
 
         /*ObjectElement planeElement = generatePlaneVerties(width/2,-0.001f);
@@ -65,7 +69,7 @@ public class ARWayRoadObject extends SuperRoadObject {
 
         /*List<Vector3> rotatePath = new ArrayList<>();
         MathUtils.rotatePath(mRoadShapePoints,rotatePath,roadPath.get(0).x,roadPath.get(0).y,PI/2);
-        ObjectElement roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*ROAD_WIDTH/2,0.1f,Color.RED);
+        ObjectElement roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
         addVerties(roadCircleAndPlaneElement);*/
 
         applyVerties();
@@ -73,6 +77,11 @@ public class ARWayRoadObject extends SuperRoadObject {
 
 //        setDepthMaskEnabled(true);
         setDepthTestEnabled(false);
+        setMaterial(mRoadMaterial);
+        setDoubleSided(true);
+    }
+
+    public ARWayRoadObject(ArrayList<Vector3> vector3s, double leftWidth, double rightWidth, String roadType) {
     }
 
     public void addCrossPath(List<Vector3> crossPath, double width, Material material){
@@ -288,7 +297,7 @@ public class ARWayRoadObject extends SuperRoadObject {
             }
             for (int k = 0; k < CIRCLE_SEGMENT; k++) {
 
-                PointD circleEdge = new PointD(0,ROAD_WIDTH);
+                PointD circleEdge = new PointD(0, mRoadWidth);
                 double stepDegree = k* Math.PI*2/CIRCLE_SEGMENT;
 
                 vIndex = vCircleIndex+(k+1)*NUMBER_OF_VERTIX;
@@ -355,7 +364,7 @@ public class ARWayRoadObject extends SuperRoadObject {
     private void generateCircleObject() {
         for (int i = 0; i < mRoadShapePoints.size(); ++i) {
             Vector3 p = mRoadShapePoints.get(i);
-            addChildCircle(p,(float) ROAD_WIDTH);
+            addChildCircle(p,(float) mRoadWidth);
         }
     }
 
