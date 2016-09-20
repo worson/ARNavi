@@ -2,6 +2,8 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
@@ -17,11 +19,12 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.CrossPathManager;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
-import com.haloai.hud.hudendpoint.arwaylib.view.ARWayRoadObject;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.ATransformable3D;
@@ -45,6 +48,7 @@ import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.util.GLU;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -281,7 +285,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (!mIsMyInitScene) {
             return;
         }
-
+//        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientatio,mObject4Chase orientation is Rotx=%s,Roty=%s,RotZ=%s",mObject4Chase.getRotX(),mObject4Chase.getRotY(), mObject4Chase.getRotZ()));
         if (mObject4Chase != null) {
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
             updateCamera_New(deltaTime);
@@ -1389,20 +1393,51 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             return;
         }
 
-        //clear the points because that points is too close
-        HaloLogger.logE("helong_debug", "pre size:" + mPath.size());
-        int tempBigTime4Calc = 30000000;
-        //保留path中头尾两个点不被删除
-        for (int i = 0; i < mPath.size() - 2; i++) {
-            int distance = (int) (MathUtils.calculateDistance(
-                    mPath.get(i).x, mPath.get(i).y, mPath.get(i + 1).x, mPath.get(i + 1).y) * tempBigTime4Calc);
-            //if the distance 30 time is less than 30,remove second point.
-            if (distance <= 300) {
-                mPath.remove(i + 1);
-                i--;
-            }
+        //move to screen center
+        double offsetX = mPath.get(0).x - 0;
+        double offsetY = mPath.get(0).y - 0;
+        for (int i = 0; i < mPath.size(); i++) {
+            mPath.get(i).x -= offsetX;
+            mPath.get(i).y -= offsetY;
+
+//            HaloLogger.logE("test_print_all_path",String.format("%s  %s",mPath.get(i).x,mPath.get(i).y));
         }
-        HaloLogger.logE("helong_debug", "next size:" + mPath.size());
+
+        //rotate path with matrix
+//        double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(1).x, mPath.get(1).y);
+        /*if(false){
+            Matrix matrix = new Matrix();
+            matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
+            Vector3 ref = new Vector3(mPath.get(0));
+            float[] xy = new float[2];
+            PointD rotatePoint = new PointD();
+            for (int i = 1; i < mPath.size(); i++) {
+                Vector3 v = mPath.get(i);
+//            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
+                MathUtils.rotateAround(ref.x,ref.y,v.x,v.y,rotatePoint,Math.toRadians(rotateZ - 180));
+                v.x = rotatePoint.x;
+                v.y = rotatePoint.y;
+                HaloLogger.logE("test_print_all_path",String.format("%s  %s",v.x,v.y));
+            }
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientation,rotated  first point is %s,second point is %s",mPath.get(0),mPath.get(1)));
+        }*/
+
+        //clear the points because that points is too close
+        if(ARWayConst.IS_FILTER_PATH_LITTLE_DISTANCE){
+            HaloLogger.logE("helong_debug", "pre size:" + mPath.size());
+            int tempBigTime4Calc = 30000000;
+            //保留path中头尾两个点不被删除
+            for (int i = 0; i < mPath.size() - 2; i++) {
+                int distance = (int) (MathUtils.calculateDistance(
+                        mPath.get(i).x, mPath.get(i).y, mPath.get(i + 1).x, mPath.get(i + 1).y) * tempBigTime4Calc);
+                //if the distance 30 time is less than 30,remove second point.
+                if (distance <= 300) {
+                    mPath.remove(i + 1);
+                    i--;
+                }
+            }
+            HaloLogger.logE("helong_debug", "next size:" + mPath.size());
+        }
 
         double[] offsetXs = new double[mPath.size() - 1];
         double[] offsetYs = new double[mPath.size() - 1];
@@ -1520,17 +1555,30 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        tempPath.clear();
         //        HaloLogger.logE("helong_debug", "插值后:path_size:" + mPath.size());
 
-        //move to screen center
-        double offsetX = mPath.get(0).x - 0;
-        double offsetY = mPath.get(0).y - 0;
-        for (int i = 0; i < mPath.size(); i++) {
-            mPath.get(i).x -= offsetX;
-            mPath.get(i).y -= offsetY;
+
+        if(ARWayConst.IS_CAT_MULL_ROM){
+            int pathLength = mPath.size();
+            CatmullRomCurve3D catmull = new CatmullRomCurve3D();
+            //controll point 1
+            catmull.addPoint(new Vector3(mPath.get(0)));
+            for (int i = 0; i < mPath.size(); i++) {
+                catmull.addPoint(new Vector3(mPath.get(i)));
+            }
+            //controll point 2
+            catmull.addPoint(new Vector3(mPath.get(mPath.size() - 1)));
+            catmull.reparametrizeForUniformDistribution(50);
+            mPath.clear();
+            for (int i = 0; i <= pathLength * CURVE_TIME; i++) {
+                Vector3 pos = new Vector3();
+                catmull.calculatePoint(pos, (1.0 * i) / (1.0 * pathLength * CURVE_TIME));
+                mPath.add(new Vector3(pos));
+            }
+            HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
         }
 
-        //rotate path with matrix
+        /*//rotate path with matrix
         double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
-        /*mObject4ChaseStartOrientation = rotateZ;
+        mObject4ChaseStartOrientation = rotateZ;
         Matrix matrix = new Matrix();
         matrix.setRotate((float) rotateZ - 180, (float) mPath.get(0).x, (float) mPath.get(0).y);
         for (int i = 1; i < mPath.size(); i++) {
@@ -1541,23 +1589,18 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             v.y = xy[1];
         }*/
 
-        int pathLength = mPath.size();
-        CatmullRomCurve3D catmull = new CatmullRomCurve3D();
-        //controll point 1
-        catmull.addPoint(new Vector3(mPath.get(0)));
-        for (int i = 0; i < mPath.size(); i++) {
-            catmull.addPoint(new Vector3(mPath.get(i)));
+        Vector3 p1 = mPath.get(0);
+        Vector3 p2 = mPath.get(1);
+        for (int i = 1; i < mPath.size(); i++) {
+            if(!p1.equals(mPath.get(i))){
+                p2 = mPath.get(i);
+                break;
+            }
         }
-        //controll point 2
-        catmull.addPoint(new Vector3(mPath.get(mPath.size() - 1)));
-        catmull.reparametrizeForUniformDistribution(50);
-        mPath.clear();
-        for (int i = 0; i <= pathLength * CURVE_TIME; i++) {
-            Vector3 pos = new Vector3();
-            catmull.calculatePoint(pos, (1.0 * i) / (1.0 * pathLength * CURVE_TIME));
-            mPath.add(new Vector3(pos));
-        }
-        HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
+        double rotateZ = (Math.toDegrees(MathUtils.getRadian(p1.x, p1.y, p2.x, p2.y))+270)%360;
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("path orientation,origin  first point is %s,second point is %s",p1,p2));
+        mObject4ChaseStartOrientation = rotateZ;
+
 
         //calc totalDist in opengl
         mTotalLength = allLength;
@@ -1836,14 +1879,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             getCurrentScene().addChild(mSphere2);
         }*/
 
+
         //        mObject4Chase = new Object3D();
         //        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         //        mObject4Chase.setMaterial(new Material());
         mObject4Chase = new Sphere(0.0001f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
-        //        mObject4Chase.setRotZ(mObject4ChaseStartOrientation-180);
-        getCurrentScene().addChild(mObject4Chase);
+        mObject4Chase.setRotation(0,0,0);
+        mObject4Chase.setRotation(Vector3.Axis.Z,-mObject4ChaseStartOrientation);
+
+        Camera cCamera = getCurrentCamera();
+        cCamera.enableLookAt();
+        cCamera.setUpAxis(Vector3.Axis.Z);
+        cCamera.setRotation(0,0,0);
+        updateCamera(mObject4Chase);
+
+        if (ARWayConst.IS_DEBUG_SCENE) {
+            getCurrentScene().addChild(mObject4Chase);
+        }
 
         //        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
@@ -1922,8 +1976,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      */
     private void addPlane2Scene() {
         //mMainRoadObjects.clear();
-        for (int i = 0; i < mChildPathPositions.size(); i++) {
-            mMainRoadObjects.add(insertARWayObject(mChildPathes.get(i), mChildPathPositions.get(i), ROAD_WIDTH, 1));
+        if(ARWayConst.IS_NEW_ROADOBJECT){
+            for (int i = 0; i < mChildPathPositions.size(); i++) {
+                mMainRoadObjects.addAll(insertARWayObject(mChildPathes.get(i), mChildPathPositions.get(i), (float) ROAD_WIDTH*2,Color.WHITE));
+            }
+            for (int i = 0; i < mChildPathPositions.size(); i++) {
+                mMainRoadObjects.addAll(insertARWayObject(mChildPathes.get(i), mChildPathPositions.get(i), (float) ROAD_WIDTH*1.4f, Color.BLACK));
+            }
+        }else {
+            for (int i = 0; i < mChildPathPositions.size(); i++) {
+                mMainRoadObjects.add(insertARWayObject(mChildPathes.get(i), mChildPathPositions.get(i), ROAD_WIDTH, 1));
+            }
         }
         HaloLogger.logE("helong_debug", "arway size:" + mMainRoadObjects.size());
         HaloLogger.logE("helong_debug", "child size:" + getCurrentScene().getNumChildren());
@@ -1968,6 +2031,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH;
         else if (type == 3)
             roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH_BLACK;
+//        ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         /*Material material = arWayRoadObject.getMaterial();
         material.setColor(0);
@@ -1986,6 +2050,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         arWayRoadObject.setPosition(position);
         getCurrentScene().addChild(arWayRoadObject);
         return arWayRoadObject;
+    }
+
+    private List<ARWayRoadObject>  insertARWayObject(List<Vector3> littlePath, Vector3 position, float roadWidth,int color) {
+
+        if (littlePath == null || littlePath.size() <= 0 || position == null/* || mLeftPath == null || mLeftPath.size() <= 0 || mRightPath == null || mRightPath.size() <= 0*/) {
+            return null;
+        }
+        ARWayRoadObject mainRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), roadWidth,color);
+        mainRoadObject.setPosition(position);
+        getCurrentScene().addChild(mainRoadObject);
+        List<ARWayRoadObject> roadObjects = new LinkedList<>();
+        roadObjects.add(mainRoadObject);
+        return roadObjects;
     }
 
     private ARWayRoadObject insertARWayObject(List<Vector3> littlePath, Vector3 position, double width, int type) {

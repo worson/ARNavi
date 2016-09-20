@@ -156,7 +156,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.getMap().setOnMapLoadedListener(this);
             mAmapNaviView.getMap().setOnCameraChangeListener(this);
         }
-        if (IS_DEBUG_MODE) {
+        if (IS_DEBUG_MODE || !ARWayConst.IS_DARW_ARWAY) {
             mAmapNaviView.setVisibility(View.VISIBLE);
             mAmapNaviView.setAlpha(1);
             mAmapNaviView.bringToFront();
@@ -263,6 +263,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             public boolean updateMapView() {
                 return initAMapNaviView();
             }
+
         };
 
         MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
@@ -607,11 +608,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway updateYawStart,already yaw");
             return;
         }
-
-        ARWayController.ARWayStatusUpdater.resetData();
-        resetNaviStatus();
+        if(ARWayConst.IS_YAW_CLEAR_DISPLAY){
+            ARWayController.ARWayStatusUpdater.resetData();
+            resetNaviStatus();
+        }
 
         mMapProjectionMachine.setNeedUpdatePath(true);
+        mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
         ARWayController.CommonBeanUpdater.setYaw(true);
         onYawStartView();
     }
@@ -685,25 +688,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void showCrossImage(Bitmap crossimage) {
 
-        if (crossimage == null) {
+        /*if (crossimage == null) {
             ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             return;
-        }
+        }*/
         if (crossimage != null) {
             if (mCrossCanShow) {
-                if (mNaviInfoBean != null) {
+                /*if (mNaviInfoBean != null) {
                     try {
-                         HaloLogger.logE("branch_handle","save a new cross image");
+
+                        HaloLogger.logE("branch_handle","save a new cross image");
                          FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     mRenderer.handleCrossInfo(mCurrentPathStep, crossimage.getWidth(), crossimage.getHeight());
                     mRenderer.setEnlargeCrossBranchLines(crossimage);
-                    // TODO: 2016/9/7
-                    //mRenderer.addCrossImageData2Collector("/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png",mCrossImageDataCollector);
-                }
-                ARWayController.NaviInfoBeanUpdate.setCrossBitmap(mCurrentCrossImage);
+                }*/
             } else {
                 ARWayController.NaviInfoBeanUpdate.setCrossBitmap(null);
             }
@@ -878,7 +879,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER) {
                     return -2;
                 }
-                mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
+                if(ARWayConst.IS_DARW_ARWAY){
+                    mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
+                }
                 result=0;
                 // TODO: 16/9/13 测试直接起步
                 onNavingView();
@@ -921,7 +924,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         onNaviViewUpdate();
 
         int distance = info.getPathRetainDistance();
-        if (arway.isShown()) {
+        if (arway.isShown()&& ARWayConst.IS_DARW_ARWAY) {
             mRenderer.onLocationChange(info);
         }
 
