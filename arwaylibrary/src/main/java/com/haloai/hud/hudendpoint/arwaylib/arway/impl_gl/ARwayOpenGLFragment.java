@@ -779,6 +779,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         }*/
         if(arway.isShown()){
+            mRenderer.setCarSpeed(location.getSpeed());
             //mRenderer.onLocationChange(location);
         }
     }
