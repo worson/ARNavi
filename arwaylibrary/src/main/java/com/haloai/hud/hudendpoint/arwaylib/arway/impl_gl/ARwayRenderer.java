@@ -249,9 +249,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             40.0, 41.0, 41.0, 40.0, 39.0, 38.0, 37.0, 37.0, 35.0, 33.0, 30.0, 28.0, 27.0, 25.0, 20.0, 15.0, 11.0, 11.0,
             11.0, 13.0, 13.0, 14.0, 18.0, 18.0, 18.0, 17.0, 17.0, 18.0, 17.0, 17.0, 16.0, 16.0, 17.0, 18.0, 19.0, 21.0,
             21.0, 22.0, 23.0, 23.0, 23.0, 22.0, 22.0, 23.0, 23.0, 23.0, 22.0, 20.0, 19.0, 17.0, 15.0, 12.0, 10.0, 9.0,
-            7.0, 6.0, 6.0, 6.0, 6.0, 6.0, 4.0, 4.0, 4.0, 5.0, 7.0, 11.0, 12.0, 13.0, 14.0, 16.0, 17.0, 18.0, 17.0, 16.0,
-            16.0, 17.0, 17.0, 15.0, 14.0, 13.0, 13.0, 12.0, 12.0, 12.0, 11.0, 11.0, 11.0, 11.0, 10.0, 9.0, 9.0, 8.0, 5.0,
-            5.0, 5.0, 5.0, 5.0, 4.0, 6.0, 8.0, 9.0, 9.0, 9.0, 10.0, 7.0, 7.0, 7.0, 5.0, 4.0, 4.0, 4.0, 0.0, 0.0, 0.0,
+            7.0, 6.0, 6.0, 6.0, 6.0, 6.0, 4.0, 4.0, 4.0, 5.0, 7.0, 11.0, 12.0, 13.0, 14.0, 16.0, 4.0, 4.0, 0.0, 0.0, 0.0,
             20.0, 20.0, 21.0, 22.0, 22.0, 25.0, 33.0, 40.0, 41.0};
 
     int     temp          = 0;
@@ -261,19 +259,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private void updateObject4Chase(Object3D object4Chase, double carSpeed, double deltaTime) {
         // TODO: 2016/9/21 模拟测试时提供速度
-        mCarSpeed = speeds[temp++ / 10 % speeds.length];
+        carSpeed = speeds[temp++ / 10 % speeds.length];
         HaloLogger.logE("cross_handle","1 yaw:"+object4Chase.getRotZ());
         Vector3 pos = getPosWithSpeed(object4Chase, carSpeed, deltaTime);
         object4Chase.disableLookAt();
         object4Chase.setPosition(pos);
-        if (isRotate) {
-            HaloLogger.logE("cross_handle","3 rotate:"+(object4Chase.getRotZ()+frame_rotate));
-            object4Chase.setRotation(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/frame_rotate);
-//            Quaternion qn = object4Chase.getOrientation();
-//            qn.fromAngleAxis(Vector3.Axis.Z,object4Chase.getRotZ()+frame_rotate);
-//            object4Chase.setOrientation(qn);
-            HaloLogger.logE("cross_handle","4 yaw:"+object4Chase.getRotZ());
-        }
+//        if (isRotate) {
+//            HaloLogger.logE("cross_handle","3 rotate:"+(object4Chase.getRotZ()+frame_rotate));
+////            object4Chase.setRotation(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/frame_rotate);
+////            Quaternion qn = object4Chase.getOrientation();
+////            qn.fromAngleAxis(Vector3.Axis.Z,object4Chase.getRotZ()+frame_rotate);
+////            object4Chase.setOrientation(qn);
+//            Quaternion quat = object4Chase.getOrientation();
+//            quat.fromAngleAxis(Vector3.Axis.Z, frame_rotate);
+//            //mQuat.multiply(mQuatFrom);
+//            object4Chase.setOrientation(quat);
+//            HaloLogger.logE("cross_handle","4 yaw:"+object4Chase.getRotZ());
+//        }
     }
 
     private Vector3 getPosWithSpeed(Object3D object4Chase, double speed, double deltaTime) {
@@ -281,6 +283,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //此时的speed表示每秒移动多少opengl中的距离
         speed = speed / 3.6 * mLength2DistanceScale;
         double dist = speed * deltaTime;
+        HaloLogger.logE("cross_handle__","dist:"+dist);
         while (curIndexAfter + 1 < mPath.size()) {
             Vector3 nextV = mPath.get(curIndexAfter + 1);
             double temp = MathUtils.calculateDistance(pos.x, pos.y, nextV.x, nextV.y);
@@ -1823,6 +1826,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.enableLookAt();
         cCamera.setUpAxis(Vector3.Axis.Z);
         cCamera.setRotation(0, 0, 0);
+        cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z + 3);
         //updateCamera(mObject4Chase);
 
         if (ARWayConst.IS_DEBUG_SCENE) {
@@ -1839,9 +1843,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
         //        ), mObject4Chase);
         //        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
-
-        getCurrentCamera().setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z + 3);
-        getCurrentCamera().setUpAxis(Vector3.Axis.Z);
 
         addPlane2Scene();
 
@@ -2071,7 +2072,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         setRetainDistance(info.getPathRetainDistance());
     }
 
-    public void setRetainDistance(double endLength) {
+    private void setRetainDistance(double endLength) {
         if (endLength > mLength2FinalPoint.get(0)) {
             return;
         }

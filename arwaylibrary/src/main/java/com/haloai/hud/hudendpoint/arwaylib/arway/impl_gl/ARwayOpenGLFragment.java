@@ -927,7 +927,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         int distance = info.getPathRetainDistance();
         if (arway.isShown()&& ARWayConst.IS_DARW_ARWAY) {
             //mRenderer.onLocationChange(info);
-            mRenderer.setRetainDistance(info.getPathRetainDistance());
         }
 
         if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
