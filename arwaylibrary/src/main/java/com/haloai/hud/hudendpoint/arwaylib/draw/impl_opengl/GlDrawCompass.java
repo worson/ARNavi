@@ -2,11 +2,8 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
@@ -175,6 +172,8 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
                 if (mCompassOutletView != null) {
                     mCompassOutletView.enableSloping(true);
                 }
+                // TODO: 2016/9/22  
+                animView.setVisibility(View.INVISIBLE);
                 onNaving();
                 animators = mDrivingStateAnimators;
                 if (animators != null && animators.size()<1) {

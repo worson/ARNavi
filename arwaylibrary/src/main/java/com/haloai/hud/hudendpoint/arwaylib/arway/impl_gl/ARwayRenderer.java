@@ -18,6 +18,7 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
@@ -35,11 +36,11 @@ import org.rajawali3d.curves.CatmullRomCurve3D;
 import org.rajawali3d.curves.CompoundCurve3D;
 import org.rajawali3d.curves.LinearBezierCurve3D;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
-import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  CAMERA_OFFSET_X    = 0;
     private static final double  CAMERA_OFFSET_Y    = 0;
     private static final double  CAMERA_OFFSET_Z    = 0.6;
-    private static final double  CAMERA_CUT_OFFSET  = 0.7;
+    private static final double  CAMERA_CUT_OFFSET  = 1.5;
     private static final double  LOOK_AT_DIST       = 1.3;
     private static final int     INTERSECTION_COUNT = 30;
     private static final double  CAMERA_NEAR_PLANE  = 0.5;
@@ -206,7 +207,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void updateCamera(ATransformable3D transObject) {
         Camera camera = getCurrentCamera();
         Vector3 location = transObject.getPosition();
-        Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z + 3);
+        Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
         updateCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
         camera.setPosition(position);
@@ -256,26 +257,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     int     curIndexAfter = 0;
     boolean isRotate      = false;
     double  frame_rotate  = 0;
+    final double FRAME_ROTATE_STEP = 1;
 
     private void updateObject4Chase(Object3D object4Chase, double carSpeed, double deltaTime) {
         // TODO: 2016/9/21 模拟测试时提供速度
-        carSpeed = speeds[temp++ / 10 % speeds.length];
-        HaloLogger.logE("cross_handle","1 yaw:"+object4Chase.getRotZ());
+        //carSpeed = speeds[temp++ / 10 % speeds.length];
+        HaloLogger.logE("cross_handle", "1 yaw:" + Math.toDegrees(object4Chase.getRotZ()));
         Vector3 pos = getPosWithSpeed(object4Chase, carSpeed, deltaTime);
         object4Chase.disableLookAt();
-        object4Chase.setPosition(pos);
-//        if (isRotate) {
-//            HaloLogger.logE("cross_handle","3 rotate:"+(object4Chase.getRotZ()+frame_rotate));
-////            object4Chase.setRotation(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/frame_rotate);
-////            Quaternion qn = object4Chase.getOrientation();
-////            qn.fromAngleAxis(Vector3.Axis.Z,object4Chase.getRotZ()+frame_rotate);
-////            object4Chase.setOrientation(qn);
-//            Quaternion quat = object4Chase.getOrientation();
-//            quat.fromAngleAxis(Vector3.Axis.Z, frame_rotate);
-//            //mQuat.multiply(mQuatFrom);
-//            object4Chase.setOrientation(quat);
-//            HaloLogger.logE("cross_handle","4 yaw:"+object4Chase.getRotZ());
-//        }
+        object4Chase.setPosition(pos.x,pos.y,0.01);
+        if (isRotate) {
+            HaloLogger.logE("cross_handle", "3 rotate:" + frame_rotate);
+            object4Chase.rotate(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/frame_rotate);
+            HaloLogger.logE("cross_handle", "4 yaw:" + Math.toDegrees(object4Chase.getRotZ()));
+        }
     }
 
     private Vector3 getPosWithSpeed(Object3D object4Chase, double speed, double deltaTime) {
@@ -283,7 +278,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //此时的speed表示每秒移动多少opengl中的距离
         speed = speed / 3.6 * mLength2DistanceScale;
         double dist = speed * deltaTime;
-        HaloLogger.logE("cross_handle__","dist:"+dist);
         while (curIndexAfter + 1 < mPath.size()) {
             Vector3 nextV = mPath.get(curIndexAfter + 1);
             double temp = MathUtils.calculateDistance(pos.x, pos.y, nextV.x, nextV.y);
@@ -292,27 +286,30 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 double scale = dist / temp;
                 result.x = pos.x + (nextV.x - pos.x) * scale;
                 result.y = pos.y + (nextV.y - pos.y) * scale;
-                result.z = CAMERA_OFFSET_Z + 3;
+                result.z = 0;
                 pos = result;
 
                 double angle = MathUtils.getRotateDegreesWithLineAndAngle(
                         mPath.get(curIndexAfter).x, mPath.get(curIndexAfter).y,
                         mPath.get(curIndexAfter + 1).x, mPath.get(curIndexAfter + 1).y, object4Chase.getRotZ());
+                HaloLogger.logE("cross_handle__", "1.5 need:" + angle);
+                // TODO: 2016/9/22 可能由于angle的计算问题导致旋转有误差的出现
                 if (angle != 0) {
                     isRotate = true;
-                    if (Math.abs(angle) < 3) {
+                    frame_rotate = angle / 20;
+                    /*if (Math.abs(angle) < FRAME_ROTATE_STEP) {
                         frame_rotate = angle;
                     } else {
-                        frame_rotate = angle > 0 ? 3 : -3;
-                    }
-                    HaloLogger.logE("cross_handle","2 angle:"+frame_rotate);
+                        frame_rotate = angle > 0 ? FRAME_ROTATE_STEP : -FRAME_ROTATE_STEP;
+                    }*/
+                    HaloLogger.logE("cross_handle", "2 angle:" + frame_rotate);
                 } else {
                     isRotate = false;
                 }
                 break;
             } else if (temp == dist) {
                 curIndexAfter++;
-                pos.setAll(nextV.x, nextV.y, CAMERA_OFFSET_Z + 3);
+                pos = nextV;
                 break;
             } else {
                 curIndexAfter++;
@@ -1816,22 +1813,28 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             getCurrentScene().addChild(mSphere2);
         }*/
 
-        mObject4Chase = new Sphere(0.0001f, 24, 24);
+        /*mObject4Chase = new Sphere(0.05f, 24, 24);
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         mObject4Chase.setMaterial(new Material());
-        mObject4Chase.setRotation(0, 0, 0);
+        mObject4Chase.setColor(Color.BLUE);*/
+        mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
+        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
+        Material material = new Material();
+        material.setColorInfluence(0);
+        try {
+            material.addTexture(new Texture("obj_4_chase", R.drawable.car_and_compass));
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+        mObject4Chase.setMaterial(material);
         mObject4Chase.setRotation(Vector3.Axis.Z, -mObject4ChaseStartOrientation);
 
         Camera cCamera = getCurrentCamera();
         cCamera.enableLookAt();
         cCamera.setUpAxis(Vector3.Axis.Z);
         cCamera.setRotation(0, 0, 0);
-        cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z + 3);
+        cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         //updateCamera(mObject4Chase);
-
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mObject4Chase);
-        }
 
         //        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
         //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
@@ -1845,6 +1848,33 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
 
         addPlane2Scene();
+
+        //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
+        if (ARWayConst.IS_DEBUG_SCENE) {
+            getCurrentScene().addChild(mObject4Chase);
+        }
+
+        final double LENGTH_STEP=6;
+        double distStep=LENGTH_STEP;
+        for(int i=0;i<mPath.size()-1;i++){
+            Vector3 v1 = mPath.get(i);
+            Vector3 v2 = mPath.get(i+1);
+            double temp=MathUtils.calculateDistance(v1.x,v1.y,v2.x,v2.y);
+            if(temp>distStep){
+                double scale = distStep/temp;
+                Vector3 result = new Vector3();
+                result.x=v1.x+(v2.x-v1.x)*scale;
+                result.y=v1.y+(v2.y-v1.y)*scale;
+                result.z=0;
+                addTestPlane(result);
+                distStep=LENGTH_STEP;
+            }else if(temp<distStep){
+                distStep-=temp;
+            }else{
+                addTestPlane(v2);
+                distStep=LENGTH_STEP;
+            }
+        }
 
         //        Material maHo = new Material();
         //        //        maHo.setColorInfluence(0);
@@ -1900,6 +1930,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCanMyInitScene = false;
 
         clearUnuseDataAfterMyInitScene();
+    }
+
+    private void addTestPlane(Vector3 v2) {
+        Plane plane = new Plane(0.2f, 0.2f, 1, 1);
+        plane.setPosition(v2.x,v2.y,0.01);
+        Material material = new Material();
+        plane.setMaterial(material);
+        plane.setColor(Color.GRAY);
+        getCurrentScene().addChild(plane);
     }
 
     /***
