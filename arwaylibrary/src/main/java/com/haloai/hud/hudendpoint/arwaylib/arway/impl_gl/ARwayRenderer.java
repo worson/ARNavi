@@ -253,11 +253,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             7.0, 6.0, 6.0, 6.0, 6.0, 6.0, 4.0, 4.0, 4.0, 5.0, 7.0, 11.0, 12.0, 13.0, 14.0, 16.0, 4.0, 4.0, 0.0, 0.0, 0.0,
             20.0, 20.0, 21.0, 22.0, 22.0, 25.0, 33.0, 40.0, 41.0};
 
-    int     temp          = 0;
-    int     curIndexAfter = 0;
-    boolean isRotate      = false;
-    double  frame_rotate  = 0;
-    final double FRAME_ROTATE_STEP = 1;
+    int     temp           = 0;
+    int     mCurIndexAfter = 0;
+    boolean mIsRotate      = false;
+    double  mFrameRotate   = 0;
+    final double FRAME_STEP = 0.5;
 
     private void updateObject4Chase(Object3D object4Chase, double carSpeed, double deltaTime) {
         // TODO: 2016/9/21 模拟测试时提供速度
@@ -265,21 +265,24 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("cross_handle", "1 yaw:" + Math.toDegrees(object4Chase.getRotZ()));
         Vector3 pos = getPosWithSpeed(object4Chase, carSpeed, deltaTime);
         object4Chase.disableLookAt();
-        object4Chase.setPosition(pos.x,pos.y,0.01);
-        if (isRotate) {
-            HaloLogger.logE("cross_handle", "3 rotate:" + frame_rotate);
-            object4Chase.rotate(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/frame_rotate);
+        object4Chase.setPosition(pos.x, pos.y, 0.01);
+        if (mIsRotate) {
+            HaloLogger.logE("cross_handle", "3 rotate:" + mFrameRotate);
+            object4Chase.rotate(Vector3.Axis.Z,/*object4Chase.getRotZ()+*/mFrameRotate);
             HaloLogger.logE("cross_handle", "4 yaw:" + Math.toDegrees(object4Chase.getRotZ()));
         }
     }
 
     private Vector3 getPosWithSpeed(Object3D object4Chase, double speed, double deltaTime) {
         Vector3 pos = object4Chase.getPosition();
+        if(speed==0){
+            return pos;
+        }
         //此时的speed表示每秒移动多少opengl中的距离
         speed = speed / 3.6 * mLength2DistanceScale;
         double dist = speed * deltaTime;
-        while (curIndexAfter + 1 < mPath.size()) {
-            Vector3 nextV = mPath.get(curIndexAfter + 1);
+        while (mCurIndexAfter + 1 < mPath.size()) {
+            Vector3 nextV = mPath.get(mCurIndexAfter + 1);
             double temp = MathUtils.calculateDistance(pos.x, pos.y, nextV.x, nextV.y);
             if (temp > dist) {
                 Vector3 result = new Vector3();
@@ -290,29 +293,29 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 pos = result;
 
                 double angle = MathUtils.getRotateDegreesWithLineAndAngle(
-                        mPath.get(curIndexAfter).x, mPath.get(curIndexAfter).y,
-                        mPath.get(curIndexAfter + 1).x, mPath.get(curIndexAfter + 1).y, object4Chase.getRotZ());
+                        mPath.get(mCurIndexAfter).x, mPath.get(mCurIndexAfter).y,
+                        mPath.get(mCurIndexAfter + 1).x, mPath.get(mCurIndexAfter + 1).y, object4Chase.getRotZ());
                 HaloLogger.logE("cross_handle__", "1.5 need:" + angle);
                 // TODO: 2016/9/22 可能由于angle的计算问题导致旋转有误差的出现
                 if (angle != 0) {
-                    isRotate = true;
-                    frame_rotate = angle / 20;
-                    /*if (Math.abs(angle) < FRAME_ROTATE_STEP) {
-                        frame_rotate = angle;
+                    mIsRotate = true;
+                    //mFrameRotate = angle / FRAME_STEP;
+                    if (Math.abs(angle) < FRAME_STEP) {
+                        mFrameRotate = angle;
                     } else {
-                        frame_rotate = angle > 0 ? FRAME_ROTATE_STEP : -FRAME_ROTATE_STEP;
-                    }*/
-                    HaloLogger.logE("cross_handle", "2 angle:" + frame_rotate);
+                        mFrameRotate = angle > 0 ? FRAME_STEP : -FRAME_STEP;
+                    }
+                    HaloLogger.logE("cross_handle", "2 angle:" + mFrameRotate);
                 } else {
-                    isRotate = false;
+                    mIsRotate = false;
                 }
                 break;
             } else if (temp == dist) {
-                curIndexAfter++;
+                mCurIndexAfter++;
                 pos = nextV;
                 break;
             } else {
-                curIndexAfter++;
+                mCurIndexAfter++;
                 dist -= temp;
                 pos = nextV;
             }
@@ -1681,6 +1684,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mPreLocation = null;
         mCurLocation = null;
         mLastTime = 0;
+        mCurIndexAfter = 0;
+        mIsRotate = false;
+        mFrameRotate = 0;
         System.gc();
     }
 
@@ -1836,17 +1842,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         //updateCamera(mObject4Chase);
 
-        //        NewFirstPersonCamera firstPersonCamera = new NewFirstPersonCamera(new Vector3(
-        //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
-        //        ), mObject4Chase);
-        //        ChaseCamera firstPersonCamera = new ChaseCamera(new Vector3(
-        //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
-        //        ), mObject4Chase);
-        //        NewChaseCamera firstPersonCamera = new NewChaseCamera(new Vector3(
-        //                CAMERA_OFFSET_X, CAMERA_OFFSET_Y, CAMERA_OFFSET_Z
-        //        ), mObject4Chase);
-        //        getCurrentScene().replaceAndSwitchCamera(getCurrentCamera(), firstPersonCamera);
-
         addPlane2Scene();
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
@@ -1854,25 +1849,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             getCurrentScene().addChild(mObject4Chase);
         }
 
-        final double LENGTH_STEP=6;
-        double distStep=LENGTH_STEP;
-        for(int i=0;i<mPath.size()-1;i++){
+        final double LENGTH_STEP = 6;
+        double distStep = LENGTH_STEP;
+        for (int i = 0; i < mPath.size() - 1; i++) {
             Vector3 v1 = mPath.get(i);
-            Vector3 v2 = mPath.get(i+1);
-            double temp=MathUtils.calculateDistance(v1.x,v1.y,v2.x,v2.y);
-            if(temp>distStep){
-                double scale = distStep/temp;
+            Vector3 v2 = mPath.get(i + 1);
+            double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
+            if (temp > distStep) {
+                double scale = distStep / temp;
                 Vector3 result = new Vector3();
-                result.x=v1.x+(v2.x-v1.x)*scale;
-                result.y=v1.y+(v2.y-v1.y)*scale;
-                result.z=0;
+                result.x = v1.x + (v2.x - v1.x) * scale;
+                result.y = v1.y + (v2.y - v1.y) * scale;
+                result.z = 0;
                 addTestPlane(result);
-                distStep=LENGTH_STEP;
-            }else if(temp<distStep){
-                distStep-=temp;
-            }else{
+                distStep = LENGTH_STEP;
+            } else if (temp < distStep) {
+                distStep -= temp;
+            } else {
                 addTestPlane(v2);
-                distStep=LENGTH_STEP;
+                distStep = LENGTH_STEP;
             }
         }
 
@@ -1934,7 +1929,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private void addTestPlane(Vector3 v2) {
         Plane plane = new Plane(0.2f, 0.2f, 1, 1);
-        plane.setPosition(v2.x,v2.y,0.01);
+        plane.setPosition(v2.x, v2.y, 0.01);
         Material material = new Material();
         plane.setMaterial(material);
         plane.setColor(Color.GRAY);

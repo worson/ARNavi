@@ -778,10 +778,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mRenderer.continue_();
             ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         }*/
-        if(arway.isShown()){
-            mRenderer.setCarSpeed(location.getSpeed());
-            //mRenderer.onLocationChange(location);
-        }
     }
 
     /**
@@ -979,7 +975,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void onSpeedUpgraded(float speed) {
         ARWayController.SpeedBeanUpdater.setSpeed((int) speed);
         updateSpeedDialDisplay();
-
+        if(arway.isShown()){
+            mRenderer.setCarSpeed(speed);
+            //mRenderer.onLocationChange(location);
+        }
     }
 
     /**

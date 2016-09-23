@@ -205,6 +205,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
             case PAUSE:
 //                animShowHide(true);
 //                mComPassView.enableCut(false);
+                animView.setVisibility(View.VISIBLE);
                 if (mCompassOutletView != null) {
                     mCompassOutletView.enableSloping(false);
                 }
