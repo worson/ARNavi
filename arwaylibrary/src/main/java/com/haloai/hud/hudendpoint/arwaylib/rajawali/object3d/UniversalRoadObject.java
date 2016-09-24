@@ -12,7 +12,6 @@ import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Cylinder;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +56,12 @@ public class UniversalRoadObject extends SuperRoadObject {
         mRoadShapePoints = new ArrayList<>(roadPath);
         mRoadShapePointsCount = mRoadShapePoints.size();
 
+        setDepthTestEnabled(false);
+        Material material = new Material();
+        material.useVertexColors(true);
+        setMaterial(material);
+        setDoubleSided(true);
+
         ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(roadPath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,ROAD_WIDTH/2,0,color);
         addVerties(circleAndPlaneElement);
 
@@ -71,8 +76,6 @@ public class UniversalRoadObject extends SuperRoadObject {
         applyVerties();
 //        generateAllVerties();
 
-//        setDepthMaskEnabled(true);
-        setDepthTestEnabled(false);
     }
 
     public void addCrossPath(List<Vector3> crossPath, double width, Material material){
@@ -177,36 +180,6 @@ public class UniversalRoadObject extends SuperRoadObject {
         return element;
 
     }
-
-    private void addVerties(ObjectElement element){
-        if(element == null || !element.isDataValid()){
-            return;
-        }
-        List<ObjectElement> elements = new LinkedList<>();
-        if (mObjectElement != null && mObjectElement.isDataValid()){
-            elements.add(mObjectElement);
-        }
-        elements.add(element);
-        ObjectElement totalElement = ObjectElement.addAllElement(elements);
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("addVerties called ,verties size is %s",totalElement.vertices.length));
-            }
-            mObjectElement = totalElement;
-//            setData(totalElement.vertices, totalElement.normals, totalElement.textureCoords, totalElement.colors, totalElement.indices, false);
-        }
-    }
-    private void applyVerties(){
-        ObjectElement totalElement = mObjectElement;
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
-            }
-            mObjectElement = totalElement;
-            setData(totalElement.vertices, totalElement.normals, totalElement.textureCoords, totalElement.colors, totalElement.indices, false);
-        }
-    }
-
     private void generateAllVerties() {
         List<ObjectElement> allElement = new ArrayList<>();
 

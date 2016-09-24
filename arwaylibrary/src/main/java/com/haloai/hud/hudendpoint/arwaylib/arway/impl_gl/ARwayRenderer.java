@@ -18,6 +18,7 @@ import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
+import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -160,6 +161,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private double     mOffsetY                      = 0;
     private NaviLatLng mStartLatLng                  = null;
 
+    private ArwaySceneUpdater mSceneUpdater = null;
     public ARwayRenderer(Context context) {
         super(context);
 
@@ -184,7 +186,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
-
+        mSceneUpdater = new ArwaySceneUpdater(getCurrentScene());
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
@@ -1733,7 +1735,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             getCurrentScene().addChild(mObject4Chase);
         }
 
-        final double LENGTH_STEP = 6;
+       /* final double LENGTH_STEP = 6;
         double distStep = LENGTH_STEP;
         for (int i = 0; i < mPath.size() - 1; i++) {
             Vector3 v1 = mPath.get(i);
@@ -1753,7 +1755,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 insertTestPlane(v2);
                 distStep = LENGTH_STEP;
             }
-        }
+        }*/
 
         //        Material maHo = new Material();
         //        //        maHo.setColorInfluence(0);
@@ -1826,8 +1828,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void insertPlane2Scene() {
         //mMainRoadObjects.clear();
         if (ARWayConst.IS_NEW_ROADOBJECT) {
-            mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 2, Color.WHITE));
-            mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 1.4f, Color.BLACK));
+            mSceneUpdater.renderVisiblePath(mPath);
+            /*mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 2, Color.WHITE));
+            mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 1.4f, Color.BLACK));*/
         } else {
             mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), ROAD_WIDTH, 1));
         }
@@ -1867,10 +1870,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mMainRoadTexture = new Texture("route_main", R.drawable.route_new_line);
         }*/
         String roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_MAIN;
-        if (type == 2)
+        /*if (type == 2)
             roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH;
         else if (type == 3)
-            roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH_BLACK;
+            roadType = ARWayRoadObject.ARWAY_ROAD_TYPE_BRANCH_BLACK;*/
         //        ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         ARWayRoadObject arWayRoadObject = new ARWayRoadObject(new ArrayList<>(littlePath), leftWidth, rightWidth, roadType);
         /*Material material = arWayRoadObject.getMaterial();
