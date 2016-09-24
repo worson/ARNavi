@@ -1,18 +1,24 @@
 package com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d;
 
 import android.graphics.Color;
+import android.opengl.GLES20;
 import android.util.Log;
 
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 
+import org.rajawali3d.Geometry3D;
+import org.rajawali3d.Object3D;
+import org.rajawali3d.bounds.BoundingBox;
+import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
+import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Cylinder;
+import org.rajawali3d.util.RajLog;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,31 +29,29 @@ public class ARWayRoadObject extends SuperRoadObject {
     public static final boolean LOG_OUT = false;
     public static final String  TAG     = SuperRoadObject.class.getSimpleName();
 
-    public static final int VERTIX_NUMBER_PER_PLANE = 4;
-    public static final int NUMBER_OF_VERTIX  = 3;
-    public static final int NUMBER_OF_TEXTURE = 2;
-    public static final int NUMBER_OF_NORMAL  = 3;
-    public static final int NUMBER_OF_COLOR   = 4;
-    public static final int NUMBER_OF_INDICE  = 3;
+    public static final  int     VERTIX_NUMBER_PER_PLANE = 4;
+    public static final  int     NUMBER_OF_VERTIX        = 3;
+    public static final  int     NUMBER_OF_TEXTURE       = 2;
+    public static final  int     NUMBER_OF_NORMAL        = 3;
+    public static final  int     NUMBER_OF_COLOR         = 4;
+    public static final  int     NUMBER_OF_INDICE        = 3;
+    private static final boolean IS_VBOS_MODE            = true;
+    private static final boolean IS_CLEAR_BUFFER         = false;
+    public static final  String  ARWAY_ROAD_TYPE_MAIN    = "333";
 
-    public static String ARWAY_ROAD_TYPE_MAIN         = "route_main";
-    public static String ARWAY_ROAD_TYPE_BRANCH       = "route_branch";
-    public static String ARWAY_ROAD_TYPE_BRANCH_BLACK = "route_branch_black";
 
     private float            mRoadWidth     = 0.7f;
-    private static final int CIRCLE_SEGMENT = 16;
+    private static final int CIRCLE_SEGMENT = 32;
 
 
-    private        int                   mRoadShapePointsCount;
-    private        List<Vector3>         mRoadShapePoints;
-    private        int                   mCountOfPlanes;
-    private        int                   mCountOfVerties;
+    private int           mRoadShapePointsCount;
+    private List<Vector3> mRoadShapePoints;
+    private int           mCountOfPlanes;
+    private int           mCountOfVerties;
 
     private static Map<String, Material> sMaterialMap;
 
     private final float PI = (float) Math.PI;
-
-    private Material mMaterial = null;
 
     private ObjectElement mObjectElement;
     private static Material mRoadMaterial = new Material();
@@ -55,17 +59,27 @@ public class ARWayRoadObject extends SuperRoadObject {
         mRoadMaterial.useVertexColors(true);
     }
 
+    //render
+    private boolean mNeedRender = false;
+
     public ARWayRoadObject(List<Vector3> roadPath, float width, int color) {
         super(roadPath, width,color);
         mRoadWidth =  width;
-        mRoadShapePoints = new ArrayList<>(roadPath);
+        mRoadShapePoints = roadPath;
         mRoadShapePointsCount = mRoadShapePoints.size();
 
-        ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,color);
-        addVerties(circleAndPlaneElement);
+        //        setDepthMaskEnabled(true);
+        setDepthTestEnabled(false);
+        Material material = new Material();
+        material.useVertexColors(true);
+        setMaterial(material);
+        setDoubleSided(true);
 
-        /*ObjectElement planeElement = generatePlaneVerties(width/2,-0.001f);
-        addVerties(planeElement);*/
+        /*ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,color);
+        addVerties(circleAndPlaneElement);*/
+
+        ObjectElement planeElement = generatePlaneVerties(width/2,-0.001f);
+        addVerties(planeElement);
 
         /*List<Vector3> rotatePath = new ArrayList<>();
         MathUtils.rotatePath(mRoadShapePoints,rotatePath,roadPath.get(0).x,roadPath.get(0).y,PI/2);
@@ -75,22 +89,34 @@ public class ARWayRoadObject extends SuperRoadObject {
         applyVerties();
 //        generateAllVerties();
 
-//        setDepthMaskEnabled(true);
-        setDepthTestEnabled(false);
-        setMaterial(mRoadMaterial);
-        setDoubleSided(true);
-    }
+        if(IS_VBOS_MODE){
+            attachRender();
+            if(IS_CLEAR_BUFFER){
+                recycleBuffer();
+            }
+        }
 
-    public ARWayRoadObject(ArrayList<Vector3> vector3s, double leftWidth, double rightWidth, String roadType) {
-    }
-
-    public void addCrossPath(List<Vector3> crossPath, double width, Material material){
 
     }
 
-    public void addRoad(List<Vector3> roadPath, double width){
-//        ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(roadPath,roadPath.size(),CIRCLE_SEGMENT,(float) width/2,0);
-//        addVerties(circleAndPlaneElement);
+    public ARWayRoadObject(ArrayList<Vector3> vector3s, double leftWidth, double rightWidth, String arwayRoadTypeMain) {
+        super();
+    }
+
+
+    public void updateRoad(List<Vector3> roadPath){
+
+    }
+
+    private void releaseGlBuffer(){
+
+    }
+    private boolean isGlBufferEnough(){
+        return true;
+    }
+    private boolean createGlBuffer(int shapeSize){
+
+        return true;
     }
 
     private ObjectElement generatePlanAndCircleVerties(List<Vector3> path, int segmentsL, int segmentsC, float radius, float height, int color) {
@@ -185,35 +211,6 @@ public class ARWayRoadObject extends SuperRoadObject {
 
         return element;
 
-    }
-
-    private void addVerties(ObjectElement element){
-        if(element == null || !element.isDataValid()){
-            return;
-        }
-        List<ObjectElement> elements = new LinkedList<>();
-        if (mObjectElement != null && mObjectElement.isDataValid()){
-            elements.add(mObjectElement);
-        }
-        elements.add(element);
-        ObjectElement totalElement = ObjectElement.addAllElement(elements);
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("addVerties called ,verties size is %s",totalElement.vertices.length));
-            }
-            mObjectElement = totalElement;
-//            setData(totalElement.vertices, totalElement.normals, totalElement.textureCoords, totalElement.colors, totalElement.indices, false);
-        }
-    }
-    private void applyVerties(){
-        ObjectElement totalElement = mObjectElement;
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
-            }
-            mObjectElement = totalElement;
-            setData(totalElement.vertices, totalElement.normals, totalElement.textureCoords, totalElement.colors, totalElement.indices, false);
-        }
     }
 
     private void generateAllVerties() {
@@ -505,4 +502,176 @@ public class ARWayRoadObject extends SuperRoadObject {
         }
         return element;
     }
+
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
+//        this.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
+        this.render(camera, vpMatrix, projMatrix, vMatrix, null, sceneMaterial);
+    }
+
+    private void attachRender(){
+        Material material = mMaterial;
+        preRender();
+        if (!mIsPartOfBatch) {
+            if (material == null) {
+                RajLog.e("[" + this.getClass().getName()
+                        + "] This object can't render because there's no material attached to it.");
+                throw new RuntimeException(
+                        "This object can't render because there's no material attached to it.");
+            }
+            material.useProgram();
+            // TODO: 16/9/21
+//            setShaderParams(camera);
+            material.bindTextures();
+            if(mGeometry.hasTextureCoordinates())
+                material.setTextureCoords(mGeometry.getTexCoordBufferInfo());
+            if(mGeometry.hasNormals())
+                material.setNormals(mGeometry.getNormalBufferInfo());
+            if(mMaterial.usingVertexColors())
+                material.setVertexColors(mGeometry.getColorBufferInfo());
+
+            material.setVertices(mGeometry.getVertexBufferInfo());
+        }
+        material.setCurrentObject(this);
+    }
+
+    private void recycleBuffer(){
+        mGeometry.recycleBuffer();
+    }
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        if (!mIsVisible && !mRenderChildrenAsBatch)
+            return;
+
+        Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
+        if(!IS_VBOS_MODE){
+            preRender();
+        }
+
+        // -- move view matrix transformation first
+        boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
+        // -- calculate model view matrix;
+        mMVMatrix.setAll(vMatrix).multiply(mMMatrix);
+        //Create MVP Matrix from View-Projection Matrix
+        mMVPMatrix.setAll(vpMatrix).multiply(mMMatrix);
+
+        // Transform the bounding volumes if they exist
+        if (mGeometry.hasBoundingBox()) mGeometry.getBoundingBox().transform(getModelMatrix());
+        if (mGeometry.hasBoundingSphere()) mGeometry.getBoundingSphere().transform(getModelMatrix());
+
+        mIsInFrustum = true; // only if mFrustrumTest == true it check frustum
+        if (mFrustumTest && mGeometry.hasBoundingBox()) {
+            BoundingBox bbox = mGeometry.getBoundingBox();
+            if (!camera.getFrustum().boundsInFrustum(bbox)) {
+                mIsInFrustum = false;
+            }
+        }
+
+        if (!mIsContainerOnly && mIsInFrustum) {
+            mPMatrix = projMatrix;
+            if (mDoubleSided) {
+                GLES20.glDisable(GLES20.GL_CULL_FACE);
+            } else {
+                GLES20.glEnable(GLES20.GL_CULL_FACE);
+                if (mBackSided) {
+                    GLES20.glCullFace(GLES20.GL_FRONT);
+                } else {
+                    GLES20.glCullFace(GLES20.GL_BACK);
+                    GLES20.glFrontFace(GLES20.GL_CCW);
+                }
+            }
+            if (mEnableBlending) {
+                GLES20.glEnable(GLES20.GL_BLEND);
+                GLES20.glBlendFunc(mBlendFuncSFactor, mBlendFuncDFactor);
+            }
+            if (!mEnableDepthTest) GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+            else {
+                GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+                GLES20.glDepthFunc(GLES20.GL_LESS);
+            }
+
+            GLES20.glDepthMask(mEnableDepthMask);
+//            attachRender();
+            // TODO: 16/9/21
+            if(!IS_VBOS_MODE){
+                if (!mIsPartOfBatch) {
+                    if (material == null) {
+                        RajLog.e("[" + this.getClass().getName()
+                                + "] This object can't render because there's no material attached to it.");
+                        throw new RuntimeException(
+                                "This object can't render because there's no material attached to it.");
+                    }
+                    material.useProgram();
+
+                    setShaderParams(camera);
+                    material.bindTextures();
+                    if(mGeometry.hasTextureCoordinates())
+                        material.setTextureCoords(mGeometry.getTexCoordBufferInfo());
+                    if(mGeometry.hasNormals())
+                        material.setNormals(mGeometry.getNormalBufferInfo());
+                    if(mMaterial.usingVertexColors())
+                        material.setVertexColors(mGeometry.getColorBufferInfo());
+
+                    material.setVertices(mGeometry.getVertexBufferInfo());
+                }
+                material.setCurrentObject(this);
+            }
+
+            if(mOverrideMaterialColor) {
+                material.setColor(mColor);
+            }
+            material.applyParams();
+
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+
+            material.setMVPMatrix(mMVPMatrix);
+            material.setModelMatrix(mMMatrix);
+            material.setModelViewMatrix(mMVMatrix);
+
+            if(mIsVisible) {
+                int bufferType = mGeometry.getIndexBufferInfo().bufferType == Geometry3D.BufferType.SHORT_BUFFER ? GLES20.GL_UNSIGNED_SHORT : GLES20.GL_UNSIGNED_INT;
+                GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mGeometry.getIndexBufferInfo().bufferHandle);
+                GLES20.glDrawElements(mDrawingMode, mGeometry.getNumIndices(), bufferType, 0);
+                GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+            }
+            if (!mIsPartOfBatch && !mRenderChildrenAsBatch && sceneMaterial == null) {
+                material.unbindTextures();
+            }
+
+            material.unsetCurrentObject(this);
+
+            if (mEnableBlending) {
+                GLES20.glDisable(GLES20.GL_BLEND);
+            }
+
+            if (mDoubleSided) {
+                GLES20.glEnable(GLES20.GL_CULL_FACE);
+            } else if (mBackSided) {
+                GLES20.glCullFace(GLES20.GL_BACK);
+            }
+            if (!mEnableDepthTest) {
+                GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+                GLES20.glDepthFunc(GLES20.GL_LESS);
+            }
+        }
+
+        if (mShowBoundingVolume) {
+            if (mGeometry.hasBoundingBox())
+                mGeometry.getBoundingBox().drawBoundingVolume(camera, vpMatrix, projMatrix, vMatrix, mMMatrix);
+            if (mGeometry.hasBoundingSphere())
+                mGeometry.getBoundingSphere().drawBoundingVolume(camera, vpMatrix, projMatrix, vMatrix, mMMatrix);
+        }
+        // Draw children without frustum test
+        for (int i = 0, j = mChildren.size(); i < j; i++) {
+            Object3D child = mChildren.get(i);
+            if(mRenderChildrenAsBatch || mIsPartOfBatch) {
+                child.setPartOfBatch(true);
+            }
+            if(modelMatrixWasRecalculated) child.markModelMatrixDirty();
+            child.render(camera, vpMatrix, projMatrix, vMatrix, mMMatrix, sceneMaterial);
+        }
+
+        if (mRenderChildrenAsBatch && sceneMaterial == null) {
+            material.unbindTextures();
+        }
+    }
+
 }
