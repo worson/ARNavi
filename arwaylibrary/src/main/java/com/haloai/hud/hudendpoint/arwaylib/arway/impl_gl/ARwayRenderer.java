@@ -70,7 +70,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
-    private static final double  CAMERA_CUT_OFFSET      = 0.8;
+    private static final double  CAMERA_CUT_OFFSET      = 0.6;
     private static final double  LOOK_AT_DIST           = 1.3;
     private static final int     INTERSECTION_COUNT     = 30;
     private static final double  CAMERA_NEAR_PLANE      = 0.5;
@@ -100,7 +100,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private List<Vector3>         mLastThroughPosition = new ArrayList<>();
     private List<ARWayRoadObject> mMainRoadObjects     = new ArrayList<>();
     private List<ARWayRoadObject> mBranchRoadObjects   = new ArrayList<>();
-    private List<Plane>           mCoverRoadPlanes     = new ArrayList<>();
 
     //rajawali about
     /*private Line3D   mLine3D             = null;
@@ -667,7 +666,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 通过岔路点的集合以及路口放大图中箭头位置的点的坐标会实现将岔路添加到场景中
      */
     public void setEnlargeCrossBranchLines(double length, int naviIcon) {
-        if (length <= 0 || !mIsMyInitScene) {
+        /*if (length <= 0 || !mIsMyInitScene) {
             return;
         }
 
@@ -689,7 +688,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //        HaloLogger.logE("helong_fix____", "length:" + length);
         //        HaloLogger.logE("helong_fix____", "degrees:" + divDegrees);
         //        HaloLogger.logE("helong_fix____", "branch line size:" + branchLines.size());
-        for (int i = 0; i < 1/*branchLines.size()*/; i++) {
+        for (int i = 0; i < 1*//*branchLines.size()*//*; i++) {
             //            EnlargedCrossProcess.ECBranchLine branch = branchLines.get(i);
             //            //得到的是以路口放大图400*400中心为原点的岔路的相对坐标,还需要:1.像素转Opengl,2.旋转坐标到当前状态,3.考虑坐标太大导致的抖动问题,也就是添加pos部分
             //            if (branch == null) {
@@ -727,13 +726,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
             Vector3 offset = null;
             rotateBranchWithDivDegreesTest(branchPointsOpengl, rotation + 180);
-            for (int j = 0; j < branchPointsOpengl.size()/*/3*/; j++) {
-                /*Vector3 v = branchPointsOpengl.get(j);
+            for (int j = 0; j < branchPointsOpengl.size()*//*//*3*//*; j++) {
+                *//*Vector3 v = branchPointsOpengl.get(j);
                 if(j==0){
                     Vector3 target = branchPointsOpengl.get(branchPointsOpengl.size()/5);
                     offset = new Vector3(v.x-target.x,v.y-target.y,v.z-target.z);
                 }
-                branchPointsOpengl2.add(new Vector3(v.x-offset.x,v.y-offset.y,v.z-offset.z));*/
+                branchPointsOpengl2.add(new Vector3(v.x-offset.x,v.y-offset.y,v.z-offset.z));*//*
                 branchPointsOpengl2.add(new Vector3(branchPointsOpengl.get(j)));
             }
             rotateBranchWithDivDegreesTest(branchPointsOpengl2, rotation + 180);
@@ -751,7 +750,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             if (isSimulation) {
                 break;
             }
-        }
+        }*/
     }
 
     private Plane insertRajawaliPlane(Vector3 v1, Vector3 v2) {
@@ -1543,7 +1542,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mLastThroughPosition.clear();
         mMainRoadObjects.clear();
         mBranchRoadObjects.clear();
-        mCoverRoadPlanes.clear();
+        /*mCoverRoadPlanes.clear();*/
         mTranslateAnimIndex = 0;
         mRotateAnimIndex = 0;
         mTotalDistance = 0f;
