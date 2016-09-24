@@ -161,14 +161,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.setAlpha(1);
             mAmapNaviView.bringToFront();
         } else {
-            mAmapNaviView.setVisibility(View.INVISIBLE);
+            mAmapNaviView.setVisibility(View.VISIBLE);
         }
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
         if (ARWayConst.ENABLE_LOG_OUT && AMAP_OPTIONS_LOGOUT) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, String.format("onCreateView,amapview options , curZoom is %d,curTilt is %d", viewOptions.getZoom(), viewOptions.getTilt()));
         }
-        // FIXME: 16/8/2 移除地图基本保证转换出的opengl坐标是正常的
-        //        removeAMapNaviView();
+
         hideARWay();
         mDrawScene.animShowHide(false);
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreateView");
@@ -771,6 +770,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void updateLocation(AMapNaviLocation location) {
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
         //        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
+        if(mRenderer!=null){
+            mRenderer.updateLocation(location);
+        }
         /*if (mCurrentGpsStatus != GPS_STATUS_FINE) {
             HaloLogger.logE("sen_debug_location","onLocationChanged ,but gps star is 0");
             mRenderer.pause();

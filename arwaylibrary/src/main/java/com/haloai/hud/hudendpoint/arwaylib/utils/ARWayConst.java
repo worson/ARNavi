@@ -11,8 +11,8 @@ public class ARWayConst {
     public static boolean IS_NEW_ROADOBJECT = true; //是否偏航时清空显示数据
 
     //data
-    public static boolean IS_FILTER_PATH_LITTLE_DISTANCE = true; //
-    public static boolean IS_CAT_MULL_ROM = true; //
+    public static boolean IS_FILTER_PATH_LITTLE_DISTANCE = false; //
+    public static boolean IS_CAT_MULL_ROM = false; //
 
     // debug log
     public static String  INDICATE_LOG_TAG = "sen_debug_gl";
