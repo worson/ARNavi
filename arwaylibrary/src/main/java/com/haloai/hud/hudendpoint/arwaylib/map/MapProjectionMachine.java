@@ -33,6 +33,8 @@ public class MapProjectionMachine {
 
     public boolean mScaledOk = false;
 
+    public boolean mUpdatePathCalled = false;
+
     private UpdateMapViewCall mUpdateMapViewCall = null;
     private ProjectionOkCall mProjectionOkCall = null;
 
@@ -130,6 +132,8 @@ public class MapProjectionMachine {
         public void handle(MapProjectionMachine machine) {
             machine.updateContext();
             machine.mScaledOk = false;
+            mUpdatePathCalled = true;
+            handleScaleOk(machine);
         }
     };
 
@@ -137,20 +141,27 @@ public class MapProjectionMachine {
         @Override
         public void handle(MapProjectionMachine machine) {
             machine.mScaledOk = machine.getUpdateMapViewCall().updateMapView();
-            if (machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path) {
-                if (machine.mScaledOk) {
-                    Log.e(TAG, String.format("mMapScaledState,path updated!"));
-                    machine.mForceUpdateNaviView4Path = false;
-                    machine.getProjectionOkCall().projectionOk();
-                    machine.mNeedUpdatePath = false;
-                } else {
+            handleScaleOk(machine);
+        }
+    };
+
+    private void handleScaleOk(MapProjectionMachine machine){
+        if (machine.mNeedUpdatePath && machine.mForceUpdateNaviView4Path) {
+            if (machine.mScaledOk && mUpdatePathCalled) {
+                mUpdatePathCalled = false;
+                Log.e(TAG, String.format("mMapScaledState,path updated!"));
+                machine.mForceUpdateNaviView4Path = false;
+                machine.getProjectionOkCall().projectionOk();
+                machine.mNeedUpdatePath = false;
+            } else {
+                if (!machine.mScaledOk) {
                     Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
+                } else if (!mNeedUpdatePath) {
+                    Log.e(TAG, String.format("mMapScaledState,mNeedUpdatePath is not called"));
                 }
             }
         }
-
-
-    };
+    }
 }
 
 

@@ -161,6 +161,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mAmapNaviView.setAlpha(1);
             mAmapNaviView.bringToFront();
         } else {
+            mAmapNaviView.setAlpha(0);
             mAmapNaviView.setVisibility(View.VISIBLE);
         }
         AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
@@ -375,6 +376,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 重置导航的资源
      */
     private void resetNaviResource() {
+        this.mAMapNavi = null;
         this.mLastIsReady = false;
         mMapProjectionMachine.setNeedUpdatePath(false);
         mMapProjectionMachine.setForceUpdateNaviView4Path(false);
@@ -879,6 +881,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                     return -2;
                 }
                 if(ARWayConst.IS_DARW_ARWAY){
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.setPath called ");
                     mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
                 }
                 result=0;

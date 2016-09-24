@@ -9,6 +9,9 @@ import org.rajawali3d.scene.Scene;
 public class SuperArwaySceneUpdater {
     protected Scene mScene;
 
+    public SuperArwaySceneUpdater() {
+    }
+
     public SuperArwaySceneUpdater(Scene scene) {
         mScene = scene;
     }
@@ -21,6 +24,10 @@ public class SuperArwaySceneUpdater {
             }
         }
         return result;
+    }
+
+    public void setScene(Scene scene) {
+        mScene = scene;
     }
 
     public boolean addObject(Object3D[] object3Ds){
@@ -39,5 +46,17 @@ public class SuperArwaySceneUpdater {
             result &= mScene.addChild(object3D);
         }
         return result;
+    }
+
+    public void clearAll(){
+        if (mScene == null) {
+            mScene.clearChildren();
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        clearAll();
     }
 }
