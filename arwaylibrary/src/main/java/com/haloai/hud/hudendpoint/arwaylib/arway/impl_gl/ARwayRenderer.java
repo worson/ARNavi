@@ -69,7 +69,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
-    private static final double  CAMERA_CUT_OFFSET      = 1.5;
+    private static final double  CAMERA_CUT_OFFSET      = 0.8;
     private static final double  LOOK_AT_DIST           = 1.3;
     private static final int     INTERSECTION_COUNT     = 30;
     private static final double  CAMERA_NEAR_PLANE      = 0.5;
