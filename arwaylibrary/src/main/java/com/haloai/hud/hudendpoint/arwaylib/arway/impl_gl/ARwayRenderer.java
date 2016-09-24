@@ -160,7 +160,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private double     mOffsetY                      = 0;
     private NaviLatLng mStartLatLng                  = null;
 
-    private ArwaySceneUpdater mSceneUpdater = null;
+    private ArwaySceneUpdater mSceneUpdater;
     public ARwayRenderer(Context context) {
         super(context);
 
@@ -178,14 +178,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     public void initScene() {
-
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"ARRender initScene called!");
         /*mViewport = new int[]{0, 0, getViewportWidth(), getViewportHeight()};
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();*/
 
+        mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setScene(getCurrentScene());
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
-        mSceneUpdater = new ArwaySceneUpdater(getCurrentScene());
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
@@ -1827,7 +1828,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void insertPlane2Scene() {
         //mMainRoadObjects.clear();
         if (ARWayConst.IS_NEW_ROADOBJECT) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
             mSceneUpdater.renderVisiblePath(mPath);
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath end"));
             /*mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 2, Color.WHITE));
             mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 1.4f, Color.BLACK));*/
         } else {

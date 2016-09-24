@@ -17,6 +17,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
 import com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -206,6 +207,7 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
 //                animShowHide(true);
 //                mComPassView.enableCut(false);
                 animView.setVisibility(View.VISIBLE);
+                HaloLogger.logE("compass_display_debug","setVisibility");
                 if (mCompassOutletView != null) {
                     mCompassOutletView.enableSloping(false);
                 }
