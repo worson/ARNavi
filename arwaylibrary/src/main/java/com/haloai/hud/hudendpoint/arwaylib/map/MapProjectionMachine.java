@@ -156,7 +156,7 @@ public class MapProjectionMachine {
             } else {
                 if (!machine.mScaledOk) {
                     Log.e(TAG, String.format("mMapScaledState,scale zoom is not ok!"));
-                } else if (!mNeedUpdatePath) {
+                } else if (!mUpdatePathCalled) {
                     Log.e(TAG, String.format("mMapScaledState,mNeedUpdatePath is not called"));
                 }
             }

@@ -306,6 +306,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+//        mAmapNaviView.onLowMemory();
     }
 
     @Override
@@ -772,7 +773,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void updateLocation(AMapNaviLocation location) {
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
         //        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
-        if(mRenderer!=null){
+        if(mRenderer!=null && location.isMatchNaviPath()){
             mRenderer.updateLocation(location);
         }
         /*if (mCurrentGpsStatus != GPS_STATUS_FINE) {
@@ -1160,5 +1161,21 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
     }
 
+    /***
+     * 暂停绘制ARway
+     */
+    public void pauseARWay(){
+        ARWayConst.IS_DARW_ARWAY = false;
+        mRenderer.clearScene();
+        mRenderer.setFrameRate(1);
+    }
+
+    /**
+     * 重新绘制ARway
+     */
+    public void resumeARWay(){
+        ARWayConst.IS_DARW_ARWAY = true;
+        mRenderer.setFrameRate(ARWayConst.FRAME_RATE);
+    }
 
 }

@@ -17,6 +17,8 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.ARWayCameraCaculator;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
 import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -61,12 +63,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double  ANIMATION_LENGTH       = 30;
     private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = 1000000.0 * 0.0023f;
+    private static final double  BIGGER_TIME            = ARWayConst.AMAP_TO_ARWAY_GL_RATE;// 1000000.0 * 0.0023f
     private static final double  CAMERA_MIN_LENGTH      = 20;
-    private static final int     FRAME_RATE             = 10;
+    private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = 0.4;
+    private static final double  ROAD_WIDTH             = ARWayConst.ROAD_WIDTH;
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
@@ -170,6 +172,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private NaviLatLng mStartLatLng                  = null;
 
     private ArwaySceneUpdater mSceneUpdater;
+	
+    private CameraModel mCameraModel = new CameraModel();;
+    private int mOnRenderCnt = 0;
+    private long mLastFrameTime = 0;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -192,7 +198,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         /*mViewport = new int[]{0, 0, getViewportWidth(), getViewportHeight()};
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();*/
-
+        setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setScene(getCurrentScene());
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
@@ -221,7 +227,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         Vector3 location = transObject.getPosition();
         Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
-        updateCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
+
+        if(true){
+            mCameraModel.setLocation(mObject4Chase.getPosition());
+            mCameraModel.setRotZ(mObject4Chase.getRotZ());
+
+            ARWayCameraCaculator.calculateCameraPositionAndLookAtPoint(position,lookat,mCameraModel);
+        }else {
+            updateCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
+        }
         camera.setPosition(position);
         camera.setLookAt(lookat);
     }
@@ -337,6 +351,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
+        HaloLogger.logE("onRenderFrame",String.format("set frame is %s ,real frame is %s",getFrameRate(),(int)(1000/(System.currentTimeMillis()-mLastFrameTime))));
+        mLastFrameTime = System.currentTimeMillis();
+        if (mOnRenderCnt++>100){
+            mOnRenderCnt = 0;
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("onRender ,frame time is %s s",deltaTime));
+        }
         if (!mIsMyInitScene) {
             return;
         }
@@ -345,6 +365,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             updateCamera(mObject4Chase);
+
         }
 
         //        Quaternion qt = new Quaternion();
@@ -1745,7 +1766,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
-        updatePlane2Scene(mLoadStepIndex);
+        ARWayCameraCaculator.cameraCaculatorInit(cCamera);
+
+        mCameraModel.setNearPlaneWithDrawPlane_Angel(70);
+        mCameraModel.setRoadWidthProportion(0.3f);
+        mCameraModel.setRoadWidth(ROAD_WIDTH);
+        mCameraModel.setBottomDistanceProportion(0.0f);
+
+		updatePlane2Scene(mLoadStepIndex);
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
@@ -2382,6 +2410,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("helong_debug", "compoundAnim:" + sb.toString());*/
     }
 
+    public void clearScene(){
+        getCurrentScene().clearChildren();
+    }
     @Override
     protected void render(long ellapsedRealtime, double deltaTime) {
         super.render(ellapsedRealtime, deltaTime);
