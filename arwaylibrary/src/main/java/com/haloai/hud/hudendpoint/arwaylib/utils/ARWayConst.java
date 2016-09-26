@@ -25,6 +25,7 @@ public class ARWayConst {
 
 
     //open gl
+    public static final int     FRAME_RATE             = 30;
     public static final double DEFAULT_CAMERA_Z           = 15;
     public static final float  REAL_TO_AMAP_GL_RATE       = 9027.669311696285f;//61.720116/0.0068367719141013686
     public static final float  AMAP_TO_ARWAY_GL_RATE      = 1170.1428832954605F;

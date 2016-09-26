@@ -306,6 +306,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+//        mAmapNaviView.onLowMemory();
     }
 
     @Override
@@ -1165,6 +1166,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void pauseARWay(){
         ARWayConst.IS_DARW_ARWAY = false;
         mRenderer.clearScene();
+        mRenderer.setFrameRate(1);
     }
 
     /**
@@ -1172,6 +1174,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      */
     public void resumeARWay(){
         ARWayConst.IS_DARW_ARWAY = true;
+        mRenderer.setFrameRate(ARWayConst.FRAME_RATE);
     }
 
 }

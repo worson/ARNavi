@@ -65,7 +65,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  OBJ_4_CHASE_Z          = 0;
     private static final double  BIGGER_TIME            = ARWayConst.AMAP_TO_ARWAY_GL_RATE;// 1000000.0 * 0.0023f
     private static final double  CAMERA_MIN_LENGTH      = 20;
-    private static final int     FRAME_RATE             = 10;
+    private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
     private static final double  ROAD_WIDTH             = ARWayConst.ROAD_WIDTH;
@@ -166,6 +166,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private ArwaySceneUpdater mSceneUpdater;
     private CameraModel mCameraModel = new CameraModel();;
     private int mOnRenderCnt = 0;
+    private long mLastFrameTime = 0;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -188,7 +189,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         /*mViewport = new int[]{0, 0, getViewportWidth(), getViewportHeight()};
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();*/
-
+        setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setScene(getCurrentScene());
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
@@ -341,6 +342,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
+        HaloLogger.logE("onRenderFrame",String.format("set frame is %s ,real frame is %s",getFrameRate(),(int)(1000/(System.currentTimeMillis()-mLastFrameTime))));
+        mLastFrameTime = System.currentTimeMillis();
         if (mOnRenderCnt++>100){
             mOnRenderCnt = 0;
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("onRender ,frame time is %s s",deltaTime));
