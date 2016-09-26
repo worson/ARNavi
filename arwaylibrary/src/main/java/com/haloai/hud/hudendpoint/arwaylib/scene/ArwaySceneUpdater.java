@@ -202,7 +202,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             line3D.setMaterial(material);
             mScene.addChild(line3D);
         }
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath ,delta time is %s",System.currentTimeMillis()-sTime));
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath ,delta time is %s",System.currentTimeMillis()-sTime));
+        }
         return result;
     }
 

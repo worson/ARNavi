@@ -22,6 +22,7 @@ public class ARWayConst {
     public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
     public static final boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
     public static final boolean ENABLE_TEST_LOG = true;//ARWAY 输出测试log
+    public static final boolean ENABLE_PERFORM_TEST = false;//ARWAY 输出测试log
 
 
     //open gl

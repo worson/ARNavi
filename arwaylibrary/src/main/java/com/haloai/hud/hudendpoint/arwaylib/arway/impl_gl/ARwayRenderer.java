@@ -351,11 +351,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
-        HaloLogger.logE("onRenderFrame",String.format("set frame is %s ,real frame is %s",getFrameRate(),(int)(1000/(System.currentTimeMillis()-mLastFrameTime))));
-        mLastFrameTime = System.currentTimeMillis();
-        if (mOnRenderCnt++>100){
-            mOnRenderCnt = 0;
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("onRender ,frame time is %s s",deltaTime));
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            HaloLogger.logE("onRenderFrame",String.format("set frame is %s ,real frame is %s",getFrameRate(),(int)(1000/(System.currentTimeMillis()-mLastFrameTime))));
+            mLastFrameTime = System.currentTimeMillis();
+            if (mOnRenderCnt++>100){
+                mOnRenderCnt = 0;
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("onRender ,frame time is %s s",deltaTime));
+            }
         }
         if (!mIsMyInitScene) {
             return;
@@ -1873,14 +1875,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 2.如果是导航过程中,那么则是加载三段(当前,以及前后两段)
      */
     private void updatePlane2Scene(int loadStepIndex) {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
-
         int startIndex = loadStepIndex == 0 ? mLoadStepStartIndexs.get(loadStepIndex):mLoadStepStartIndexs.get(loadStepIndex-1);
         int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
         mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
-
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath end"));
 
         clearUnuseDataAfterAddPlane2Scene();
     }

@@ -501,14 +501,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
-        synchronized (mLock){
-            if(!mNeedRender){
-                return;
-            }
-            if (!mIsVisible && !mRenderChildrenAsBatch)
-                return;
+        if(!mNeedRender){
+            return;
+        }
+        if (!mIsVisible && !mRenderChildrenAsBatch)
+            return;
 
-            Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
+        Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
+        synchronized (mLock){
             if(!IS_VBOS_MODE || true){
                 preRender();
             }

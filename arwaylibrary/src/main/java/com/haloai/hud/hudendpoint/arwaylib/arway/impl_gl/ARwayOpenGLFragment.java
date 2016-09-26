@@ -883,7 +883,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 }
                 if(ARWayConst.IS_DARW_ARWAY){
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.setPath called ");
+                    double sTime = System.currentTimeMillis();
                     mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
+                    if(ARWayConst.ENABLE_PERFORM_TEST){
+                        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("mRenderer.setPath ,delta time is %s",System.currentTimeMillis()-sTime));
+                    }
                 }
                 result=0;
                 // TODO: 16/9/13 测试直接起步
@@ -922,20 +926,22 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (info == null) {
             return;
         }
+        long sTime = System.currentTimeMillis();
         mCurrentPathStep = info.getCurStep();
         updateNaviInfoDate(info);
         onNaviViewUpdate();
-
         int distance = info.getPathRetainDistance();
+        if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo called,distance is %s,delta time %s",distance,System.currentTimeMillis()-sTime)));
+        }
         if (arway.isShown()&& ARWayConst.IS_DARW_ARWAY) {
             //mRenderer.onLocationChange(info);
+            sTime = System.currentTimeMillis();
             mRenderer.setPathRetainLength4DynamicLoad(info.getPathRetainDistance());
+            if(ARWayConst.ENABLE_PERFORM_TEST){
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo,DynamicLoad ,delta time is %s",System.currentTimeMillis()-sTime));
+            }
         }
-
-        if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updateNaviInfo called , distance is " + distance);
-        }
-
     }
 
     private void onNaviViewUpdate() {
@@ -945,7 +951,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (mGlDrawNaviInfo != null) {
             mGlDrawNaviInfo.doDraw();
             if (mGlDrawRetainDistance != null) {
-                mGlDrawRetainDistance.showHide(mGlDrawNaviInfo.getNaviStatusText() == null);
+//                mGlDrawRetainDistance.showHide(mGlDrawNaviInfo.getNaviStatusText() == null);
             }
         }
         boolean ready = isNavingReady();
