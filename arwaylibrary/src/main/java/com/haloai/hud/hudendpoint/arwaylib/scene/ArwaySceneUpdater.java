@@ -36,7 +36,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private              int              mRoadLayersIndex     = 0;
 
     //ROAD
-    private       double   REFERENCE_LINE_STEP_LENGTH = 6; //参考线间的长度
+    private       double   REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH; //参考线间的长度
     private       Material mRoadMaterial              = new Material();
     private       Material mTestMaterial              = new Material();
 

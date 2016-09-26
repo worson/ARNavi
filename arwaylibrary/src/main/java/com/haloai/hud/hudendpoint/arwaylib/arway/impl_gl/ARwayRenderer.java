@@ -61,12 +61,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double  ANIMATION_LENGTH       = 30;
     private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = 1000000.0 * 0.0023f;
+    private static final double  BIGGER_TIME            = ARWayConst.AMAP_TO_ARWAY_GL_RATE;// 1000000.0 * 0.0023f
     private static final double  CAMERA_MIN_LENGTH      = 20;
     private static final int     FRAME_RATE             = 10;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = 0.4;
+    private static final double  ROAD_WIDTH             = ARWayConst.ROAD_WIDTH;
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
