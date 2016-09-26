@@ -78,6 +78,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final int     CHILD_PATH_SIZE        = 4;
     private static final long    PRETENSION_TIME        = 1000;
     private static final long    ANIM_DURATION_REDUNDAN = 100;
+    private static final int     LOAD_PATH_LENGTH       = 250;
     private static final boolean DEBUG_MODE             = false;
     private static final boolean IS_MOVE_PATH           = false;
     private static       int     SCREEN_WIDTH           = 0;
@@ -87,19 +88,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final String  TAG                    = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
 
     //list data
-    private List<Vector3>         mPath                = new ArrayList<>();
-    private List<Vector3>         mOriginalPath        = new ArrayList<>();
-    private List<Vector3>         mLeftPath            = new ArrayList<>();
-    private List<Vector3>         mRightPath           = new ArrayList<>();
-    private List<Double>          mDist2FinalPoint     = new ArrayList<>();
-    private List<Double>          mLength2FinalPoint   = new ArrayList<>();
-    private List<Integer>         mCurIndexes          = new ArrayList<>();
-    private List<Vector3>         mPreChildEndPos      = new ArrayList<>();
-    private List<Vector3>         mChildPathPositions  = new ArrayList<>();
-    private List<List<Vector3>>   mChildPathes         = new ArrayList<>();
-    private List<Vector3>         mLastThroughPosition = new ArrayList<>();
-    private List<ARWayRoadObject> mMainRoadObjects     = new ArrayList<>();
-    private List<ARWayRoadObject> mBranchRoadObjects   = new ArrayList<>();
+    private List<Vector3>       mPath                = new ArrayList<>();
+    private List<Vector3>       mOriginalPath        = new ArrayList<>();
+    private List<Vector3>       mLeftPath            = new ArrayList<>();
+    private List<Vector3>       mRightPath           = new ArrayList<>();
+    private List<Integer>       mStepsLength         = new ArrayList<>();
+    private List<Double>        mDist2FinalPoint     = new ArrayList<>();
+    private List<Double>        mLength2FinalPoint   = new ArrayList<>();
+    private List<Integer>       mCurIndexes          = new ArrayList<>();
+    private List<Vector3>       mPreChildEndPos      = new ArrayList<>();
+    private List<Vector3>       mChildPathPositions  = new ArrayList<>();
+    private List<List<Vector3>> mChildPathes         = new ArrayList<>();
+    private List<Vector3>       mLastThroughPosition = new ArrayList<>();
+    /*private List<ARWayRoadObject> mMainRoadObjects     = new ArrayList<>();
+    private List<ARWayRoadObject> mBranchRoadObjects   = new ArrayList<>();*/
 
     //rajawali about
     /*private Line3D   mLine3D             = null;
@@ -150,8 +152,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private boolean mIsMyInitScene  = false;
     private boolean mCanMyInitScene = false;
 
+    //dynamic load about
+    private List<Integer> mLoadStepStartIndexs = new ArrayList<>();
+    private List<Double>  mLoadStepLengths     = new ArrayList<>();
+    private int           mLoadStepIndex       = 0;
+
     //image handle
-    //private CrossPathManager mCrossPathManager             = CrossPathManager.getInstance();
+    //private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
+
+    //else
     private double     mObject4ChaseStartOrientation = 0;
     private Projection mProjection                   = null;
     //车速，单位是m/s
@@ -161,6 +170,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private NaviLatLng mStartLatLng                  = null;
 
     private ArwaySceneUpdater mSceneUpdater;
+
     public ARwayRenderer(Context context) {
         super(context);
 
@@ -178,7 +188,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     public void initScene() {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"ARRender initScene called!");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender initScene called!");
         /*mViewport = new int[]{0, 0, getViewportWidth(), getViewportHeight()};
         mViewMatrix = getCurrentCamera().getViewMatrix();
         mProjectionMatrix = getCurrentCamera().getProjectionMatrix();*/
@@ -1245,38 +1255,28 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         mProjection = projection;
         List<Vector3> path = new ArrayList<>();
-        List<List<Point>> naviStepsScreen = new ArrayList<>();
-        List<List<PointF>> naviStepsOpengl = new ArrayList<>();
-        /*for (int i = 0; i < naviPath.getCoordList().size(); i++) {
-            //renderer
-            LatLng latLng = DrawUtils.naviLatLng2LatLng(naviPath.getCoordList().get(i));
-            PointF openGL = projection.toOpenGLLocation(latLng);
-            //openGL.y轴坐标被翻转过,因此需要使用它的倒数
-            Vector3 v = new Vector3(openGL.x, -openGL.y, 0);
-            path.add(v);
-
-            //crossPathManager
-        }*/
         mStartLatLng = naviPath.getSteps().get(0).getCoords().get(0);
+        mStepsLength.clear();
         for (AMapNaviStep step : naviPath.getSteps()) {
+            mStepsLength.add(step.getLength());
             if (step != null) {
-                List<Point> stepScreenPoints = new ArrayList<>();
-                List<PointF> stepOpenglPoints = new ArrayList<>();
+                /*List<Point> stepScreenPoints = new ArrayList<>();
+                List<PointF> stepOpenglPoints = new ArrayList<>();*/
                 for (NaviLatLng coord : step.getCoords()) {
                     if (projection != null) {
                         LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
-                        Point p = projection.toScreenLocation(latLng);
-                        stepScreenPoints.add(new Point(p.x, p.y));
+                        /*Point p = projection.toScreenLocation(latLng);
+                        stepScreenPoints.add(new Point(p.x, p.y));*/
                         PointF pf = projection.toOpenGLLocation(latLng);
-                        stepOpenglPoints.add(new PointF(pf.x, -pf.y));
+                        /*stepOpenglPoints.add(new PointF(pf.x, -pf.y));*/
                         Vector3 v = new Vector3(pf.x, -pf.y, 0);
                         path.add(v);
                     }
                 }
-                if (stepScreenPoints.size() > 0) {
+                /*if (stepScreenPoints.size() > 0) {
                     naviStepsScreen.add(stepScreenPoints);
                     naviStepsOpengl.add(stepOpenglPoints);
-                }
+                }*/
             }
 
         }
@@ -1284,7 +1284,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (!repeat || !isPathRepeat(path)) {
             mOriginalPath.clear();
             mOriginalPath.addAll(path);
-            return setPathAndCalcData(mOriginalPath, naviPath.getAllLength(), naviStepsScreen, naviStepsOpengl);
+            return setPathAndCalcData(mOriginalPath, naviPath.getAllLength()/*, naviStepsScreen, naviStepsOpengl*/);
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
             return -2;
@@ -1316,11 +1316,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      *
      * @param path
      * @param allLength
-     * @param naviStepsScreen
-     * @param naviStepsOpengl
      * @return 0 失败 1 成功
      */
-    private int setPathAndCalcData(List<Vector3> path, double allLength, List<List<Point>> naviStepsScreen, List<List<PointF>> naviStepsOpengl) {
+    private int setPathAndCalcData(List<Vector3> path, double allLength/*, List<List<Point>> naviStepsScreen, List<List<PointF>> naviStepsOpengl*/) {
         HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG, "setPathAndCalcData start");
         clearAllData();
         //此处由于mPath中的点是path中点的子集,去除了相同的点,因此二者长度不一致,之后不要在使用path
@@ -1337,7 +1335,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
 
         //clear the points because that points is too close
-        if (ARWayConst.IS_FILTER_PATH_LITTLE_DISTANCE) {
+        /*if (ARWayConst.IS_FILTER_PATH_LITTLE_DISTANCE) {
             HaloLogger.logE("helong_debug", "pre size:" + mPath.size());
             int tempBigTime4Calc = 30000000;
             //保留path中头尾两个点不被删除
@@ -1351,7 +1349,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 }
             }
             HaloLogger.logE("helong_debug", "next size:" + mPath.size());
-        }
+        }*/
 
         //mPath为原始数据,需要移动,放大,旋转
         //to bigger
@@ -1368,7 +1366,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mPath.get(i).y -= mOffsetY;
         }
 
-        if (ARWayConst.IS_CAT_MULL_ROM) {
+        /*if (ARWayConst.IS_CAT_MULL_ROM) {
             int pathLength = mPath.size();
             CatmullRomCurve3D catmull = new CatmullRomCurve3D();
             //controll point 1
@@ -1386,7 +1384,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 mPath.add(new Vector3(pos));
             }
             HaloLogger.logE("helong_debug", "插值后 path_size:" + mPath.size());
-        }
+        }*/
 
         /*//rotate path with matrix
         double rotateZ = MathUtils.getDegrees(mPath.get(0).x, mPath.get(0).y, mPath.get(CURVE_TIME - 1).x, mPath.get(CURVE_TIME - 1).y);
@@ -1433,7 +1431,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         //mLength2Distance表示一米在openGL当前场景中有多大
         mLength2DistanceScale = (mTotalDistance/* - distFake2First*/) / mTotalLength;
 
-        //save every point to final point`s dist m and opengl
+        //save every point to final point`s dist and length
         double lastDistance = 0.0;
         for (int i = 0; i < mDist2FinalPoint.size(); i++) {
             if (i == 0) {
@@ -1445,6 +1443,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 lastDistance = temp;
             }
             mLength2FinalPoint.add(mDist2FinalPoint.get(i) / mLength2DistanceScale);
+        }
+
+        //手动对path进行250米的划分,记录这些划分点的index和length
+        double tempLength = mTotalLength;
+        mLoadStepStartIndexs.add(0);
+        mLoadStepLengths.add(tempLength);
+        for (int i = 1; i < mLength2FinalPoint.size(); i++) {
+            if (tempLength - mLength2FinalPoint.get(i) >= LOAD_PATH_LENGTH) {
+                mLoadStepStartIndexs.add(i);
+                mLoadStepLengths.add(mLength2FinalPoint.get(i));
+                tempLength = mLength2FinalPoint.get(i);
+            }
+        }
+        if (!mLoadStepStartIndexs.contains(mLength2FinalPoint.size() - 1)) {
+            mLoadStepStartIndexs.add(mLength2FinalPoint.size() - 1);
+            mLoadStepLengths.add(0.0);
         }
 
         //Through will calc left and right path in insertARWayObject,but they calc with many littlePath not mPath.
@@ -1541,9 +1555,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mChildPathPositions.clear();
         mChildPathes.clear();
         mLastThroughPosition.clear();
-        mMainRoadObjects.clear();
+        /*mMainRoadObjects.clear();
         mBranchRoadObjects.clear();
-        /*mCoverRoadPlanes.clear();*/
+        mCoverRoadPlanes.clear();*/
         mTranslateAnimIndex = 0;
         mRotateAnimIndex = 0;
         mTotalDistance = 0f;
@@ -1573,6 +1587,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mPreBearing = 0;
         mRotateAnimScale = 0;
         mRotateAnimDegrees = 0;
+        mLoadStepStartIndexs.clear();
+        mLoadStepLengths.clear();
+        mLoadStepIndex = 0;
         System.gc();
     }
 
@@ -1728,7 +1745,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
-        insertPlane2Scene();
+        updatePlane2Scene(mLoadStepIndex);
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
@@ -1824,18 +1841,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     /***
      * 向场景中添加道路
+     * 1.如果是刚开始导航,那么是加载两段(每段约为250m)
+     * 2.如果是导航过程中,那么则是加载三段(当前,以及前后两段)
      */
-    private void insertPlane2Scene() {
-        //mMainRoadObjects.clear();
-        if (ARWayConst.IS_NEW_ROADOBJECT) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
-            mSceneUpdater.renderVisiblePath(mPath);
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath end"));
-            /*mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 2, Color.WHITE));
-            mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), (float) ROAD_WIDTH * 1.4f, Color.BLACK));*/
-        } else {
-            mMainRoadObjects.add(insertARWayObject(mPath, new Vector3(0, 0, 0), ROAD_WIDTH, 1));
-        }
+    private void updatePlane2Scene(int loadStepIndex) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
+
+        int startIndex = loadStepIndex == 0 ? mLoadStepStartIndexs.get(loadStepIndex):mLoadStepStartIndexs.get(loadStepIndex-1);
+        int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
+        HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
+        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
+
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath end"));
+
         clearUnuseDataAfterAddPlane2Scene();
     }
 
@@ -1985,6 +2003,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         setRetainDistance(info.getPathRetainDistance());
     }*/
 
+    public void setPathRetainLength4DynamicLoad(int pathRetainLength) {
+        for (int i = mLoadStepIndex + 1; i < mLoadStepLengths.size(); i++) {
+            if (pathRetainLength > mLoadStepLengths.get(i) && i != mLoadStepIndex - 1) {
+                mLoadStepIndex = i - 1;
+                HaloLogger.logE("testtest", "index:" + (i - 1));
+                updatePlane2Scene(mLoadStepIndex);
+                break;
+            }
+        }
+    }
+
     private Vector3               mFromPos           = null;
     private Vector3               mToPos             = null;
     private long                  mPreTime           = 0;
@@ -2012,8 +2041,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         PointF startPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(mStartLatLng));
         double offsetX = startPos.x * BIGGER_TIME - mOffsetX - mPath.get(0).x;
         double offsetY = (-startPos.y) * BIGGER_TIME - mOffsetY - mPath.get(0).y;
-        HaloLogger.logE("testtesttesttest", "start offsetX:" + offsetX);
-        HaloLogger.logE("testtesttesttest", "start offsetY:" + offsetY);
+        /*HaloLogger.logE("testtesttesttest", "start offsetX:" + offsetX);
+        HaloLogger.logE("testtesttesttest", "start offsetY:" + offsetY);*/
         if (mFromPos == null) {
             PointF fromPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()));
             mFromPos = new Vector3(fromPos.x * BIGGER_TIME - mOffsetX - offsetX, (-fromPos.y) * BIGGER_TIME - mOffsetY - offsetY, OBJ_4_CHASE_Z);
@@ -2029,20 +2058,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             }
 
             //如何保证车的方向与道路方向的参考系是一致的(Y轴做过翻转处理)
-            HaloLogger.logE("testtesttest", "差角:" + (location.getBearing() - mPreBearing));
+            /*HaloLogger.logE("testtesttest", "差角:" + (location.getBearing() - mPreBearing));
             HaloLogger.logE("testtest", "last rotate:" + mRotateAnimDegrees);
-            HaloLogger.logE("testtest", "no finish:" + mRotateAnimDegrees * (1 - mRotateAnimScale));
-            HaloLogger.logE("testtest", "rotZ:" + Math.toDegrees(mObject4Chase.getRotZ()));
+            HaloLogger.logE("testtest", "world degrees:" + (mPreBearing + mRotateAnimDegrees * (1 - mRotateAnimScale)));
+            HaloLogger.logE("testtest", "opengl degrees:" + Math.toDegrees(mObject4Chase.getRotZ()));*/
             mRotateAnimDegrees = location.getBearing() - mPreBearing + mRotateAnimDegrees * (1 - mRotateAnimScale);
             mRotateAnimDegrees = Math.abs(mRotateAnimDegrees) >= 180 ? (mRotateAnimDegrees > 0 ? mRotateAnimDegrees - 360 : mRotateAnimDegrees + 360) : mRotateAnimDegrees;
             mPreBearing = location.getBearing();
 
             PointF toPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()));
             mToPos = new Vector3(toPos.x * BIGGER_TIME - mOffsetX - offsetX, (-toPos.y) * BIGGER_TIME - mOffsetY - offsetY, OBJ_4_CHASE_Z);
-            HaloLogger.logE("branch_line", "anim start");
+            /*HaloLogger.logE("branch_line", "anim start");
             HaloLogger.logE("branch_line", mFromPos.x + "," + mFromPos.y);
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
-            HaloLogger.logE("branch_line", "anim end");
+            HaloLogger.logE("branch_line", "anim end");*/
             startAnim(mFromPos, mToPos, mRotateAnimDegrees, duration + ANIM_DURATION_REDUNDAN);
             return 1;
         }
