@@ -7,21 +7,21 @@ public class ARWayConst {
 
     public static boolean IS_DARW_ARWAY = true; //是否偏航时清空显示数据
     //disiplay
-    public static boolean IS_YAW_CLEAR_DISPLAY = false; //是否偏航时清空显示数据
-    public static boolean IS_NEW_ROADOBJECT = true; //是否偏航时清空显示数据
+    public static final boolean IS_YAW_CLEAR_DISPLAY = false; //是否偏航时清空显示数据
+    public static final boolean IS_NEW_ROADOBJECT = true; //是否偏航时清空显示数据
 
     //data
-    public static boolean IS_FILTER_PATH_LITTLE_DISTANCE = false; //
-    public static boolean IS_CAT_MULL_ROM = false; //
+    public static final boolean IS_FILTER_PATH_LITTLE_DISTANCE = false; //
+    public static final boolean IS_CAT_MULL_ROM = false; //
 
     // debug log
-    public static String  INDICATE_LOG_TAG = "sen_debug_gl";
-    public static String  ERROR_LOG_TAG = "sen_debug_gl";
-    public static String  SPECIAL_LOG_TAG = "matlab";
-    public static boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
-    public static boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
-    public static boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
-    public static boolean ENABLE_TEST_LOG = true;//ARWAY 输出测试log
+    public static final String  INDICATE_LOG_TAG = "sen_debug_gl";
+    public static final String  ERROR_LOG_TAG = "sen_debug_gl";
+    public static final String  SPECIAL_LOG_TAG = "matlab";
+    public static final boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
+    public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
+    public static final boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
+    public static final boolean ENABLE_TEST_LOG = true;//ARWAY 输出测试log
 
 
     //open gl

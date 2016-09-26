@@ -1159,5 +1159,19 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
     }
 
+    /***
+     * 暂停绘制ARway
+     */
+    public void pauseARWay(){
+        ARWayConst.IS_DARW_ARWAY = false;
+        mRenderer.clearScene();
+    }
+
+    /**
+     * 重新绘制ARway
+     */
+    public void resumeARWay(){
+        ARWayConst.IS_DARW_ARWAY = true;
+    }
 
 }

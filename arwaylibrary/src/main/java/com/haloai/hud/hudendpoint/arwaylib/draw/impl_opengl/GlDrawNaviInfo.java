@@ -111,15 +111,15 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
      */
     public String getNaviStatusText() {
         String title = null;
-        /*if (mCommonBean == null) {
+        if (mCommonBean == null) {
             return null;
         }
         if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
-            title = "无网络信号，正在搜索...";
+            title = "无网络信号,正在搜索...";
         }
         if(!mCommonBean.isGpsWork()){
-            title = "无GPS信号，搜星中...";
-        }*/
+            title = "无GPS信号,请开往空旷处";
+        }
         return title;
     }
 
