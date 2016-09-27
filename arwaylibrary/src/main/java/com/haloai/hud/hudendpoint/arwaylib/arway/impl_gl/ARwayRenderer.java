@@ -22,6 +22,7 @@ import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
 import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
@@ -165,7 +166,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //else
     private double     mObject4ChaseStartOrientation = 0;
-    private Projection mProjection                   = null;
+//    private Projection mProjection                   = null;
+    private ARWayProjection mProjection                   = new ARWayProjection();
     //车速，单位是m/s
     private double     mCarSpeed                     = 0;
     private double     mOffsetX                      = 0;
@@ -1271,10 +1273,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @return 1 设置路径成功 -1 projection或naviPath为null -2 路线重复 0 未知错误
      */
     public int setPath(Projection projection, AMapNaviPath naviPath, boolean repeat) {
-        if (projection == null || naviPath == null) {
+        if (naviPath == null) {
             return -1;
         }
-        mProjection = projection;
+        if(ARWayConst.IS_AMAP_VIEW){
+            if(projection == null) return -1;
+//            mProjection = projection;
+        }
         List<Vector3> path = new ArrayList<>();
         mStartLatLng = naviPath.getSteps().get(0).getCoords().get(0);
         mStepsLength.clear();
@@ -1284,15 +1289,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 /*List<Point> stepScreenPoints = new ArrayList<>();
                 List<PointF> stepOpenglPoints = new ArrayList<>();*/
                 for (NaviLatLng coord : step.getCoords()) {
-                    if (projection != null) {
-                        LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
-                        /*Point p = projection.toScreenLocation(latLng);
-                        stepScreenPoints.add(new Point(p.x, p.y));*/
-                        PointF pf = projection.toOpenGLLocation(latLng);
-                        /*stepOpenglPoints.add(new PointF(pf.x, -pf.y));*/
-                        Vector3 v = new Vector3(pf.x, -pf.y, 0);
-                        path.add(v);
-                    }
+                    LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
+                    PointF pf = mProjection.toOpenGLLocation(latLng);
+                    Vector3 v = new Vector3(pf.x, -pf.y, 0);
+                    path.add(v);
                 }
                 /*if (stepScreenPoints.size() > 0) {
                     naviStepsScreen.add(stepScreenPoints);

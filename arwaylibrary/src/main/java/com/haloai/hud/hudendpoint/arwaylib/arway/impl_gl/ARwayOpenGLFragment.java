@@ -150,9 +150,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if(ARWayConst.IS_AMAP_VIEW){
             //init amap navi view
             mNaviView = mLayout;
-            mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
+            // TODO: 16/9/27 需要显示高德底图时调用
+//            mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
             mAmapNaviView.onCreate(savedInstanceState);
-
             if (mAmapNaviView.getMap() == null) {
                 HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "Map is null");
             } else {
