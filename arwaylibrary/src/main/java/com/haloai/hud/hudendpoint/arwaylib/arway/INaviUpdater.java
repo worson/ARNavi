@@ -11,20 +11,20 @@ import com.haloai.hud.navigation.NavigationSDKAdapter;
  * Created by wangshengxing on 16/8/31.
  */
 public interface INaviUpdater {
-    public void onNaviStarted();
-    public void onArriveDestination();
-    public void updateYawStart();
-    public void updateYawEnd();
-    public void onNaviCalculateRouteFailure(int errorInfo);
-    public void onGpsStatusChanged(boolean work);
-    public void onNetworkStatusChanged(boolean work);
-    public void showCrossImage(Bitmap crossimage);
-    public void hideCrossImage();
+    void onNaviStarted();
+    void onArriveDestination();
+    void updateYawStart();
+    void updateYawEnd();
+    void onNaviCalculateRouteFailure(int errorInfo);
+    void onGpsStatusChanged(boolean work);
+    void onNetworkStatusChanged(boolean work);
+    void showCrossImage(Bitmap crossimage);
+    void hideCrossImage();
 
-    public void updateLocation(AMapNaviLocation location);
-    public void updateNaviText(NavigationSDKAdapter.NavigationNotifier.NaviTextType textType, String text);
+    void updateLocation(AMapNaviLocation location);
+    void updateNaviText(NavigationSDKAdapter.NavigationNotifier.NaviTextType textType, String text);
 
-    public void updatePath(AMapNavi aMapNavi);
-    public void updateNaviInfo(NaviInfo info);
-    public void onSpeedUpgraded(float speed);
+    void updatePath(AMapNavi aMapNavi);
+    void updateNaviInfo(NaviInfo info);
+    void onSpeedUpgraded(float speed);
 }

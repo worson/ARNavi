@@ -65,12 +65,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double  ANIMATION_LENGTH       = 30;
     private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = 1;// ARWayConst.AMAP_TO_ARWAY_GL_RATE
+    private static final double  BIGGER_TIME            = 1;//ARWayConst.AMAP_TO_ARWAY_GL_RATE;
     private static final double  CAMERA_MIN_LENGTH      = 20;
     private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = 0.5*Math.tan(Math.toRadians(22.5))*2*400/280;//ARWayConst.ROAD_WIDTH
+    private static final double  ROAD_WIDTH             = 0.5*Math.tan(Math.toRadians(22.5))*2*400/280;//ARWayConst.ROAD_WIDTH;
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
@@ -169,16 +169,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 //    private Projection mProjection                   = null;
     private ARWayProjection mProjection                   = new ARWayProjection();
     //车速，单位是m/s
-    private double     mCarSpeed                     = 0;
-    private double     mOffsetX                      = 0;
-    private double     mOffsetY                      = 0;
-    private NaviLatLng mStartLatLng                  = null;
+    private double mCarSpeed = 0;
+    private double mOffsetX  = 0;
+    private double mOffsetY  = 0;
 
     private ArwaySceneUpdater mSceneUpdater;
-
+    
     private CameraModel mCameraModel = new CameraModel();
-    private float mRoadWidthProportion = 0.5f;
+    private float mRoadWidthProportion = 0.7f;
     private float mCameraPerspectiveAngel = 70;
+
 
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
@@ -234,12 +234,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
 
-        if(true){
+        if (true) {
             mCameraModel.setLocation(mObject4Chase.getPosition());
             mCameraModel.setRotZ(mObject4Chase.getRotZ());
 
-            ARWayCameraCaculator.calculateCameraPositionAndLookAtPoint(position,lookat,mCameraModel);
-        }else {
+            ARWayCameraCaculator.calculateCameraPositionAndLookAtPoint(position, lookat, mCameraModel);
+        } else {
             updateCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
         }
         camera.setPosition(position);
@@ -358,6 +358,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
         mRenderTimeRecorder.start();
+
         if (!mIsMyInitScene) {
             return;
         }
@@ -1016,10 +1017,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     /**
      * 外部通过该方法设置路径到OpenGL部分初始化道路
      *
-     * @param projection
      * @param naviPath
      * @return 1 设置路径成功 -1 projection或naviPath为null -2 路线重复 0 未知错误
      */
+
     public int setPath(Projection projection, AMapNaviPath naviPath, boolean repeat) {
         if (naviPath == null) {
             return -1;
@@ -1028,8 +1029,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             if(projection == null) return -1;
 //            mProjection = projection;
         }
+
         List<Vector3> path = new ArrayList<>();
-        mStartLatLng = naviPath.getSteps().get(0).getCoords().get(0);
         mStepsLength.clear();
 
         for (AMapNaviStep step : naviPath.getSteps()) {
@@ -1039,6 +1040,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 List<PointF> stepOpenglPoints = new ArrayList<>();*/
                 for (NaviLatLng coord : step.getCoords()) {
                     LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
+
                     PointF pf = mProjection.toOpenGLLocation(latLng);
                     Vector3 v = new Vector3(pf.x, -pf.y, 0);
                     path.add(v);
@@ -1169,7 +1171,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             v.y = xy[1];
         }*/
 
-        //rotate
+        //calc and save the car need to rotate degrees
         Vector3 p1 = mPath.get(0);
         Vector3 p2 = mPath.get(1);
         for (int i = 1; i < mPath.size(); i++) {
@@ -1354,9 +1356,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mTransAnim = null;
         mRotateAnim = null;
         mPreTime = 0;
-        mPreBearing = 0;
+        mFromDegrees = 0;
+        mToDegrees = 0;
+        /*mPreBearing = 0;
         mRotateAnimScale = 0;
-        mRotateAnimDegrees = 0;
+        mRotateAnimDegrees = 0;*/
         mLoadStepStartIndexs.clear();
         mLoadStepLengths.clear();
         mLoadStepIndex = 0;
@@ -1412,90 +1416,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void myInitScene() {
-        /*mCurScene = new Scene(this);
-        mCurScene.resetGLState();
-        addAndSwitchScene(mCurScene);
-        if (mMainRoadObjects != null && mMainRoadObjects.size() > 0) {
-            for (ARWayRoadObject arWayRoadObject : mMainRoadObjects) {
-                arWayRoadObject.removeMaterial();
-                arWayRoadObject.destroy();
-            }
-        }
-        if (mBranchRoadObjects != null && mBranchRoadObjects.size() > 0) {
-            for (ARWayRoadObject arWayRoadObject : mBranchRoadObjects) {
-                arWayRoadObject.removeMaterial();
-                arWayRoadObject.destroy();
-            }
-        }
-        if (mCoverRoadPlanes != null && mCoverRoadPlanes.size() > 0) {
-            for (Plane plane : mCoverRoadPlanes) {
-                plane.destroy();
-            }
-        }
-        if (mObject4Chase != null) {
-            mObject4Chase.destroy();
-        }*/
-        //        MaterialManager.getInstance().reset();
+
         getCurrentScene().clearChildren();
         mSceneUpdater.initScene();
-        //        getCurrentScene().setBackgroundColor(0x222222);
-        //        List<Vector3> leftPts = new ArrayList<>();
-        //        List<Vector3> rightPts = new ArrayList<>();
-        //        MathUtils.points2path(leftPts, rightPts, mPreChildEndPos, LOGIC_ROAD_WIDTH);
 
-        //        if (mMainRoadTexture == null) {
-        //            mMainRoadTexture = new Texture("route_new", R.drawable.route_new);
-        //        }
-        //        for (int i = 0; i < mPreChildEndPos.size(); i++) {
-        //            //            Stack<Vector3> line = new Stack<>();
-        //            //            line.add(leftPts.get(i));
-        //            //            line.add(rightPts.get(i));
-        //            //            Line3D line3D = new Line3D(line, 1);
-        //            //            line3D.setMaterial(new Material());
-        //            //            line3D.setColor(0xff0000);
-        //            //            getCurrentScene().addChild(line3D);
-        //            Sphere sphere = new Sphere(0.1f, 24, 24);
-        //            sphere.setPosition(mPreChildEndPos.get(i));
-        //            sphere.setMaterial(new Material());
-        //            Material sphereM = sphere.getMaterial();
-        //            try {
-        //                sphereM.addTexture(mMainRoadTexture);
-        //            } catch (ATexture.TextureException e) {
-        //                e.printStackTrace();
-        //            }
-        //            sphere.setColor(Color.BLUE);
-        //            getCurrentScene().addChild(sphere);
-        //        }
-
-        /*mSphere = new Sphere(0.05f, 24, 24);
-        mSphere.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere.setMaterial(new Material());
-        mSphere.setColor(0xff0000);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere);
+        if (mObject4Chase != null) {
+            mObject4Chase.destroy();
         }
-
-
-        mSphere1 = new Sphere(0.05f, 24, 24);
-        mSphere1.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere1.setMaterial(new Material());
-        mSphere1.setColor(Color.RED);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere1);
-        }
-
-        mSphere2 = new Sphere(0.05f, 24, 24);
-        mSphere2.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere2.setMaterial(new Material());
-        mSphere2.setColor(0x00ff00);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere2);
-        }*/
-
-        /*mObject4Chase = new Sphere(0.05f, 24, 24);
-        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mObject4Chase.setMaterial(new Material());
-        mObject4Chase.setColor(Color.BLUE);*/
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
         mObject4Chase.isDepthTestEnabled();
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
@@ -1526,84 +1453,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
-		updatePlane2Scene(mLoadStepIndex);
+        updatePlane2Scene(mLoadStepIndex);
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
         }
-
-       /* final double LENGTH_STEP = 6;
-        double distStep = LENGTH_STEP;
-        for (int i = 0; i < mPath.size() - 1; i++) {
-            Vector3 v1 = mPath.get(i);
-            Vector3 v2 = mPath.get(i + 1);
-            double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-            if (temp > distStep) {
-                double scale = distStep / temp;
-                Vector3 result = new Vector3();
-                result.x = v1.x + (v2.x - v1.x) * scale;
-                result.y = v1.y + (v2.y - v1.y) * scale;
-                result.z = 0;
-                insertTestPlane(result);
-                distStep = LENGTH_STEP;
-            } else if (temp < distStep) {
-                distStep -= temp;
-            } else {
-                insertTestPlane(v2);
-                distStep = LENGTH_STEP;
-            }
-        }*/
-
-        //        Material maHo = new Material();
-        //        //        maHo.setColorInfluence(0);
-        //        //        try {
-        //        //            maHo.addTexture(new Texture("route_new", R.drawable.route_new));
-        //        //        } catch (ATexture.TextureException e) {
-        //        //            e.printStackTrace();
-        //        //        }
-        //
-        //        Material maVe = new Material();
-        //        //        maVe.setColorInfluence(0);
-        //        //        try {
-        //        //            maVe.addTexture(new Texture("route_new", R.drawable.route_new3));
-        //        //        } catch (ATexture.TextureException e) {
-        //        //            e.printStackTrace();
-        //        //        }
-        //        for (int i = 0; i < mPath.size() - 1; i++) {
-        //            Vector3 v1 = mPath.get(i);
-        //            Vector3 v2 = mPath.get(i + 1);
-        //            float width = 0f;// Math.abs(v2.x - v1.x) > 0.5 ? (float) Math.abs(v2.x - v1.x) : 0.5f;
-        //            float height = 0f;//Math.abs(v2.y - v1.y) > 0.5 ? (float) Math.abs(v2.y - v1.y) : 0.5f;
-        //            double degrees = MathUtils.getDegrees(v1.x, v1.y, v2.x, v2.y);
-        //            if (Math.abs(v2.x - v1.x) > Math.abs(v2.y - v1.y)) {
-        //                height = (float) MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y) + 0.05f;
-        //                width = 0.6f;
-        //            } else {
-        //                width = (float) MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y) + 0.05f;
-        //                height = 0.6f;
-        //                //如果是横向的话就相当于已经转了90度
-        //                degrees -= 90;
-        //            }
-        //
-        //            Plane plane = new Plane(width, height, 1, 1/*, Vector3.Axis.Z, true, true, 1*/);P
-        //            if (Math.abs(v2.x - v1.x) > Math.abs(v2.y - v1.y)) {
-        //                plane.setMaterial(maHo);
-        //            } else {
-        //                plane.setMaterial(maVe);
-        //            }
-        //            plane.setDoubleSided(true);
-        //            if (i % 2 == 0)
-        //                plane.setColor(0xff3333ff);
-        //            else
-        //                plane.setColor(0xff00ff00);
-        //            plane.setPosition((v1.x + v2.x) / 2, (v1.y + v2.y) / 2, (v1.z + v2.z) / 2);
-        //            Quaternion qn = plane.getOrientation();
-        //            qn.fromAngleAxis(Vector3.Axis.Z, degrees);
-        //            plane.setOrientation(qn);
-        //            getCurrentScene().addChild(plane);
-        //        }
-
         //update flag
         mIsMyInitScene = true;
         mCanMyInitScene = false;
@@ -1626,7 +1481,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 2.如果是导航过程中,那么则是加载三段(当前,以及前后两段)
      */
     private void updatePlane2Scene(int loadStepIndex) {
-        int startIndex = loadStepIndex == 0 ? mLoadStepStartIndexs.get(loadStepIndex):mLoadStepStartIndexs.get(loadStepIndex-1);
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
+
+        int startIndex = loadStepIndex == 0 ? mLoadStepStartIndexs.get(loadStepIndex) : mLoadStepStartIndexs.get(loadStepIndex - 1);
+
         int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
         mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
@@ -1781,50 +1639,46 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }*/
 
     public void setPathRetainLength4DynamicLoad(int pathRetainLength) {
-        for (int i = mLoadStepIndex + 1; i < mLoadStepLengths.size()-1; i++) {
-            if (pathRetainLength < mLoadStepLengths.get(i) && pathRetainLength > mLoadStepLengths.get(i+1) && i != mLoadStepIndex - 1) {
-                HaloLogger.logE("testtests", "index:" + (i - 1));
+        for (int i = mLoadStepIndex; i < mLoadStepLengths.size() - 1; i++) {
+            if (pathRetainLength <= mLoadStepLengths.get(i) && pathRetainLength >= mLoadStepLengths.get(i + 1)) {
                 updatePlane2Scene(i);
-                mLoadStepIndex = i+1;
+                HaloLogger.logE("testtests", "index:" + i);
+                mLoadStepIndex = i + 1;
                 break;
             }
         }
     }
 
-    private Vector3               mFromPos           = null;
-    private Vector3               mToPos             = null;
-    private long                  mPreTime           = 0;
-    private double                mPreBearing        = 0;
+    private Vector3               mFromPos     = null;
+    private Vector3               mToPos       = null;
+    private double                mFromDegrees = 0;
+    private double                mToDegrees   = 0;
+    private long                  mPreTime     = 0;
+    /*private double                mPreBearing        = 0;
     private double                mRotateAnimScale   = 0;
-    private double                mRotateAnimDegrees = 0;
-    private TranslateAnimation3D  mTransAnim         = null;
-    private RotateOnAxisAnimation mRotateAnim        = null;
+    private double                mRotateAnimDegrees = 0;*/
+    private TranslateAnimation3D  mTransAnim   = null;
+    private RotateOnAxisAnimation mRotateAnim  = null;
 
     /**
      * 根据返回的GPS位置处理得到可用数据,以摄像机当前位置和属性为start(如果是第一次则是以前一个GPS位置)
      * 此时的数据为end
      *
      * @param location
-     * @return 1 动画成功 0 场景尚未初始化完成 -1 projection为null -2 此时为第一个位置点,无法开始动画
+     * @return 1 动画成功 0 场景尚未初始化完成 -1 mStartLatLng == null -2 此时为第一个位置点,无法开始动画
      */
     public int updateLocation(AMapNaviLocation location) {
         if (!mIsMyInitScene) {
             return 0;
         }
-        if (mProjection == null || mStartLatLng == null) {
-            return -1;
-        }
+        HaloLogger.logE("testtesttest", "bearing:" + MathUtils.convertAMapBearing2OpenglBearing(location.getBearing()));
+        HaloLogger.logE("testtesttest", "rotZ:" + Math.toDegrees(mObject4Chase.getRotZ()));
         clearLastAnim();
-        PointF startPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(mStartLatLng));
-        double offsetX = startPos.x * BIGGER_TIME - mOffsetX - mPath.get(0).x;
-        double offsetY = (-startPos.y) * BIGGER_TIME - mOffsetY - mPath.get(0).y;
-        /*HaloLogger.logE("testtesttesttest", "start offsetX:" + offsetX);
-        HaloLogger.logE("testtesttesttest", "start offsetY:" + offsetY);*/
         if (mFromPos == null) {
-            PointF fromPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()));
-            mFromPos = new Vector3(fromPos.x * BIGGER_TIME - mOffsetX - offsetX, (-fromPos.y) * BIGGER_TIME - mOffsetY - offsetY, OBJ_4_CHASE_Z);
+            ARWayProjection.PointD fromPos = ARWayProjection.glMapPointFormCoordinate(DrawUtils.naviLatLng2LatLng(location.getCoord()));
+            mFromPos = new Vector3(fromPos.x * BIGGER_TIME - mOffsetX, (-fromPos.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z);
+            mFromDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
             mPreTime = location.getTime();
-            mPreBearing = location.getBearing();
             return -2;
         } else {
             long duration = location.getTime() - mPreTime;
@@ -1832,24 +1686,18 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
             if (mToPos != null) {
                 mFromPos = mObject4Chase.getPosition();
+                mFromDegrees = Math.toDegrees(mObject4Chase.getRotZ());
+                mFromDegrees = mFromDegrees < 0 ? mFromDegrees + 360 : mFromDegrees;
             }
 
-            //如何保证车的方向与道路方向的参考系是一致的(Y轴做过翻转处理)
-            /*HaloLogger.logE("testtesttest", "差角:" + (location.getBearing() - mPreBearing));
-            HaloLogger.logE("testtest", "last rotate:" + mRotateAnimDegrees);
-            HaloLogger.logE("testtest", "world degrees:" + (mPreBearing + mRotateAnimDegrees * (1 - mRotateAnimScale)));
-            HaloLogger.logE("testtest", "opengl degrees:" + Math.toDegrees(mObject4Chase.getRotZ()));*/
-            mRotateAnimDegrees = location.getBearing() - mPreBearing + mRotateAnimDegrees * (1 - mRotateAnimScale);
-            mRotateAnimDegrees = Math.abs(mRotateAnimDegrees) >= 180 ? (mRotateAnimDegrees > 0 ? mRotateAnimDegrees - 360 : mRotateAnimDegrees + 360) : mRotateAnimDegrees;
-            mPreBearing = location.getBearing();
-
-            PointF toPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()));
-            mToPos = new Vector3(toPos.x * BIGGER_TIME - mOffsetX - offsetX, (-toPos.y) * BIGGER_TIME - mOffsetY - offsetY, OBJ_4_CHASE_Z);
+            ARWayProjection.PointD toPos = ARWayProjection.glMapPointFormCoordinate(DrawUtils.naviLatLng2LatLng(location.getCoord()));
+            mToPos = new Vector3(toPos.x * BIGGER_TIME - mOffsetX, (-toPos.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z);
+            mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
             /*HaloLogger.logE("branch_line", "anim start");
             HaloLogger.logE("branch_line", mFromPos.x + "," + mFromPos.y);
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
             HaloLogger.logE("branch_line", "anim end");*/
-            startAnim(mFromPos, mToPos, mRotateAnimDegrees, duration + ANIM_DURATION_REDUNDAN);
+            startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             return 1;
         }
     }
@@ -1873,6 +1721,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     /**
      * 开始动画在两个位置点之间,以相同时间进行平移和旋转动画
+     * 旋转角度0-360
      *
      * @param from
      * @param to
@@ -1881,7 +1730,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      */
     private void startAnim(Vector3 from, Vector3 to, double degrees, long duration) {
         mTransAnim = createTranslateAnim(from, to, duration, mObject4Chase);
-        mRotateAnim = createRotateAnim(Vector3.Axis.Z, degrees, duration, mObject4Chase);
+        mRotateAnim = createRotateAnim(Vector3.Axis.Z,
+                                       Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
+                                       duration, mObject4Chase);
         mTransAnim.play();
         mRotateAnim.play();
     }
@@ -2159,9 +2010,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("helong_debug", "compoundAnim:" + sb.toString());*/
     }
 
-    public void clearScene(){
+    public void clearScene() {
         getCurrentScene().clearChildren();
     }
+
     @Override
     protected void render(long ellapsedRealtime, double deltaTime) {
         super.render(ellapsedRealtime, deltaTime);
@@ -2256,13 +2108,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     public void onAnimationUpdate(Animation animation, double v) {
-        //        HaloLogger.logE("helong_debug", "update_camera_position:" + getCurrentCamera().getPosition());
-        //        HaloLogger.logE("helong_debug", "update_camera_rotation:" + getCurrentCamera().getRotZ());
-        if (animation == mRotateAnim) {
-            mRotateAnimScale = v;
-        }
     }
-
     public void setEvent(int type){
         if(type==1){//左下
             mCameraPerspectiveAngel += 5;
@@ -2286,91 +2132,5 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if(mCameraPerspectiveAngel>0 && mCameraPerspectiveAngel<90){
             mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
         }
-    }
-    /*@Override
-    public Scene getCurrentScene() {
-        return mCurScene == null ? super.getCurrentScene() : mCurScene;
-    }
-
-    @Override
-    public Camera getCurrentCamera() {
-        return mCurScene == null ? super.getCurrentCamera() : mCurScene.getCamera();
-    }*/
-
-    //=====================================rajawali animation callback end=========================================//
-
-
-    double mTestRotX    = 0;
-    double mTestRotY    = 0;
-    double mTestRotZ    = 0;
-    double mTestLookAtX = 0;
-    double mTestLookAtY = 0;
-    double mTestLookAtZ = 0;
-    double mTestPosX    = 0;
-    double mTestPosY    = 0;
-
-    // TODO: 2016/7/21 TEST
-    public void downZ() {
-        mTestRotZ -= 10;
-    }
-
-    public void upZ() {
-        mTestRotZ += 10;
-    }
-
-    public void downX() {
-        mTestRotX -= 10;
-    }
-
-    public void upX() {
-        mTestRotX += 10;
-    }
-
-    public void downY() {
-        mTestRotY -= 10;
-    }
-
-    public void upY() {
-        mTestRotY += 10;
-    }
-
-    public void lookAtLeft() {
-        mTestLookAtX -= 0.1;
-    }
-
-    public void lookAtRight() {
-        mTestLookAtX += 0.1;
-    }
-
-    public void lookAtUp() {
-        mTestLookAtY += 0.1;
-    }
-
-    public void lookAtDown() {
-        mTestLookAtY -= 0.1;
-    }
-
-    public void lookAtHigh() {
-        mTestLookAtZ += 0.1;
-    }
-
-    public void lookAtLow() {
-        mTestLookAtZ -= 0.1;
-    }
-
-    public void posLeft() {
-        mTestPosX -= 0.01;
-    }
-
-    public void posRight() {
-        mTestPosX += 0.01;
-    }
-
-    public void posDown() {
-        mTestPosY -= 0.01;
-    }
-
-    public void posUp() {
-        mTestPosY += 0.01;
     }
 }

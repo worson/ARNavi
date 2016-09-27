@@ -10,6 +10,7 @@ import com.amap.api.maps.model.LatLng;
  */
 public class ARWayProjection {
 
+
     private final static double roadWidth = 2.0;//米
 
     private final static double mNearPlaneDistance = 0.5;
@@ -24,35 +25,32 @@ public class ARWayProjection {
         K = (roadWidth/0.137784)/mNearPlaneWidth;
     }
 
-    public static class GLMapPoint {
+    public static class PointD {
         public double x;
         public double y;
 
-        public GLMapPoint() {}
+        public PointD() {}
 
-        public GLMapPoint(double x, double y) {
+        public PointD(double x, double y) {
             this.x = x;
             this.y = y;
         }
 
-        public void set(GLMapPoint p) {
+        public void set(PointD p) {
             this.x = p.x;
             this.y = p.y;
         }
 
         @Override
         public String toString() {
-            return "GLMapPoint(" + x + ", " + y + ")";
+            return "PointD(" + x + ", " + y + ")";
         }
     }
 
-
-    //莫卡托的每个像素点代表0.137784米
-
     //经纬度坐标转opengl坐标
-    public static GLMapPoint glMapPointFormCoordinate(LatLng coordinate){
+    public static PointD glMapPointFormCoordinate(LatLng coordinate){
         Point mktPoint = pixelPointFromCoordinate(coordinate,20.0);
-        GLMapPoint mapPoint = new GLMapPoint(mktPoint.x/K,mktPoint.y/K);
+        PointD mapPoint = new PointD(mktPoint.x/K, mktPoint.y/K);
         return mapPoint;
     }
 
@@ -62,15 +60,7 @@ public class ARWayProjection {
         PointF mapPoint = new PointF((float)(mktPoint.x/K),(float)(mktPoint.y/K));
         return mapPoint;
     }
-
-    public static LatLng coordinateFromGLMapPoint(Point pixelPoint,double level) {
-        double res = 20.0 -level;
-        double dblMercatorLat = 180.0 - pixelPoint.y *Math.pow(2.0,res) * 360.0 / 268435456;
-        double longitude = pixelPoint.x *Math.pow(2.0,res) * 360.0 / 268435456 - 180.0;
-        double latitude = Math.atan(Math.exp(dblMercatorLat * 0.017453292519943295769236907684886)) / 0.0087266462599716478846184538424431 - 90;
-        LatLng coordinate = new LatLng(latitude,longitude);
-        return coordinate;
-    }
+ 
     public static Point toScreenLocation(LatLng coordinate,double level){
         return pixelPointFromCoordinate(coordinate,level);
     }

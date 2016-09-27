@@ -76,7 +76,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public static final String DEFAULT_FOLDER_PREFIX = "/sdcard/HaloTest/projection/";
     private             String mFolderPath           = DEFAULT_FOLDER_PREFIX;
 
-
     //amap
     private AMapNavi mAMapNavi          = null;
     private Bitmap   mCurrentCrossImage = null;
@@ -90,7 +89,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private Bitmap mNaviIconBitmap   = null;
     private View arway;
 
-    //opengle
+    //opengl
     protected ViewGroup     mLayout;
     protected TextureView   mRenderSurface;
     protected ARwayRenderer mRenderer;
@@ -908,6 +907,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             return result;
         }
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
+        HaloLogger.logE("helong_debug", "updatePath");
         if (naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
@@ -951,6 +951,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mMapProjectionMachine.setNeedUpdatePath(false);
 
         } else {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed," + "path is null " + (naviPath == null));
             mMapProjectionMachine.setNeedUpdatePath(true);
         }
 
