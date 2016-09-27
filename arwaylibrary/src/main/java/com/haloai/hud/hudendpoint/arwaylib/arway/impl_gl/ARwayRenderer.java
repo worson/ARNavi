@@ -175,8 +175,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private NaviLatLng mStartLatLng                  = null;
 
     private ArwaySceneUpdater mSceneUpdater;
-	
+
     private CameraModel mCameraModel = new CameraModel();
+    private float mRoadWidthProportion = 0.5f;
+    private float mCameraPerspectiveAngel = 70;
 
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
@@ -1519,8 +1521,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         ARWayCameraCaculator.cameraCaculatorInit(cCamera);
 
-        mCameraModel.setNearPlaneWithDrawPlane_Angel(70);
-        mCameraModel.setRoadWidthProportion(0.5f);
+        mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
+        mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
@@ -2261,6 +2263,30 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
     }
 
+    public void setEvent(int type){
+        if(type==1){//左下
+            mCameraPerspectiveAngel += 5;
+            if(mCameraPerspectiveAngel>90){
+                mCameraPerspectiveAngel=50;
+            }
+        }if(type==2){//右上
+            mRoadWidthProportion += 0.1;
+            if(mRoadWidthProportion>1){
+                mRoadWidthProportion=1f;
+            }
+        }else if(type==3){//下
+            mRoadWidthProportion -= 0.1;
+            if(mRoadWidthProportion<0){
+                mRoadWidthProportion=0.1f;
+            }
+        }
+        if(mRoadWidthProportion>=0 && mRoadWidthProportion<=1){
+            mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
+        }
+        if(mCameraPerspectiveAngel>0 && mCameraPerspectiveAngel<90){
+            mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
+        }
+    }
     /*@Override
     public Scene getCurrentScene() {
         return mCurScene == null ? super.getCurrentScene() : mCurScene;

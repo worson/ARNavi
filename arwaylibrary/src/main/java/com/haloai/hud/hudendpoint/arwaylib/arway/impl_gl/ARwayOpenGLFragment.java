@@ -104,6 +104,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private static CrossImageDataCollector mCrossImageDataCollector = new CrossImageDataCollector();
     private TimeRecorder mUpdatePathRecorder = new TimeRecorder();
 
+    private static final int DEFAULT_GPS_NUMBER      = 10;
+    private int mGpsWorkCnt;
+    private boolean mGpsWork = true;
+
 
     public ARwayOpenGLFragment() {
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "fragment 正在初始化");
@@ -674,8 +678,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param work 是否工作
      */
     public void onGpsStatusChanged(boolean work) {
-        ARWayController.CommonBeanUpdater.setGpsWork(work);
-        onNavingContextChangedView();
+        if(!work){
+            if(--mGpsWorkCnt<0){
+                mGpsWorkCnt=0;
+            }
+        }else {
+            mGpsWorkCnt = DEFAULT_GPS_NUMBER;
+        }
+        if(mGpsWorkCnt>0 != mGpsWork){
+            mGpsWork = mGpsWorkCnt>0;
+            ARWayController.CommonBeanUpdater.setGpsWork(work);
+            onNavingContextChangedView();
+        }
     }
 
     /**
@@ -684,8 +698,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * @param work 是否工作
      */
     public void onNetworkStatusChanged(boolean work) {
-        ARWayController.CommonBeanUpdater.setHasNetwork(work);
-        onNavingContextChangedView();
+        ARWayController.CommonBeanUpdater.setHasNetwork(true);
+//        onNavingContextChangedView();
     }
 
     /**
@@ -796,6 +810,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
         //        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         if(mRenderer!=null && location.isMatchNaviPath()){
+            onGpsStatusChanged(true);
             mRenderer.updateLocation(location);
         }
         /*if (mCurrentGpsStatus != GPS_STATUS_FINE) {
@@ -1212,4 +1227,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mRenderer.setFrameRate(ARWayConst.FRAME_RATE);
     }
 
+    public void setEvent(int type){
+        mRenderer.setEvent(type);
+    }
 }
