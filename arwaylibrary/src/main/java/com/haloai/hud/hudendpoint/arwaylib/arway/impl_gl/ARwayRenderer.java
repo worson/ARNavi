@@ -24,6 +24,7 @@ import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.ATransformable3D;
@@ -174,8 +175,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private ArwaySceneUpdater mSceneUpdater;
 	
     private CameraModel mCameraModel = new CameraModel();;
-    private int mOnRenderCnt = 0;
-    private long mLastFrameTime = 0;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -349,16 +348,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return pos;
     }
 
+    TimeRecorder mRenderTimeRecorder = new TimeRecorder();
+
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
-        if(ARWayConst.ENABLE_PERFORM_TEST){
-            HaloLogger.logE("onRenderFrame",String.format("set frame is %s ,real frame is %s",getFrameRate(),(int)(1000/(System.currentTimeMillis()-mLastFrameTime))));
-            mLastFrameTime = System.currentTimeMillis();
-            if (mOnRenderCnt++>100){
-                mOnRenderCnt = 0;
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("onRender ,frame time is %s s",deltaTime));
-            }
-        }
+        mRenderTimeRecorder.start();
         if (!mIsMyInitScene) {
             return;
         }
@@ -624,6 +618,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
         getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
         super.onRender(ellapsedRealtime, deltaTime);
+
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            mRenderTimeRecorder.recordeAndLog("onRenderFrame","onRenderFrame");
+        }
     }
 
     @Override
