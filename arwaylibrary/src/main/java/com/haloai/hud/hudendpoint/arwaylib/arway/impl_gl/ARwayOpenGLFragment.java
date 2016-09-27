@@ -18,6 +18,7 @@ import com.amap.api.maps.AMap.OnCameraChangeListener;
 import com.amap.api.maps.AMap.OnMapLoadedListener;
 import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.Projection;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.AMapNaviView;
