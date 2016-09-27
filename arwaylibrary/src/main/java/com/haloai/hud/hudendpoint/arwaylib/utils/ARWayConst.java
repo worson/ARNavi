@@ -33,7 +33,7 @@ public class ARWayConst {
     public static final float  ROAD_WIDTH                 = 0.4f;
     public static final float  REFERENCE_LINE_STEP_LENGTH = ROAD_WIDTH*10;
 
-    public static final boolean IS_DEBUG_SCENE = false;
+    public static final boolean IS_DEBUG_SCENE = true;
 
     //NAVING
     public static final boolean IS_AMAP_VIEW = false;//

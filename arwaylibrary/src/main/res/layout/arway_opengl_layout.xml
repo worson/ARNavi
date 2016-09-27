@@ -290,7 +290,7 @@
     <TextView
         android:id="@+id/navi_status_textiview"
         android:layout_width="133.3dp"
-        android:layout_height="40dp"
+        android:layout_height="0dp"
         android:maxLines="3"
         android:layout_alignParentRight="true"
         android:layout_marginTop="40dp"

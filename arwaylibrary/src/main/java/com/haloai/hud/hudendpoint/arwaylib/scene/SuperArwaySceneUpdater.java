@@ -16,12 +16,25 @@ public class SuperArwaySceneUpdater {
         mScene = scene;
     }
 
+    public void setVisible(Object3D[] object3Ds,boolean visible){
+        for(Object3D object3D:object3Ds){
+            object3D.setVisible(visible);
+        }
+    }
+
     public boolean removeObject(Object3D[] object3Ds){
         boolean result = true;
         for(Object3D object3D:object3Ds){
             if(mScene.hasChild(object3D)){
                 result &= mScene.removeChild(object3D);
             }
+        }
+        return result;
+    }
+    public boolean removeObject(Object3D object3D){
+        boolean result = true;
+        if(mScene.hasChild(object3D)){
+            result &= mScene.removeChild(object3D);
         }
         return result;
     }

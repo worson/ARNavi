@@ -65,12 +65,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double  ANIMATION_LENGTH       = 30;
     private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = ARWayConst.AMAP_TO_ARWAY_GL_RATE;// 1000000.0 * 0.0023f
+    private static final double  BIGGER_TIME            = 1;// ARWayConst.AMAP_TO_ARWAY_GL_RATE
     private static final double  CAMERA_MIN_LENGTH      = 20;
     private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = ARWayConst.ROAD_WIDTH;
+    private static final double  ROAD_WIDTH             = 0.5*Math.tan(Math.toRadians(22.5))*2*400/280;//ARWayConst.ROAD_WIDTH
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
@@ -176,7 +176,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private ArwaySceneUpdater mSceneUpdater;
 	
-    private CameraModel mCameraModel = new CameraModel();;
+    private CameraModel mCameraModel = new CameraModel();
+
+    private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -212,6 +214,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
         super.onRenderSurfaceSizeChanged(gl, width, height);
+        mProjection.initScale(width, height);
         /*mViewport[2] = getViewportWidth();
         mViewport[3] = getViewportHeight();
         mViewMatrix = getCurrentCamera().getViewMatrix();
@@ -350,8 +353,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         return pos;
     }
 
-    TimeRecorder mRenderTimeRecorder = new TimeRecorder();
-
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
         mRenderTimeRecorder.start();
@@ -363,262 +364,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             updateCamera(mObject4Chase);
-
         }
-
-        //        Quaternion qt = new Quaternion();
-        //        getCurrentCamera().getCameraOrientation(qt);
-        //        HaloLogger.logE("helong_fix_", "camera_quaternion:" + qt);
-        //        double rotX = 180 / Math.PI * qt.getRoll();
-        //        double rotZ = 180 / Math.PI * qt.getPitch();
-        //        double rotY = 180 / Math.PI * qt.getYaw();
-        //        double camRotationX = rotX;
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotY:" + rotY);
-        //
-        //        Vector3 pos = mObject4Chase.getPosition();
-        //        //        mObject4Chase.setPosition(pos.x+mTestPosX,pos.y+mTestPosY,pos.z);
-        //        qt = new Quaternion();
-        //        mObject4Chase.getOrientation(qt);
-        //        rotX = 180 / Math.PI * qt.getRoll();
-        //        rotZ = 180 / Math.PI * qt.getPitch();
-        //        rotY = 180 / Math.PI * qt.getYaw();
-        //        double rotationX = rotX;
-
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotY:" + rotY);
-        //        HaloLogger.logE("helong_fix_____", "====================================");
-        //        HaloLogger.logE("helong_fix_____", "object_rotationX:" + rotationX);
-        //        HaloLogger.logE("helong_fix_____", "camera_rotationX:" + camRotationX);
-
-        //        getCurrentCamera().setRotX(rotX);
-
-        //        getCurrentCamera().setRotZ(rotZ);
-        //        getCurrentCamera().setRotX(rotX);
-        //        getCurrentCamera().setRotY(rotY);
-        //
-        //
-        //        getCurrentCamera().getCameraOrientation(qt);
-        //        getCurrentCamera().getOrientation(qt);
-        //        rotX = 180/Math.PI*qt.getRoll();
-        //        rotZ = 180/Math.PI*qt.getPitch();
-        //        rotY = 180/Math.PI*qt.getYaw();
-        //        //        HaloLogger.logE("helong_fix_", System.currentTimeMillis()
-        //        //                + "," + pos.x + "," + pos.y);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotY:" + rotY);
-        //
-        //        /**
-        //         a=-130/180*pi;
-        //         src.x=0;
-        //         src.y=0;
-        //         length = 30;
-        //         offX = sin(a)*length
-        //         offY = cos(a)*length
-        //         dst.x = src.x+offX;
-        //         dst.y = src.y+offY;
-        //         */
-
-
-        /*Vector3 lookAt = new Vector3();
-        Vector3 nextPoint = mPath.get(mCurIndexInPath + 1);
-        double dist = MathUtils.calculateDistance(pos.x, pos.y, nextPoint.x, nextPoint.y);
-        if (dist >= LOOK_AT_DIST) {
-            lookAt.x = pos.x + (nextPoint.x - pos.x) * (LOOK_AT_DIST / dist);
-            lookAt.y = pos.y + (nextPoint.y - pos.y) * (LOOK_AT_DIST / dist);
-        } else {
-            double comp = LOOK_AT_DIST - dist;
-            for (int i = mCurIndexInPath + 2; i < mPath.size(); i++) {
-                Vector3 pre = mPath.get(i - 1);
-                Vector3 next = mPath.get(i);
-                if (i == mPath.size() - 1) {
-                    lookAt.x = next.x;
-                    lookAt.y = next.y;
-                    break;
-                } else {
-                    dist = MathUtils.calculateDistance(pre.x, pre.y, next.x, next.y);
-                    if (dist >= comp) {
-                        lookAt.x = pre.x + (next.x - pre.x) * (comp / dist);
-                        lookAt.y = pre.y + (next.y - pre.y) * (comp / dist);
-                        break;
-                    } else {
-                        comp -= dist;
-                    }
-                }
-            }
-        }*/
-
-        //        lookAt.x = pos.x + mTestPosX + Math.sin(rotX / 180 * Math.PI) * LOOK_AT_DIST;
-        //        lookAt.y = pos.y + mTestPosY + Math.cos(rotX / 180 * Math.PI) * LOOK_AT_DIST;
-        //        lookAt.z = /*OBJ_4_CHASE_Z/4*3*/0;
-        //
-        //        //TODO 计算lookAt是否超出了道路,如果超出了,那么就截取到与道路的交点即可
-        //        //TODO 起始判断点为mCurrentIndexInPath,结束点为该值+n个形状点(暂定)
-        //        //TODO: 2016/7/19 这部分代码应该还是有问题的,有时候会看到lookAt的点在道路外的情况发生
-        //        if (mCurIndexInPath < mLeftPath.size() - 1) {
-        //            for (int i = mCurIndexInPath; i < mLeftPath.size() - 1 && i < mRightPath.size() - 1 && i < mCurIndexInPath + CURVE_TIME * INTERSECTION_COUNT; i++) {
-        //                Vector3 start = mLeftPath.get(i);
-        //                Vector3 end = mLeftPath.get(i + 1);
-        //                PointF result = new PointF();
-        //                int isIntersection = MathUtils.getIntersection(
-        //                        new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                        new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                if (isIntersection == 1) {
-        //                    lookAt.x = result.x;
-        //                    lookAt.y = result.y;
-        //                    break;
-        //                }
-        //                start = mRightPath.get(i);
-        //                end = mRightPath.get(i + 1);
-        //                isIntersection = MathUtils.getIntersection(
-        //                        new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                        new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                if (isIntersection == 1) {
-        //                    lookAt.x = result.x;
-        //                    lookAt.y = result.y;
-        //                    break;
-        //                }
-        //            }
-        //                    /*for (int i = mCurIndexInPath; i < mLeftPath.size() - 1 && i < mRightPath.size() - 1 && i < mCurIndexInPath + CURVE_TIME * INTERSECTION_COUNT; i++) {
-        //                        Vector3 start = mLeftPath.get(i);
-        //                        Vector3 end = mLeftPath.get(i + 1);
-        //                        PointF result = new PointF();
-        //                        int isIntersection = MathUtils.getIntersection(
-        //                                new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                                new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                        if (isIntersection == 1) {
-        //                            double realDist = MathUtils.calculateDistance(pos.x, pos.y, result.x, result.y);
-        //                            double compDist = LOOK_AT_DIST - realDist;
-        //                            if (compDist > 0) {
-        //                                for (int j = i + 1; j < mLeftPath.size(); j++) {
-        //                                    double dist = 0;
-        //                                    double x1 = 0;
-        //                                    double y1 = 0;
-        //                                    double x2 = 0;
-        //                                    double y2 = 0;
-        //                                    if(j==i+1) {
-        //                                        x1 = result.x;
-        //                                        y1 = result.y;
-        //                                    }else{
-        //                                        x1 = mLeftPath.get(j-1).x;
-        //                                        y1 = mLeftPath.get(j-1).y;
-        //                                    }
-        //                                    x2 = mLeftPath.get(j).x;
-        //                                    y2 = mLeftPath.get(j).y;
-        //                                    dist = MathUtils.calculateDistance(x1,y1,x2,y2);
-        //                                    if (dist >= compDist) {
-        //                                        lookAt.x = x1 + (x2-x1)*(compDist/dist);
-        //                                        lookAt.y = y1 + (y2-y1)*(compDist/dist);
-        //                                        break;
-        //                                    } else {
-        //                                        compDist-=dist;
-        //                                    }
-        //                                }
-        //                            }else{
-        //                                lookAt.x = result.x;
-        //                                lookAt.y = result.y;
-        //                            }
-        //                            break;
-        //                        }
-        //                        start = mRightPath.get(i);
-        //                        end = mRightPath.get(i + 1);
-        //                        isIntersection = MathUtils.getIntersection(
-        //                                new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                                new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                        if (isIntersection == 1) {
-        //                            double realDist = MathUtils.calculateDistance(pos.x, pos.y, result.x, result.y);
-        //                            double compDist = LOOK_AT_DIST - realDist;
-        //                            if (compDist > 0) {
-        //                                for (int j = i + 1; j < mRightPath.size(); j++) {
-        //                                    double dist = 0;
-        //                                    double x1 = 0;
-        //                                    double y1 = 0;
-        //                                    double x2 = 0;
-        //                                    double y2 = 0;
-        //                                    if(j==i+1) {
-        //                                        x1 = result.x;
-        //                                        y1 = result.y;
-        //                                    }else{
-        //                                        x1 = mRightPath.get(j-1).x;
-        //                                        y1 = mRightPath.get(j-1).y;
-        //                                    }
-        //                                    x2 = mRightPath.get(j).x;
-        //                                    y2 = mRightPath.get(j).y;
-        //                                    dist = MathUtils.calculateDistance(x1,y1,x2,y2);
-        //                                    if (dist >= compDist) {
-        //                                        lookAt.x = x1 + (x2-x1)*(compDist/dist);
-        //                                        lookAt.y = y1 + (y2-y1)*(compDist/dist);
-        //                                        break;
-        //                                    } else {
-        //                                        compDist-=dist;
-        //                                    }
-        //                                }
-        //                            }else{
-        //                                lookAt.x = result.x;
-        //                                lookAt.y = result.y;
-        //                            }
-        //                            break;
-        //                        }
-        //                    }*/
-        //        }
-
-        //        HaloLogger.logE("helong_fix____", "lookAt:" + lookAt);
-        //        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
-        ////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
-        //
-        //        //        rotX = 180/Math.PI*qt.getRoll();
-        //        //        rotZ = 180/Math.PI*qt.getPitch();
-        //        //        rotY = 180/Math.PI*qt.getYaw();
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotZ:" + rotZ);
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotX:" + rotX);
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotY:" + rotY);
-        //
-        //        //将设置好的lookAt通过计算填充到orientation上
-        //        getCurrentCamera().calculateModelMatrix(null);
-
-        //        getCurrentCamera().getOrientation(qt);
-        //
-        //        rotX = 180 / Math.PI * qt.getRoll();
-        //        rotZ = 180 / Math.PI * qt.getPitch();
-        //        rotY = 180 / Math.PI * qt.getYaw();
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotZ:" + rotZ);
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotX:" + rotX);
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotY:" + rotY);
-        //
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotZ:" + rotZ);
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotX:" + (rotX+rotationX));
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotY:" + rotY);
-
-        /*Vector3 lookAtRotation = new Vector3(rotX, rotY, rotZ);
-        handleLookAt(lookAtRotation);
-        getCurrentCamera().setRotZ(lookAtRotation.z + mTestRotZ);
-        getCurrentCamera().setRotY(lookAtRotation.y + mTestRotY);
-        getCurrentCamera().setRotX(lookAtRotation.x + mTestRotX);*/
-
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotX:" + (lookAtRotation.x + mTestRotX));
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotY:" + (lookAtRotation.y + mTestRotY));
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotZ:" + (lookAtRotation.z + mTestRotZ));
-        //        HaloLogger.logE("helong_fix_____", "====================================");
-        //
-        //
-        //        //        getCurrentCamera().setUpAxis(Vector3.Axis.Y);
-        //        //        if (getCurrentCamera() instanceof NewFirstPersonCamera) {
-        //        //            ((NewFirstPersonCamera) getCurrentCamera()).setCameraOffset(offset);
-        //        //        }
-        //
-        // TODO: 2016/7/18 目前看只有lookAt的位置是正常的,摄像机位置以及被追随物体位置经常过偏过一边
-        //摄像机位置
-        //        mSphere.setPosition(new Vector3(pos.x, pos.y, 0));
-        //        //被追随位置
-        //        mSphere2.setPosition(new Vector3(mObject4Chase.getPosition().x, mObject4Chase.getPosition().y, 0));
-        //        //摄像机的lookAt
-        //        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));
-
-        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
-        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
         super.onRender(ellapsedRealtime, deltaTime);
 
         if(ARWayConst.ENABLE_PERFORM_TEST){
@@ -1283,6 +1029,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         List<Vector3> path = new ArrayList<>();
         mStartLatLng = naviPath.getSteps().get(0).getCoords().get(0);
         mStepsLength.clear();
+
         for (AMapNaviStep step : naviPath.getSteps()) {
             mStepsLength.add(step.getLength());
             if (step != null) {
@@ -1688,7 +1435,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }*/
         //        MaterialManager.getInstance().reset();
         getCurrentScene().clearChildren();
-
+        mSceneUpdater.initScene();
         //        getCurrentScene().setBackgroundColor(0x222222);
         //        List<Vector3> leftPts = new ArrayList<>();
         //        List<Vector3> rightPts = new ArrayList<>();
@@ -1748,6 +1495,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase.setMaterial(new Material());
         mObject4Chase.setColor(Color.BLUE);*/
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
+        mObject4Chase.isDepthTestEnabled();
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         Material material = new Material();
         material.setColorInfluence(0);
@@ -1766,10 +1514,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
+        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
+        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
+
         ARWayCameraCaculator.cameraCaculatorInit(cCamera);
 
         mCameraModel.setNearPlaneWithDrawPlane_Angel(70);
-        mCameraModel.setRoadWidthProportion(0.3f);
+        mCameraModel.setRoadWidthProportion(0.5f);
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
@@ -2028,11 +1779,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }*/
 
     public void setPathRetainLength4DynamicLoad(int pathRetainLength) {
-        for (int i = mLoadStepIndex + 1; i < mLoadStepLengths.size(); i++) {
-            if (pathRetainLength > mLoadStepLengths.get(i) && i != mLoadStepIndex - 1) {
-                mLoadStepIndex = i - 1;
-                HaloLogger.logE("testtest", "index:" + (i - 1));
-                updatePlane2Scene(mLoadStepIndex);
+        for (int i = mLoadStepIndex + 1; i < mLoadStepLengths.size()-1; i++) {
+            if (pathRetainLength < mLoadStepLengths.get(i) && pathRetainLength > mLoadStepLengths.get(i+1) && i != mLoadStepIndex - 1) {
+                HaloLogger.logE("testtests", "index:" + (i - 1));
+                updatePlane2Scene(i);
+                mLoadStepIndex = i+1;
                 break;
             }
         }
