@@ -210,6 +210,7 @@ public class MathUtils {
 
     /**
      * 获取两个屏幕点的连线与水平线之间的弧度
+     *
      * @param x
      * @param y
      * @param x2
@@ -217,7 +218,7 @@ public class MathUtils {
      * @return
      */
     public static double getRadian(double x, double y, double x2, double y2) {
-        return Math.atan2(y2-y,x2-x);
+        return Math.atan2(y2 - y, x2 - x);
     }
 
 
@@ -292,7 +293,6 @@ public class MathUtils {
     }
 
     /**
-     *
      * @param refX
      * @param refY
      * @param x
@@ -300,45 +300,45 @@ public class MathUtils {
      * @param result
      * @param degrees 逆时针旋转一个角度
      */
-    public static void rotateAround(double refX, double refY, double x, double y, PointD result,double degrees) {
+    public static void rotateAround(double refX, double refY, double x, double y, PointD result, double degrees) {
         double rX = x - refX;
         double rY = y - refY;
         double c = Math.cos(degrees);
         double s = Math.sin(degrees);
-        result.x = (rX * c - rY * s)+refX;
-        result.y = (rX * s + rY * c)+refY;
+        result.x = (rX * c - rY * s) + refX;
+        result.y = (rX * s + rY * c) + refY;
     }
 
-    public static void rotatePath(List<Vector3> path,List<Vector3> rotatePath,double refX, double refY,double degrees){
+    public static void rotatePath(List<Vector3> path, List<Vector3> rotatePath, double refX, double refY, double degrees) {
         if (path == null || rotatePath == null) {
             return;
         }
         rotatePath.clear();
         PointD pointD = new PointD();
-        for(Vector3 p:path){
-            rotateAround(refX,refY,p.x,p.y,pointD,degrees);
-            rotatePath.add(new Vector3(pointD.x,pointD.y,0));
+        for (Vector3 p : path) {
+            rotateAround(refX, refY, p.x, p.y, pointD, degrees);
+            rotatePath.add(new Vector3(pointD.x, pointD.y, 0));
         }
 
     }
 
 
-    public static void expandPath(double x1, double y1, double x2, double y2, PointD left1, PointD left2, PointD right1, PointD right2, double radius){
-        double degree = Math.PI/2;
-        double distance = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-        left1.x = x1+(x2-x1)*radius/distance;
-        left1.y = y1+(y2-y1)*radius/distance;
+    public static void expandPath(double x1, double y1, double x2, double y2, PointD left1, PointD left2, PointD right1, PointD right2, double radius) {
+        double degree = Math.PI / 2;
+        double distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        left1.x = x1 + (x2 - x1) * radius / distance;
+        left1.y = y1 + (y2 - y1) * radius / distance;
         right1.set(left1);
 
-        left2.x = x2+(x1-x2)*radius/distance;
-        left2.y = y2+(y1-y2)*radius/distance;
+        left2.x = x2 + (x1 - x2) * radius / distance;
+        left2.y = y2 + (y1 - y2) * radius / distance;
         right2.set(left2);
 
-        rotateAround(x1,y1,left1.x,left1.y,left1,degree);
-        rotateAround(x1,y1,right1.x,right1.y,right1,-degree);
+        rotateAround(x1, y1, left1.x, left1.y, left1, degree);
+        rotateAround(x1, y1, right1.x, right1.y, right1, -degree);
 
-        rotateAround(x2,y2,left2.x,left2.y,left2,-degree);
-        rotateAround(x2,y2,right2.x,right2.y,right2,+degree);
+        rotateAround(x2, y2, left2.x, left2.y, left2, -degree);
+        rotateAround(x2, y2, right2.x, right2.y, right2, +degree);
 
     }
 
@@ -351,7 +351,7 @@ public class MathUtils {
      * 根据一条线获取该先左右两侧点的集合
      */
     public static void points2path(List<Vector3> lineLeft, List<Vector3> lineRight, List<Vector3> prePoints, double leftPathWidth, double rightPathWidth) {
-        if(prePoints.size()<2){
+        if (prePoints.size() < 2) {
             return;
         }
         /**
@@ -807,7 +807,6 @@ public class MathUtils {
     }
 
     /**
-     *
      * @param path
      * @param moveTo
      */
@@ -818,7 +817,6 @@ public class MathUtils {
     }
 
     /**
-     *
      * @param path
      * @param moveByX
      * @param moveByY
@@ -831,6 +829,21 @@ public class MathUtils {
             v.y += moveByY;
             v.z += moveByZ;
         }
+    }
+
+    /**
+     * 将一个从高德location得到的bearing(与正北的夹角)转换成
+     *
+     * @param amapDegrees
+     * @return
+     */
+    public static double convertAMapBearing2OpenglBearing(double amapDegrees) {
+        /*if (amapDegrees >= 0 && amapDegrees < 180) {
+            return 180 - amapDegrees;
+        } else {
+            return (360 - amapDegrees + 180) - 360;
+        }*/
+        return amapDegrees/* > 180 ? amapDegrees - 360 : amapDegrees*/;
     }
 
 }

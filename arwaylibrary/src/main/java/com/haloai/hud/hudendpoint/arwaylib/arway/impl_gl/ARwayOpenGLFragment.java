@@ -18,7 +18,6 @@ import com.amap.api.maps.AMap.OnCameraChangeListener;
 import com.amap.api.maps.AMap.OnMapLoadedListener;
 import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.Projection;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.AMapNaviView;
@@ -76,7 +75,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public static final String DEFAULT_FOLDER_PREFIX = "/sdcard/HaloTest/projection/";
     private             String mFolderPath           = DEFAULT_FOLDER_PREFIX;
 
-
     //amap
     private AMapNavi mAMapNavi          = null;
     private Bitmap   mCurrentCrossImage = null;
@@ -90,7 +88,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private Bitmap mNaviIconBitmap   = null;
     private View arway;
 
-    //opengle
+    //opengl
     protected ViewGroup     mLayout;
     protected TextureView   mRenderSurface;
     protected ARwayRenderer mRenderer;
@@ -866,10 +864,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "rUpdatePath,aMapNavi is null ");
             return result;
         }
-        Projection projection = mAmapNaviView.getMap().getProjection();
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
         HaloLogger.logE("helong_debug", "updatePath");
-        if (projection != null && naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
+        if (naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
                 mDrawScene.animShowHide(false);
@@ -883,7 +880,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
                 }
                 if(ARWayConst.IS_DARW_ARWAY){
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.setPath called ");
-                    mRenderer.setPath(projection, naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
+                    mRenderer.setPath(naviPath,(!mMapProjectionMachine.isNeedUpdatePath()));
                 }
                 result=0;
                 // TODO: 16/9/13 测试直接起步
@@ -905,7 +902,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             ARWayController.CommonBeanUpdater.setNavingStart(true);
             mMapProjectionMachine.setNeedUpdatePath(false);
         } else {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed,projection is null?" + (projection == null) + "path is null??" + (naviPath == null));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed," + "path is null " + (naviPath == null));
             mMapProjectionMachine.setNeedUpdatePath(true);
         }
 
