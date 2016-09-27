@@ -33,7 +33,7 @@ public class SuperRoadObject extends Object3D {
     protected ObjectElement mObjectElement;
 
     protected Object3D mLock       = new Object3D();
-    protected boolean  mNeedRender = false;
+    protected volatile boolean  mNeedRender = false;
 
     protected static Material mRoadMaterial = new Material();
     static {

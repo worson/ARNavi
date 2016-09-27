@@ -5,6 +5,7 @@ import android.graphics.Color;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
@@ -40,6 +41,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private       Material mTestMaterial              = new Material();
 
     private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
+    private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
 
 
     private class RoadLayers{
@@ -71,8 +73,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mTestMaterial.setColor(Color.GREEN);
     }
 
-    private void init(Scene scene) {
-        scene.clearChildren();
+    public void initScene() {
         float scale = 0.8f;
         REFERENCE_LINE_STEP_LENGTH *=scale;
         initRoadRender(1*scale,0.7f,0.4f*scale,0.12f*scale);
@@ -81,7 +82,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     @Override
     public void setScene(Scene scene) {
         super.setScene(scene);
-        init(scene);
     }
 
     /**
@@ -100,7 +100,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,mRoadMaterial));
             mRoadLayersList.add(roadLayers);
         }
-        /*for(RoadLayers roadLayers:mRoadLayersList){
+        for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.white);
         }
         for(RoadLayers roadLayers:mRoadLayersList){
@@ -108,7 +108,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.refLine);
-        }*/
+        }
         if(IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("initRoadRender, scene child size is %s",mScene.getNumChildren()));
         }
@@ -130,17 +130,19 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (path == null) {
             return false;
         }
-        double sTime = System.currentTimeMillis();
         if(IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath,path size is %s ,road object size is %s",path.size(),mRoadLayersList.size()));
         }
-
+        if (mSceneUpdaterRecorder != null) {
+            mSceneUpdaterRecorder.start();
+        }
         RoadLayers roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-        removeObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+        setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},false);
 
         onRoadRender();
         roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-        addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+        setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
+//        addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
 
         boolean result = true;
         /*Vector3 postion = new Vector3(0,0,0);
@@ -201,7 +203,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             line3D.setMaterial(material);
             mScene.addChild(line3D);
         }
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath ,delta time is %s",System.currentTimeMillis()-sTime));
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            if (mSceneUpdaterRecorder != null) {
+                mSceneUpdaterRecorder.recordeAndLog("performance","renderVisiblePath");
+            }
+        }
         return result;
     }
 

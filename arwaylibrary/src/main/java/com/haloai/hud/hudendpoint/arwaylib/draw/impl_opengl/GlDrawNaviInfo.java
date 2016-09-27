@@ -115,10 +115,10 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             return null;
         }
         if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
-            title = "无网络信号,正在搜索...";
+            title = "无网络信号\n正在搜索...";
         }
         if(!mCommonBean.isGpsWork()){
-            title = "无GPS信号,请开往空旷处";
+            title = "无GPS信号\n请开往空旷处";
         }
         return title;
     }
@@ -258,6 +258,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             mRoadNameIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_road_textview);
             mRoadDirectionIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_direction_textview);
             mNaviStatusTextView = (TextView) view.findViewById(R.id.navi_status_textiview);
+            mNaviStatusTextView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
 
         }
         dafaultViewInit();

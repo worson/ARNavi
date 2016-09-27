@@ -22,6 +22,7 @@ public class ARWayConst {
     public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
     public static final boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
     public static final boolean ENABLE_TEST_LOG = true;//ARWAY 输出测试log
+    public static final boolean ENABLE_PERFORM_TEST = false;//ARWAY 输出测试log
 
 
     //open gl
@@ -32,9 +33,10 @@ public class ARWayConst {
     public static final float  ROAD_WIDTH                 = 0.4f;
     public static final float  REFERENCE_LINE_STEP_LENGTH = ROAD_WIDTH*10;
 
-    public static final boolean IS_DEBUG_SCENE = false;
+    public static final boolean IS_DEBUG_SCENE = true;
 
     //NAVING
+    public static final boolean IS_AMAP_VIEW = false;//
     public static final int NAVI_CAR_START_DISTANCE = 50;
 
     public static final boolean NAVI_ENABLE_RESTRICT_DISTANCE  = false;
