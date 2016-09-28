@@ -7,12 +7,12 @@
              android:orientation="horizontal"
              tools:context=".arway.impl_gl.ARwayOpenGLFragment">
 
-    <com.amap.api.navi.AMapNaviView
+    <!--<com.amap.api.navi.AMapNaviView
         android:id="@+id/amap_navi_amapnaviview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0"
-        android:visibility="invisible"/>
+        android:visibility="invisible"/>-->
 
     <!--
     <org.rajawali3d.view.TextureView

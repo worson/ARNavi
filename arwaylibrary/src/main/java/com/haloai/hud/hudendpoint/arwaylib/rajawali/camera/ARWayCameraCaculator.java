@@ -19,7 +19,7 @@ public class ARWayCameraCaculator {
         mFarPlaneDistance = camera.getFarPlane();
         mFieldOfView = camera.getFieldOfView();
         mNearPlaneHeight = 2.0 * Math.tan(mFieldOfView / 2.0/180*Math.PI) * mNearPlaneDistance;
-        double aspect = 2;   //camera.getLastWidth()/(double)camera.getLastHeight();
+        double aspect = camera.getLastWidth()/(double)camera.getLastHeight();   //camera.getLastWidth()/(double)camera.getLastHeight(); 2
         mNearPlaneWidth = mNearPlaneHeight *aspect;
 
 

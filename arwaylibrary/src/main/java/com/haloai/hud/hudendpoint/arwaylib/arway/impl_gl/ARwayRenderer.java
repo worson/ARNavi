@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
+import com.amap.api.maps.Projection;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
@@ -24,6 +25,7 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.ATransformable3D;
@@ -154,19 +156,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //private CrossPathManager mCrossPathManager = CrossPathManager.getInstance();
 
     //else
-    private double mObject4ChaseStartOrientation = 0;
-
+    private double     mObject4ChaseStartOrientation = 0;
+//    private Projection mProjection                   = null;
+    private ARWayProjection mProjection                   = new ARWayProjection();
     //车速，单位是m/s
     private double mCarSpeed = 0;
     private double mOffsetX  = 0;
     private double mOffsetY  = 0;
 
     private ArwaySceneUpdater mSceneUpdater;
-
+    
     private CameraModel mCameraModel = new CameraModel();
-    ;
-    private int  mOnRenderCnt   = 0;
-    private long mLastFrameTime = 0;
+    private float mRoadWidthProportion = 0.3f;
+    private float mCameraPerspectiveAngel = 76;
+
+
+    private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -199,6 +204,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
         super.onRenderSurfaceSizeChanged(gl, width, height);
+        mProjection.initScale(width, height);
     }
 
     @Override
@@ -222,6 +228,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         camera.setPosition(position);
         camera.setLookAt(lookat);
+        /*camera.setPosition(position.x,position.y,position.z*5);
+        camera.setLookAt(position.x,position.y,0);*/
     }
 
     private void updateCameraLookatAndPosition(Vector3 cPos, double yaw, double dist, Vector3 position, Vector3 lookat) {
@@ -335,12 +343,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
-        HaloLogger.logE("onRenderFrame", String.format("set frame is %s ,real frame is %s", getFrameRate(), (int) (1000 / (System.currentTimeMillis() - mLastFrameTime))));
-        mLastFrameTime = System.currentTimeMillis();
-        if (mOnRenderCnt++ > 100) {
-            mOnRenderCnt = 0;
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRender ,frame time is %s s", deltaTime));
-        }
+        mRenderTimeRecorder.start();
+
         if (!mIsMyInitScene) {
             return;
         }
@@ -349,263 +353,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             updateCamera(mObject4Chase);
-
         }
-
-        //        Quaternion qt = new Quaternion();
-        //        getCurrentCamera().getCameraOrientation(qt);
-        //        HaloLogger.logE("helong_fix_", "camera_quaternion:" + qt);
-        //        double rotX = 180 / Math.PI * qt.getRoll();
-        //        double rotZ = 180 / Math.PI * qt.getPitch();
-        //        double rotY = 180 / Math.PI * qt.getYaw();
-        //        double camRotationX = rotX;
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotY:" + rotY);
-        //
-        //        Vector3 pos = mObject4Chase.getPosition();
-        //        //        mObject4Chase.setPosition(pos.x+mTestPosX,pos.y+mTestPosY,pos.z);
-        //        qt = new Quaternion();
-        //        mObject4Chase.getOrientation(qt);
-        //        rotX = 180 / Math.PI * qt.getRoll();
-        //        rotZ = 180 / Math.PI * qt.getPitch();
-        //        rotY = 180 / Math.PI * qt.getYaw();
-        //        double rotationX = rotX;
-
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "object_orientation_rotY:" + rotY);
-        //        HaloLogger.logE("helong_fix_____", "====================================");
-        //        HaloLogger.logE("helong_fix_____", "object_rotationX:" + rotationX);
-        //        HaloLogger.logE("helong_fix_____", "camera_rotationX:" + camRotationX);
-
-        //        getCurrentCamera().setRotX(rotX);
-
-        //        getCurrentCamera().setRotZ(rotZ);
-        //        getCurrentCamera().setRotX(rotX);
-        //        getCurrentCamera().setRotY(rotY);
-        //
-        //
-        //        getCurrentCamera().getCameraOrientation(qt);
-        //        getCurrentCamera().getOrientation(qt);
-        //        rotX = 180/Math.PI*qt.getRoll();
-        //        rotZ = 180/Math.PI*qt.getPitch();
-        //        rotY = 180/Math.PI*qt.getYaw();
-        //        //        HaloLogger.logE("helong_fix_", System.currentTimeMillis()
-        //        //                + "," + pos.x + "," + pos.y);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotZ:" + rotZ);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotX:" + rotX);
-        //        HaloLogger.logE("helong_fix_", "camera_orientation_rotY:" + rotY);
-        //
-        //        /**
-        //         a=-130/180*pi;
-        //         src.x=0;
-        //         src.y=0;
-        //         length = 30;
-        //         offX = sin(a)*length
-        //         offY = cos(a)*length
-        //         dst.x = src.x+offX;
-        //         dst.y = src.y+offY;
-        //         */
-
-
-        /*Vector3 lookAt = new Vector3();
-        Vector3 nextPoint = mPath.get(mCurIndexInPath + 1);
-        double dist = MathUtils.calculateDistance(pos.x, pos.y, nextPoint.x, nextPoint.y);
-        if (dist >= LOOK_AT_DIST) {
-            lookAt.x = pos.x + (nextPoint.x - pos.x) * (LOOK_AT_DIST / dist);
-            lookAt.y = pos.y + (nextPoint.y - pos.y) * (LOOK_AT_DIST / dist);
-        } else {
-            double comp = LOOK_AT_DIST - dist;
-            for (int i = mCurIndexInPath + 2; i < mPath.size(); i++) {
-                Vector3 pre = mPath.get(i - 1);
-                Vector3 next = mPath.get(i);
-                if (i == mPath.size() - 1) {
-                    lookAt.x = next.x;
-                    lookAt.y = next.y;
-                    break;
-                } else {
-                    dist = MathUtils.calculateDistance(pre.x, pre.y, next.x, next.y);
-                    if (dist >= comp) {
-                        lookAt.x = pre.x + (next.x - pre.x) * (comp / dist);
-                        lookAt.y = pre.y + (next.y - pre.y) * (comp / dist);
-                        break;
-                    } else {
-                        comp -= dist;
-                    }
-                }
-            }
-        }*/
-
-        //        lookAt.x = pos.x + mTestPosX + Math.sin(rotX / 180 * Math.PI) * LOOK_AT_DIST;
-        //        lookAt.y = pos.y + mTestPosY + Math.cos(rotX / 180 * Math.PI) * LOOK_AT_DIST;
-        //        lookAt.z = /*OBJ_4_CHASE_Z/4*3*/0;
-        //
-        //        //TODO 计算lookAt是否超出了道路,如果超出了,那么就截取到与道路的交点即可
-        //        //TODO 起始判断点为mCurrentIndexInPath,结束点为该值+n个形状点(暂定)
-        //        //TODO: 2016/7/19 这部分代码应该还是有问题的,有时候会看到lookAt的点在道路外的情况发生
-        //        if (mCurIndexInPath < mLeftPath.size() - 1) {
-        //            for (int i = mCurIndexInPath; i < mLeftPath.size() - 1 && i < mRightPath.size() - 1 && i < mCurIndexInPath + CURVE_TIME * INTERSECTION_COUNT; i++) {
-        //                Vector3 start = mLeftPath.get(i);
-        //                Vector3 end = mLeftPath.get(i + 1);
-        //                PointF result = new PointF();
-        //                int isIntersection = MathUtils.getIntersection(
-        //                        new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                        new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                if (isIntersection == 1) {
-        //                    lookAt.x = result.x;
-        //                    lookAt.y = result.y;
-        //                    break;
-        //                }
-        //                start = mRightPath.get(i);
-        //                end = mRightPath.get(i + 1);
-        //                isIntersection = MathUtils.getIntersection(
-        //                        new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                        new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                if (isIntersection == 1) {
-        //                    lookAt.x = result.x;
-        //                    lookAt.y = result.y;
-        //                    break;
-        //                }
-        //            }
-        //                    /*for (int i = mCurIndexInPath; i < mLeftPath.size() - 1 && i < mRightPath.size() - 1 && i < mCurIndexInPath + CURVE_TIME * INTERSECTION_COUNT; i++) {
-        //                        Vector3 start = mLeftPath.get(i);
-        //                        Vector3 end = mLeftPath.get(i + 1);
-        //                        PointF result = new PointF();
-        //                        int isIntersection = MathUtils.getIntersection(
-        //                                new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                                new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                        if (isIntersection == 1) {
-        //                            double realDist = MathUtils.calculateDistance(pos.x, pos.y, result.x, result.y);
-        //                            double compDist = LOOK_AT_DIST - realDist;
-        //                            if (compDist > 0) {
-        //                                for (int j = i + 1; j < mLeftPath.size(); j++) {
-        //                                    double dist = 0;
-        //                                    double x1 = 0;
-        //                                    double y1 = 0;
-        //                                    double x2 = 0;
-        //                                    double y2 = 0;
-        //                                    if(j==i+1) {
-        //                                        x1 = result.x;
-        //                                        y1 = result.y;
-        //                                    }else{
-        //                                        x1 = mLeftPath.get(j-1).x;
-        //                                        y1 = mLeftPath.get(j-1).y;
-        //                                    }
-        //                                    x2 = mLeftPath.get(j).x;
-        //                                    y2 = mLeftPath.get(j).y;
-        //                                    dist = MathUtils.calculateDistance(x1,y1,x2,y2);
-        //                                    if (dist >= compDist) {
-        //                                        lookAt.x = x1 + (x2-x1)*(compDist/dist);
-        //                                        lookAt.y = y1 + (y2-y1)*(compDist/dist);
-        //                                        break;
-        //                                    } else {
-        //                                        compDist-=dist;
-        //                                    }
-        //                                }
-        //                            }else{
-        //                                lookAt.x = result.x;
-        //                                lookAt.y = result.y;
-        //                            }
-        //                            break;
-        //                        }
-        //                        start = mRightPath.get(i);
-        //                        end = mRightPath.get(i + 1);
-        //                        isIntersection = MathUtils.getIntersection(
-        //                                new PointF((float) start.x, (float) start.y), new PointF((float) end.x, (float) end.y),
-        //                                new PointF((float) pos.x, (float) pos.y), new PointF((float) lookAt.x, (float) lookAt.y), result);
-        //                        if (isIntersection == 1) {
-        //                            double realDist = MathUtils.calculateDistance(pos.x, pos.y, result.x, result.y);
-        //                            double compDist = LOOK_AT_DIST - realDist;
-        //                            if (compDist > 0) {
-        //                                for (int j = i + 1; j < mRightPath.size(); j++) {
-        //                                    double dist = 0;
-        //                                    double x1 = 0;
-        //                                    double y1 = 0;
-        //                                    double x2 = 0;
-        //                                    double y2 = 0;
-        //                                    if(j==i+1) {
-        //                                        x1 = result.x;
-        //                                        y1 = result.y;
-        //                                    }else{
-        //                                        x1 = mRightPath.get(j-1).x;
-        //                                        y1 = mRightPath.get(j-1).y;
-        //                                    }
-        //                                    x2 = mRightPath.get(j).x;
-        //                                    y2 = mRightPath.get(j).y;
-        //                                    dist = MathUtils.calculateDistance(x1,y1,x2,y2);
-        //                                    if (dist >= compDist) {
-        //                                        lookAt.x = x1 + (x2-x1)*(compDist/dist);
-        //                                        lookAt.y = y1 + (y2-y1)*(compDist/dist);
-        //                                        break;
-        //                                    } else {
-        //                                        compDist-=dist;
-        //                                    }
-        //                                }
-        //                            }else{
-        //                                lookAt.x = result.x;
-        //                                lookAt.y = result.y;
-        //                            }
-        //                            break;
-        //                        }
-        //                    }*/
-        //        }
-
-        //        HaloLogger.logE("helong_fix____", "lookAt:" + lookAt);
-        //        getCurrentCamera().setLookAt(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ);
-        ////        getCurrentCamera().setRotX(getCurrentCamera().getRotZ()+rotationX);
-        //
-        //        //        rotX = 180/Math.PI*qt.getRoll();
-        //        //        rotZ = 180/Math.PI*qt.getPitch();
-        //        //        rotY = 180/Math.PI*qt.getYaw();
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotZ:" + rotZ);
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotX:" + rotX);
-        //        //        HaloLogger.logE("helong_fix_", "pre_orientation_rotY:" + rotY);
-        //
-        //        //将设置好的lookAt通过计算填充到orientation上
-        //        getCurrentCamera().calculateModelMatrix(null);
-
-        //        getCurrentCamera().getOrientation(qt);
-        //
-        //        rotX = 180 / Math.PI * qt.getRoll();
-        //        rotZ = 180 / Math.PI * qt.getPitch();
-        //        rotY = 180 / Math.PI * qt.getYaw();
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotZ:" + rotZ);
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotX:" + rotX);
-        //                HaloLogger.logE("helong_fix_", "look_orientation_rotY:" + rotY);
-        //
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotZ:" + rotZ);
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotX:" + (rotX+rotationX));
-        //                HaloLogger.logE("helong_fix_", "next_orientation_rotY:" + rotY);
-
-        /*Vector3 lookAtRotation = new Vector3(rotX, rotY, rotZ);
-        handleLookAt(lookAtRotation);
-        getCurrentCamera().setRotZ(lookAtRotation.z + mTestRotZ);
-        getCurrentCamera().setRotY(lookAtRotation.y + mTestRotY);
-        getCurrentCamera().setRotX(lookAtRotation.x + mTestRotX);*/
-
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotX:" + (lookAtRotation.x + mTestRotX));
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotY:" + (lookAtRotation.y + mTestRotY));
-        //        HaloLogger.logE("helong_fix_____", "orientation_rotZ:" + (lookAtRotation.z + mTestRotZ));
-        //        HaloLogger.logE("helong_fix_____", "====================================");
-        //
-        //
-        //        //        getCurrentCamera().setUpAxis(Vector3.Axis.Y);
-        //        //        if (getCurrentCamera() instanceof NewFirstPersonCamera) {
-        //        //            ((NewFirstPersonCamera) getCurrentCamera()).setCameraOffset(offset);
-        //        //        }
-        //
-        // TODO: 2016/7/18 目前看只有lookAt的位置是正常的,摄像机位置以及被追随物体位置经常过偏过一边
-        //摄像机位置
-        //        mSphere.setPosition(new Vector3(pos.x, pos.y, 0));
-        //        //被追随位置
-        //        mSphere2.setPosition(new Vector3(mObject4Chase.getPosition().x, mObject4Chase.getPosition().y, 0));
-        //        //摄像机的lookAt
-        //        mSphere1.setPosition(new Vector3(lookAt.x + mTestLookAtX, lookAt.y + mTestLookAtY, lookAt.z + mTestLookAtZ));
-
-        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
-        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
         super.onRender(ellapsedRealtime, deltaTime);
+
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            mRenderTimeRecorder.recordeAndLog("onRenderFrame","onRenderFrame");
+        }
     }
 
     @Override
@@ -1253,12 +1006,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * @param naviPath
      * @return 1 设置路径成功 -1 projection或naviPath为null -2 路线重复 0 未知错误
      */
-    public int setPath(AMapNaviPath naviPath, boolean repeat) {
+
+    public int setPath(Projection projection, AMapNaviPath naviPath, boolean repeat) {
         if (naviPath == null) {
             return -1;
         }
+        if(ARWayConst.IS_AMAP_VIEW){
+            if(projection == null) return -1;
+//            mProjection = projection;
+        }
+
         List<Vector3> path = new ArrayList<>();
         mStepsLength.clear();
+
         for (AMapNaviStep step : naviPath.getSteps()) {
             mStepsLength.add(step.getLength());
             if (step != null) {
@@ -1266,11 +1026,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 List<PointF> stepOpenglPoints = new ArrayList<>();*/
                 for (NaviLatLng coord : step.getCoords()) {
                     LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
-                        /*Point p = projection.toScreenLocation(latLng);
-                        stepScreenPoints.add(new Point(p.x, p.y));*/
-                    ARWayProjection.PointD pd = ARWayProjection.glMapPointFormCoordinate(latLng);
-                        /*stepOpenglPoints.add(new PointF(pf.x, -pf.y));*/
-                    Vector3 v = new Vector3(pd.x, -pd.y, 0);
+
+                    PointF pf = mProjection.toOpenGLLocation(latLng);
+                    Vector3 v = new Vector3(pf.x, -pf.y, 0);
                     path.add(v);
                 }
                 /*if (stepScreenPoints.size() > 0) {
@@ -1644,91 +1402,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void myInitScene() {
-        /*mCurScene = new Scene(this);
-        mCurScene.resetGLState();
-        addAndSwitchScene(mCurScene);
-        if (mMainRoadObjects != null && mMainRoadObjects.size() > 0) {
-            for (ARWayRoadObject arWayRoadObject : mMainRoadObjects) {
-                arWayRoadObject.removeMaterial();
-                arWayRoadObject.destroy();
-            }
-        }
-        if (mBranchRoadObjects != null && mBranchRoadObjects.size() > 0) {
-            for (ARWayRoadObject arWayRoadObject : mBranchRoadObjects) {
-                arWayRoadObject.removeMaterial();
-                arWayRoadObject.destroy();
-            }
-        }
-        if (mCoverRoadPlanes != null && mCoverRoadPlanes.size() > 0) {
-            for (Plane plane : mCoverRoadPlanes) {
-                plane.destroy();
-            }
-        }
+
+        getCurrentScene().clearChildren();
+        mSceneUpdater.initScene();
+
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
-        }*/
-        //        MaterialManager.getInstance().reset();
-        getCurrentScene().clearChildren();
-
-        //        getCurrentScene().setBackgroundColor(0x222222);
-        //        List<Vector3> leftPts = new ArrayList<>();
-        //        List<Vector3> rightPts = new ArrayList<>();
-        //        MathUtils.points2path(leftPts, rightPts, mPreChildEndPos, LOGIC_ROAD_WIDTH);
-
-        //        if (mMainRoadTexture == null) {
-        //            mMainRoadTexture = new Texture("route_new", R.drawable.route_new);
-        //        }
-        //        for (int i = 0; i < mPreChildEndPos.size(); i++) {
-        //            //            Stack<Vector3> line = new Stack<>();
-        //            //            line.add(leftPts.get(i));
-        //            //            line.add(rightPts.get(i));
-        //            //            Line3D line3D = new Line3D(line, 1);
-        //            //            line3D.setMaterial(new Material());
-        //            //            line3D.setColor(0xff0000);
-        //            //            getCurrentScene().addChild(line3D);
-        //            Sphere sphere = new Sphere(0.1f, 24, 24);
-        //            sphere.setPosition(mPreChildEndPos.get(i));
-        //            sphere.setMaterial(new Material());
-        //            Material sphereM = sphere.getMaterial();
-        //            try {
-        //                sphereM.addTexture(mMainRoadTexture);
-        //            } catch (ATexture.TextureException e) {
-        //                e.printStackTrace();
-        //            }
-        //            sphere.setColor(Color.BLUE);
-        //            getCurrentScene().addChild(sphere);
-        //        }
-
-        /*mSphere = new Sphere(0.05f, 24, 24);
-        mSphere.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere.setMaterial(new Material());
-        mSphere.setColor(0xff0000);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere);
         }
-
-
-        mSphere1 = new Sphere(0.05f, 24, 24);
-        mSphere1.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere1.setMaterial(new Material());
-        mSphere1.setColor(Color.RED);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere1);
-        }
-
-        mSphere2 = new Sphere(0.05f, 24, 24);
-        mSphere2.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mSphere2.setMaterial(new Material());
-        mSphere2.setColor(0x00ff00);
-        if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mSphere2);
-        }*/
-
-        /*mObject4Chase = new Sphere(0.05f, 24, 24);
-        mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
-        mObject4Chase.setMaterial(new Material());
-        mObject4Chase.setColor(Color.BLUE);*/
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
+        mObject4Chase.isDepthTestEnabled();
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
         Material material = new Material();
         material.setColorInfluence(0);
@@ -1747,10 +1429,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
+        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
+        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
+
         ARWayCameraCaculator.cameraCaculatorInit(cCamera);
 
-        mCameraModel.setNearPlaneWithDrawPlane_Angel(70);
-        mCameraModel.setRoadWidthProportion(0.3f);
+        mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
+        mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
@@ -1761,78 +1446,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (ARWayConst.IS_DEBUG_SCENE) {
             getCurrentScene().addChild(mObject4Chase);
         }
-
-       /* final double LENGTH_STEP = 6;
-        double distStep = LENGTH_STEP;
-        for (int i = 0; i < mPath.size() - 1; i++) {
-            Vector3 v1 = mPath.get(i);
-            Vector3 v2 = mPath.get(i + 1);
-            double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-            if (temp > distStep) {
-                double scale = distStep / temp;
-                Vector3 result = new Vector3();
-                result.x = v1.x + (v2.x - v1.x) * scale;
-                result.y = v1.y + (v2.y - v1.y) * scale;
-                result.z = 0;
-                insertTestPlane(result);
-                distStep = LENGTH_STEP;
-            } else if (temp < distStep) {
-                distStep -= temp;
-            } else {
-                insertTestPlane(v2);
-                distStep = LENGTH_STEP;
-            }
-        }*/
-
-        //        Material maHo = new Material();
-        //        //        maHo.setColorInfluence(0);
-        //        //        try {
-        //        //            maHo.addTexture(new Texture("route_new", R.drawable.route_new));
-        //        //        } catch (ATexture.TextureException e) {
-        //        //            e.printStackTrace();
-        //        //        }
-        //
-        //        Material maVe = new Material();
-        //        //        maVe.setColorInfluence(0);
-        //        //        try {
-        //        //            maVe.addTexture(new Texture("route_new", R.drawable.route_new3));
-        //        //        } catch (ATexture.TextureException e) {
-        //        //            e.printStackTrace();
-        //        //        }
-        //        for (int i = 0; i < mPath.size() - 1; i++) {
-        //            Vector3 v1 = mPath.get(i);
-        //            Vector3 v2 = mPath.get(i + 1);
-        //            float width = 0f;// Math.abs(v2.x - v1.x) > 0.5 ? (float) Math.abs(v2.x - v1.x) : 0.5f;
-        //            float height = 0f;//Math.abs(v2.y - v1.y) > 0.5 ? (float) Math.abs(v2.y - v1.y) : 0.5f;
-        //            double degrees = MathUtils.getDegrees(v1.x, v1.y, v2.x, v2.y);
-        //            if (Math.abs(v2.x - v1.x) > Math.abs(v2.y - v1.y)) {
-        //                height = (float) MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y) + 0.05f;
-        //                width = 0.6f;
-        //            } else {
-        //                width = (float) MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y) + 0.05f;
-        //                height = 0.6f;
-        //                //如果是横向的话就相当于已经转了90度
-        //                degrees -= 90;
-        //            }
-        //
-        //            Plane plane = new Plane(width, height, 1, 1/*, Vector3.Axis.Z, true, true, 1*/);P
-        //            if (Math.abs(v2.x - v1.x) > Math.abs(v2.y - v1.y)) {
-        //                plane.setMaterial(maHo);
-        //            } else {
-        //                plane.setMaterial(maVe);
-        //            }
-        //            plane.setDoubleSided(true);
-        //            if (i % 2 == 0)
-        //                plane.setColor(0xff3333ff);
-        //            else
-        //                plane.setColor(0xff00ff00);
-        //            plane.setPosition((v1.x + v2.x) / 2, (v1.y + v2.y) / 2, (v1.z + v2.z) / 2);
-        //            Quaternion qn = plane.getOrientation();
-        //            qn.fromAngleAxis(Vector3.Axis.Z, degrees);
-        //            plane.setOrientation(qn);
-        //            getCurrentScene().addChild(plane);
-        //        }
-
         //update flag
         mIsMyInitScene = true;
         mCanMyInitScene = false;
@@ -1858,11 +1471,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath start"));
 
         int startIndex = loadStepIndex == 0 ? mLoadStepStartIndexs.get(loadStepIndex) : mLoadStepStartIndexs.get(loadStepIndex - 1);
+
         int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
-        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
-
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath end"));
+//        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
+        mSceneUpdater.renderVisiblePath(mPath);
 
         clearUnuseDataAfterAddPlane2Scene();
     }
@@ -2077,7 +1690,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             HaloLogger.logE("branch_line", mFromPos.x + "," + mFromPos.y);
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
             HaloLogger.logE("branch_line", "anim end");
-            startAnim(mFromPos, mToPos, /*0*/mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
+            startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             return 1;
         }
     }
@@ -2488,7 +2101,29 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     public void onAnimationUpdate(Animation animation, double v) {
-
     }
-    //=====================================rajawali animation callback end=========================================//
+    public void setEvent(int type){
+        if(type==1){//左下
+            mCameraPerspectiveAngel += 5;
+            if(mCameraPerspectiveAngel>90){
+                mCameraPerspectiveAngel=50;
+            }
+        }if(type==2){//右上
+            mRoadWidthProportion += 0.1;
+            if(mRoadWidthProportion>1){
+                mRoadWidthProportion=1f;
+            }
+        }else if(type==3){//下
+            mRoadWidthProportion -= 0.1;
+            if(mRoadWidthProportion<0){
+                mRoadWidthProportion=0.1f;
+            }
+        }
+        if(mRoadWidthProportion>=0 && mRoadWidthProportion<=1){
+            mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
+        }
+        if(mCameraPerspectiveAngel>0 && mCameraPerspectiveAngel<90){
+            mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
+        }
+    }
 }

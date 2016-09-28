@@ -70,6 +70,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
      * @param text
      */
     private void updateSatusText(String text) {
+//        text = "注意,前方有龙在飞";
         if (mNaviStatusTextView != null) {
             if (text != null) {
                 if(!mNaviStatusTextView.isShown()){
@@ -115,10 +116,10 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             return null;
         }
         if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
-            title = "无网络信号,正在搜索...";
+            title = "无网络信号\n正在搜索...";
         }
         if(!mCommonBean.isGpsWork()){
-            title = "无GPS信号,请开往空旷处";
+            title = "无GPS信号\n请开往空旷处";
         }
         return title;
     }
@@ -189,7 +190,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
                     }
                 }
-                if ((!mCommonBean.isStartOk()) && display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {
+                if (display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {//(!mCommonBean.isStartOk()) && 
                     mNaviIndicateTextView.setText("进入");
                     mRoadNameIndicateTextView.setText(roadName);
                     mRoadDirectionIndicateTextView.setText(roadDirection);
@@ -258,6 +259,10 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             mRoadNameIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_road_textview);
             mRoadDirectionIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_direction_textview);
             mNaviStatusTextView = (TextView) view.findViewById(R.id.navi_status_textiview);
+            mNaviStatusTextView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            if (mNaviStatusTextView != null) {
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG," navi info ,setView ok");
+            }
 
         }
         dafaultViewInit();
