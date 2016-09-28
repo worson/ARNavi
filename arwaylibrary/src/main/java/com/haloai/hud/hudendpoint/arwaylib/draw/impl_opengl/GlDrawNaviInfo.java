@@ -190,7 +190,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
                     }
                 }
-                if ((!mCommonBean.isStartOk()) && display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {
+                if (display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {//(!mCommonBean.isStartOk()) && 
                     mNaviIndicateTextView.setText("进入");
                     mRoadNameIndicateTextView.setText(roadName);
                     mRoadDirectionIndicateTextView.setText(roadDirection);

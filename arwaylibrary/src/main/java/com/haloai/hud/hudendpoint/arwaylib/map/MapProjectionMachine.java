@@ -130,10 +130,18 @@ public class MapProjectionMachine {
     private MapProjectionState mUpdatePathState = new MapProjectionState() {
         @Override
         public void handle(MapProjectionMachine machine) {
-            machine.updateContext();
-            machine.mScaledOk = false;
-            mUpdatePathCalled = true;
-            handleScaleOk(machine);
+            if(!ARWayConst.IS_AMAP_VIEW){
+                if (machine.mNeedUpdatePath) {
+                    machine.mNeedUpdatePath = false;
+                    machine.getProjectionOkCall().projectionOk();
+                }
+            }else {
+                machine.updateContext();
+                machine.mScaledOk = false;
+                mUpdatePathCalled = true;
+                handleScaleOk(machine);
+            }
+
         }
     };
 

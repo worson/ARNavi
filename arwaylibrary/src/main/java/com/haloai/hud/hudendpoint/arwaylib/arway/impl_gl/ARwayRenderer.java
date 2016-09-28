@@ -244,6 +244,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         camera.setPosition(position);
         camera.setLookAt(lookat);
+        /*camera.setPosition(position.x,position.y,position.z*5);
+        camera.setLookAt(position.x,position.y,0);*/
     }
 
     private void updateCameraLookatAndPosition(Vector3 cPos, double yaw, double dist, Vector3 position, Vector3 lookat) {
@@ -1694,10 +1696,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             ARWayProjection.PointD toPos = ARWayProjection.glMapPointFormCoordinate(DrawUtils.naviLatLng2LatLng(location.getCoord()));
             mToPos = new Vector3(toPos.x * BIGGER_TIME - mOffsetX, (-toPos.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z);
             mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
-            /*HaloLogger.logE("branch_line", "anim start");
+            HaloLogger.logE("branch_line", "anim start");
             HaloLogger.logE("branch_line", mFromPos.x + "," + mFromPos.y);
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
-            HaloLogger.logE("branch_line", "anim end");*/
+            HaloLogger.logE("branch_line", "anim end");
             startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             return 1;
         }

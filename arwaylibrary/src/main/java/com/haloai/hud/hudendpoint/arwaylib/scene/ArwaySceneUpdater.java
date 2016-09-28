@@ -10,6 +10,7 @@ import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.MaterialManager;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Line3D;
 import org.rajawali3d.primitives.Plane;
@@ -31,12 +32,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private static final boolean IS_DEBUG_MODE         = true;
     private static final boolean IS_DRAW_RFERENCE_LINT = true;
 
-
     private              List<RoadLayers> mRoadLayersList      = new LinkedList<>();
     private              int              mRoadLayersIndex     = 0;
 
     //ROAD
-    private       double   REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH; //参考线间的长度
+    private static final float ROAD_SCALE                = 0.8f;
+    private       double   REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH*ROAD_SCALE; //参考线间的长度
     private       Material mRoadMaterial              = new Material();
     private       Material mTestMaterial              = new Material();
 
@@ -74,8 +75,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void initScene() {
-        float scale = 0.8f;
-        REFERENCE_LINE_STEP_LENGTH *=scale;
+        float scale = ROAD_SCALE;
         initRoadRender(1*scale,0.7f,0.4f*scale,0.12f*scale);
     }
 
@@ -84,6 +84,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         super.setScene(scene);
     }
 
+    private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth,Material material){
+        RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
+                new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material),
+                new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,material));
+        return roadLayers;
+    }
     /**
      * 初始化道路显示配置
      * 道路的GPU消耗为：为1000个形状点2.536MB
@@ -130,25 +136,35 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (path == null) {
             return false;
         }
+        boolean result = true;
         if(IS_DEBUG_MODE){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath,path size is %s ,road object size is %s",path.size(),mRoadLayersList.size()));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath,path size is %s",path.size()));
         }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
         }
-        RoadLayers roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-        setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},false);
+        RoadLayers roadLayers = null;
+        if(false){
+            float roadscale = 0.8f;
+            Material rMaterial = new Material();
+            rMaterial.useVertexColors(true);
+            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
+            mScene.clearChildren();
+            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+        }else {
+            roadLayers = mRoadLayersList.get(mRoadLayersIndex);
+//            removeObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+            setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},false);
+            onRoadRender();
+            roadLayers = mRoadLayersList.get(mRoadLayersIndex);
+            setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
+//            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+        }
 
-        onRoadRender();
-        roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-        setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
-//        addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
-
-        boolean result = true;
-        /*Vector3 postion = new Vector3(0,0,0);
+        Vector3 postion = new Vector3(0,0,0);
         roadLayers.white.setPosition(postion);
         roadLayers.black.setPosition(postion);
-        roadLayers.black.setPosition(postion);*/
+        roadLayers.black.setPosition(postion);
         result &= roadLayers.white.updateBufferedRoad(path);
         result &= roadLayers.black.updateBufferedRoad(path);
         double distStep = REFERENCE_LINE_STEP_LENGTH;

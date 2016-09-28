@@ -79,6 +79,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         setDepthTestEnabled(false);
         if (material != null) {
             setMaterial(material);
+        }else {
+            setMaterial(mRoadMaterial);
         }
         setDoubleSided(true);
     }
@@ -475,7 +477,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     private void attachRender(){
-        Material material = mMaterial;
+        /*Material material = mMaterial;
         preRender();
         if (!mIsPartOfBatch) {
             if (material == null) {
@@ -485,8 +487,6 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                         "This object can't render because there's no material attached to it.");
             }
             material.useProgram();
-            // TODO: 16/9/21
-//            setShaderParams(camera);
             material.bindTextures();
             if(mGeometry.hasTextureCoordinates())
                 material.setTextureCoords(mGeometry.getTexCoordBufferInfo());
@@ -497,7 +497,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
             material.setVertices(mGeometry.getVertexBufferInfo());
         }
-        material.setCurrentObject(this);
+        material.setCurrentObject(this);*/
     }
 
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
@@ -506,13 +506,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         }
         if (!mIsVisible && !mRenderChildrenAsBatch)
             return;
-
-        Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
         synchronized (mLock){
-            if(!IS_VBOS_MODE || true){
-                preRender();
-            }
-
+            Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
+            preRender();
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
             // -- calculate model view matrix;
@@ -645,6 +641,6 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        destroy();
+//        destroy();
     }
 }

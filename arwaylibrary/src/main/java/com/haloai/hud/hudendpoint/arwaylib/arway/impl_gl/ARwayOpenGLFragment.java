@@ -276,23 +276,22 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     private MapProjectionMachine mMapProjectionMachine = new MapProjectionMachine();
     {
-        if(ARWayConst.IS_AMAP_VIEW) {
-            MapProjectionMachine.UpdateMapViewCall updateMapViewCall = new MapProjectionMachine.UpdateMapViewCall() {
-                @Override
-                public boolean updateMapView() {
-                    return initAMapNaviView();
-                }
+        MapProjectionMachine.UpdateMapViewCall updateMapViewCall = new MapProjectionMachine.UpdateMapViewCall() {
+            @Override
+            public boolean updateMapView() {
+                return initAMapNaviView();
+            }
 
-            };
+        };
 
-            MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
-                @Override
-                public void projectionOk() {
-                    rUpdatePath(mAMapNavi);
-                }
-            };
-            mMapProjectionMachine.init(updateMapViewCall,projectionOkCall);
-        }
+        MapProjectionMachine.ProjectionOkCall projectionOkCall = new MapProjectionMachine.ProjectionOkCall() {
+            @Override
+            public void projectionOk() {
+                rUpdatePath(mAMapNavi);
+            }
+        };
+        mMapProjectionMachine.init(updateMapViewCall, projectionOkCall);
+
     }
 
 
@@ -896,7 +895,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         this.mAMapNavi = aMapNavi;
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updatePath called");
         if(!ARWayConst.IS_AMAP_VIEW){//不需要绽放比例直接更新路径
-            rUpdatePath(aMapNavi);
+//            rUpdatePath(aMapNavi);
+            mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
         }
     }
 
@@ -985,21 +985,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (info == null) {
             return;
         }
-        long sTime = System.currentTimeMillis();
         mCurrentPathStep = info.getCurStep();
         updateNaviInfoDate(info);
         onNaviViewUpdate();
         int distance = info.getPathRetainDistance();
         if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo called,distance is %s,delta time %s",distance,System.currentTimeMillis()-sTime));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo called,distance is %s",distance));
         }
         if (arway.isShown()&& ARWayConst.IS_DARW_ARWAY) {
-            //mRenderer.onLocationChange(info);
-            sTime = System.currentTimeMillis();
 //            mRenderer.setPathRetainLength4DynamicLoad(info.getPathRetainDistance());
-            if(ARWayConst.ENABLE_PERFORM_TEST){
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo,DynamicLoad ,delta time is %s",System.currentTimeMillis()-sTime));
-            }
         }
     }
 
