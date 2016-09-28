@@ -17,12 +17,14 @@ public class ARWayProjection {
 
     private static double mNearPlaneWidth = mNearPlaneDistance * Math.tan(Math.toRadians(22.5))*2*438/280;
 
-    private static double K = (roadWidth/0.137784)/mNearPlaneWidth; //莫卡托转换成opengl坐标的比例
+    //(roadWidth/0.137784)/mNearPlaneWidth
+    private static double K =65540.0f; //莫卡托转换成opengl坐标的比例
 
 
     public static void initScale(int width,int height){
-        mNearPlaneWidth = mNearPlaneDistance * Math.tan(Math.toRadians(22.5))*2*width/height;
+        /*mNearPlaneWidth = mNearPlaneDistance * Math.tan(Math.toRadians(22.5))*2*width/height;
         K = (roadWidth/0.137784)/mNearPlaneWidth;
+        K = 65540.0f;*/
     }
 
     public static class PointD {

@@ -101,7 +101,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     private static CommonBean              mCommonBean              = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
     private        int                     mCurrentPathStep         = 0;
     private static CrossImageDataCollector mCrossImageDataCollector = new CrossImageDataCollector();
-    private TimeRecorder mUpdatePathRecorder = new TimeRecorder();
 
     private static final int DEFAULT_GPS_NUMBER      = 10;
     private int mGpsWorkCnt;
@@ -125,6 +124,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     //navi
 
+    //test
+    private static TimeRecorder mUpdatePathRecorder   = null;
+    private static TimeRecorder mGpsTimeRecorder      = null;
+    private static TimeRecorder mLocationTimeRecorder = null;
+    static {
+        if(ARWayConst.ENABLE_PERFORM_TEST){
+            mUpdatePathRecorder   = new TimeRecorder();
+            mGpsTimeRecorder      = new TimeRecorder();
+            mLocationTimeRecorder = new TimeRecorder();
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -671,12 +681,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
 
     }
 
+
     /**
      * gps状态发生变化时回调
      *
      * @param work 是否工作
      */
     public void onGpsStatusChanged(boolean work) {
+        if (mGpsTimeRecorder != null) {
+            mGpsTimeRecorder.start();
+        }
         if(!work){
             if(--mGpsWorkCnt<0){
                 mGpsWorkCnt=0;
@@ -684,10 +698,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }else {
             mGpsWorkCnt = DEFAULT_GPS_NUMBER;
         }
-        if(mGpsWorkCnt>0 != mGpsWork){
+        /*if(mGpsWorkCnt>0 != mGpsWork){//检测从无到有和从有到无
             mGpsWork = mGpsWorkCnt>0;
             ARWayController.CommonBeanUpdater.setGpsWork(work);
             onNavingContextChangedView();
+        }*/
+//        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("gps work = %s, mGpsWorkCnt = %s",work,mGpsWorkCnt));
+        ARWayController.CommonBeanUpdater.setGpsWork(mGpsWorkCnt>0);
+        onNavingContextChangedView();
+        if (mGpsTimeRecorder != null) {
+            mGpsTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"onGpsStatusChanged");
         }
     }
 
@@ -799,26 +819,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
     public void updateRouteInfo(int naviIcon, int distance) {
 
     }
-
     /**
      * update location to show hudway
      *
      * @param location
      */
     public void updateLocation(AMapNaviLocation location) {
+        if (mLocationTimeRecorder != null) {
+            mLocationTimeRecorder.start();
+        }
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
-        //        ARWayController.SceneBeanUpdater.setCurrentLocation(location);
         if(mRenderer!=null && location.isMatchNaviPath()){
             onGpsStatusChanged(true);
             mRenderer.updateLocation(location);
         }
-        /*if (mCurrentGpsStatus != GPS_STATUS_FINE) {
-            HaloLogger.logE("sen_debug_location","onLocationChanged ,but gps star is 0");
-            mRenderer.pause();
-        } else {
-            mRenderer.continue_();
-            ARWayController.SceneBeanUpdater.setCurrentLocation(location);
-        }*/
+        if (mLocationTimeRecorder != null) {
+            mLocationTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"updateLocation");
+        }
     }
 
     /**
@@ -979,7 +996,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if (arway.isShown()&& ARWayConst.IS_DARW_ARWAY) {
             //mRenderer.onLocationChange(info);
             sTime = System.currentTimeMillis();
-            mRenderer.setPathRetainLength4DynamicLoad(info.getPathRetainDistance());
+//            mRenderer.setPathRetainLength4DynamicLoad(info.getPathRetainDistance());
             if(ARWayConst.ENABLE_PERFORM_TEST){
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("updateNaviInfo,DynamicLoad ,delta time is %s",System.currentTimeMillis()-sTime));
             }

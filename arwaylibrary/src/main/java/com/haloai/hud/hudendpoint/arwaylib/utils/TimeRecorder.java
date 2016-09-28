@@ -16,8 +16,8 @@ public class TimeRecorder {
     private double interval;//间隔时间
     private double tTime = 0;//总时间
 
-    private int frame = 0;
-    private int tFrame = 0;
+    private float frame = 0;
+    private double tFrame = 0;
 
     public void start(){
         sTime = System.currentTimeMillis();
@@ -41,11 +41,11 @@ public class TimeRecorder {
         return tTime/cnt;
     }
 
-    public int getFrame() {
+    public double getFrame() {
         return frame;
     }
 
-    public int getAverageFrame() {
+    public double getAverageFrame() {
         return tFrame/cnt;
     }
 

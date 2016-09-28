@@ -65,12 +65,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
     private static final double  ANIMATION_LENGTH       = 30;
     private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = 1;//ARWayConst.AMAP_TO_ARWAY_GL_RATE;
+    private static final double  BIGGER_TIME            = ARWayConst.AMAP_TO_ARWAY_GL_RATE;//1;//
     private static final double  CAMERA_MIN_LENGTH      = 20;
     private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = 0.5*Math.tan(Math.toRadians(22.5))*2*400/280;//ARWayConst.ROAD_WIDTH;
+    private static final double  ROAD_WIDTH             = ARWayConst.ROAD_WIDTH;//0.5*Math.tan(Math.toRadians(22.5))*2*400/280;//
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = 0.6;
@@ -176,8 +176,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private ArwaySceneUpdater mSceneUpdater;
     
     private CameraModel mCameraModel = new CameraModel();
-    private float mRoadWidthProportion = 0.7f;
-    private float mCameraPerspectiveAngel = 70;
+    private float mRoadWidthProportion = 0.3f;
+    private float mCameraPerspectiveAngel = 76;
 
 
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
@@ -234,7 +234,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
 
-        if (true) {
+        if (false) {
             mCameraModel.setLocation(mObject4Chase.getPosition());
             mCameraModel.setRotZ(mObject4Chase.getRotZ());
 
@@ -1487,7 +1487,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
-        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
+//        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
+        mSceneUpdater.renderVisiblePath(mPath);
 
         clearUnuseDataAfterAddPlane2Scene();
     }

@@ -70,6 +70,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
      * @param text
      */
     private void updateSatusText(String text) {
+//        text = "注意,前方有龙在飞";
         if (mNaviStatusTextView != null) {
             if (text != null) {
                 if(!mNaviStatusTextView.isShown()){
@@ -259,6 +260,9 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             mRoadDirectionIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_direction_textview);
             mNaviStatusTextView = (TextView) view.findViewById(R.id.navi_status_textiview);
             mNaviStatusTextView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            if (mNaviStatusTextView != null) {
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG," navi info ,setView ok");
+            }
 
         }
         dafaultViewInit();
