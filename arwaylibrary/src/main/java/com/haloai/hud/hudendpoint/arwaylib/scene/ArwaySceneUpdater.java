@@ -127,6 +127,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             mRoadLayersIndex=0;
         }
     }
+
     /**
      * 渲染当前显示的道路
      * @param path
@@ -159,6 +160,48 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             roadLayers = mRoadLayersList.get(mRoadLayersIndex);
             setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
 //            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+        }
+        if (roadLayers != null) {
+            mScene.clearChildren();
+            result &= roadLayers.white.updateBufferedRoad(path);
+            result &= roadLayers.black.updateBufferedRoad(path);
+            double distStep = REFERENCE_LINE_STEP_LENGTH;
+            List<Vector3> points = new ArrayList<>();
+            List<Float> directions = new ArrayList<>();
+
+            int cnt = path.size();
+            if(cnt>=2){
+                Vector3 v1 = path.get(0);
+                Vector3 v2 = path.get(1);
+                Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+                points.add(v1);
+                directions.add(direction);
+                for (int i = 0; i < cnt - 1; i++) {
+                    v2 = path.get(i + 1);
+                    double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
+                    if (temp >= distStep) {
+                        double scale = distStep / temp;
+                        Vector3 v = new Vector3();
+                        v.x = v1.x + (v2.x - v1.x) * scale;
+                        v.y = v1.y + (v2.y - v1.y) * scale;
+                        v.z = 0;
+                        v1 = new Vector3(v);
+                        i--;
+                        direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+                        directions.add(direction);
+                        points.add(v);
+                        distStep = REFERENCE_LINE_STEP_LENGTH;
+                    } else if (temp < distStep) {
+                        distStep -= temp;
+                        v1 = path.get(i+1);
+                    }
+                }
+                if(IS_DRAW_RFERENCE_LINT){
+                    result &= roadLayers.refLine.updateReferenceLine(points,directions);
+                }
+            }
+            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
+            return result;
         }
 
         Vector3 postion = new Vector3(0,0,0);

@@ -832,8 +832,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         }
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
         boolean matchPath = location.isMatchNaviPath();
-        if(mRenderer!=null && matchPath){
+        if(matchPath){
             onGpsStatusChanged(true);
+        }
+        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY) {
             mRenderer.updateLocation(location);
         }
         ARWayController.CommonBeanUpdater.setMatchNaviPath(matchPath);
