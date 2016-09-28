@@ -8,6 +8,11 @@ import com.amap.api.maps.model.LatLng;
  */
 public class ARWayProjection {
 
+    public static final double ROAD_WIDTH            = Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5;
+    public static final double ROAD_WIDTH_REAL_WORLD = 5.0;//米
+    public static final double NEAR_PLANE_DISTANCE   = 0.5;
+    public static final double NEAR_PLANE_WIDTH      = NEAR_PLANE_DISTANCE * Math.tan(Math.toRadians(22.5))*2*400/280;
+    public static final double K                     = (ROAD_WIDTH_REAL_WORLD /0.1375)/ NEAR_PLANE_WIDTH; //莫卡托转换成opengl坐标的比例
 
     public static class PointD {
         public double x;
@@ -33,7 +38,7 @@ public class ARWayProjection {
 
 
 
-    static double K = 65545.0; //莫卡托转换成opengl坐标的比例
+    /*static double K = 65545.0; //莫卡托转换成opengl坐标的比例*/
 
     //莫卡托的每个像素点代表0.137784米
 
