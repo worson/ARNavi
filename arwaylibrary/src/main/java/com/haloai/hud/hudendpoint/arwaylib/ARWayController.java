@@ -207,6 +207,12 @@ public class ARWayController {
             }
         }
 
+        public static void setMatchNaviPath(boolean matchNaviPath) {
+            synchronized (ARWayController.class) {
+                mCommonBean.setMatchNaviPath(matchNaviPath);
+            }
+        }
+
         public static void setHasNetwork(boolean hasNetwork) {
             synchronized (ARWayController.class) {
                 mCommonBean.setHasNetwork(hasNetwork);

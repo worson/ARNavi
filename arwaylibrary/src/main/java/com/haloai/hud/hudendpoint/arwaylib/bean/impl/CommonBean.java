@@ -14,6 +14,7 @@ public class CommonBean extends SuperBean{
     private boolean mNavingStart = false;//开始导航
     private boolean mGpsWork     = false;
     private boolean mHasNetwork     = false;//网络状态
+    private boolean mIsMatchNaviPath = true;
 
     @Override
     public void reset() {
@@ -21,7 +22,7 @@ public class CommonBean extends SuperBean{
         mNaviEnd = false;
         mStartOk = false;
         mNavingStart = false;
-
+        mIsMatchNaviPath = true;
         /*mGpsWork = false;
         mHasNetwork = false;*/
     }
@@ -80,5 +81,13 @@ public class CommonBean extends SuperBean{
 
     public void setSimu(boolean simu) {
         mIsSimu = simu;
+    }
+
+    public boolean isMatchNaviPath() {
+        return mIsMatchNaviPath;
+    }
+
+    public void setMatchNaviPath(boolean matchNaviPath) {
+        mIsMatchNaviPath = matchNaviPath;
     }
 }

@@ -115,10 +115,14 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
         if (mCommonBean == null) {
             return null;
         }
-        if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
+        /*if(!mCommonBean.isHasNetwork() && mCommonBean.isYaw()){
             title = "无网络信号\n正在搜索...";
-        }
-        if(!mCommonBean.isGpsWork()){
+        }*/
+        if(mCommonBean.isYaw()){
+            title = "您已领航\n正在重新规划路径";
+        }else if(!mCommonBean.isMatchNaviPath()){
+            title = "您已偏离规划路径";
+        } else if(!mCommonBean.isGpsWork()){
             title = "无GPS信号\n请开往空旷处";
         }
         return title;
@@ -135,8 +139,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
     }
 
     private void switchDisplay() {
-
-        if (isNavingReady()){
+        if (true){//isNavingReady()
             showHideChild(mIndicateViewGroup,false);
             showHideChild(mNextRoadViewGroup,true);
         }else {
@@ -190,8 +193,8 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
                     }
                 }
-                if (display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {//(!mCommonBean.isStartOk()) && 
-                    mNaviIndicateTextView.setText("进入");
+                if (display.trim() != "" && roadName.trim() != "" && roadDirection.trim() !="") {//(!mCommonBean.isStartOk()) &&
+                    mNaviIndicateTextView.setText("请行驶到");
                     mRoadNameIndicateTextView.setText(roadName);
                     mRoadDirectionIndicateTextView.setText(roadDirection);
                 }else {
