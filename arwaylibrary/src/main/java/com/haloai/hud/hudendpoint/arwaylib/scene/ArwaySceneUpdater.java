@@ -35,10 +35,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private              int              mRoadLayersIndex     = 0;
 
     //ROAD
-    private static final float ROAD_SCALE                = 0.8f;
-    private       double   REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH*ROAD_SCALE; //参考线间的长度
-    private       Material mRoadMaterial              = new Material();
-    private       Material mTestMaterial              = new Material();
+    private static final float ROAD_WIDTH                 = 0.8f;
+    private       double       REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH* ROAD_WIDTH; //参考线间的长度
+    private       Material     mRoadMaterial              = new Material();
+    private       Material     mTestMaterial              = new Material();
 
     private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
     private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
@@ -74,7 +74,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void initScene() {
-        float scale = ROAD_SCALE;
+        float scale = ROAD_WIDTH;
         initRoadRender(1*scale,0.7f,0.4f*scale,0.12f*scale);
     }
 
