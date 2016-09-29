@@ -523,6 +523,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         mAmapNaviView.setAlpha(1);
         hideARWay();*/
         onNavingStartView();
+        onNavingContextChangedView();
         /*updateNaviInfoDisplay();
         animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);*/
     }
@@ -531,6 +532,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
      * 偏航结束时界面控制
      */
     private void onYawEndView() {
+        onNavingContextChangedView();
         //切换隐藏地图
         /*mAmapNaviView.setVisibility(View.INVISIBLE);
         mAmapNaviView.setAlpha(0);
@@ -649,6 +651,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
         if(ARWayConst.IS_AMAP_VIEW) {
             mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
         }
+
         ARWayController.CommonBeanUpdater.setYaw(true);
         onYawStartView();
     }
@@ -828,10 +831,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay ,OnMapLoad
             mLocationTimeRecorder.start();
         }
         // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
-        if(mRenderer!=null && location.isMatchNaviPath()){
+        boolean matchPath = location.isMatchNaviPath();
+        if(matchPath){
             onGpsStatusChanged(true);
+        }
+        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY) {
             mRenderer.updateLocation(location);
         }
+        ARWayController.CommonBeanUpdater.setMatchNaviPath(matchPath);
+        onNavingContextChangedView();
         if (mLocationTimeRecorder != null) {
             mLocationTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"updateLocation");
         }
