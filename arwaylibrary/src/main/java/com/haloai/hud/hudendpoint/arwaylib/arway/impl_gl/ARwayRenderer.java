@@ -1422,17 +1422,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase.setMaterial(material);
         mObject4Chase.setRotation(Vector3.Axis.Z, -mObject4ChaseStartOrientation);
 
-        Camera cCamera = getCurrentCamera();
-        cCamera.enableLookAt();
-        cCamera.setUpAxis(Vector3.Axis.Z);
-        cCamera.setRotation(0, 0, 0);
-        cCamera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
+        Camera camera = getCurrentCamera();
+        camera.enableLookAt();
+        camera.setUpAxis(Vector3.Axis.Z);
+        camera.setRotation(0, 0, 0);
+        camera.setPosition(mPath.get(0).x, mPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
         getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
         getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
 
-        ARWayCameraCaculator.cameraCaculatorInit(cCamera);
+        ARWayCameraCaculator.cameraCaculatorInit(camera);
 
         mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
         mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
@@ -1444,7 +1444,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
-            getCurrentScene().addChild(mObject4Chase);
+            //getCurrentScene().addChild(mObject4Chase);
         }
         //update flag
         mIsMyInitScene = true;
