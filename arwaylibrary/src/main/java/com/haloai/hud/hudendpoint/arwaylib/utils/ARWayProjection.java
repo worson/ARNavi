@@ -11,7 +11,7 @@ import com.amap.api.maps.model.LatLng;
 public class ARWayProjection {
 
     public static final double ROAD_WIDTH            = Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5;
-    public static final double ROAD_WIDTH_REAL_WORLD = 5.0;//米
+    public static final double ROAD_WIDTH_REAL_WORLD = 10.0;//米
     public static final double NEAR_PLANE_DISTANCE   = 0.5;
     public static final double NEAR_PLANE_WIDTH      = NEAR_PLANE_DISTANCE * Math.tan(Math.toRadians(22.5))*2*400/280;
     public static final double K                     = (ROAD_WIDTH_REAL_WORLD /0.1375)/ NEAR_PLANE_WIDTH; //莫卡托转换成opengl坐标的比例

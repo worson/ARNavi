@@ -70,7 +70,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
     private static final int     CURVE_TIME             = 5;
     private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5/*ARWayConst.ROAD_WIDTH*//*ARWayProjection.ROAD_WIDTH*/;
+    private static final double  ROAD_WIDTH             = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = /*4*/0.6;
