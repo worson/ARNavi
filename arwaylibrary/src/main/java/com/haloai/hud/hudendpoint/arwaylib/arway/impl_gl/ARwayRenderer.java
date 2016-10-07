@@ -443,21 +443,31 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         double degrees = 0;
         switch (naviIcon){
             case 2://tl
+                degrees = -180;
+                break;
             case 6://tlb
+                degrees = -220;
+                break;
             case 4://tlf
+                degrees = -90;
+                break;
             case 8://tb
                 degrees = -180;
                 break;
             case 3://tr
-            case 7://trb
-            case 5://trf
                 degrees = 180;
                 break;
+            case 7://trb
+                degrees = 220;
+                break;
+            case 5://trf
+                degrees = 90;
+                break;
             case 9://tf
-                degrees = 30;
+                degrees = 60;
                 break;
         }
-        degrees = 90;
+//        degrees = 90;
         /*branchLines.clear();
         branchLines.add(new Vector3(0,0,0));
         branchLines.add(new Vector3(10,20,0));
