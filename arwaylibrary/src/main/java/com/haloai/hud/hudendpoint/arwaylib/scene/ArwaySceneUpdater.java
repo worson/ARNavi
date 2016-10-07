@@ -218,7 +218,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 //            rMaterial.setColorInfluence(0);
 //            rMaterial.addTexture(TextureManager.getInstance().addTexture(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.route_new_line), ATexture.TextureType.NORMAL));
             rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,rMaterial);
+            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
             mRoadLayersList.clear();
             mRoadLayersList.add(roadLayers);
         }else {
@@ -356,6 +356,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     @Override
     public boolean renderCrossRoad(List<List<Vector3>> cross) {
+        boolean result = true;
+        Material rMaterial = new Material();
+        rMaterial.useVertexColors(true);
         mCrossRoadLayersList.clear();
         for (List<Vector3> road:cross) {
             RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.7f,mRoadMaterial);
@@ -363,7 +366,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             roadLayers.black.updateBufferedRoad(road);
             roadLayers.white.updateBufferedRoad(road);
         }
-        reloadAllRoadLayer();
+
+        for(RoadLayers roadLayers:mCrossRoadLayersList){
+            result &= addObject(roadLayers.white);
+        }
+        for(RoadLayers roadLayers:mCrossRoadLayersList){
+            result &= addObject(roadLayers.black);
+        }
+
+//        reloadAllRoadLayer();
         return false;
     }
 
