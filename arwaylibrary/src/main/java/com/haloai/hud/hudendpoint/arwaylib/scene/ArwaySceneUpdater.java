@@ -122,6 +122,21 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth, Material material){
+        /*Material rMaterial = new Material();
+        try {
+            rMaterial.addTexture(new Texture("road_white", R.drawable.road_white));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderVisiblePath,add texture ok");
+        } catch (ATexture.TextureException e) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderVisiblePath,add texture error");
+            e.printStackTrace();
+        }
+        rMaterial.setColorInfluence(0);*/
+
+//        rMaterial.setColor(0);
+//        rMaterial.enableTime(true);
+        /*rMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
+        rMaterial.enableLighting(true);*/
+
         RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
                 new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material),
                 new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,material));
