@@ -47,6 +47,7 @@ import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.renderer.Renderer;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -179,7 +180,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         SCREEN_WIDTH = wm.getDefaultDisplay().getWidth();
         SCREEN_HEIGHT = wm.getDefaultDisplay().getHeight();
-
+        mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setContext(context);
         setFrameRate(FRAME_RATE);
     }
 
@@ -192,7 +194,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender initScene called!");
         setFrameRate(FRAME_RATE);
-        mSceneUpdater = ArwaySceneUpdater.getInstance();
+
         mSceneUpdater.setScene(getCurrentScene());
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
@@ -1476,6 +1478,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
 //        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
         mSceneUpdater.renderVisiblePath(mPath);
+
+        /*List<List<Vector3>> cross = new LinkedList<>();
+        cross.add(mPath);
+        mSceneUpdater.renderCrossRoad(cross);*/
 
         clearUnuseDataAfterAddPlane2Scene();
     }

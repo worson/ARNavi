@@ -119,7 +119,7 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
             title = "无网络信号\n正在搜索...";
         }*/
         if(mCommonBean.isYaw()){
-            title = "您已领航\n正在重新规划路径";
+            title = "您已偏航\n正在重新规划路径";
         }else if(!mCommonBean.isMatchNaviPath()){
             title = "您已偏离规划路径";
         } else if(!mCommonBean.isGpsWork()){
