@@ -144,11 +144,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             mSceneUpdaterRecorder.start();
         }
         RoadLayers roadLayers = null;
-        if(false){
+        if(true){
             float roadscale = 0.8f;
             Material rMaterial = new Material();
             rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
+            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,rMaterial);
             mScene.clearChildren();
             addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
         }else {
