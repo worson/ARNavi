@@ -25,7 +25,7 @@ public class SuperArwaySceneUpdater {
     public boolean removeObject(Object3D[] object3Ds){
         boolean result = true;
         for(Object3D object3D:object3Ds){
-            if(mScene.hasChild(object3D)){
+            if(true || mScene.hasChild(object3D)){
                 result &= mScene.removeChild(object3D);
             }
         }
@@ -33,7 +33,7 @@ public class SuperArwaySceneUpdater {
     }
     public boolean removeObject(Object3D object3D){
         boolean result = true;
-        if(mScene.hasChild(object3D)){
+        if(true || mScene.hasChild(object3D)){
             result &= mScene.removeChild(object3D);
         }
         return result;
@@ -46,7 +46,7 @@ public class SuperArwaySceneUpdater {
     public boolean addObject(Object3D[] object3Ds){
         boolean result = true;
         for(Object3D object3D:object3Ds){
-            if(!mScene.hasChild(object3D)){
+            if(true || !mScene.hasChild(object3D)){
                 result &= mScene.addChild(object3D);
             }
         }
@@ -55,7 +55,7 @@ public class SuperArwaySceneUpdater {
 
     public boolean addObject(Object3D object3D){
         boolean result = true;
-        if(!mScene.hasChild(object3D)){
+        if(true || !mScene.hasChild(object3D)){
             result &= mScene.addChild(object3D);
         }
         return result;
