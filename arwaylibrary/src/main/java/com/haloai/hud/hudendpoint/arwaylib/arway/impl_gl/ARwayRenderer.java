@@ -47,7 +47,6 @@ import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.renderer.Renderer;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -482,6 +481,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             HaloLogger.logE("testtesttest", v.x+","+v.y);
         }
         HaloLogger.logE("testtesttest","---------------");
+        List<List<Vector3>> branchLiness = new ArrayList<>();
+        branchLiness.add(branchLines);
+        mSceneUpdater.renderCrossRoad(branchLiness);
     }
 
     private Plane insertRajawaliPlane(Vector3 v1, Vector3 v2) {
