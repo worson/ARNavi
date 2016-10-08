@@ -65,6 +65,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
     private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
 
+    private Object3D mCarObject;
 
     private class RoadLayers{
         private ARWayRoadBuffredObject white   = null;
@@ -121,6 +122,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     public void setRoadScale(float roadScale) {
         mRoadScale = roadScale;
+    }
+
+    public void setCarObject(Object3D carObject) {
+        mCarObject = carObject;
     }
 
     private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth, Material material){
@@ -408,6 +413,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.refLine);
+        }
+        if (mCarObject != null) {
+            result &= addObject(mCarObject);
         }
         return result;
     }
