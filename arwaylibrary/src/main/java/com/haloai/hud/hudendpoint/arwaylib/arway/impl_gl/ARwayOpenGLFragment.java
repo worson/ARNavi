@@ -766,7 +766,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             for(NaviLatLng latLng : step.getCoords()){
                 totalLength += AMapUtils.calculateLineDistance(crossLines.get(crossLines.size()-1),DrawUtils.naviLatLng2LatLng(latLng));
                 crossLines.add(DrawUtils.naviLatLng2LatLng(latLng));
-                if(totalLength>50){
+                if(totalLength>30){
                     enough = true;
                     break;
                 }
