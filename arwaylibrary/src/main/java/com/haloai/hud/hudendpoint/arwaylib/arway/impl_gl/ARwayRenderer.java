@@ -44,6 +44,7 @@ import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
+import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import java.util.ArrayList;
@@ -118,6 +119,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private Texture  mBranchRoadTexture  = null;
     private Texture  mBranchBlackTexture = null;*/
     private Object3D mObject4Chase    = null;
+    private Object3D mCarObject    = null;
     private Texture  mMainRoadTexture = null;
     /*private Scene    mCurScene        = null;*/
 
@@ -1365,6 +1367,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
         }
+
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
         mObject4Chase.isDepthTestEnabled();
         mObject4Chase.setPosition(mPath.get(0).x, mPath.get(0).y, 0);
@@ -1377,6 +1380,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         mObject4Chase.setMaterial(material);
         mObject4Chase.setRotation(Vector3.Axis.Z, -mObject4ChaseStartOrientation);
+
+        mCarObject = new Sphere(0.05f,20,20);
+        Material cMaterial = new Material();
+        cMaterial.setColor(Color.GREEN);
+        mCarObject.setMaterial(cMaterial);
+        mCarObject.setPosition(mObject4Chase.getPosition());
+//        getCurrentScene().addChild(mCarObject);
+        mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
         camera.enableLookAt();
@@ -1692,6 +1703,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
             HaloLogger.logE("branch_line", "anim end");*/
             startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
+            mCarObject.setPosition(mToPos);
             return 1;
         }
     }

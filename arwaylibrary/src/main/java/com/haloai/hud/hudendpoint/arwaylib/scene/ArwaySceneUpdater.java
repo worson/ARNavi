@@ -65,18 +65,25 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
     private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
 
+    private Object3D mCarObject;
 
     private class RoadLayers{
         private ARWayRoadBuffredObject white   = null;
         private ARWayRoadBuffredObject black   = null;
         private ARWayRoadBuffredObject refLine = null;
+        private ARWayRoadBuffredObject lead = null;
 
-        public RoadLayers(ARWayRoadBuffredObject white, ARWayRoadBuffredObject black, ARWayRoadBuffredObject refLine) {
+        public RoadLayers(ARWayRoadBuffredObject white, ARWayRoadBuffredObject black, ARWayRoadBuffredObject lead,ARWayRoadBuffredObject refLine) {
+            this.white = white;
+            this.black = black;
+            this.refLine = refLine;
+            this.lead = lead;
+        }
+        public RoadLayers(ARWayRoadBuffredObject white, ARWayRoadBuffredObject black,ARWayRoadBuffredObject refLine) {
             this.white = white;
             this.black = black;
             this.refLine = refLine;
         }
-
         public RoadLayers(ARWayRoadBuffredObject white, ARWayRoadBuffredObject black) {
             this.white = white;
             this.black = black;
@@ -123,6 +130,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mRoadScale = roadScale;
     }
 
+    public void setCarObject(Object3D carObject) {
+        mCarObject = carObject;
+    }
+
     private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth, Material material){
         /*Material rMaterial = new Material();
         try {
@@ -140,7 +151,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         rMaterial.enableLighting(true);*/
 
         RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
-                new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material),
+                new  ARWayRoadBuffredObject(roadWidth*roadRate*0.8f, Color.BLACK,material),
+                new ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLUE,material),
                 new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,material));
         return roadLayers;
     }
@@ -220,7 +232,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 //            rMaterial.setColorInfluence(0);
 //            rMaterial.addTexture(TextureManager.getInstance().addTexture(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.route_new_line), ATexture.TextureType.NORMAL));
             rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.7f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
+            roadLayers = createRoadLayer(1*roadscale,0.8f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
             mRoadLayersList.clear();
             mRoadLayersList.add(roadLayers);
         }else {
@@ -279,8 +291,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         roadLayers.white.setPosition(postion);
         roadLayers.black.setPosition(postion);
         roadLayers.black.setPosition(postion);
+        roadLayers.lead.setPosition(postion);
         result &= roadLayers.white.updateBufferedRoad(path);
         result &= roadLayers.black.updateBufferedRoad(path);
+        result &= roadLayers.lead.updateBufferedRoad(path);
         double distStep = REFERENCE_LINE_STEP_LENGTH;
         List<Vector3> points = new ArrayList<>();
         List<Float> directions = new ArrayList<>();
@@ -392,22 +406,32 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     public boolean reloadAllRoadLayer(){
         boolean result = true;
         mScene.clearChildren();
+        //1
         for(RoadLayers roadLayers:mCrossRoadLayersList){
             result &= addObject(roadLayers.white);
         }
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.white);
         }
-
+        //2
         for(RoadLayers roadLayers:mCrossRoadLayersList){
             result &= addObject(roadLayers.black);
+        }
+        for(RoadLayers roadLayers:mRoadLayersList){
+            result &= addObject(roadLayers.lead);
         }
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.black);
         }
 
+        //3
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.refLine);
+        }
+
+        //4
+        if (mCarObject != null) {
+            result &= addObject(mCarObject);
         }
         return result;
     }
