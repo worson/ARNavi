@@ -778,6 +778,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         HaloLogger.logE("testtest","count:"+crossLines.size());
         HaloLogger.logE("testtest","naviIcon:"+mNaviIcon);
         mRenderer.setEnlargeCrossBranchLines(crossLines,mNaviIcon);
+        try {
+
+            HaloLogger.logE("branch_handle","save a new cross image");
+            FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if (crossimage != null) {
             if (mCrossCanShow) {
