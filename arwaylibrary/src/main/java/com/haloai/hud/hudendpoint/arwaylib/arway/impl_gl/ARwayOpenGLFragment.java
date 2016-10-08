@@ -777,7 +777,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         }
         HaloLogger.logE("testtest","count:"+crossLines.size());
         HaloLogger.logE("testtest","naviIcon:"+mNaviIcon);
-//        mRenderer.setEnlargeCrossBranchLines(crossLines,mNaviIcon);
+        mRenderer.setEnlargeCrossBranchLines(crossLines,mNaviIcon);
 
         if (crossimage != null) {
             if (mCrossCanShow) {

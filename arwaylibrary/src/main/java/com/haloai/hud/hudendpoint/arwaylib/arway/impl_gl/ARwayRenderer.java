@@ -1377,7 +1377,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         cMaterial.setColor(Color.GREEN);
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
-        getCurrentScene().addChild(mCarObject);
+//        getCurrentScene().addChild(mCarObject);
         mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
