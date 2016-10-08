@@ -1407,8 +1407,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setBottomDistanceProportion(0.0f);
 
         //        updatePlane2Scene(mLoadStepIndex);
-        updatePlane2Scene();
         testBranchLine();
+        updatePlane2Scene();
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
@@ -1423,6 +1423,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private void testBranchLine() {
         List<List<Vector3>> branchLiness = new ArrayList<>();
+        branchLiness.add(mPath);
         String branchLine = ARWayConst.BRANCH_LINES;
         int count = 0;
         for (int i = 0; i < branchLine.split("\n").length; i++) {
