@@ -183,8 +183,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         SCREEN_WIDTH = wm.getDefaultDisplay().getWidth();
         SCREEN_HEIGHT = wm.getDefaultDisplay().getHeight();
-        mSceneUpdater = ArwaySceneUpdater.getInstance();
-        mSceneUpdater.setContext(context);
         setFrameRate(FRAME_RATE);
     }
 
@@ -196,8 +194,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender initScene called!");
+//        getCurrentScene().setBackgroundColor(0x393939);
         setFrameRate(FRAME_RATE);
 
+        mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         //getCurrentScene().setBackgroundColor(Color.DKGRAY);
         mIsInitScene = true;
@@ -1362,7 +1363,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void myInitScene() {
 
         getCurrentScene().clearChildren();
-        mSceneUpdater.initScene();
+//        mSceneUpdater.initScene();
 
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
@@ -1383,10 +1384,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         mCarObject = new Sphere(0.05f,20,20);
         Material cMaterial = new Material();
-        cMaterial.setColor(Color.GREEN);
+        cMaterial.setColor(Color.argb(0,76,0,0));//Color.argb(255,76,0,0)
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
-//        getCurrentScene().addChild(mCarObject);
+        mCarObject.setBlendingEnabled(true);
+        mCarObject.setBlendFunc(1,0);
+        getCurrentScene().addChild(mCarObject);
         mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
@@ -1407,8 +1410,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setBottomDistanceProportion(0.0f);
 
         //        updatePlane2Scene(mLoadStepIndex);
-        updatePlane2Scene();
         testBranchLine();
+        updatePlane2Scene();
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
         if (ARWayConst.IS_DEBUG_SCENE) {
@@ -1423,6 +1426,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private void testBranchLine() {
         List<List<Vector3>> branchLiness = new ArrayList<>();
+        branchLiness.add(mPath);
         String branchLine = ARWayConst.BRANCH_LINES;
         int count = 0;
         for (int i = 0; i < branchLine.split("\n").length; i++) {
@@ -1703,7 +1707,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
             HaloLogger.logE("branch_line", "anim end");*/
             startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
-            mCarObject.setPosition(mToPos);
+//            mCarObject.setPosition(mToPos);
             return 1;
         }
     }

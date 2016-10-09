@@ -19,6 +19,8 @@ public class TimeRecorder {
     private float frame = 0;
     private double tFrame = 0;
 
+    private double MAX_LOG_FRAME = 3;
+    private double mLastLogTime = System.currentTimeMillis();
     public void start(){
         sTime = System.currentTimeMillis();
     }

@@ -82,6 +82,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         }else {
             setMaterial(mRoadMaterial);
         }
+//        setBlendingEnabled(false);
         setDoubleSided(true);
     }
 
@@ -120,6 +121,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         ObjectElement referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
+//        ObjectElement referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
         addVerties(referenceLineElement);
         applyVerties();
         mNeedRender = true;
@@ -380,8 +382,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         return element;
     }
 
-    private ObjectElement generatePlaneVerties(float radius,float height,int roadColor) {
-        mCountOfPlanes = (mRoadShapePoints.size() - 1);
+    private ObjectElement generatePlaneVerties(List<Vector3> points,float radius,float height,int roadColor) {
+        mCountOfPlanes = (points.size() - 1);
         mCountOfVerties = mCountOfPlanes * 4;
         //顶点数据之间可以共用
         float[] vertices = new float[mCountOfVerties * NUMBER_OF_VERTIX];
@@ -405,10 +407,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
         int randColor = roadColor;
         //填充矩形块
-        for (int i = 0; i < mRoadShapePoints.size() - 1; ++i) {
+        for (int i = 0; i < points.size() - 1; ++i) {
 
-            Vector3 p1 = new Vector3(mRoadShapePoints.get(i));
-            Vector3 p2 = new Vector3(mRoadShapePoints.get(i + 1));
+            Vector3 p1 = new Vector3(points.get(i));
+            Vector3 p2 = new Vector3(points.get(i + 1));
             MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,radius);
 
             int vIndex = i * 4 * 3;
