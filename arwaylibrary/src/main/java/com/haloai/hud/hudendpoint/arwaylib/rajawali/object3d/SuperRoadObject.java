@@ -34,6 +34,7 @@ public class SuperRoadObject extends Object3D {
 
     protected Object3D mLock       = new Object3D();
     protected volatile boolean  mNeedRender = false;
+    private boolean hasVerticesColor = false;
 
     protected static Material mRoadMaterial = new Material();
     static {
@@ -49,6 +50,13 @@ public class SuperRoadObject extends Object3D {
 
     }
 
+    public boolean isHasVerticesColor() {
+        return hasVerticesColor;
+    }
+
+    public void setHasVerticesColor(boolean hasVerticesColor) {
+        this.hasVerticesColor = hasVerticesColor;
+    }
     protected void replaceGeometry3D(Geometry3D geometry3D){
         if (geometry3D == null) {
             return;
@@ -86,6 +94,9 @@ public class SuperRoadObject extends Object3D {
                 Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
             }
             mObjectElement = totalElement;
+            if(!hasVerticesColor) {
+                totalElement.colors = null;
+            }
             setData(totalElement.vertices, totalElement.normals,
                     totalElement.textureCoords, totalElement.colors, totalElement.indices, true);
             mObjectElement.free();

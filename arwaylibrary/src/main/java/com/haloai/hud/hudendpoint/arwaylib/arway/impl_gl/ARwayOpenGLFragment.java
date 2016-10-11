@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,11 +58,16 @@ import com.haloai.hud.utils.ShareDrawables;
 
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.IDisplay;
+import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.TextureView;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
 
 
 public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoadedListener, OnCameraChangeListener, IStateContoller, INaviUpdater /*,INaviDisplayPresenter*/ {
@@ -387,6 +393,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     protected void onBeforeApplyRenderer() {
+        mRenderSurface.setAntiAliasingMode(ISurface.ANTI_ALIASING_CONFIG.MULTISAMPLING);
+        mRenderSurface.setSampleCount(3);
     }
 
     protected void applyRenderer() {

@@ -76,7 +76,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  CAMERA_OFFSET_Y        = 0;
     private static final double  CAMERA_OFFSET_Z        = /*4*/0.6;
     private static final double  CAMERA_CUT_OFFSET      = /*0*/0.6;
-    private static final double  LOOK_AT_DIST           = /*0*/1.3;
+    private static final double  LOOK_AT_DIST           = 0.8f;//1.3;
     private static final int     INTERSECTION_COUNT     = 30;
     private static final double  CAMERA_NEAR_PLANE      = 0.5;
     private static final double  CAMERA_FAR_PLANE       = 25;
@@ -171,8 +171,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private ArwaySceneUpdater mSceneUpdater;
 
     private CameraModel mCameraModel            = new CameraModel();
-    private float       mRoadWidthProportion    = 0.3f;
-    private float       mCameraPerspectiveAngel = 76;
+    private float       mRoadWidthProportion    = 0.4f;
+    private float       mCameraPerspectiveAngel = 70;
 
 
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
@@ -224,7 +224,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         Vector3 position = new Vector3(location.x, location.y, CAMERA_OFFSET_Z);
         Vector3 lookat = new Vector3(0, 0, 0);
 
-        if (false) {
+        if (true) {
             mCameraModel.setLocation(mObject4Chase.getPosition());
             mCameraModel.setRotZ(mObject4Chase.getRotZ());
 

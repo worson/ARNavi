@@ -76,13 +76,15 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         super();
         mRoadWidth =  width;
         mRoadColor = color;
-        setDepthTestEnabled(false);
         if (material != null) {
             setMaterial(material);
         }else {
             setMaterial(mRoadMaterial);
         }
-//        setBlendingEnabled(false);
+        setDepthTestEnabled(false);
+        setBlendingEnabled(true);
+        setDepthMaskEnabled(false);
+        setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         setDoubleSided(true);
     }
 
@@ -138,6 +140,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mRoadShapePointsCount = mRoadShapePoints.size();
         if(type== ShapeType.ROAD){
             ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,mRoadColor);
+//            ObjectElement circleAndPlaneElement = generatePlaneVerties(mRoadShapePoints,mRoadWidth,0, mRoadColor);
             addVerties(circleAndPlaneElement);
         }
         /*ObjectElement planeElement = generatePlaneVerties(mRoadWidth/2,-0.001f);
@@ -162,6 +165,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mGeometry.recycleBuffer();
     }
 
+    private ObjectElement generateAntiSawtoothLine(List<Vector3> path,float width,int color) {
+        ObjectElement element = new ObjectElement();
+
+        return element;
+    }
     /**
      *
      * 单位形状点GPU内存消耗
