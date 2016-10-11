@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.scene;
 import android.content.Context;
 import android.graphics.Color;
 
+import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -153,7 +154,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     private void initRoadMaterial(){
-        int[] textureIds = new int[]{R.drawable.road_white,R.drawable.road_grey,
+        int[] textureIds = new int[]{R.drawable.road_white, R.drawable.road_grey,
                 R.drawable.road_blue,R.drawable.road_white_change};
         List<Material> materialList = new LinkedList();
         for (int i = 0; i < textureIds.length; i++) {
