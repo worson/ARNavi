@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib.scene;
 import android.content.Context;
 import android.graphics.Color;
 
-import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -12,11 +11,6 @@ import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.methods.DiffuseMethod;
-import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.NormalMapTexture;
-import org.rajawali3d.materials.textures.Texture;
-import org.rajawali3d.materials.textures.TextureManager;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Line3D;
 import org.rajawali3d.primitives.Plane;
@@ -159,7 +153,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     private RoadLayers createCrossRoadLayer(float roadWidth, float roadRate,Material material){
         RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
-                new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material));
+                new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material),
+                new  ARWayRoadBuffredObject(roadWidth*0.1f, Color.GRAY,material));
         return roadLayers;
     }
 
@@ -219,7 +214,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
         RoadLayers roadLayers = null;
         if(true){
-            float roadscale = 0.8f;
+            float roadscale = ROAD_WIDTH;
             Material rMaterial = new Material();
             /*try {
                 rMaterial.addTexture(new Texture("route_new_line", R.drawable.route_new_line));
@@ -384,6 +379,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             mCrossRoadLayersList.add(roadLayers);
             roadLayers.black.updateBufferedRoad(road);
             roadLayers.white.updateBufferedRoad(road);
+            roadLayers.refLine.updateBufferedRoad(road);
         }
 
         HaloLogger.logE("onRenderFrame","onRenderFrame,renderCrossRoad called");
@@ -416,6 +412,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         //2
         for(RoadLayers roadLayers:mCrossRoadLayersList){
             result &= addObject(roadLayers.black);
+        }
+        for(RoadLayers roadLayers:mCrossRoadLayersList){
+            result &= addObject(roadLayers.refLine);
         }
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.lead);

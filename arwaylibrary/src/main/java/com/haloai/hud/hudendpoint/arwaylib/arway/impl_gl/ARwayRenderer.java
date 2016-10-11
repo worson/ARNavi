@@ -3,7 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.SurfaceTexture;
 import android.view.MotionEvent;
@@ -23,6 +23,7 @@ import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
 import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
+import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
@@ -74,8 +75,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final double  ROAD_WIDTH             = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
     private static final double  CAMERA_OFFSET_X        = 0;
     private static final double  CAMERA_OFFSET_Y        = 0;
-    private static final double  CAMERA_OFFSET_Z        = /*4*/0.6;
-    private static final double  CAMERA_CUT_OFFSET      = /*0*/0.6;
+    private static final double  CAMERA_OFFSET_Z        = /*4*/0.6/*1*/;
+    private static final double  CAMERA_CUT_OFFSET      = /*0*/0.6/*1*/;
     private static final double  LOOK_AT_DIST           = /*0*/1.3;
     private static final int     INTERSECTION_COUNT     = 30;
     private static final double  CAMERA_NEAR_PLANE      = 0.5;
@@ -86,19 +87,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final int     LOAD_PATH_LENGTH       = 250;
     private static final boolean DEBUG_MODE             = false;
     private static final boolean IS_MOVE_PATH           = false;
+    private static final float   TIME_15_20             = 32;
     private static       int     SCREEN_WIDTH           = 0;
     private static       int     SCREEN_HEIGHT          = 0;
     private static final double  BRANCH_LINE_Z          = -0.01;
     private static final double  ADD_PLANE_LENGTH       = Double.MAX_VALUE;
+    private static final int     DEFAULT_LEVEL          = 15;
+    private static final int     NEXT_LEVEL             = 15;
+    private static final int     FINAL_LEVEL            = 14;
     private static final String  TAG                    = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
 
     //list data
     private List<Vector3>       mPath                = new ArrayList<>();
+    private List<Vector3>       mRenderPath          = new ArrayList<>();
     private List<Vector3>       mOriginalPath        = new ArrayList<>();
     private List<Vector3>       mLeftPath            = new ArrayList<>();
     private List<Vector3>       mRightPath           = new ArrayList<>();
     private List<Integer>       mStepsLength         = new ArrayList<>();
     private List<Integer>       mStepLastPointIndex  = new ArrayList<>();
+    private List<Integer>       mPointIndexsToKeep   = new ArrayList<>();
     private List<Vector3>       mStepLastPoint       = new ArrayList<>();
     private List<Double>        mDist2FinalPoint     = new ArrayList<>();
     private List<Double>        mLength2FinalPoint   = new ArrayList<>();
@@ -119,7 +126,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private Texture  mBranchRoadTexture  = null;
     private Texture  mBranchBlackTexture = null;*/
     private Object3D mObject4Chase    = null;
-    private Object3D mCarObject    = null;
+    private Object3D mCarObject       = null;
     private Texture  mMainRoadTexture = null;
     /*private Scene    mCurScene        = null;*/
 
@@ -161,12 +168,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     //else
     private double          mObject4ChaseStartOrientation = 0;
-    //    private Projection mProjection                   = null;
     private ARWayProjection mProjection                   = new ARWayProjection();
+
     //车速，单位是m/s
-    private double          mCarSpeed                     = 0;
-    private double          mOffsetX                      = 0;
-    private double          mOffsetY                      = 0;
+    private double mCarSpeed = 0;
+    private double mOffsetX  = 0;
+    private double mOffsetY  = 0;
 
     private ArwaySceneUpdater mSceneUpdater;
 
@@ -209,7 +216,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
         super.onRenderSurfaceSizeChanged(gl, width, height);
-        mProjection.initScale(width, height);
     }
 
     @Override
@@ -243,7 +249,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         }
         final double LOOK_OFFSET = dist;
         final double CAMERA_OFFSET = -CAMERA_CUT_OFFSET;
-        double offsetY = 0, offsetX = 0;
+        double offsetY, offsetX;
         double rYaw = yaw;
 
         offsetX = LOOK_OFFSET * Math.sin(rYaw);
@@ -436,62 +442,62 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 通过岔路点的集合以及路口放大图中箭头位置的点的坐标会实现将岔路添加到场景中
      */
     public void setEnlargeCrossBranchLines(List<LatLng> crossLines, int naviIcon) {
-        if (true || !mIsMyInitScene) {
-            return;
-        }
-        List<Vector3> branchLines = new ArrayList<>();
-        for (LatLng latLng : crossLines) {
-            ARWayProjection.PointD pointD = ARWayProjection.glMapPointFormCoordinate(latLng);
-            branchLines.add(new Vector3(pointD.x * BIGGER_TIME - mOffsetX, (-pointD.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z));
-        }
-        /*for (int i = 2; i < branchLines.size(); i++) {
-            PointF projection = new PointF();
-            Vector3 v = branchLines.get(i);
-            MathUtils.getProjectivePoint(new PointF((float) branchLines.get(0).x, (float) branchLines.get(0).y),
-                                         new PointF((float) branchLines.get(1).x, (float) branchLines.get(1).y),
-                                         new PointF((float) v.x, (float) v.y), projection);
-            v.x = projection.x + (projection.x - v.x);
-            v.y = projection.y + (projection.y - v.y);
-        }*/
-        double degrees = 0;
-        switch (naviIcon) {
-            case 2://tl
-                degrees = -180;
-                break;
-            case 6://tlb
-                degrees = -220;
-                break;
-            case 4://tlf
-                degrees = -90;
-                break;
-            case 8://tb
-                degrees = -180;
-                break;
-            case 3://tr
-                degrees = 180;
-                break;
-            case 7://trb
-                degrees = 220;
-                break;
-            case 5://trf
-                degrees = 90;
-                break;
-            case 9://tf
-                degrees = 60;
-                break;
-        }
-        Matrix matrix = new Matrix();
-        matrix.setRotate((float) degrees, (float) branchLines.get(0).x, (float) branchLines.get(0).y);
-        for (int i = 1; i < branchLines.size(); i++) {
-            Vector3 v = branchLines.get(i);
-            float[] xy = new float[2];
-            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
-            v.x = xy[0];
-            v.y = xy[1];
-        }
-        List<List<Vector3>> branchLiness = new ArrayList<>();
-        branchLiness.add(branchLines);
-        mSceneUpdater.renderCrossRoad(branchLiness);
+        //        if (!mIsMyInitScene) {
+        //            return;
+        //        }
+        //        List<Vector3> branchLines = new ArrayList<>();
+        //        for (LatLng latLng : crossLines) {
+        //            PointF pointF = mProjection.toOpenGLLocation(latLng);
+        //            branchLines.add(new Vector3(pointF.x * BIGGER_TIME - mOffsetX, (-pointF.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z));
+        //        }
+        //        /*for (int i = 2; i < branchLines.size(); i++) {
+        //            PointF projection = new PointF();
+        //            Vector3 v = branchLines.get(i);
+        //            MathUtils.getProjectivePoint(new PointF((float) branchLines.get(0).x, (float) branchLines.get(0).y),
+        //                                         new PointF((float) branchLines.get(1).x, (float) branchLines.get(1).y),
+        //                                         new PointF((float) v.x, (float) v.y), projection);
+        //            v.x = projection.x + (projection.x - v.x);
+        //            v.y = projection.y + (projection.y - v.y);
+        //        }*/
+        //        double degrees = 0;
+        //        switch (naviIcon) {
+        //            case 2://tl
+        //                degrees = -180;
+        //                break;
+        //            case 6://tlb
+        //                degrees = -220;
+        //                break;
+        //            case 4://tlf
+        //                degrees = -90;
+        //                break;
+        //            case 8://tb
+        //                degrees = -180;
+        //                break;
+        //            case 3://tr
+        //                degrees = 180;
+        //                break;
+        //            case 7://trb
+        //                degrees = 220;
+        //                break;
+        //            case 5://trf
+        //                degrees = 90;
+        //                break;
+        //            case 9://tf
+        //                degrees = 60;
+        //                break;
+        //        }
+        //        Matrix matrix = new Matrix();
+        //        matrix.setRotate((float) degrees, (float) branchLines.get(0).x, (float) branchLines.get(0).y);
+        //        for (int i = 1; i < branchLines.size(); i++) {
+        //            Vector3 v = branchLines.get(i);
+        //            float[] xy = new float[2];
+        //            matrix.mapPoints(xy, new float[]{(float) v.x, (float) v.y});
+        //            v.x = xy[0];
+        //            v.y = xy[1];
+        //        }
+        //        List<List<Vector3>> branchLiness = new ArrayList<>();
+        //        branchLiness.add(branchLines);
+        //        mSceneUpdater.renderCrossRoad(branchLiness);
     }
 
     private Plane insertRajawaliPlane(Vector3 v1, Vector3 v2) {
@@ -961,7 +967,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 return -1;
         }
 
-        List<Vector3> path = new ArrayList<>();
+        List<Vector3> path_default = new ArrayList<>();
+        List<Vector3> path_next = new ArrayList<>();
+        List<Vector3> path_final = new ArrayList<>();
+        List<LatLng> path_latlng = new ArrayList<>();
         mStepsLength.clear();
         mStepLastPointIndex.clear();
         mStepLastPoint.clear();
@@ -974,12 +983,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 for (int i = 0; i < step.getCoords().size(); i++) {
                     NaviLatLng coord = step.getCoords().get(i);
                     LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
-
-                    PointF pf = mProjection.toOpenGLLocation(latLng);
-                    Vector3 v = new Vector3(pf.x, -pf.y, 0);
-                    path.add(v);
+                    PointF pf = mProjection.toOpenGLLocation(latLng, DEFAULT_LEVEL);
+                    path_default.add(new Vector3(pf.x, -pf.y, 0));
+                    pf = mProjection.toOpenGLLocation(latLng, NEXT_LEVEL);
+                    path_next.add(new Vector3(pf.x, -pf.y, 0));
+                    pf = mProjection.toOpenGLLocation(latLng, FINAL_LEVEL);
+                    path_final.add(new Vector3(pf.x, -pf.y, 0));
+                    path_latlng.add(new LatLng(coord.getLatitude(), coord.getLongitude()));
                     if (i == step.getCoords().size() - 1) {
-                        mStepLastPointIndex.add(path.size() - 1);
+                        mStepLastPointIndex.add(path_default.size() - 1);
                     }
                 }
                 /*if (stepScreenPoints.size() > 0) {
@@ -987,12 +999,169 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                     naviStepsOpengl.add(stepOpenglPoints);
                 }*/
             }
-
         }
 
-        if (!repeat || !isPathRepeat(path)) {
+
+        List<PointF> returnPoints = new ArrayList<>();
+        List<PointF> vertices_default = new ArrayList<>();
+        List<PointF> vertices_next = new ArrayList<>();
+        List<PointF> vertices_final = new ArrayList<>();
+        for (LatLng latlng : path_latlng) {
+            Point p = ARWayProjection.toScreenLocation(latlng, DEFAULT_LEVEL);
+            vertices_default.add(new PointF(p.x, -p.y));
+            p = ARWayProjection.toScreenLocation(latlng, NEXT_LEVEL);
+            vertices_next.add(new PointF(p.x, -p.y));
+            p = ARWayProjection.toScreenLocation(latlng, FINAL_LEVEL);
+            vertices_final.add(new PointF(p.x, -p.y));
+        }
+        //        //=========================================================10start================================//
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < path_final.size(); i++) {
+        //            Vector3 v = path_final.get(i);
+        //            HaloLogger.logE("branch_line_level", v.x + "," + v.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_final,1);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_final,2);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_final,4);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_final,7);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_final,10);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        //=========================================================10end================================//
+        //        //=========================================================15start================================//
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < path_next.size(); i++) {
+        //            Vector3 v = path_next.get(i);
+        //            HaloLogger.logE("branch_line_level", v.x + "," + v.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_next,1);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_next,2);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_next,4);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_next,7);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_next,10);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        //=========================================================15end================================//
+        //        //=========================================================20start================================//
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < path_default.size(); i++) {
+        //            Vector3 v = path_default.get(i);
+        //            HaloLogger.logE("branch_line_level", v.x + "," + v.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_default,1);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_default,2);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_default,4);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_default,7);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        returnPoints.clear();
+        //        Douglas.rarefyGetPointFs(returnPoints,vertices_default,10);
+        //        HaloLogger.logE("branch_line_level", "path start=========");
+        //        for (int i = 0; i < returnPoints.size(); i++) {
+        //            PointF p = returnPoints.get(i);
+        //            HaloLogger.logE("branch_line_level", p.x + "," + p.y);
+        //        }
+        //        HaloLogger.logE("branch_line_level", "path end===========");
+        //        //=========================================================20end================================//
+
+        if (!repeat || !isPathRepeat(path_default)) {
             mOriginalPath.clear();
-            mOriginalPath.addAll(path);
+            mOriginalPath.addAll(path_default);
             return setPathAndCalcData(mOriginalPath, naviPath.getAllLength()/*, naviStepsScreen, naviStepsOpengl*/);
         } else {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
@@ -1261,6 +1430,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      */
     private void clearAllData() {
         mPath.clear();
+        mRenderPath.clear();
         mLeftPath.clear();
         mRightPath.clear();
         mLength2FinalPoint.clear();
@@ -1270,6 +1440,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mRotateAnims.clear();
         mChildPathPositions.clear();
         mChildPathes.clear();
+        mPointIndexsToKeep.clear();
         mLastThroughPosition.clear();
         /*mMainRoadObjects.clear();
         mBranchRoadObjects.clear();
@@ -1381,12 +1552,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mObject4Chase.setMaterial(material);
         mObject4Chase.setRotation(Vector3.Axis.Z, -mObject4ChaseStartOrientation);
 
-        mCarObject = new Sphere(0.05f,20,20);
+        mCarObject = new Sphere(0.05f, 20, 20);
         Material cMaterial = new Material();
         cMaterial.setColor(Color.GREEN);
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
-//        getCurrentScene().addChild(mCarObject);
+        //        getCurrentScene().addChild(mCarObject);
         mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
@@ -1406,8 +1577,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
-        //        updatePlane2Scene(mLoadStepIndex);
-        testBranchLine();
+        //updatePlane2Scene(mLoadStepIndex);
+        //testBranchLine();
         updatePlane2Scene();
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
@@ -1422,8 +1593,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void testBranchLine() {
-        List<List<Vector3>> branchLiness = new ArrayList<>();
-        branchLiness.add(mPath);
+        List<List<Vector3>> branchLinesList = new ArrayList<>();
+        branchLinesList.add(mPath);
         String branchLine = ARWayConst.BRANCH_LINES;
         int count = 0;
         for (int i = 0; i < branchLine.split("\n").length; i++) {
@@ -1440,12 +1611,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                                 arrEnd.add(k);
                             }
                         }
+                        double offsetX = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[0]);
+                        double offsetY = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[1]);
                         for (int m = 0; m < arrStart.size(); m++) {
                             List<Vector3> branchLines = new ArrayList<>();
-                            double offsetX = Double.parseDouble(branchLine.split("\n")[arrStart.get(m) + 1].split(",")[0]);
-                            double offsetY = Double.parseDouble(branchLine.split("\n")[arrStart.get(m) + 1].split(",")[1]);
-                            branchLines.add(startPoint);
-                            for (int k = arrStart.get(m)+2; k < arrEnd.get(m); k++) {
+                            //branchLines.add(startPoint);
+                            for (int k = arrStart.get(m) + 1; k < arrEnd.get(m); k++) {
                                 String line = branchLine.split("\n")[k];
                                 Vector3 v = new Vector3(
                                         Double.parseDouble(line.split(",")[0]) - offsetX + startPoint.x,
@@ -1453,7 +1624,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                                         OBJ_4_CHASE_Z);
                                 branchLines.add(v);
                             }
-                            branchLiness.add(branchLines);
+                            branchLinesList.add(branchLines);
                         }
                         i = j;
                         break;
@@ -1461,7 +1632,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 }
             }
         }
-        mSceneUpdater.renderCrossRoad(branchLiness);
+        mSceneUpdater.renderCrossRoad(branchLinesList);
     }
 
     private void insertTestPlane(Vector3 v2) {
@@ -1496,7 +1667,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void updatePlane2Scene() {
-        mSceneUpdater.renderVisiblePath(mPath);
+        List<PointF> returnPath = new ArrayList<>();
+        List<PointF> originalPath = new ArrayList<>();
+        for (Vector3 v : mPath) {
+            originalPath.add(new PointF((float) v.x, (float) v.y));
+        }
+        Douglas.rarefyGetPointFs(mPointIndexsToKeep, returnPath, originalPath, 2 / ARWayProjection.K);
+        mRenderPath.clear();
+        for (PointF p : returnPath) {
+            mRenderPath.add(new Vector3(p.x * TIME_15_20, p.y * TIME_15_20, OBJ_4_CHASE_Z));
+        }
+        mSceneUpdater.renderVisiblePath(mRenderPath);
         clearUnuseDataAfterAddPlane2Scene();
     }
 
@@ -1673,16 +1854,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
      * 此时的数据为end
      *
      * @param location
+     * @param curIndex
      * @return 1 动画成功 0 场景尚未初始化完成 -1 mStartLatLng == null -2 此时为第一个位置点,无法开始动画
      */
-    public int updateLocation(AMapNaviLocation location) {
+    public int updateLocation(AMapNaviLocation location, int curIndex) {
         if (!mIsMyInitScene) {
             return 0;
         }
+        //        HaloLogger.logE("branch_liness","curIndex:"+curIndex);
         clearLastAnim();
         if (mFromPos == null) {
-            ARWayProjection.PointD fromPos = ARWayProjection.glMapPointFormCoordinate(DrawUtils.naviLatLng2LatLng(location.getCoord()));
-            mFromPos = new Vector3(fromPos.x * BIGGER_TIME - mOffsetX, (-fromPos.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z);
+            mFromPos = convertLocation(location, curIndex);
             mFromDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
             mPreTime = location.getTime();
             return -2;
@@ -1696,17 +1878,51 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 mFromDegrees = mFromDegrees < 0 ? mFromDegrees + 360 : mFromDegrees;
             }
 
-            ARWayProjection.PointD toPos = ARWayProjection.glMapPointFormCoordinate(DrawUtils.naviLatLng2LatLng(location.getCoord()));
-            mToPos = new Vector3(toPos.x * BIGGER_TIME - mOffsetX, (-toPos.y) * BIGGER_TIME - mOffsetY, OBJ_4_CHASE_Z);
+            //            PointF toPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
+            //            mToPos = new Vector3((toPos.x * BIGGER_TIME - mOffsetX) * TIME_15_20, (-toPos.y * BIGGER_TIME - mOffsetY) * TIME_15_20, OBJ_4_CHASE_Z);
+            mToPos = convertLocation(location, curIndex);
             mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
-            /*HaloLogger.logE("branch_line", "anim start");
-            HaloLogger.logE("branch_line", mFromPos.x + "," + mFromPos.y);
-            HaloLogger.logE("branch_line", mToPos.x + "," + mToPos.y);
-            HaloLogger.logE("branch_line", "anim end");*/
             startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             mCarObject.setPosition(mToPos);
             return 1;
         }
+    }
+
+    /**
+     * 处理由一个location转换成Rajawali可用的vector3的过程以及其中的一些数据处理
+     *
+     * @param location
+     * @param curIndex
+     * @return
+     */
+    private Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
+        PointF fromPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
+        Vector3 v = new Vector3(
+                (fromPos.x * BIGGER_TIME - mOffsetX) * TIME_15_20,
+                (-fromPos.y * BIGGER_TIME - mOffsetY) * TIME_15_20,
+                OBJ_4_CHASE_Z);
+        for (int i = 0; i < mPointIndexsToKeep.size(); i++) {
+            if (!(mPointIndexsToKeep.get(i) < curIndex)){
+                Vector3 line_start = null;
+                Vector3 line_end = null;
+                if (mPointIndexsToKeep.get(i) == curIndex && i!=mPointIndexsToKeep.size()-1) {
+                    line_start = mRenderPath.get(i);
+                    line_end = mRenderPath.get(i+1);
+                } else if (mPointIndexsToKeep.get(i) > curIndex && i != 0) {
+                    line_start = mRenderPath.get(i-1);
+                    line_end = mRenderPath.get(i);
+                }
+                PointF pProjection = new PointF();
+                MathUtils.getProjectivePoint(new PointF((float)line_start.x,(float)line_start.y),
+                                             new PointF((float)line_end.x,(float)line_end.y),
+                                             new PointF((float)v.x, (float)v.y),
+                                             pProjection);
+                v.x=pProjection.x;
+                v.y=pProjection.y;
+                break;
+            }
+        }
+        return v;
     }
 
     private void clearLastAnim() {

@@ -103,11 +103,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private boolean mCameraChangeFinish = false;
 
     //bean
-    private static NaviInfoBean mNaviInfoBean    = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
-    private static RouteBean    mRouteBean       = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
-    private static CommonBean   mCommonBean      = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
-    private        int          mCurrentPathStep = 0;
-    private        int          mNaviIcon        = 0;
+    private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+    private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
+    private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+
+    //navi temp data
+    private int mCurStep        = 0;
+    private int mCurPoint       = 0;
+    private int mCurIndexInPath = 0;
+    private int mNaviIcon       = 0;
 
     private static       CrossImageDataCollector mCrossImageDataCollector = new CrossImageDataCollector();
     private static final int                     DEFAULT_GPS_NUMBER       = 10;
@@ -586,13 +590,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (ARWayConst.ENABLE_TEST_LOG) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onARWayStart called ");
         }
+        resetData();
         onNavingStartView();
         //        resetNaviStatus();
         //        ARWayController.ARWayStatusUpdater.resetData();
         ARWayController.CommonBeanUpdater.setNavingStart(true);
         // TODO: 16/8/30 与path的实际更新位置保持一致
         mMapProjectionMachine.setNeedUpdatePath(true);
+    }
 
+    /**
+     * 每次次导航开始调用
+     */
+    private void resetData() {
+        mCurStep = 0;
+        mCurPoint = 0;
+        mCurIndexInPath = 0;
+        mNaviIcon = 0;
     }
 
     /**
@@ -757,31 +771,31 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public void showCrossImage(Bitmap crossimage) {
         // TODO: 2016/10/7 模拟数据
         List<LatLng> crossLines = new ArrayList<>();
-        AMapNaviStep curStep = mAMapNavi.getNaviPath().getSteps().get(mCurrentPathStep);
+        AMapNaviStep curStep = mAMapNavi.getNaviPath().getSteps().get(mCurStep);
         crossLines.add(DrawUtils.naviLatLng2LatLng(curStep.getCoords().get(curStep.getCoords().size() - 1)));
         double totalLength = 0;
-        for (int i = mCurrentPathStep + 1; i < mAMapNavi.getNaviPath().getSteps().size(); i++) {
+        for (int i = mCurStep + 1; i < mAMapNavi.getNaviPath().getSteps().size(); i++) {
             AMapNaviStep step = mAMapNavi.getNaviPath().getSteps().get(i);
             boolean enough = false;
-            for(NaviLatLng latLng : step.getCoords()){
-                totalLength += AMapUtils.calculateLineDistance(crossLines.get(crossLines.size()-1),DrawUtils.naviLatLng2LatLng(latLng));
+            for (NaviLatLng latLng : step.getCoords()) {
+                totalLength += AMapUtils.calculateLineDistance(crossLines.get(crossLines.size() - 1), DrawUtils.naviLatLng2LatLng(latLng));
                 crossLines.add(DrawUtils.naviLatLng2LatLng(latLng));
-                if(totalLength>30){
+                if (totalLength > 30) {
                     enough = true;
                     break;
                 }
             }
-            if(enough){
+            if (enough) {
                 break;
             }
         }
-        HaloLogger.logE("testtest","count:"+crossLines.size());
-        HaloLogger.logE("testtest","naviIcon:"+mNaviIcon);
-        mRenderer.setEnlargeCrossBranchLines(crossLines,mNaviIcon);
+        HaloLogger.logE("testtest", "count:" + crossLines.size());
+        HaloLogger.logE("testtest", "naviIcon:" + mNaviIcon);
+        mRenderer.setEnlargeCrossBranchLines(crossLines, mNaviIcon);
         try {
 
-            HaloLogger.logE("branch_handle","save a new cross image");
-            FileUtils.write(FileUtils.bitmap2Bytes(crossimage),"/sdcard/testimage/oricrossimage/",System.currentTimeMillis()+".png");
+            HaloLogger.logE("branch_handle", "save a new cross image");
+            FileUtils.write(FileUtils.bitmap2Bytes(crossimage), "/sdcard/testimage/oricrossimage/", System.currentTimeMillis() + ".png");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -796,7 +810,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    mRenderer.handleCrossInfo(mCurrentPathStep, crossimage.getWidth(), crossimage.getHeight());
+                    mRenderer.handleCrossInfo(mCurStep, crossimage.getWidth(), crossimage.getHeight());
                     mRenderer.setEnlargeCrossBranchLines(crossimage);
                 }*/
             } else {
@@ -872,13 +886,30 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             onGpsStatusChanged(true);
         }
         if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY) {
-            mRenderer.updateLocation(location);
+            mRenderer.updateLocation(location, mCurIndexInPath);
         }
         ARWayController.CommonBeanUpdater.setMatchNaviPath(matchPath);
         onNavingContextChangedView();
         if (mLocationTimeRecorder != null) {
             mLocationTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "updateLocation");
         }
+    }
+
+    private int getIndexInPath(AMapNavi amapNavi, int currentPoint, int currentStep) {
+        if(amapNavi==null || amapNavi.getNaviPath()==null || amapNavi.getNaviPath().getCoordList()==null ||
+                amapNavi.getNaviPath().getCoordList().size()<=0){
+            return 0;
+        }
+        int currentIndex = 0;
+        List<NaviLatLng> pathLatLngs = amapNavi.getNaviPath().getCoordList();
+        for (int i = 0; i < currentStep; i++) {
+            currentIndex += amapNavi.getNaviPath().getSteps().get(i).getCoords().size();
+        }
+        currentIndex += currentPoint;
+        if (currentIndex >= pathLatLngs.size()) {
+            currentIndex = pathLatLngs.size() - 1;
+        }
+        return currentIndex;
     }
 
     /**
@@ -1029,8 +1060,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (info == null) {
             return;
         }
-        mCurrentPathStep = info.getCurStep();
         mNaviIcon = info.getIconType();
+        mCurPoint = info.getCurPoint();
+        mCurStep = info.getCurStep();
+//        HaloLogger.logE("branch_liness","curstep:"+mCurStep);
+//        HaloLogger.logE("branch_liness","curpoint:"+mCurPoint);
+        mCurIndexInPath = getIndexInPath(mAMapNavi,mCurPoint,mCurStep);
         updateNaviInfoDate(info);
         onNaviViewUpdate();
         int distance = info.getPathRetainDistance();

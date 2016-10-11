@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw;
 
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,9 +22,6 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
-import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
-
-import 	android.view.LayoutInflater;
 
 
 /**
@@ -122,7 +120,7 @@ public class DrawObjectFactory {
             }
         }
         if (drawView != null && drawView.getParent() ==null && glSurfaceViewgroup != null) {
-            glSurfaceViewgroup.addView(drawView);
+            glSurfaceViewgroup.addView(drawView,0);
         }
 
         GlDrawCompass glDrawCompass = GlDrawCompass.getInstance();

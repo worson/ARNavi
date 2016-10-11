@@ -16,12 +16,6 @@ public class ARWayProjection {
     public static final double NEAR_PLANE_WIDTH      = NEAR_PLANE_DISTANCE * Math.tan(Math.toRadians(22.5))*2*400/280;
     public static final double K                     = (ROAD_WIDTH_REAL_WORLD /0.1375)/ NEAR_PLANE_WIDTH; //莫卡托转换成opengl坐标的比例
 
-    public static void initScale(int width,int height){
-        /*mNearPlaneWidth = mNearPlaneDistance * Math.tan(Math.toRadians(22.5))*2*width/height;
-        K = (roadWidth/0.137784)/mNearPlaneWidth;
-        K = 65540.0f;*/
-    }
-
     public static class PointD {
         public double x;
         public double y;
@@ -44,10 +38,13 @@ public class ARWayProjection {
         }
     }
 
-    //经纬度坐标转opengl坐标
-    public static PointD glMapPointFormCoordinate(LatLng coordinate){
-        Point mktPoint = pixelPointFromCoordinate(coordinate,20.0);
-        PointD mapPoint = new PointD(mktPoint.x/K, mktPoint.y/K);
+    /**
+     * 像素坐标转opengl坐标(需要提供像素坐标的等级)
+     * @param pixelPoint
+     * @return
+     */
+    public static PointD toOpenGLLocation(Point pixelPoint){
+        PointD mapPoint = new PointD(pixelPoint.x/K,pixelPoint.y/K);
         return mapPoint;
     }
 
@@ -57,18 +54,31 @@ public class ARWayProjection {
         PointF mapPoint = new PointF((float)(mktPoint.x/K),(float)(mktPoint.y/K));
         return mapPoint;
     }
- 
+
+    //经纬度坐标转opengl坐标
+    public static PointF toOpenGLLocation(LatLng coordinate,double level){
+        Point mktPoint = pixelPointFromCoordinate(coordinate,level);
+        PointF mapPoint = new PointF((float)(mktPoint.x/K),(float)(mktPoint.y/K));
+        return mapPoint;
+    }
+
+    //经纬度转屏幕坐标
+    public static Point toScreenLocation(LatLng coordinate){
+        return pixelPointFromCoordinate(coordinate,20);
+    }
+
+    //经纬度转屏幕坐标
     public static Point toScreenLocation(LatLng coordinate,double level){
         return pixelPointFromCoordinate(coordinate,level);
     }
-    public static Point pixelPointFromCoordinate(LatLng coordinate,double level){
+
+    private static Point pixelPointFromCoordinate(LatLng coordinate,double level){
         double dblMercatorLat = Math.log(Math.tan((90 + coordinate.latitude) * 0.0087266462599716478846184538424431))/0.017453292519943295769236907684886;
         Point pixelPoint = new Point();
         double res = 20.0 -level;
-        pixelPoint.x = (int)((coordinate.longitude + 180.0) / 360.0 * 268435456/Math.pow(2.0,res));
-        pixelPoint.y = (int)((180.0 - dblMercatorLat) / 360.0 * 268435456 * Math.pow(2.0,res)/Math.pow(2.0,res));
+        pixelPoint.x = (int)((coordinate.longitude + 180.0) / 360.0 * 268435456 / Math.pow(2.0,res));
+        pixelPoint.y = (int)((180.0 - dblMercatorLat) / 360.0 * 268435456 / Math.pow(2.0,res));
         return pixelPoint;
-
     }
 
 
