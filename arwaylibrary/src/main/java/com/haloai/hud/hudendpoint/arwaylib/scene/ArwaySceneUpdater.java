@@ -11,6 +11,8 @@ import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.textures.ATexture;
+import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Line3D;
 import org.rajawali3d.primitives.Plane;
@@ -56,6 +58,26 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private float mRefLineWidth = ROAD_WIDTH;
     private float mRefLineStepLength = ROAD_WIDTH;
 
+    /*private int mRefLineColor = Color.WHITE;
+    private int mRoadBottomColor = Color.WHITE;
+    private int mRoadColor = Color.DKGRAY;
+    private int mMainRoadColor = Color.BLUE;*/
+
+    private Texture mRoadBottomTexture = null;
+    private Texture mRoadMidleTexture  = null;
+    private Texture mMainRoadTexture   = null;
+
+    private Material mRoadBottomMaterial = null;
+    private Material mRoadMidleMaterial  = null;
+    private Material mMainRoadMaterial   = null;
+    private Material mRoadReflineMaterial   = null;
+
+    private int mRefLineColor = Color.TRANSPARENT;
+    private int mRoadBottomColor = 0;
+    private int mRoadColor = 0;
+    private int mMainRoadColor = 0;
+
+
     private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
     private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
 
@@ -100,6 +122,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         super(scene);
         mRoadMaterial.useVertexColors(true);
         mTestMaterial.setColor(Color.GREEN);
+
+        initRoadMaterial();
     }
 
     public void initScene() {
@@ -128,33 +152,49 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mCarObject = carObject;
     }
 
-    private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth, Material material){
-        /*Material rMaterial = new Material();
-        try {
-            rMaterial.addTexture(new Texture("road_white", R.drawable.road_white));
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderVisiblePath,add texture ok");
-        } catch (ATexture.TextureException e) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderVisiblePath,add texture error");
-            e.printStackTrace();
+    private void initRoadMaterial(){
+        int[] textureIds = new int[]{R.drawable.road_white,R.drawable.road_grey,
+                R.drawable.road_blue,R.drawable.road_white_change};
+        List<Material> materialList = new LinkedList();
+        for (int i = 0; i < textureIds.length; i++) {
+            Material material = new Material();
+            material.useVertexColors(true);
+            materialList.add(material);
+            int id = textureIds[i];
+            Texture texture = new Texture(ATexture.TextureType.DIFFUSE,"road_texture"+i,id);
+            texture.setFilterType(ATexture.FilterType.LINEAR);
+            texture.setWrapType(ATexture.WrapType.CLAMP);
+            texture.setMipmap(true);
+            try {
+                material.addTexture(texture);
+            } catch (ATexture.TextureException e) {
+                HaloLogger.logE("initRoadMaterial","initRoadMaterial addTexture failed");
+                e.printStackTrace();
+            }
         }
-        rMaterial.setColorInfluence(0);*/
+        mRoadBottomMaterial = materialList.get(0);
+        mRoadMidleMaterial = materialList.get(1);
+        mMainRoadMaterial = materialList.get(2);
+        mRoadReflineMaterial = materialList.get(3);
 
-//        rMaterial.setColor(0);
-//        rMaterial.enableTime(true);
-        /*rMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
-        rMaterial.enableLighting(true);*/
 
-        RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
-                new  ARWayRoadBuffredObject(roadWidth*roadRate*0.8f, Color.BLACK,material),
-                new ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLUE,material),
-                new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,material));
+    }
+
+    private RoadLayers createRoadLayer(float roadWidth, float roadRate, float refLineHegiht, float refLineWidth, Material material){
+
+
+        ARWayRoadBuffredObject reflineObject = new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, mRefLineColor,mRoadReflineMaterial);
+
+        RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, mRoadBottomColor,mRoadBottomMaterial),
+                new  ARWayRoadBuffredObject(roadWidth*roadRate*0.8f, mRoadColor,mRoadMidleMaterial),
+                new ARWayRoadBuffredObject(roadWidth*roadRate, mMainRoadColor,mMainRoadMaterial),
+                reflineObject);
         return roadLayers;
     }
 
     private RoadLayers createCrossRoadLayer(float roadWidth, float roadRate,Material material){
-        RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,material),
-                new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,material),
-                new  ARWayRoadBuffredObject(roadWidth*0.1f, Color.GRAY,material));
+        RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, mRoadBottomColor,mRoadBottomMaterial),
+                new  ARWayRoadBuffredObject(roadWidth*roadRate, mRoadColor,mRoadMidleMaterial));
         return roadLayers;
     }
 
@@ -216,18 +256,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if(true){
             float roadscale = ROAD_WIDTH;
             Material rMaterial = new Material();
-            /*try {
-                rMaterial.addTexture(new Texture("route_new_line", R.drawable.route_new_line));
-            } catch (ATexture.TextureException e) {
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderVisiblePath,add texture error");
-                e.printStackTrace();
-            }*/
-//            rMaterial.setDiffuseMethod(new DiffuseMethod.Lambert());
-//            rMaterial.enableLighting(true);
-//            rMaterial.setColorInfluence(0);
-//            rMaterial.addTexture(TextureManager.getInstance().addTexture(BitmapFactory.decodeResource(mContext.getResources(), R.drawable.route_new_line), ATexture.TextureType.NORMAL));
             rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.8f,0.4f*roadscale,0.12f*roadscale,mRoadMaterial);
+            roadLayers = createRoadLayer(1*roadscale,0.9f,0.3f*roadscale,0.3f*roadscale,mRoadMaterial);
             mRoadLayersList.clear();
             mRoadLayersList.add(roadLayers);
         }else {
@@ -239,48 +269,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
 //            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
         }
-        /*if (roadLayers != null) {
-            mScene.clearChildren();
-            result &= roadLayers.white.updateBufferedRoad(path);
-            result &= roadLayers.black.updateBufferedRoad(path);
-            double distStep = REFERENCE_LINE_STEP_LENGTH;
-            List<Vector3> points = new ArrayList<>();
-            List<Float> directions = new ArrayList<>();
-
-            int cnt = path.size();
-            if(cnt>=2){
-                Vector3 v1 = path.get(0);
-                Vector3 v2 = path.get(1);
-                Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
-                points.add(v1);
-                directions.add(direction);
-                for (int i = 0; i < cnt - 1; i++) {
-                    v2 = path.get(i + 1);
-                    double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-                    if (temp >= distStep) {
-                        double scale = distStep / temp;
-                        Vector3 v = new Vector3();
-                        v.x = v1.x + (v2.x - v1.x) * scale;
-                        v.y = v1.y + (v2.y - v1.y) * scale;
-                        v.z = 0;
-                        v1 = new Vector3(v);
-                        i--;
-                        direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
-                        directions.add(direction);
-                        points.add(v);
-                        distStep = REFERENCE_LINE_STEP_LENGTH;
-                    } else if (temp < distStep) {
-                        distStep -= temp;
-                        v1 = path.get(i+1);
-                    }
-                }
-                if(IS_DRAW_RFERENCE_LINT){
-                    result &= roadLayers.refLine.updateReferenceLine(points,directions);
-                }
-            }
-            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
-            return result;
-        }*/
 
         Vector3 postion = new Vector3(0,0,0);
         roadLayers.white.setPosition(postion);
@@ -375,7 +363,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             mCrossRoadLayersList.clear();
         }
         for (List<Vector3> road:cross) {
-            RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.7f,mRoadMaterial);
+            RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.9f,mRoadMaterial);
             mCrossRoadLayersList.add(roadLayers);
             roadLayers.black.updateBufferedRoad(road);
             roadLayers.white.updateBufferedRoad(road);
@@ -407,7 +395,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             result &= addObject(roadLayers.white);
         }
         for(RoadLayers roadLayers:mRoadLayersList){
-            result &= addObject(roadLayers.white);
+//            result &= addObject(roadLayers.white);
         }
         //2
         for(RoadLayers roadLayers:mCrossRoadLayersList){
@@ -440,9 +428,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      */
     public boolean clearRenderedRoad(){
         boolean result = true;
-        for (RoadLayers roadLayers:mRoadLayersList) {
-            result &= removeObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
-        }
+        mScene.clearChildren();
+        mRoadLayersList.clear();
+        mCrossRoadLayersList.clear();
         return result;
     }
 

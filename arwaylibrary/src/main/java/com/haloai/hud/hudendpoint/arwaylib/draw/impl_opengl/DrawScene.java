@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Color;
+import android.opengl.GLSurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
@@ -34,10 +35,15 @@ import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.scene.Scene;
+import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.TextureView;
 
 import java.util.List;
 import java.util.Stack;
+
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLDisplay;
 
 /**
  * Created by wangshengxing on 16/7/10.
@@ -75,6 +81,58 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
     public View getViewInstance(Context context) {
         if (mTextureView == null) {
             mTextureView = new TextureView(context);
+            /*mTextureView.setAntiAliasingMode(ISurface.ANTI_ALIASING_CONFIG.MULTISAMPLING);
+            mTextureView.setSampleCount(6);*/
+            /*mTextureView.setEGLConfigChooser(new GLSurfaceView.EGLConfigChooser(){
+                @Override
+                public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+                    int[] attrList = new int[] { //
+                            EGL10.EGL_SURFACE_TYPE, EGL10.EGL_WINDOW_BIT, //
+                            EGL10.EGL_RED_SIZE, 8, //
+                            EGL10.EGL_GREEN_SIZE, 8, //
+                            EGL10.EGL_BLUE_SIZE, 8, //
+                            EGL10.EGL_DEPTH_SIZE, 16, //
+                            EGL10.EGL_SAMPLE_BUFFERS, 1,
+                            EGL10.EGL_SAMPLES, 2,
+                            EGL10.EGL_NONE //
+                    };
+                    int[] iCfgAttrList = new int[]
+                    {
+//                            EGL10.EGL_RENDERABLE_TYPE, EGL10.EGL_OPENGL_ES2_BIT,
+                            EGL10.EGL_SURFACE_TYPE, EGL10.EGL_WINDOW_BIT,
+                            EGL10.EGL_BUFFER_SIZE, 16,
+                            EGL10.EGL_RED_SIZE, 5,
+                            EGL10.EGL_GREEN_SIZE, 6,
+                            EGL10.EGL_BLUE_SIZE, 5,
+                            EGL10.EGL_DEPTH_SIZE, 16,
+                            EGL10.EGL_SAMPLE_BUFFERS, 1,
+                            EGL10.EGL_SAMPLES, 8,
+                            EGL10.EGL_NONE
+                    };
+
+                    int EGL_COVERAGE_BUFFERS_NV = 0x30E0;
+                    int EGL_COVERAGE_SAMPLES_NV = 0x30E1;
+
+                    int[] configSpec = new int[]{
+                            EGL10.EGL_RED_SIZE, 5,
+                            EGL10.EGL_GREEN_SIZE, 6,
+                            EGL10.EGL_BLUE_SIZE, 5,
+                            EGL10.EGL_DEPTH_SIZE, 16,
+                            EGL10.EGL_RENDERABLE_TYPE, 4 *//* EGL_OPENGL_ES2_BIT *//*,
+                            EGL_COVERAGE_BUFFERS_NV, 1 *//* true *//*,
+                            EGL_COVERAGE_SAMPLES_NV, 2,  // always 5 in practice on tegra 2
+                            EGL10.EGL_NONE
+                    };
+
+                    EGLConfig[] configOut = new EGLConfig[1];
+                    int[] configNumOut = new int[1];
+                    HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"before eglChooseConfig");
+                    boolean configOk =  egl.eglChooseConfig(display, attrList, configOut, 1, configNumOut);
+                    HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"eglChooseConfig is ok? "+configOk);
+                    System.out.print("eglChooseConfig is ok? "+configOk);
+                    return configOut[0];
+                }
+            });*/
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
         }
