@@ -258,7 +258,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             float roadscale = ROAD_WIDTH;
             Material rMaterial = new Material();
             rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.9f,0.3f*roadscale,0.3f*roadscale,mRoadMaterial);
+            roadLayers = createRoadLayer(1*roadscale,0.9f,0.3f*roadscale,0.15f*roadscale,mRoadMaterial);
             mRoadLayersList.clear();
             mRoadLayersList.add(roadLayers);
         }else {
@@ -274,7 +274,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         Vector3 postion = new Vector3(0,0,0);
         roadLayers.white.setPosition(postion);
         roadLayers.black.setPosition(postion);
-        roadLayers.black.setPosition(postion);
+        roadLayers.refLine.setPosition(postion);
         roadLayers.lead.setPosition(postion);
         result &= roadLayers.white.updateBufferedRoad(path);
         result &= roadLayers.black.updateBufferedRoad(path);
@@ -364,11 +364,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             mCrossRoadLayersList.clear();
         }
         for (List<Vector3> road:cross) {
-            RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.9f,mRoadMaterial);
-            mCrossRoadLayersList.add(roadLayers);
-            roadLayers.black.updateBufferedRoad(road);
-            roadLayers.white.updateBufferedRoad(road);
-            roadLayers.refLine.updateBufferedRoad(road);
+            if (road != null && road.size()>0) {
+                RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.9f,mRoadMaterial);
+                mCrossRoadLayersList.add(roadLayers);
+                roadLayers.black.updateBufferedRoad(road);
+                roadLayers.white.updateBufferedRoad(road);
+                //            roadLayers.refLine.updateBufferedRoad(road);
+            }
         }
 
         HaloLogger.logE("onRenderFrame","onRenderFrame,renderCrossRoad called");
@@ -402,9 +404,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         for(RoadLayers roadLayers:mCrossRoadLayersList){
             result &= addObject(roadLayers.black);
         }
-        for(RoadLayers roadLayers:mCrossRoadLayersList){
+        /*for(RoadLayers roadLayers:mCrossRoadLayersList){
             result &= addObject(roadLayers.refLine);
-        }
+        }*/
         for(RoadLayers roadLayers:mRoadLayersList){
             result &= addObject(roadLayers.lead);
         }

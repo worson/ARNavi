@@ -1580,8 +1580,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
 
+        updateRenderData();
         //updatePlane2Scene(mLoadStepIndex);
-        //testBranchLine();
+        testBranchLine();
         updatePlane2Scene();
 
         //被追随物体必须在道路添加到场景后添加到场景中,否则会被道路盖住
@@ -1595,9 +1596,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         clearUnuseDataAfterMyInitScene();
     }
 
+    private void updateRenderData() {
+        List<PointF> returnPath = new ArrayList<>();
+        List<PointF> originalPath = new ArrayList<>();
+        for (Vector3 v : mPath) {
+            originalPath.add(new PointF((float) v.x, (float) v.y));
+        }
+        Douglas.rarefyGetPointFs(mPointIndexsToKeep, returnPath, originalPath, 2 / ARWayProjection.K);
+        mRenderPath.clear();
+        for (PointF p : returnPath) {
+            mRenderPath.add(new Vector3(p.x * TIME_15_20, p.y * TIME_15_20, OBJ_4_CHASE_Z));
+        }
+    }
+
     private void testBranchLine() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
-        branchLinesList.add(mPath);
+        branchLinesList.add(mRenderPath);
         String branchLine = ARWayConst.BRANCH_LINES;
         int count = 0;
         for (int i = 0; i < branchLine.split("\n").length; i++) {
@@ -1670,16 +1684,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void updatePlane2Scene() {
-        List<PointF> returnPath = new ArrayList<>();
-        List<PointF> originalPath = new ArrayList<>();
-        for (Vector3 v : mPath) {
-            originalPath.add(new PointF((float) v.x, (float) v.y));
-        }
-        Douglas.rarefyGetPointFs(mPointIndexsToKeep, returnPath, originalPath, 2 / ARWayProjection.K);
-        mRenderPath.clear();
-        for (PointF p : returnPath) {
-            mRenderPath.add(new Vector3(p.x * TIME_15_20, p.y * TIME_15_20, OBJ_4_CHASE_Z));
-        }
         mSceneUpdater.renderVisiblePath(mRenderPath);
         clearUnuseDataAfterAddPlane2Scene();
     }
