@@ -65,19 +65,19 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class ARwayRenderer extends Renderer implements IAnimationListener {
     //content
-    private static final double  ANIMATION_LENGTH       = 30;
-    private static final double  OBJ_4_CHASE_Z          = 0;
-    private static final double  BIGGER_TIME            = 1/*ARWayConst.AMAP_TO_ARWAY_GL_RATE*/;// 1000000.0 * 0.0023f
-    private static final double  CAMERA_MIN_LENGTH      = 20;
-    private static final int     FRAME_RATE             = ARWayConst.FRAME_RATE;
-    private static final int     CURVE_TIME             = 5;
-    private static final double  LOGIC_ROAD_WIDTH       = 0.4;
-    private static final double  ROAD_WIDTH             = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
-    private static final double  CAMERA_OFFSET_X        = 0;
-    private static final double  CAMERA_OFFSET_Y        = 0;
-    private static final double  CAMERA_OFFSET_Z        = /*4*/0.6/*1*/;
-    private static final double  CAMERA_CUT_OFFSET      = /*0*/0.6/*1*/;
-    private static final double  LOOK_AT_DIST           = /*0*/1.3;
+    private static final double ANIMATION_LENGTH  = 30;
+    private static final double OBJ_4_CHASE_Z     = 0;
+    private static final double BIGGER_TIME       = 1/*ARWayConst.AMAP_TO_ARWAY_GL_RATE*/;// 1000000.0 * 0.0023f
+    private static final double CAMERA_MIN_LENGTH = 20;
+    private static final int    FRAME_RATE        = ARWayConst.FRAME_RATE;
+    private static final int    CURVE_TIME        = 5;
+    private static final double LOGIC_ROAD_WIDTH  = 0.4;
+    private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
+    private static final double CAMERA_OFFSET_X   = 0;
+    private static final double CAMERA_OFFSET_Y   = 0;
+    private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
+    private static final double CAMERA_CUT_OFFSET = /*0*/0.6/*1*/;
+    private static final double LOOK_AT_DIST      = /*0*/1.3;
 
     private static final int     INTERSECTION_COUNT     = 30;
     private static final double  CAMERA_NEAR_PLANE      = 0.5;
@@ -89,6 +89,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final boolean DEBUG_MODE             = false;
     private static final boolean IS_MOVE_PATH           = false;
     private static final float   TIME_15_20             = 32;
+    private static final int     RAREFY_PIXEL_COUNT     = 1;
     private static       int     SCREEN_WIDTH           = 0;
     private static       int     SCREEN_HEIGHT          = 0;
     private static final double  BRANCH_LINE_Z          = -0.01;
@@ -202,7 +203,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     @Override
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender initScene called!");
-//        getCurrentScene().setBackgroundColor(0x393939);
+        //        getCurrentScene().setBackgroundColor(0x393939);
         setFrameRate(FRAME_RATE);
 
         mSceneUpdater = ArwaySceneUpdater.getInstance();
@@ -1206,7 +1207,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         for (int i = 0; i < path.size(); i++) {
             Vector3 v = path.get(i);
             if (true/*!containPoint(mPath, v)*/) {
-                mPath.add(new Vector3(v));
+                mPath.add(new Vector3(v.x, v.y, OBJ_4_CHASE_Z));
             }
         }
         path.clear();
@@ -1535,7 +1536,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void myInitScene() {
 
         getCurrentScene().clearChildren();
-//        mSceneUpdater.initScene();
+        //        mSceneUpdater.initScene();
 
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
@@ -1556,7 +1557,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
         mCarObject = new Sphere(0.05f, 20, 20);
         Material cMaterial = new Material();
-        cMaterial.setColor(Color.argb(0,76,0,0));//Color.argb(255,76,0,0)
+        cMaterial.setColor(Color.argb(0, 76, 0, 0));//Color.argb(255,76,0,0)
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
         //        getCurrentScene().addChild(mCarObject);
@@ -1581,6 +1582,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         mCameraModel.setBottomDistanceProportion(0.0f);
 
         updateRenderData();
+        updatePathFrom15To20();
         //updatePlane2Scene(mLoadStepIndex);
         testBranchLine();
         updatePlane2Scene();
@@ -1602,10 +1604,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         for (Vector3 v : mPath) {
             originalPath.add(new PointF((float) v.x, (float) v.y));
         }
-        Douglas.rarefyGetPointFs(mPointIndexsToKeep, returnPath, originalPath, 2 / ARWayProjection.K);
+        Douglas.rarefyGetPointFs(mPointIndexsToKeep, returnPath, originalPath, RAREFY_PIXEL_COUNT / ARWayProjection.K);
         mRenderPath.clear();
         for (PointF p : returnPath) {
             mRenderPath.add(new Vector3(p.x * TIME_15_20, p.y * TIME_15_20, OBJ_4_CHASE_Z));
+        }
+    }
+
+    private void updatePathFrom15To20() {
+        for (Vector3 v : mPath) {
+            v.x *= TIME_15_20;
+            v.y *= TIME_15_20;
         }
     }
 
@@ -1614,7 +1623,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         branchLinesList.add(mRenderPath);
         String branchLine = ARWayConst.BRANCH_LINES;
         int count = 0;
-        for (int i = 0; i < branchLine.split("\n").length; i++) {
+        for (int i = 0; i < branchLine.split("\n").length && count < mStepLastPoint.size(); i++) {
             if (branchLine.split("\n")[i].contains("cross starts")) {
                 Vector3 startPoint = mStepLastPoint.get(count++);
                 for (int j = i + 1; j < branchLine.split("\n").length; j++) {
@@ -1632,7 +1641,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                         double offsetY = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[1]);
                         for (int m = 0; m < arrStart.size(); m++) {
                             List<Vector3> branchLines = new ArrayList<>();
-                            //branchLines.add(startPoint);
                             for (int k = arrStart.get(m) + 1; k < arrEnd.get(m); k++) {
                                 String line = branchLine.split("\n")[k];
                                 Vector3 v = new Vector3(
@@ -1890,7 +1898,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mToPos = convertLocation(location, curIndex);
             mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
             startAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
-//            mCarObject.setPosition(mToPos);
+            //            mCarObject.setPosition(mToPos);
             return 1;
         }
     }
@@ -1909,23 +1917,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                 (-fromPos.y * BIGGER_TIME - mOffsetY) * TIME_15_20,
                 OBJ_4_CHASE_Z);
         for (int i = 0; i < mPointIndexsToKeep.size(); i++) {
-            if (!(mPointIndexsToKeep.get(i) < curIndex)){
+            if (!(mPointIndexsToKeep.get(i) < curIndex)) {
                 Vector3 line_start = null;
                 Vector3 line_end = null;
-                if (mPointIndexsToKeep.get(i) == curIndex && i!=mPointIndexsToKeep.size()-1) {
+                if (mPointIndexsToKeep.get(i) == curIndex && i != mPointIndexsToKeep.size() - 1) {
                     line_start = mRenderPath.get(i);
-                    line_end = mRenderPath.get(i+1);
+                    line_end = mRenderPath.get(i + 1);
                 } else if (mPointIndexsToKeep.get(i) > curIndex && i != 0) {
-                    line_start = mRenderPath.get(i-1);
+                    line_start = mRenderPath.get(i - 1);
                     line_end = mRenderPath.get(i);
                 }
                 PointF pProjection = new PointF();
-                MathUtils.getProjectivePoint(new PointF((float)line_start.x,(float)line_start.y),
-                                             new PointF((float)line_end.x,(float)line_end.y),
-                                             new PointF((float)v.x, (float)v.y),
+                MathUtils.getProjectivePoint(new PointF((float) line_start.x, (float) line_start.y),
+                                             new PointF((float) line_end.x, (float) line_end.y),
+                                             new PointF((float) v.x, (float) v.y),
                                              pProjection);
-                v.x=pProjection.x;
-                v.y=pProjection.y;
+                v.x = pProjection.x;
+                v.y = pProjection.y;
                 break;
             }
         }
