@@ -1682,7 +1682,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         int endIndex = loadStepIndex + 2 >= mLoadStepStartIndexs.size() ? mPath.size() - 1 : mLoadStepStartIndexs.get(loadStepIndex + 2);
         HaloLogger.logE("testtest", "startIndex:" + startIndex + ",endIndex:" + endIndex);
         //        mSceneUpdater.renderVisiblePath(mPath.subList(startIndex, endIndex));
-        mSceneUpdater.renderVisiblePath(mPath);
+        mSceneUpdater.renderNaviPath(mPath);
 
         /*List<List<Vector3>> cross = new LinkedList<>();
         cross.add(mPath);
@@ -1692,7 +1692,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     }
 
     private void updatePlane2Scene() {
-        mSceneUpdater.renderVisiblePath(mRenderPath);
+        mSceneUpdater.renderNaviPath(mRenderPath);
         clearUnuseDataAfterAddPlane2Scene();
     }
 

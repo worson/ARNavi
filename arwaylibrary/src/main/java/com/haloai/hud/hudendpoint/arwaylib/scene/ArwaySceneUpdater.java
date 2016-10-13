@@ -6,7 +6,6 @@ import android.graphics.Color;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -15,14 +14,11 @@ import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Line3D;
-import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.scene.Scene;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Created by wangshengxing on 16/9/22.
@@ -52,12 +48,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private       Material     mTestMaterial              = new Material();
 
     //render configuration
-    private float mRoadScale = 20;
-    private float mRoadWidth = ROAD_WIDTH;
-    private float mCrossRoadWidth = ROAD_WIDTH*1f;
-    private float mRefLineHeight = ROAD_WIDTH;
-    private float mRefLineWidth = ROAD_WIDTH;
+    private float mRoadLevel         = 20;
+    private float mNaviRoadWidth     = ROAD_WIDTH;
+    private float mRoadWidth         = ROAD_WIDTH*1f;
+    private float mRefLineHeight     = ROAD_WIDTH;
+    private float mRefLineWidth      = ROAD_WIDTH;
     private float mRefLineStepLength = ROAD_WIDTH;
+
 
     /*private int mRefLineColor = Color.WHITE;
     private int mRoadBottomColor = Color.WHITE;
@@ -128,8 +125,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void initScene() {
-        float scale = ROAD_WIDTH;
-        initRoadRender(1*scale,0.7f,0.4f*scale,0.12f*scale);
+
     }
 
     @Override
@@ -141,12 +137,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mContext = context;
     }
 
-    public float getRoadScale() {
-        return mRoadScale;
+    public float getRoadLevel() {
+        return mRoadLevel;
     }
 
-    public void setRoadScale(float roadScale) {
-        mRoadScale = roadScale;
+    public void setRoadLevel(float roadLevel) {
+        mRoadLevel = roadLevel;
     }
 
     public void setCarObject(Object3D carObject) {
@@ -200,41 +196,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     /**
-     * 初始化道路显示配置
-     * 道路的GPU消耗为：为1000个形状点2.536MB
+     * 每次绽放级别渲染前，需要重新设置路宽
      * @param roadWidth
-     * @param refLineHegiht
-     * @param refLineWidth
      */
-    private boolean initRoadRender(float roadWidth,float roadRate,float refLineHegiht,float refLineWidth){
-        boolean result = true;
-        mRoadLayersList.clear();
-        for (int i = 0; i < ROAD_OBJECT_SIZE; i++) {
-            RoadLayers roadLayers = new RoadLayers(new ARWayRoadBuffredObject(roadWidth, Color.WHITE,mRoadMaterial),
-                    new  ARWayRoadBuffredObject(roadWidth*roadRate, Color.BLACK,mRoadMaterial),
-                    new ARWayRoadBuffredObject(refLineHegiht,refLineWidth, Color.WHITE,mRoadMaterial));
-            mRoadLayersList.add(roadLayers);
-        }
-        for(RoadLayers roadLayers:mRoadLayersList){
-            result &= addObject(roadLayers.white);
-        }
-        for(RoadLayers roadLayers:mRoadLayersList){
-            result &= addObject(roadLayers.black);
-        }
-        for(RoadLayers roadLayers:mRoadLayersList){
-            result &= addObject(roadLayers.refLine);
-        }
-        if(IS_DEBUG_MODE){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("initRoadRender, scene child size is %s",mScene.getNumChildren()));
-        }
-        mRoadLayersIndex = 0;
-        return result;
-    }
-
-    private void onRoadRender(){
-        if(++mRoadLayersIndex>1){
-            mRoadLayersIndex=0;
-        }
+    public void setRoadWidth(float roadWidth) {
+        mRoadWidth = roadWidth;
+        mNaviRoadWidth = roadWidth;
     }
 
     /**
@@ -242,34 +209,21 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      * @param path
      * @return
      */
-    public boolean renderVisiblePath(List<Vector3> path) {
+    public boolean renderNaviPath(List<Vector3> path) {
         if (path == null) {
             return false;
         }
         boolean result = true;
         if(IS_DEBUG_MODE){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderVisiblePath,path size is %s",path.size()));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s",path.size()));
         }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
         }
-        RoadLayers roadLayers = null;
-        if(true){
-            float roadscale = ROAD_WIDTH;
-            Material rMaterial = new Material();
-            rMaterial.useVertexColors(true);
-            roadLayers = createRoadLayer(1*roadscale,0.9f,0.3f*roadscale,0.15f*roadscale,mRoadMaterial);
-            mRoadLayersList.clear();
-            mRoadLayersList.add(roadLayers);
-        }else {
-            roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-            //            removeObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
-            setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},false);
-            onRoadRender();
-            roadLayers = mRoadLayersList.get(mRoadLayersIndex);
-            setVisible(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine},true);
-//            addObject(new Object3D[]{roadLayers.white,roadLayers.black, roadLayers.refLine});
-        }
+        float roadscale = mRoadWidth;
+        RoadLayers roadLayers = createRoadLayer(1*roadscale,0.9f,0.4f*roadscale,0.15f*roadscale,mRoadMaterial);
+        mRoadLayersList.clear();
+        mRoadLayersList.add(roadLayers);
 
         Vector3 postion = new Vector3(0,0,0);
         roadLayers.white.setPosition(postion);
@@ -279,72 +233,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         result &= roadLayers.white.updateBufferedRoad(path);
         result &= roadLayers.black.updateBufferedRoad(path);
         result &= roadLayers.lead.updateBufferedRoad(path);
-        double distStep = REFERENCE_LINE_STEP_LENGTH;
-        List<Vector3> points = new ArrayList<>();
-        List<Float> directions = new ArrayList<>();
 
-        int cnt = path.size();
-        if(cnt>=2){
-            Vector3 v1 = path.get(0);
-            Vector3 v2 = path.get(1);
-            Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
-            points.add(v1);
-            directions.add(direction);
-            for (int i = 0; i < cnt - 1; i++) {
-                v2 = path.get(i + 1);
-                double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-                if (temp >= distStep) {
-                    double scale = distStep / temp;
-                    Vector3 v = new Vector3();
-                    v.x = v1.x + (v2.x - v1.x) * scale;
-                    v.y = v1.y + (v2.y - v1.y) * scale;
-                    v.z = 0;
-                    v1 = new Vector3(v);
-                    i--;
-                    direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
-                    directions.add(direction);
-                    points.add(v);
-                    distStep = REFERENCE_LINE_STEP_LENGTH;
-                } else if (temp < distStep) {
-                    distStep -= temp;
-                    v1 = path.get(i+1);
-                }
-            }
-            if(IS_DRAW_RFERENCE_LINT){
-                result &= roadLayers.refLine.updateReferenceLine(points,directions);
-            }
+        if(IS_DRAW_RFERENCE_LINT){
+            result &= roadLayers.refLine.updateReferenceLine(path,REFERENCE_LINE_STEP_LENGTH);
         }
-        if(IS_DEBUG_SHIPE_POINT){
-            for(Vector3 p :path){
-                Plane plane = new Plane(0.1f,0.1f,10,10, Vector3.Axis.Z,false,true);
-                plane.setMaterial(mTestMaterial);
-                plane.setPosition(p);
-                mScene.addChild(plane);
-            }
+        if (mSceneUpdaterRecorder != null) {
+            mSceneUpdaterRecorder.recordeAndLog("performance","renderNaviPath");
         }
-        if(IS_DEBUG_PATH_LINE){
-            Stack lineStack = new Stack();
-            lineStack.addAll(path);
-            Line3D line3D = new Line3D(lineStack,2);
-            Material material = new Material();
-            material.setColor(Color.RED);
-            line3D.setMaterial(material);
-            mScene.addChild(line3D);
-        }
-        if(ARWayConst.ENABLE_PERFORM_TEST){
-            if (mSceneUpdaterRecorder != null) {
-                mSceneUpdaterRecorder.recordeAndLog("performance","renderVisiblePath");
-            }
-        }
-        /*if(true) {
-            List<List<Vector3>> cross = new LinkedList<>();
-            List<Vector3> road = new LinkedList<>();
-            for (int i = 0; i < 10; i++) {
-                road.add(new Vector3(path.get(0).x + i, path.get(0).y, 0));
-            }
-            cross.add(road);
-            renderCrossRoad(cross);
-        }*/
+
         reloadAllRoadLayer();
         return result;
     }
@@ -365,7 +261,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
         for (List<Vector3> road:cross) {
             if (road != null && road.size()>0) {
-                RoadLayers roadLayers = createCrossRoadLayer(mCrossRoadWidth,0.9f,mRoadMaterial);
+                RoadLayers roadLayers = createCrossRoadLayer(mRoadWidth,0.9f,mRoadMaterial);
                 mCrossRoadLayersList.add(roadLayers);
                 roadLayers.black.updateBufferedRoad(road);
                 roadLayers.white.updateBufferedRoad(road);
@@ -426,14 +322,24 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return result;
     }
     /**
-     * 清除显示的道路
+     * 清除显示的路网
      * @return
      */
-    public boolean clearRenderedRoad(){
+    public boolean clearRoadnetwork(){
         boolean result = true;
-        mScene.clearChildren();
-        mRoadLayersList.clear();
         mCrossRoadLayersList.clear();
+        reloadAllRoadLayer();
+        return result;
+    }
+
+    /**
+     * 清除显示的导航路
+     * @return
+     */
+    public boolean clearNaviRoad(){
+        boolean result = true;
+        mRoadLayersList.clear();
+        reloadAllRoadLayer();
         return result;
     }
 

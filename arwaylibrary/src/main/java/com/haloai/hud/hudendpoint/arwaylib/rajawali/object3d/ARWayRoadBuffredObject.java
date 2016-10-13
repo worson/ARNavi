@@ -14,6 +14,7 @@ import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.util.RajLog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -115,12 +116,48 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
     /**
      *
-     * @param points
-     * @param directions 方向的弧度
+     * @param path
+     * @param stepLength
      * @return
      */
-    public boolean updateReferenceLine(List<Vector3> points, List<Float> directions){
+    public boolean updateReferenceLine(List<Vector3> path, double stepLength){
         mNeedRender = false;
+
+        double distStep = stepLength;
+        List<Vector3> points = new ArrayList<>();
+        List<Float> directions = new ArrayList<>();
+
+        int cnt = path.size();
+        if(cnt>=2){
+            Vector3 v1 = path.get(0);
+            Vector3 v2 = path.get(1);
+            Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+            points.add(v1);
+            directions.add(direction);
+            for (int i = 0; i < cnt - 1; i++) {
+                v2 = path.get(i + 1);
+                double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
+                if (temp >= distStep) {
+                    double scale = distStep / temp;
+                    Vector3 v = new Vector3();
+                    v.x = v1.x + (v2.x - v1.x) * scale;
+                    v.y = v1.y + (v2.y - v1.y) * scale;
+                    v.z = 0;
+                    v1 = new Vector3(v);
+                    i--;
+                    direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+                    directions.add(direction);
+                    points.add(v);
+                    distStep = stepLength;
+                } else if (temp < distStep) {
+                    distStep -= temp;
+                    v1 = path.get(i+1);
+                }
+            }
+
+        }else {
+            return false;
+        }
         replaceGeometry3D(new Geometry3D());
         ObjectElement referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
 //        ObjectElement referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
