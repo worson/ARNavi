@@ -1325,4 +1325,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public void setEvent(int type) {
         mRenderer.setEvent(type);
     }
+
+    // TODO: 2016/10/14
+    public void changeRoadShowWidthBy(double changeValue){
+        mRenderer.changeRoadShowWidthBy(changeValue);
+    }
+    // TODO: 2016/10/14
+    public double changeCameraZBy(double changeValue){
+        return mRenderer.changeCameraZBy(changeValue);
+    }
+    // TODO: 2016/10/14
+    public double changeCameraLookDistBy(double changeValue){
+        return mRenderer.changeCameraLookDistBy(changeValue);
+    }
 }

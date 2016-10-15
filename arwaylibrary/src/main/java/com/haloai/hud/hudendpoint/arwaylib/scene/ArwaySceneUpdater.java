@@ -42,7 +42,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Context mContext;
 
     //ROAD
-    private static final float ROAD_WIDTH                 = 0.8f;
+    private static final float ROAD_WIDTH                 = 0.1f;
     private       double       REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH* ROAD_WIDTH; //参考线间的长度
     private       Material     mRoadMaterial              = new Material();
     private       Material     mTestMaterial              = new Material();
