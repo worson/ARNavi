@@ -14,10 +14,32 @@ public class ObjectElement {
     public float[] colors = null;
     public int[] indices = null;
 
+    private boolean mUseNormals       = false;
+    private boolean mUseColors        = false;
+    private boolean mUseTextureCoords = false;
+
     public boolean isDataValid(){
-        return (vertices != null && textureCoords != null && normals != null && colors != null && indices != null);
+        return (vertices != null && (!mUseNormals || normals != null)
+                && (!mUseColors || colors != null) && indices != null
+                && (!mUseTextureCoords || textureCoords != null));
     }
 
+    public String getDebugInfo(){
+        StringBuilder sb = new StringBuilder();
+        //顶点数据之间可以共用
+        if(mUseTextureCoords) {
+            sb.append(String.format("textureCoords size is %s\n",textureCoords.length));
+        }
+        if (mUseNormals) {
+            sb.append(String.format("normals size is %s\n",normals.length));
+        }
+        if(mUseColors) {
+            sb.append(String.format("colors size is %s\n",colors.length));
+        }
+        sb.append(String.format("vertices size is %s\n",vertices.length));
+        sb.append(String.format("indices size is %s\n",indices.length));
+        return sb.toString();
+    }
     public void free(){
         vertices = null;
         textureCoords = null;
@@ -26,9 +48,36 @@ public class ObjectElement {
         indices = null;
     }
 
-    public static ObjectElement addAllElement(List<ObjectElement> elementList){
-        if (elementList == null) {
+    public boolean isUseNormals() {
+        return mUseNormals;
+    }
+
+    public void setUseNormals(boolean useNormals) {
+        mUseNormals = useNormals;
+    }
+
+    public boolean isUseColors() {
+        return mUseColors;
+    }
+
+    public void setUseColors(boolean useColors) {
+        mUseColors = useColors;
+    }
+
+    public boolean isUseTextureCoords() {
+        return mUseTextureCoords;
+    }
+
+    public void setUseTextureCoords(boolean useTextureCoords) {
+        mUseTextureCoords = useTextureCoords;
+    }
+
+    public  static ObjectElement addAllElement(List<ObjectElement> elementList){
+        if (elementList == null || elementList.size()<1) {
             return null;
+        }
+        if(elementList.size() == 1){
+            return elementList.get(0);
         }
         int verticesSize = 0;
         int textureCoordsSize = 0;
@@ -36,13 +85,29 @@ public class ObjectElement {
         int colorsSize = 0;
         int indicesSize = 0;
         boolean hasData = false;
+        boolean useTextureCoords = true;
+        boolean useNormals = true;
+        boolean useColors = true;
+        for(ObjectElement element :elementList){
+            if (element != null) {
+                useTextureCoords &= element.mUseTextureCoords;
+                useNormals &= element.mUseNormals;
+                useColors &= element.mUseColors;
+            }
+        }
         for(ObjectElement element :elementList){
             if(element != null &&  element.isDataValid()){
                 verticesSize += element.vertices.length;
-                textureCoordsSize += element.textureCoords.length;
-                normalsSize += element.normals.length;
-                colorsSize += element.colors.length;
                 indicesSize += element.indices.length;
+                if(useTextureCoords){
+                    textureCoordsSize += element.textureCoords.length;
+                }
+                if (useNormals){
+                    normalsSize += element.normals.length;
+                }
+                if(useColors){
+                    colorsSize += element.colors.length;
+                }
                 hasData = true;
             }
         }
@@ -50,10 +115,16 @@ public class ObjectElement {
             ObjectElement totalElement = new ObjectElement();
             //顶点数据之间可以共用
             totalElement.vertices = new float[verticesSize];
-            totalElement.textureCoords = new float[textureCoordsSize];
-            totalElement.normals = new float[normalsSize];
-            totalElement.colors = new float[colorsSize];
             totalElement.indices = new int[indicesSize];
+            if(useTextureCoords) {
+                totalElement.textureCoords = new float[textureCoordsSize];
+            }
+            if (useNormals) {
+                totalElement.normals = new float[normalsSize];
+            }
+            if(useColors) {
+                totalElement.colors = new float[colorsSize];
+            }
 
             int verticesIndex = 0;
             int textureCoordsIndex = 0;
@@ -66,15 +137,20 @@ public class ObjectElement {
                         element.indices[i] += indicesIndex;
                     }
                     System.arraycopy(element.vertices, 0, totalElement.vertices, verticesIndex, element.vertices.length);
-                    System.arraycopy(element.textureCoords, 0, totalElement.textureCoords, textureCoordsIndex, element.textureCoords.length);
-                    System.arraycopy(element.normals, 0, totalElement.normals, normalsIndex, element.normals.length);
-                    System.arraycopy(element.colors, 0, totalElement.colors, colorsIndex, element.colors.length);
                     System.arraycopy(element.indices, 0, totalElement.indices, indicesIndex, element.indices.length);
-
+                    if(useTextureCoords) {
+                        System.arraycopy(element.textureCoords, 0, totalElement.textureCoords, textureCoordsIndex, element.textureCoords.length);
+                        textureCoordsIndex += element.textureCoords.length;
+                    }
+                    if (useNormals) {
+                        System.arraycopy(element.normals, 0, totalElement.normals, normalsIndex, element.normals.length);
+                        normalsIndex += element.normals.length;
+                    }
+                    if(useColors) {
+                        System.arraycopy(element.colors, 0, totalElement.colors, colorsIndex, element.colors.length);
+                        colorsIndex += element.colors.length;
+                    }
                     verticesIndex += element.vertices.length;
-                    textureCoordsIndex += element.textureCoords.length;
-                    normalsIndex += element.normals.length;
-                    colorsIndex += element.colors.length;
                     indicesIndex += element.indices.length;
 
                     element.free();

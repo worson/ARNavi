@@ -199,10 +199,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/arway_black">
-            <View
+            <ImageView
+                android:id="@+id/arway_mask_imageview"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/alpha_arway3"></View>
+                android:layout_height="match_parent"></ImageView>
         </FrameLayout>
         <RelativeLayout
             android:id="@+id/compass_viewgroup"
