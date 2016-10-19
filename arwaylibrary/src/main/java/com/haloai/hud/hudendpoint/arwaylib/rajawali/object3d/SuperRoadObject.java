@@ -36,6 +36,11 @@ public class SuperRoadObject extends Object3D {
     protected volatile boolean  mNeedRender = false;
     private boolean hasVerticesColor = false;
 
+    protected boolean mFogEnable = true;
+    protected Vector3 mFogStart = new Vector3(0,0,0);
+    protected Vector3 mFogEnd = new Vector3(0,1,0);
+
+
     protected static Material mRoadMaterial = new Material();
     static {
         mRoadMaterial.useVertexColors(true);
@@ -94,12 +99,33 @@ public class SuperRoadObject extends Object3D {
                 Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
             }
             mObjectElement = totalElement;
-            if(!hasVerticesColor) {
-                totalElement.colors = null;
-            }
             setData(totalElement.vertices, totalElement.normals,
                     totalElement.textureCoords, totalElement.colors, totalElement.indices, true);
             mObjectElement.free();
         }
+    }
+
+    public boolean isFogEnable() {
+        return mFogEnable;
+    }
+
+    public void setFogEnable(boolean fogEnable) {
+        mFogEnable = fogEnable;
+    }
+
+    public Vector3 getFogStart() {
+        return mFogStart;
+    }
+
+    public void setFogStart(Vector3 fogStart) {
+        mFogStart.setAll(fogStart);
+    }
+
+    public Vector3 getFogEnd() {
+        return mFogEnd;
+    }
+
+    public void setFogEnd(Vector3 fogEnd) {
+        mFogEnd.setAll(fogEnd);
     }
 }

@@ -5,11 +5,13 @@ import android.graphics.Color;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
+
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
@@ -25,12 +27,14 @@ import java.util.List;
  */
 public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayRoadRender{
 
-    private static final boolean IS_DEBUG_PATH_LINE    = false;
-    private static final boolean IS_DEBUG_SHIPE_POINT  = false;
-    private static final int     ROAD_OBJECT_SIZE      = 2;
-    private static final int     MAX_CROSS_ROAD_DISPLAY= 3;
-    private static final boolean IS_DEBUG_MODE         = true;
-    private static final boolean IS_DRAW_RFERENCE_LINT = true;
+    private static final boolean IS_DEBUG_PATH_LINE     = false;
+    private static final boolean IS_DEBUG_SHIPE_POINT   = false;
+    private static final int     ROAD_OBJECT_SIZE       = 2;
+    private static final int     MAX_CROSS_ROAD_DISPLAY = 3;
+    private static final boolean IS_DEBUG_MODE          = true;
+    private static final boolean IS_DRAW_RFERENCE_LINT  = true;
+    private static final boolean IS_SINGLETON           = false;
+    private static final boolean IS_ROAD_FOG            = true;
 
     private List<RoadLayers> mRoadLayersList      = new LinkedList<>();
     private List<RoadLayers> mCrossRoadLayersList = new ArrayList<>();
@@ -42,10 +46,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Context mContext;
 
     //ROAD
-    private static final float ROAD_WIDTH                 = 0.8f;
-    private       double       REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH* ROAD_WIDTH; //参考线间的长度
-    private       Material     mRoadMaterial              = new Material();
-    private       Material     mTestMaterial              = new Material();
+    private static final float    ROAD_WIDTH                 = 0.8f;
+    private              double   REFERENCE_LINE_STEP_LENGTH = ARWayConst.REFERENCE_LINE_STEP_LENGTH* ROAD_WIDTH; //参考线间的长度
+    private              Material mRoadMaterial              = new Material();
+    private              Material mTestMaterial              = new Material();
 
     //render configuration
     private float mRoadLevel         = 20;
@@ -55,7 +59,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private float mRefLineWidth      = ROAD_WIDTH;
     private float mRefLineStepLength = ROAD_WIDTH;
 
-    /*private int mRefLineColor = Color.WHITE;
+    /*private int mRefLineColor = Color.RED;
     private int mRoadBottomColor = Color.WHITE;
     private int mRoadColor = Color.DKGRAY;
     private int mMainRoadColor = Color.BLUE;*/
@@ -64,10 +68,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Texture mRoadMidleTexture  = null;
     private Texture mMainRoadTexture   = null;
 
-    private Material mRoadBottomMaterial = null;
-    private Material mRoadMidleMaterial  = null;
-    private Material mMainRoadMaterial   = null;
-    private Material mRoadReflineMaterial   = null;
+    private Material mRoadBottomMaterial  = null;
+    private Material mRoadMidleMaterial   = null;
+    private Material mMainRoadMaterial    = null;
+    private Material mRoadReflineMaterial = null;
 
     private int mRefLineColor = Color.TRANSPARENT;
     private int mRoadBottomColor = 0;
@@ -75,8 +79,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private int mMainRoadColor = 0;
 
 
-    private static ArwaySceneUpdater mArwaySceneUpdater = new ArwaySceneUpdater(null);
-    private TimeRecorder mSceneUpdaterRecorder = new TimeRecorder();
+    private static ArwaySceneUpdater mArwaySceneUpdater    = new ArwaySceneUpdater(null);
+    private        TimeRecorder      mSceneUpdaterRecorder = new TimeRecorder();
 
     private Object3D mCarObject;
 
@@ -84,7 +88,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         private ARWayRoadBuffredObject white   = null;
         private ARWayRoadBuffredObject black   = null;
         private ARWayRoadBuffredObject refLine = null;
-        private ARWayRoadBuffredObject lead = null;
+        private ARWayRoadBuffredObject lead    = null;
 
         public RoadLayers(ARWayRoadBuffredObject white, ARWayRoadBuffredObject black, ARWayRoadBuffredObject lead,ARWayRoadBuffredObject refLine) {
             this.white = white;
@@ -105,7 +109,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public static ArwaySceneUpdater getInstance(){
-        if (mArwaySceneUpdater == null) {
+        if ( !IS_SINGLETON|| mArwaySceneUpdater == null) {
             mArwaySceneUpdater = new ArwaySceneUpdater(null);
         }
         return mArwaySceneUpdater;
@@ -149,18 +153,19 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     private void initRoadMaterial(){
-        int[] textureIds = new int[]{R.drawable.road_white, R.drawable.road_grey,
-                R.drawable.road_blue,R.drawable.road_white_change};
+        int[] textureIds = new int[]{R.drawable.road_circle_white, R.drawable.road_circle_grey,
+                R.drawable.road_circle_blue,R.drawable.road_white_change};
         List<Material> materialList = new LinkedList();
         for (int i = 0; i < textureIds.length; i++) {
             Material material = new Material();
             material.useVertexColors(true);
+            material.setColorInfluence(0);
             materialList.add(material);
             int id = textureIds[i];
             Texture texture = new Texture(ATexture.TextureType.DIFFUSE,"road_texture"+i,id);
             texture.setFilterType(ATexture.FilterType.LINEAR);
-            texture.setWrapType(ATexture.WrapType.CLAMP);
-            texture.setMipmap(true);
+            texture.setWrapType(ATexture.WrapType.REPEAT);
+            texture.setMipmap(false);
             try {
                 material.addTexture(texture);
             } catch (ATexture.TextureException e) {
@@ -173,6 +178,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mMainRoadMaterial = materialList.get(2);
         mRoadReflineMaterial = materialList.get(3);
 
+        if(IS_ROAD_FOG) {
+            RoadFogMaterialPlugin fogMaterialPlugin = new RoadFogMaterialPlugin();
+            mRoadBottomMaterial.addPlugin(fogMaterialPlugin);
+            mRoadMidleMaterial.addPlugin(fogMaterialPlugin);
+        }
+
+//        setAlpha(0.5f);
 
     }
 
@@ -225,6 +237,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mRoadLayersList.add(roadLayers);
 
         Vector3 postion = new Vector3(0,0,0);
+        roadLayers.white.setFogEnable(false);
+        roadLayers.black.setFogEnable(false);
         roadLayers.white.setPosition(postion);
         roadLayers.black.setPosition(postion);
         roadLayers.refLine.setPosition(postion);
@@ -262,9 +276,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             if (road != null && road.size()>0) {
                 RoadLayers roadLayers = createCrossRoadLayer(mRoadWidth,0.9f,mRoadMaterial);
                 mCrossRoadLayersList.add(roadLayers);
+                Vector3 fogStart = road.get(0);
+                Vector3 fogEng = road.get(road.size()-1);
+                boolean isFog = IS_ROAD_FOG;
+                roadLayers.black.setFogEnable(isFog);
+                roadLayers.white.setFogEnable(isFog);
                 roadLayers.black.updateBufferedRoad(road);
                 roadLayers.white.updateBufferedRoad(road);
-                //            roadLayers.refLine.updateBufferedRoad(road);
+                roadLayers.black.setFogStart(fogStart);
+                roadLayers.black.setFogEnd(fogEng);
+                roadLayers.white.setFogStart(fogStart);
+                roadLayers.white.setFogEnd(fogEng);
             }
         }
 
@@ -279,6 +301,16 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
         reloadAllRoadLayer();
         return result;
+    }
+
+    @Override
+    public void setAlpha(float alpha) {
+        Material[] materials = new Material[]{mRoadBottomMaterial,mRoadMidleMaterial,mMainRoadMaterial,mRoadReflineMaterial};
+        for (Material m :materials){
+            for(ATexture texture: m.getTextureList()){
+                texture.setInfluence(alpha);
+            }
+        }
     }
 
     /**

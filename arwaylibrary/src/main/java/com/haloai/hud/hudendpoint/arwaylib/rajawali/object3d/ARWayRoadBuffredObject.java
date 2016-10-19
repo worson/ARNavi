@@ -4,12 +4,14 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Geometry3D;
 import org.rajawali3d.Object3D;
 import org.rajawali3d.bounds.BoundingBox;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.util.RajLog;
@@ -69,11 +71,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mRefLineWidth = width;
     }
 
-    public ARWayRoadBuffredObject(float height,float width, int color) {
+    public ARWayRoadBuffredObject(float height, float width, int color) {
         this(height,width,color,mRoadMaterial);
     }
 
-    public ARWayRoadBuffredObject(float width, int color,Material material) {
+    public ARWayRoadBuffredObject(float width, int color, Material material) {
         super();
         mRoadWidth =  width;
         mRoadColor = color;
@@ -175,10 +177,21 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         }
         mRoadShapePoints = roadPath;
         mRoadShapePointsCount = mRoadShapePoints.size();
-        if(type== ShapeType.ROAD){
+        boolean result = true;
+        if(false && type== ShapeType.ROAD){
             ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,mRoadColor);
-//            ObjectElement circleAndPlaneElement = generatePlaneVerties(mRoadShapePoints,mRoadWidth,0, mRoadColor);
             addVerties(circleAndPlaneElement);
+            result = true;
+        }else {
+            ObjectElement textureElement = TextureRoadGeometryProcessor.getObjectElement(mRoadShapePoints,mRoadWidth,mRoadColor);
+            if (textureElement != null) {
+                addVerties(textureElement);
+                result = true;
+                HaloLogger.logE("textureElement","textureElement add ok !");
+            }else {
+                result = false;
+            }
+
         }
         /*ObjectElement planeElement = generatePlaneVerties(mRoadWidth/2,-0.001f);
         addVerties(planeElement);*/
@@ -187,22 +200,20 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         MathUtils.rotatePath(mRoadShapePoints,rotatePath,roadPath.get(0).x,roadPath.get(0).y,PI/2);
         ObjectElement roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
         addVerties(roadCircleAndPlaneElement);*/
-
-        applyVerties();
-        if(IS_VBOS_MODE){
-            attachRender();
-        }
-        if(IS_CLEAR_BUFFER){
-            recycleBuffer();
+        if(result){
+            applyVerties();
+            if(IS_CLEAR_BUFFER){
+                recycleBuffer();
+            }
         }
         mNeedRender = true;
-        return true;
+        return result;
     }
     private void recycleBuffer(){
         mGeometry.recycleBuffer();
     }
 
-    private ObjectElement generateAntiSawtoothLine(List<Vector3> path,float width,int color) {
+    private ObjectElement generateAntiSawtoothLine(List<Vector3> path, float width, int color) {
         ObjectElement element = new ObjectElement();
 
         return element;
@@ -427,7 +438,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         return element;
     }
 
-    private ObjectElement generatePlaneVerties(List<Vector3> points,float radius,float height,int roadColor) {
+    private ObjectElement generatePlaneVerties(List<Vector3> points, float radius, float height, int roadColor) {
         mCountOfPlanes = (points.size() - 1);
         mCountOfVerties = mCountOfPlanes * 4;
         //顶点数据之间可以共用
@@ -556,6 +567,17 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         synchronized (mLock){
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
+            RoadFogMaterialPlugin fogMaterialPlugin = null;
+            if(mFogEnable){
+               IMaterialPlugin plugin =  material.getPlugin(RoadFogMaterialPlugin.class);
+                if (plugin != null) {
+                    fogMaterialPlugin =  (RoadFogMaterialPlugin)plugin;
+                    fogMaterialPlugin.setFogStartPosition(mFogStart);
+                    fogMaterialPlugin.setFogEndPosition(mFogEnd);
+                    fogMaterialPlugin.getVertexShaderFragment().applyParams();
+                    fogMaterialPlugin.getFragmentShaderFragment().applyParams();
+                }
+            }
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
             // -- calculate model view matrix;
@@ -684,6 +706,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         }
 
     }
+
+
 
     @Override
     protected void finalize() throws Throwable {
