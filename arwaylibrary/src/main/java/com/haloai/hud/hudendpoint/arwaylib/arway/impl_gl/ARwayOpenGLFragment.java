@@ -39,7 +39,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
-import com.haloai.hud.hudendpoint.arwaylib.debug.CrossImageDataCollector;
+import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
@@ -269,9 +269,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             mAmapNaviView.getMap().showMapText(false);
             // TODO: 16/7/22 需要更新版本
             mAmapNaviView.getMap().showBuildings(false);
-            ARWayController.SceneBeanUpdater
-                    .setProjection(mAmapNaviView.getMap().getProjection());
-
             mMapProjectionMachine.work(MapProjectionMachine.Operation.MAP_LOADED);
             LogI(ARWayConst.INDICATE_LOG_TAG, "地图加载成功");
         }

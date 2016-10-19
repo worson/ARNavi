@@ -8,7 +8,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
-import com.amap.api.maps.model.Text;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
@@ -16,7 +15,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
-import com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.RetainDistanceView;
 
 import java.util.LinkedList;
 import java.util.List;

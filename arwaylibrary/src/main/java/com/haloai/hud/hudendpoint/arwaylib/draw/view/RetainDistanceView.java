@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.view;
+package com.haloai.hud.hudendpoint.arwaylib.draw.view;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;

@@ -11,20 +11,10 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CompassBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.MusicBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NetworkBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.CameraBean;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.OpenglRouteBean;
 import com.haloai.hud.utils.HaloLogger;
-
-import org.rajawali3d.math.vector.Vector3;
-
-import java.util.List;
 
 /**
  * author       : 龙;
@@ -37,9 +27,9 @@ import java.util.List;
  * And they also can update any data about arway.
  */
 public class ARWayController {
-    private static IARWay                 mARWay         = null;
-    private static Fragment               mARWayFragment = null;
-    private static Context                mContext       = null;
+    private static IARWay   mARWay         = null;
+    private static Fragment mARWayFragment = null;
+    private static Context  mContext       = null;
 
 
     /**
@@ -55,10 +45,11 @@ public class ARWayController {
 
     /***
      * get arway fragment for show.
+     *
      * @param context
      * @return
      */
-    public static Fragment getARWayFragmentAndInit(Context context){
+    public static Fragment getARWayFragmentAndInit(Context context) {
         mContext = context;
         return mARWayFragment;
     }
@@ -70,9 +61,9 @@ public class ARWayController {
         /***
          * 保证ARWAY停止后才能清空数据，任务根据需求再次启动
          * 偏航时：更改绘制内容，领航成功时重置内容，再写入新路径
-         * */
+         */
 
-         public static void back2Init() {
+        public static void back2Init() {
             mARWay.reset();
         }
 
@@ -107,23 +98,25 @@ public class ARWayController {
         /**
          * 开始偏航(yawStart)：停止当前绘制内容，进入状态显示界面(显示指南针、速度等内容)
          * 尽可能保证beean中的计算代码的健壮性
-         * */
+         */
         public static void yawStart() {
-            if(isRunning()){
+            if (isRunning()) {
                 CommonBeanUpdater.setYaw(true);
             }
         }
+
         /**
          * 结束偏航(yawEnd)：resetData ，重新开始绘制draw 导航路径等内容
-         * */
+         */
         public static void yawEnd() {
-            if(isRunning()){
+            if (isRunning()) {
                 resetData();
             }
         }
+
         /**
          * 到达目的地时调用
-         * */
+         */
         public static void arriveDestination() {
             CommonBeanUpdater.setNaviEnd(true);
         }
@@ -131,24 +124,19 @@ public class ARWayController {
         public static boolean isRunning() {
             return mARWay.isRunning();
         }
+
         /**
          * reset bean data
          */
         public static void resetData() {
-            HaloLogger.logE("ARWayController","resetData called");
+            HaloLogger.logE("ARWayController", "resetData called");
             CommonBeanUpdater.reset();
-            RouteBeanUpdater.reset();
-            SpeedBeanUpdater.reset();
-            NetworkBeanUpdater.reset();
-            MusicBeanUpdater.reset();
-            SatelliteBeanUpdater.reset();
-            NaviInfoBeanUpdate.reset();
-            RouteBeanUpdater.reset();
         }
     }
 
-    public static class CommonBeanUpdater{
+    public static class CommonBeanUpdater {
         private static CommonBean mCommonBean = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
+
         public static void setYaw(boolean yaw) {
             synchronized (ARWayController.class) {
                 mCommonBean.setYaw(yaw);
@@ -160,11 +148,13 @@ public class ARWayController {
                 mCommonBean.setNaviEnd(naviEnd);
             }
         }
+
         public static void setStartOk(boolean startOk) {
             synchronized (ARWayController.class) {
                 mCommonBean.setStartOk(startOk);
             }
         }
+
         public static void setNavingStart(boolean navingStart) {
             synchronized (ARWayController.class) {
                 mCommonBean.setNavingStart(navingStart);
@@ -190,38 +180,11 @@ public class ARWayController {
         }
 
 
-        public static void reset(){
+        public static void reset() {
             mCommonBean.reset();
         }
     }
 
-    public static class SceneBeanUpdater{
-        private static OpenglRouteBean mOpenglRouteBean = (OpenglRouteBean) BeanFactory.getBean(BeanFactory.BeanType.GL_ROUTE);
-        public static OpenglRouteBean setProjection(Projection projection) {
-            synchronized (ARWayController.class) {
-                return  mOpenglRouteBean.setProjection(projection);
-            }
-        }
-
-        public static OpenglRouteBean setPath(List<Vector3> path) {
-            synchronized (ARWayController.class) {
-                return mOpenglRouteBean.setPathPoints(path);
-            }
-        }
-
-        public static OpenglRouteBean setAllLength(int allLength) {
-            synchronized (ARWayController.class) {
-                return mOpenglRouteBean.setAllLength(allLength);
-            }
-        }
-
-    }
-
-    public static class CameraBeanUpdater{
-        private static CameraBean mCameraBean = (CameraBean) BeanFactory.getBean(BeanFactory.BeanType.GL_CAMERA);
-
-    }
-    
     /***
      * the class for update data about navigation.
      * RouteBeanUpdater class is a packing class for RouteBean.
@@ -238,7 +201,7 @@ public class ARWayController {
 
         public static RouteBean setProjection(Projection projection) {
             synchronized (ARWayController.class) {
-                return  mRouteBean.setProjection(projection);
+                return mRouteBean.setProjection(projection);
             }
         }
 
@@ -280,9 +243,9 @@ public class ARWayController {
             }
         }
 
-        public static RouteBean setNextRoadName(String nextRoadName, RouteBean.NextRoadType nextRoadType){
+        public static RouteBean setNextRoadName(String nextRoadName, RouteBean.NextRoadType nextRoadType) {
             synchronized (ARWayController.class) {
-                return mRouteBean.setNextRoadNameAndType(nextRoadName,nextRoadType);
+                return mRouteBean.setNextRoadNameAndType(nextRoadName, nextRoadType);
             }
         }
 
@@ -292,7 +255,7 @@ public class ARWayController {
             }
         }
 
-        public static void reset(){
+        public static void reset() {
             mRouteBean.reset();
         }
     }
@@ -301,135 +264,60 @@ public class ARWayController {
      * the class for udpate navi info data.
      * NaviInfoBeanUpdate class is a packing class for NaviInfoBean.
      */
-    public static class NaviInfoBeanUpdate{
+    public static class NaviInfoBeanUpdate {
         private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
 
-        public static NaviInfoBean setIsShow(boolean isShow){
+        public static NaviInfoBean setIsShow(boolean isShow) {
             mNaviInfoBean.setIsShow(isShow);
             return mNaviInfoBean;
         }
-        public static NaviInfoBean setPathTotalDistance(int distance){
+
+        public static NaviInfoBean setPathTotalDistance(int distance) {
             mNaviInfoBean.setPathTotalDistance(distance);
             return mNaviInfoBean;
         }
 
-        public static NaviInfoBean setNaviIcon(int naviIcon){
+        public static NaviInfoBean setNaviIcon(int naviIcon) {
             return mNaviInfoBean.setNaviIcon(naviIcon);
         }
 
-        public static NaviInfoBean setNaviIconBitmap(Bitmap bitmap){
+        public static NaviInfoBean setNaviIconBitmap(Bitmap bitmap) {
             return mNaviInfoBean.setNaviIconBitmap(bitmap);
         }
 
-        public static NaviInfoBean setCrossBitmap(Bitmap bitmap){
+        public static NaviInfoBean setCrossBitmap(Bitmap bitmap) {
             return mNaviInfoBean.setCrossBitmap(bitmap);
         }
 
-        public static NaviInfoBean setNaviIconDist(int naviIcon){
+        public static NaviInfoBean setNaviIconDist(int naviIcon) {
             return mNaviInfoBean.setNaviIconDistance(naviIcon);
         }
 
-        public static NaviInfoBean setCurrentRoadName(String currentRoadName){
+        public static NaviInfoBean setCurrentRoadName(String currentRoadName) {
             return mNaviInfoBean.setCurrentRoadName(currentRoadName);
         }
 
-        public static NaviInfoBean setNextRoadName(String nextRoadName){
+        public static NaviInfoBean setNextRoadName(String nextRoadName) {
             return mNaviInfoBean.setNextRoadName(nextRoadName);
         }
 
-        public static NaviInfoBean setPathRetainDistance(int pathRetainDistance){
+        public static NaviInfoBean setPathRetainDistance(int pathRetainDistance) {
             return mNaviInfoBean.setPathRetainDistance(pathRetainDistance);
         }
 
-        public static NaviInfoBean setPathRetainTime(int pathRetainTime){
+        public static NaviInfoBean setPathRetainTime(int pathRetainTime) {
             return mNaviInfoBean.setPathRetainTime(pathRetainTime);
         }
 
-        public static NaviInfoBean setNaviText(String naviText){
+        public static NaviInfoBean setNaviText(String naviText) {
             return mNaviInfoBean.setNaviText(naviText);
         }
 
-        public static void reset(){
+        public static void reset() {
             mNaviInfoBean.reset();
         }
 
 
-    }
-
-    /***
-     * the class for update data about satellite.
-     * SatelliteBeanUpdater class is a packing class for SatelliteBean.
-     */
-    public static class SatelliteBeanUpdater {
-        private static SatelliteBean mSatelliteBean = (SatelliteBean) BeanFactory.getBean(BeanFactory.BeanType.SATELLITE);
-
-        public static SatelliteBean setIsShow(boolean isShow) {
-            synchronized (ARWayController.class) {
-                mSatelliteBean.setIsShow(isShow);
-                return mSatelliteBean;
-            }
-        }
-
-        public static void reset(){
-            mSatelliteBean.reset();
-        }
-
-    }
-
-    /***
-     * the class for update data about music.
-     * MusicBeanUpdater class is a packing class for MusicBean.
-     */
-    public static class MusicBeanUpdater {
-        private static MusicBean mMusicBean = (MusicBean) BeanFactory.getBean(BeanFactory.BeanType.MUSIC);
-
-        public static MusicBean setIsShow(boolean isShow) {
-            synchronized (ARWayController.class) {
-                mMusicBean.setIsShow(isShow);
-                return mMusicBean;
-            }
-        }
-
-        public static MusicBean setMusicName(String musicName) {
-            synchronized (ARWayController.class) {
-                return mMusicBean.setMusicName(musicName);
-            }
-        }
-
-        public static MusicBean setMusicStatus(MusicBean.MusicStatus musicStatus){
-            synchronized (ARWayController.class) {
-                return mMusicBean.setMusicStatus(musicStatus);
-            }
-        }
-
-        public static MusicBean setMusicDuration(long duration){
-            synchronized (ARWayController.class) {
-                return mMusicBean.setDuration(duration);
-            }
-        }
-
-        public static void reset(){
-            mMusicBean.reset();
-        }
-    }
-
-    /***
-     * the class for update data about network navigation.
-     * NetworkBeanUpdater class is a packing class for NetworkBean.
-     */
-    public static class NetworkBeanUpdater {
-        private static NetworkBean mNetworkBean = (NetworkBean) BeanFactory.getBean(BeanFactory.BeanType.NETWORK);
-
-        public static NetworkBean setIsShow(boolean isShow) {
-            synchronized (ARWayController.class) {
-                mNetworkBean.setIsShow(isShow);
-                return mNetworkBean;
-            }
-        }
-
-        public static void reset(){
-            mNetworkBean.reset();
-        }
     }
 
     /***
@@ -445,47 +333,20 @@ public class ARWayController {
                 return mSpeedBean;
             }
         }
+
         /**
          * @param speed km/h
-         * */
+         */
         public static void setSpeed(int speed) {
             synchronized (ARWayController.class) {
                 mSpeedBean.setSpeed(speed);
             }
         }
 
-        public static void reset(){
+        public static void reset() {
             mSpeedBean.reset();
         }
     }
 
-    /***
-     * the class for update data about compass
-     * NetworkBeanUpdater class is a packing class for compass.
-     */
-    public static class CompassBeanUpdater {
-        private static CompassBean mCompassBean = (CompassBean) BeanFactory.getBean(BeanFactory.BeanType.COMPASS);
-
-        public static CompassBean setIsShow(boolean isShow) {
-            synchronized (ARWayController.class) {
-                mCompassBean.setIsShow(isShow);
-                return mCompassBean;
-            }
-        }
-
-        public static void setDirection(int direction) {
-            mCompassBean.setDirection(direction);
-        }
-
-        public static void setOrientation(int orientation) {
-            mCompassBean.setOrientation(orientation);
-        }
-
-        public static void reset(){
-            mCompassBean.reset();
-        }
-
-    }
-    
 
 }

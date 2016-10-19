@@ -1,11 +1,10 @@
-package com.haloai.hud.hudendpoint.arwaylib.view;
+package com.haloai.hud.hudendpoint.arwaylib.draw.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;

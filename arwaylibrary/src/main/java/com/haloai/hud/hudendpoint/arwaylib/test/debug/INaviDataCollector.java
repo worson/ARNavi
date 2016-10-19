@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.debug;
+package com.haloai.hud.hudendpoint.arwaylib.test.debug;
 
 import com.amap.api.navi.model.NaviLatLng;
 

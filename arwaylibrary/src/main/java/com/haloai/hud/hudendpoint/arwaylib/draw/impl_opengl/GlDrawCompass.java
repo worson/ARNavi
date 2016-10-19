@@ -15,8 +15,8 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
-import com.haloai.hud.hudendpoint.arwaylib.view.ComPassView;
-import com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.ComPassView;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.CompassOutletView;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.LinkedList;

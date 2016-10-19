@@ -2,7 +2,6 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -17,7 +16,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.DrawViewObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
-import com.haloai.hud.hudendpoint.arwaylib.view.SpeedView;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedView;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.view;
+package com.haloai.hud.hudendpoint.arwaylib.draw.view;
 
 import android.animation.ObjectAnimator;
 import android.annotation.TargetApi;
@@ -14,8 +14,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Region;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;

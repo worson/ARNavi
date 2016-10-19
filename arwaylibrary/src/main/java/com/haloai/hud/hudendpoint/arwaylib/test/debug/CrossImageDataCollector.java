@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.debug;
+package com.haloai.hud.hudendpoint.arwaylib.test.debug;
 
 import android.annotation.SuppressLint;
 import android.graphics.Point;

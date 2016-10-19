@@ -102,7 +102,7 @@
 
         </RelativeLayout>
 
-        <com.haloai.hud.hudendpoint.arwaylib.view.SpeedView
+        <com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedView
             android:id="@+id/speed_view"
             android:layout_width="@dimen/speed_view_pause_width"
             android:layout_height="@dimen/speed_view_pause_height"
@@ -110,7 +110,7 @@
             android:layout_marginTop="@dimen/speed_view_pause_margin_top"
             custom:custom_height="@dimen/speed_view_pause_height"
             custom:custom_width="@dimen/speed_view_pause_width">
-        </com.haloai.hud.hudendpoint.arwaylib.view.SpeedView>
+        </com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedView>
 
         <RelativeLayout
             android:id="@+id/digital_speed_viewgroup"
@@ -211,7 +211,7 @@
             android:layout_marginTop="15dp"
             android:padding="0dp"
             android:layout_centerHorizontal="true">
-            <com.haloai.hud.hudendpoint.arwaylib.view.ComPassView
+            <com.haloai.hud.hudendpoint.arwaylib.draw.view.ComPassView
                 android:id="@+id/compass_view"
                 android:padding="0dp"
                 android:layout_margin="0dp"
@@ -219,7 +219,7 @@
                 android:layout_height="@dimen/compass_pause_height"
                 custom:custom_height="@dimen/compass_pause_height"
                 custom:custom_width="@dimen/compass_pause_width">
-            </com.haloai.hud.hudendpoint.arwaylib.view.ComPassView>
+            </com.haloai.hud.hudendpoint.arwaylib.draw.view.ComPassView>
             <TextView
                 android:id="@+id/diretion_textview"
                 android:layout_width="wrap_content"
@@ -229,12 +229,12 @@
                 android:paddingBottom="1dp"
                 android:text="往西\n行驶"
                 android:textColor="#ffffff"/>
-            <com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView
+            <com.haloai.hud.hudendpoint.arwaylib.draw.view.CompassOutletView
                 android:id="@+id/compass_ouletview"
                 android:layout_centerInParent="true"
                 android:layout_width="@dimen/compass_pause_width"
                 android:layout_height="@dimen/compass_pause_height">
-            </com.haloai.hud.hudendpoint.arwaylib.view.CompassOutletView>
+            </com.haloai.hud.hudendpoint.arwaylib.draw.view.CompassOutletView>
         </RelativeLayout>
 
     </RelativeLayout>
@@ -246,7 +246,7 @@
         android:layout_toRightOf="@id/middle_card_viewgroup"
         android:background="#000000">
 
-        <com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView
+        <com.haloai.hud.hudendpoint.arwaylib.draw.view.RetainDistanceView
             android:id="@+id/retain_distance_view"
             android:layout_width="@dimen/distance_view_pause_width"
             android:layout_height="@dimen/distance_view_pause_height"
@@ -254,7 +254,7 @@
             android:layout_marginTop="@dimen/distance_view_pause_margin_top"
             custom:custom_height="@dimen/distance_view_pause_height"
             custom:custom_width="@dimen/distance_view_pause_width">
-        </com.haloai.hud.hudendpoint.arwaylib.view.RetainDistanceView>
+        </com.haloai.hud.hudendpoint.arwaylib.draw.view.RetainDistanceView>
 
         <RelativeLayout
             android:id="@+id/retain_time_viewgroup"
