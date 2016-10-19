@@ -46,4 +46,26 @@ public class CameraModel {
     public void setBottomDistanceProportion(double bottomDistanceProportion) {
         mBottomDistanceProportion = bottomDistanceProportion;
     }
+
+
+
+    public double setRotZBy(double rotZ) {
+        return mRotZ += rotZ;
+    }
+
+    public double setRoadWidthProportionBy(double roadWidthProportion) {
+        return mRoadWidthProportion += roadWidthProportion;
+    }
+
+    public double setNearPlaneWithDrawPlane_AngelBy(double nearPlaneWithDrawPlane_Angel) {
+        return mNearPlaneWithDrawPlane_Angel += nearPlaneWithDrawPlane_Angel;
+    }
+
+    public double setRoadWidthBy(double roadWidth) {
+        return mRoadWidth += roadWidth;
+    }
+
+    public double setBottomDistanceProportionBy(double bottomDistanceProportion) {
+        return mBottomDistanceProportion += bottomDistanceProportion;
+    }
 }

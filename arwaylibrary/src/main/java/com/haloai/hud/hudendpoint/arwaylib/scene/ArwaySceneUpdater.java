@@ -58,7 +58,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private float mRefLineWidth      = ROAD_WIDTH;
     private float mRefLineStepLength = ROAD_WIDTH;
 
-
     private int mRefLineColor = Color.WHITE;
     private int mRoadBottomColor = Color.WHITE;
     private int mRoadColor = Color.DKGRAY;

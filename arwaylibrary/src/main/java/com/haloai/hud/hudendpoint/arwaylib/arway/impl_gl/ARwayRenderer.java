@@ -236,15 +236,28 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (true) {
             mCameraModel.setLocation(mObject4Chase.getPosition());
             mCameraModel.setRotZ(mObject4Chase.getRotZ());
-
             ARWayCameraCaculator.calculateCameraPositionAndLookAtPoint(position, lookat, mCameraModel);
         } else {
             updateCameraLookatAndPosition(location, transObject.getRotZ(), LOOK_AT_DIST, position, lookat);
         }
         camera.setPosition(position);
         camera.setLookAt(lookat);
-        /*camera.setPosition(position.x,position.y,position.z*5);
-        camera.setLookAt(position.x,position.y,0);*/
+    }
+
+    // TODO: 2016/10/14 修改道路底边的宽度--修改摄像机的高度和LOOK_DIST
+    public void changeRoadShowWidthBy(double changeValue) {
+        mRoadWidthProportion += changeValue;
+        mRoadWidthProportion = mRoadWidthProportion <= 0 ? 0 : mRoadWidthProportion;
+    }
+
+    // TODO: 2016/10/14 修改摄像机高度
+    public double changeCameraZBy(double changeValue) {
+        return mCameraModel.setRoadWidthProportionBy(changeValue);
+    }
+
+    // TODO: 2016/10/14  修改摄像机角度
+    public double changeCameraLookDistBy(double changeValue) {
+        return mCameraModel.setNearPlaneWithDrawPlane_AngelBy(changeValue);
     }
 
     private void updateCameraLookatAndPosition(Vector3 cPos, double yaw, double dist, Vector3 position, Vector3 lookat) {
