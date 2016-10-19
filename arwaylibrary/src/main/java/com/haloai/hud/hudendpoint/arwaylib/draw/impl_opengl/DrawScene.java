@@ -2,70 +2,21 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.Color;
-import android.opengl.GLSurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.RelativeLayout;
 
-import com.haloai.hud.hudendpoint.arwaylib.R;
-import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
-import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.OpenglRouteBean;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.factor.SceneFactor;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.impl.SceneCalculator;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.result.SceneResult;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
-import com.haloai.hud.hudendpoint.arwaylib.draw.IOpenglFrame;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl_opengl.SceneFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGalore;
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.PlanesGaloreMaterialPlugin;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.utils.HaloLogger;
 
-import org.rajawali3d.cameras.Camera;
-import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.Texture;
-import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Line3D;
-import org.rajawali3d.primitives.Plane;
-import org.rajawali3d.primitives.Sphere;
-import org.rajawali3d.renderer.Renderer;
-import org.rajawali3d.scene.Scene;
-import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.TextureView;
-
-import java.util.List;
-import java.util.Stack;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
 
 /**
  * Created by wangshengxing on 16/7/10.
  */
-public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperation{
+public class DrawScene extends DrawObject implements IViewOperation{
 
-    // draw contorl
-    private boolean isDrawPlan = false;
-    private boolean isPlanesGaloreDraw = true;
-    private boolean isDrawPathLine = false;
-
-
-    private Material mMaterial = null;
-    private PlanesGaloreMaterialPlugin mMaterialPlugin = null;
-    //constantly data 实时数据
-    private long   mStartTime   = 0l;
-
-    //3d object
-    private Sphere mSphere = null;
-
-    //
-    private        SceneCalculator mSceneCalculator = (SceneCalculator) CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.GL_SCENE);
     private static DrawScene       mDrawScene       = new DrawScene();
 
     public DrawScene() {
@@ -81,157 +32,10 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
     public View getViewInstance(Context context) {
         if (mTextureView == null) {
             mTextureView = new TextureView(context);
-            /*mTextureView.setAntiAliasingMode(ISurface.ANTI_ALIASING_CONFIG.MULTISAMPLING);
-            mTextureView.setSampleCount(6);*/
-            /*mTextureView.setEGLConfigChooser(new GLSurfaceView.EGLConfigChooser(){
-                @Override
-                public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
-                    int[] attrList = new int[] { //
-                            EGL10.EGL_SURFACE_TYPE, EGL10.EGL_WINDOW_BIT, //
-                            EGL10.EGL_RED_SIZE, 8, //
-                            EGL10.EGL_GREEN_SIZE, 8, //
-                            EGL10.EGL_BLUE_SIZE, 8, //
-                            EGL10.EGL_DEPTH_SIZE, 16, //
-                            EGL10.EGL_SAMPLE_BUFFERS, 1,
-                            EGL10.EGL_SAMPLES, 2,
-                            EGL10.EGL_NONE //
-                    };
-                    int[] iCfgAttrList = new int[]
-                    {
-//                            EGL10.EGL_RENDERABLE_TYPE, EGL10.EGL_OPENGL_ES2_BIT,
-                            EGL10.EGL_SURFACE_TYPE, EGL10.EGL_WINDOW_BIT,
-                            EGL10.EGL_BUFFER_SIZE, 16,
-                            EGL10.EGL_RED_SIZE, 5,
-                            EGL10.EGL_GREEN_SIZE, 6,
-                            EGL10.EGL_BLUE_SIZE, 5,
-                            EGL10.EGL_DEPTH_SIZE, 16,
-                            EGL10.EGL_SAMPLE_BUFFERS, 1,
-                            EGL10.EGL_SAMPLES, 8,
-                            EGL10.EGL_NONE
-                    };
-
-                    int EGL_COVERAGE_BUFFERS_NV = 0x30E0;
-                    int EGL_COVERAGE_SAMPLES_NV = 0x30E1;
-
-                    int[] configSpec = new int[]{
-                            EGL10.EGL_RED_SIZE, 5,
-                            EGL10.EGL_GREEN_SIZE, 6,
-                            EGL10.EGL_BLUE_SIZE, 5,
-                            EGL10.EGL_DEPTH_SIZE, 16,
-                            EGL10.EGL_RENDERABLE_TYPE, 4 *//* EGL_OPENGL_ES2_BIT *//*,
-                            EGL_COVERAGE_BUFFERS_NV, 1 *//* true *//*,
-                            EGL_COVERAGE_SAMPLES_NV, 2,  // always 5 in practice on tegra 2
-                            EGL10.EGL_NONE
-                    };
-
-                    EGLConfig[] configOut = new EGLConfig[1];
-                    int[] configNumOut = new int[1];
-                    HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"before eglChooseConfig");
-                    boolean configOk =  egl.eglChooseConfig(display, attrList, configOut, 1, configNumOut);
-                    HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,"eglChooseConfig is ok? "+configOk);
-                    System.out.print("eglChooseConfig is ok? "+configOk);
-                    return configOut[0];
-                }
-            });*/
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
         }
         return mTextureView;
-    }
-
-    @Override
-    public void doDraw(Context context, Renderer renderer) {
-        SceneFrameData sceneFrameData = SceneFrameData.getInstance();
-        SceneFactor sceneFactor = SceneFactor.getInstance();
-        OpenglRouteBean openglRouteBean = (OpenglRouteBean)BeanFactory.getBean(BeanFactory.BeanType.GL_ROUTE);
-        sceneFactor.init(renderer,openglRouteBean.getPathPoints(),openglRouteBean.getAllLength());
-        SceneResult sceneResult = mSceneCalculator.calculate(sceneFactor);
-        sceneFrameData.update(sceneResult);
-        drawScene(sceneResult);
-    }
-
-    @Override
-    public void onOpenglFrame(Renderer renderer) {
-        Scene scene = renderer.getCurrentScene();
-        Camera camera =renderer.getCurrentCamera();
-        if ( scene == null||camera == null) {
-            return;
-        }
-        if (mMaterialPlugin != null) {
-            mMaterialPlugin.setCameraPosition(renderer.getCurrentCamera().getPosition());
-        }
-        if (mMaterial != null) {
-            mMaterial.setTime((System.currentTimeMillis() - mStartTime) / 1000f);
-        }
-    }
-
-    private void drawScene(SceneResult result) {
-
-        Scene scene = result.mRenderer.getCurrentScene();
-        Camera camera = result.mRenderer.getCurrentCamera();
-        if (result == null|| scene == null||camera == null) {
-            HaloLogger.logE("sen_debug_gl","CurrentScene is null");
-            return;
-        }
-
-        List<Vector3> path = result.mCalculatePath;
-        HaloLogger.logE("sen_debug_gl","onDrawScene called");
-        HaloLogger.logE("helong_debug","start");
-
-        // TODO: 2016/7/1 for camera
-        mSphere = new Sphere(0.1f, 24, 24);
-
-        camera.setPosition(path.get(0).x, path.get(0).y, ARWayConst.DEFAULT_CAMERA_Z);
-
-        Material material = new Material();
-        mSphere.setColor(0xff0000);
-        mSphere.setMaterial(material);
-        mSphere.setPosition(new Vector3(camera.getPosition().x, camera.getPosition().y, 0));
-        scene.addChild(mSphere);
-
-        if(isDrawPathLine){
-            Stack<Vector3> line  = new Stack<>();
-            for (Vector3 pos:result.mOriginalPath){
-                line.add(new Vector3(pos));
-            }
-            Material lineMaterial = new Material();
-            Line3D line3D = new Line3D(line,30, Color.RED);
-            line3D.setMaterial(lineMaterial);
-            line3D.setPosition(new Vector3(0,0,0));
-            scene.addChild(line3D);
-        }
-        if(isPlanesGaloreDraw){
-            final PlanesGalore planes = new PlanesGalore(path, result.mLeftPath, result.mRightPath, result.mCalculatePath.size() - 1);
-            HaloLogger.logE("helong_debug","left_path:"+result.mLeftPath);
-            HaloLogger.logE("helong_debug","right_path:"+result.mRightPath);
-            mMaterial = planes.getMaterial();
-            mMaterial.setColorInfluence(0);
-            try {
-                mMaterial.addTexture(new Texture("route_new", R.drawable.route_new));
-            } catch (ATexture.TextureException e) {
-                e.printStackTrace();
-            }
-
-            mMaterialPlugin = planes.getMaterialPlugin();
-
-            planes.setDoubleSided(true);
-            planes.setPosition(0, 0, 0);
-            scene.addChild(planes);
-        }else if(isDrawPlan) {
-            Material ma = new Material();
-            for (int i = 0; i < path.size() - 1; i++) {
-                Vector3 v1 = path.get(i);
-                Vector3 v2 = path.get(i + 1);
-                Plane plane = new Plane(v2.x - v1.x > 1 ? (float) (v2.x - v1.x) : 1, v2.y - v1.y > 1 ? (float) (v2.y - v1.y) : 1, 24, 24);
-                plane.setPosition((v1.x + v2.x) / 2, (v1.y + v2.y) / 2, 0);
-                plane.setMaterial(ma);
-                plane.setDoubleSided(true);
-                plane.setColor(0xff3333ff);
-//            HaloLogger.logE("helong_debug_","degrees:"+MathUtils.getDegrees(v1.x,v1.y,v2.x,v2.y));
-//            plane.setRotZ(MathUtils.getDegrees(v1.x, v1.y, v2.x, v2.y));
-                scene.addChild(plane);
-            }
-        }
     }
 
     @Override
@@ -287,4 +91,5 @@ public class DrawScene extends DrawObject implements IOpenglFrame ,IViewOperatio
             }
         }
     }
+
 }

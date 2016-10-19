@@ -32,6 +32,7 @@ import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.ARWayController;
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.arway.INaviDisplayPresenter;
 import com.haloai.hud.hudendpoint.arwaylib.arway.INaviUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IStateContoller;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
@@ -65,7 +66,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoadedListener, OnCameraChangeListener, IStateContoller, INaviUpdater /*,INaviDisplayPresenter*/ {
+public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoadedListener, OnCameraChangeListener, IStateContoller, INaviUpdater ,INaviDisplayPresenter {
     private static final String  TAG                 = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
     public final static  boolean IS_DEBUG_MODE       = false;
@@ -443,7 +444,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 导航开始时界面控制
      */
-    private void onNavingStartView() {
+    public void onNavingStartView() {
         hideARWay();
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
@@ -457,7 +458,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 导航开始时界面控制
      */
-    private void prepareNavingStartView() {
+    public void prepareNavingStartView() {
         hideARWay();
         mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
@@ -469,7 +470,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 导航中时界面控制
      */
-    private void onNavingView() {
+    public void onNavingView() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onNavingView called");
         ARWayController.CommonBeanUpdater.setStartOk(true);
 
@@ -502,7 +503,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 导航结束时界面控制
      */
-    private void onNavingEndView() {
+    public void onNavingEndView() {
         //显示gl 场景
         /*GlDrawRetainDistance.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);
         GlDrawSpeedDial.getInstance().changeDriveState(IDriveStateLister.DriveState.PAUSE);*/
@@ -517,7 +518,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 导航退出时界面控制
      */
-    private void onNavingStopView() {
+    public void onNavingStopView() {
         animSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
         hideARWay();
 
@@ -532,7 +533,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 偏航开始时界面控制
      */
-    private void onYawStartView() {
+    public void onYawStartView() {
         //切换显示地图
         /*addAMapNaviView();
         mAmapNaviView.setVisibility(View.VISIBLE);
@@ -547,7 +548,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     /***
      * 偏航结束时界面控制
      */
-    private void onYawEndView() {
+    public void onYawEndView() {
         onNavingContextChangedView();
         //切换隐藏地图
         /*mAmapNaviView.setVisibility(View.INVISIBLE);
@@ -566,7 +567,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
      * 无GPS
      * 不能更新速度、里程，指南针正常工作
      */
-    private void onNavingContextChangedView() {
+    public void onNavingContextChangedView() {
         // TODO: 16/8/2 sen
         updateNaviInfoDisplay();
         /*if(!mCommonBean.isGpsWork() || (!mCommonBean.isHasNetwork() && mCommonBean.isYaw())){

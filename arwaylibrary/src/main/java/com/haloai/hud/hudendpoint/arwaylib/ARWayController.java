@@ -8,7 +8,6 @@ import android.view.View;
 import com.amap.api.maps.Projection;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
-import com.haloai.hud.hudendpoint.arwaylib.arway.ARWayFactory;
 import com.haloai.hud.hudendpoint.arwaylib.arway.IARWay;
 import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
@@ -21,15 +20,6 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SatelliteBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.SpeedBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.CameraBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl_opengl.OpenglRouteBean;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.result.RouteResult;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.FrameDataFactory;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.CrossImageFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.MusicFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NaviInfoFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.NextRoadNameFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.RouteFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.SpeedFrameData;
-import com.haloai.hud.hudendpoint.arwaylib.framedata.impl.TurnInfoFrameData;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.math.vector.Vector3;
@@ -50,7 +40,6 @@ public class ARWayController {
     private static IARWay                 mARWay         = null;
     private static Fragment               mARWayFragment = null;
     private static Context                mContext       = null;
-    private static ARWayFactory.ARWayType mDrawTyte      = ARWayFactory.ARWayType.OPENGL;
 
 
     /**
@@ -61,10 +50,7 @@ public class ARWayController {
      */
     public static View getARWayAndInit(Context context) {
         mContext = context;
-        if (mARWay == null) {
-            mARWay = ARWayFactory.getARWay(context, ARWayFactory.ARWayType.SURFACE_VIEW);
-        }
-        return mARWay.getARWay();
+        return null;
     }
 
     /***
@@ -74,9 +60,6 @@ public class ARWayController {
      */
     public static Fragment getARWayFragmentAndInit(Context context){
         mContext = context;
-        if (mARWayFragment == null) {
-            mARWayFragment = ARWayFactory.getArwayOpenglFragment(context,ARWayFactory.ARWayType.OPENGL);
-        }
         return mARWayFragment;
     }
 
@@ -161,19 +144,6 @@ public class ARWayController {
             SatelliteBeanUpdater.reset();
             NaviInfoBeanUpdate.reset();
             RouteBeanUpdater.reset();
-
-            FrameDataFactory.resetCalculators();
-
-            CrossImageFrameData.getInstance().reset();
-            MusicFrameData.getInstance().reset();
-            NextRoadNameFrameData.getInstance().reset();
-            RouteFrameData.getInstance().reset();
-            NaviInfoFrameData.getInstance().reset();
-            TurnInfoFrameData.getInstance().reset();
-            SpeedFrameData.getInstance().reset();
-
-            // FIXME: 16/6/30
-            RouteResult.getInstance().reset();
         }
     }
 

@@ -21,7 +21,7 @@ import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.ARWayCameraCaculator;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
-import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;

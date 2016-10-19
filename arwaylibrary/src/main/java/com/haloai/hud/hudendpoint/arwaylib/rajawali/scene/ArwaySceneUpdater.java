@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.scene;
+package com.haloai.hud.hudendpoint.arwaylib.rajawali.scene;
 
 import android.content.Context;
 import android.graphics.Color;

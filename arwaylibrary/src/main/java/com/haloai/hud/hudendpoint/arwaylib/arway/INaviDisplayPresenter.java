@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
+package com.haloai.hud.hudendpoint.arwaylib.arway;
 
 /**
  * Created by wangshengxing on 16/9/13.

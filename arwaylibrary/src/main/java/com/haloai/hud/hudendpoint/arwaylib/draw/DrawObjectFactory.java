@@ -6,17 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCompass;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCrossImage;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawExit;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawIcon;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawMusic;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNaviInfo;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNextRoadName;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawRoute;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawSpeed;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawTurnInfo;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawCamera;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
@@ -48,54 +37,6 @@ public class DrawObjectFactory {
         GL_SCENE,
         GL_CAMERA,
     }
-    public static DrawObject getDrawObject(DrawType drawType){
-        DrawObject drawObject = null;
-        switch(drawType) {
-            case CROSS_IMAGE:
-                drawObject = DrawCrossImage.getInstance();
-                break;
-            case EXIT:
-                drawObject = DrawExit.getInstance();
-                break;
-            case MUSIC:
-                drawObject = DrawMusic.getInstance();
-                break;
-            case NEXT_ROAD_NAME:
-                drawObject = DrawNextRoadName.getInstance();
-                break;
-            case ROUTE:
-                drawObject = DrawRoute.getInstance();
-                break;
-            case NAVI_INFO:
-                drawObject = DrawNaviInfo.getInstance();
-                break;
-            case TURN_INFO:
-                drawObject = DrawTurnInfo.getInstance();
-                break;
-            case SATELLITE:
-                drawObject = DrawIcon.getInstance(DrawType.SATELLITE);
-                break;
-            case NETWORK:
-                drawObject = DrawIcon.getInstance(DrawType.NETWORK);
-                break;
-            case SPEED:
-                drawObject = DrawSpeed.getInstance();
-                break;
-            case COMPASS:
-                drawObject = DrawCompass.getInstance();
-                break;
-            case GL_SCENE:
-                drawObject = DrawScene.getInstance();
-                break;
-            case GL_CAMERA:
-                drawObject = DrawCamera.getInstance();
-                break;
-            default:
-                break;
-        }
-        return drawObject;
-    }
-
     /**
      * 得到ARway的layout的总布局的View
      * 并相关View的实例到相关的DrawObject中
@@ -156,9 +97,6 @@ public class DrawObjectFactory {
                 break;
             case GL_SCENE:
                 drawObject = DrawScene.getInstance();
-                break;
-            case GL_CAMERA:
-                drawObject = DrawCamera.getInstance();
                 break;
             case RETAIN_DISTANCE:
                 drawObject = GlDrawRetainDistance.getInstance();
