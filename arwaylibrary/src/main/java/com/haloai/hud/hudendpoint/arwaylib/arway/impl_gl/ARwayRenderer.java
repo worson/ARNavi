@@ -88,7 +88,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private static final int     LOAD_PATH_LENGTH       = 250;
     private static final boolean DEBUG_MODE             = false;
     private static final boolean IS_MOVE_PATH           = false;
-    private static final float   TIME_15_20             = 1;
+    private static final float   TIME_15_20             = 32;
     private static final int     RAREFY_PIXEL_COUNT     = 1;
     private static       int     SCREEN_WIDTH           = 0;
     private static       int     SCREEN_HEIGHT          = 0;
