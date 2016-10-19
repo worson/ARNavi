@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.map;
+package com.haloai.hud.hudendpoint.arwaylib.map.amap;
 
 import android.util.Log;
 

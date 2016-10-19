@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.scene;
+package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import org.rajawali3d.math.vector.Vector3;
 

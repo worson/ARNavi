@@ -47,7 +47,7 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
-import com.haloai.hud.hudendpoint.arwaylib.map.MapProjectionMachine;
+import com.haloai.hud.hudendpoint.arwaylib.map.amap.MapProjectionMachine;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;

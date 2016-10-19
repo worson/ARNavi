@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d;
+package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 /**
  * Created by wangshengxing on 16/9/9.

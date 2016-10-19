@@ -6,8 +6,6 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
-
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 

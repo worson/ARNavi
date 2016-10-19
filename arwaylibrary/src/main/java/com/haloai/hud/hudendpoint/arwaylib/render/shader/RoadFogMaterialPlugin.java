@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d;
+package com.haloai.hud.hudendpoint.arwaylib.render.shader;
 
 import android.opengl.GLES20;
 

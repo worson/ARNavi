@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.camera;
+package com.haloai.hud.hudendpoint.arwaylib.render.camera;
 
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.math.vector.Vector3;

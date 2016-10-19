@@ -1,4 +1,4 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d;
+package com.haloai.hud.hudendpoint.arwaylib.render.vertices;
 
 /**
  * Created by wangshengxing on 16/10/14.

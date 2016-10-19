@@ -1,11 +1,11 @@
-package com.haloai.hud.hudendpoint.arwaylib.rajawali.scene;
+package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import android.content.Context;
 import android.graphics.Color;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadBuffredObject;
-import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.RoadFogMaterialPlugin;
+import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
+import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
