@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -178,7 +179,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mRoadShapePoints = roadPath;
         mRoadShapePointsCount = mRoadShapePoints.size();
         boolean result = true;
-        if(false && type== ShapeType.ROAD){
+        if(!ARWayConst.IS_USE_ROAD_TEXTURE && type== ShapeType.ROAD){
             ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,mRoadColor);
             addVerties(circleAndPlaneElement);
             result = true;

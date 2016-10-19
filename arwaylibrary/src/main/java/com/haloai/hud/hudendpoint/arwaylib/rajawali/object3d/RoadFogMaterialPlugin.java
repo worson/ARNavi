@@ -97,6 +97,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
 //            fogFactor.assign(length(mgPosition.subtract(muEndPosition)).divide(length(muEndPosition.subtract(muStartPosition))));
             fogFactor.assign(distance(mgPosition.xyz(),muEndPosition).divide(distance(muEndPosition,muStartPosition)));
             mvDistFog.assign(clamp(fogFactor,0,1));
+//            fogFactor.assign(fogFactor.multiply(fogFactor).multiply(fogFactor));
 //            mvDistFog.assign(0.5f);
         }
 
@@ -175,7 +176,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         @Override
         public void main() {
             RVec4 gColor = (RVec4) getGlobal(DefaultShaderVar.G_COLOR);
-            gColor.a().assignMultiply(mvDistFog);
+            gColor.assignMultiply(mvDistFog.multiply(mvDistFog).multiply(mvDistFog));
         }
 
         @Override

@@ -20,6 +20,7 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.ARWayCameraCaculator;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.ARWayRoadObject;
+import com.haloai.hud.hudendpoint.arwaylib.rajawali.object3d.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
@@ -1354,9 +1355,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         HaloLogger.logE("branch_line", "path start=========");
         for (int i = 0; i < mPath.size(); i++) {
             Vector3 v = mPath.get(i);
+
             if (mStepLastPointIndex.contains(i)) {
                 HaloLogger.logE("branch_line", v.x + "," + v.y + ",last");
-                mStepLastPoint.add(v);
+                mStepLastPoint.add(new Vector3(v));
             } else {
                 HaloLogger.logE("branch_line", v.x + "," + v.y);
             }
@@ -1649,13 +1651,57 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
                                         OBJ_4_CHASE_Z);
                                 branchLines.add(v);
                             }
-                            branchLinesList.add(branchLines);
+//                            branchLinesList.add(branchLines);
                         }
                         i = j;
                         break;
                     }
                 }
             }
+        }
+        float STEP_DISTANCE=10f;
+        int stepSize = 20;
+        int stepLenght = 3;
+        int indexStep = mRenderPath.size()/stepSize;
+        PointD rPoint = new PointD();
+
+        List<Vector3> path = mRenderPath;
+        int pathsize = path.size();
+        /*for (Vector3 p:path){
+            HaloLogger.logE("testBranchLine",""+p);
+        }*/
+        /*for(int i = 0; i < pathsize; i++){
+            List<Vector3> branchLines = new ArrayList<>();
+            List<Vector3> subLines = new ArrayList<>();
+            Vector3 start = path.get(i);
+            double dist = 0;
+            subLines.add(start);
+            while (i < pathsize && dist<STEP_DISTANCE){
+                Vector3 p = path.get(i);
+                dist += Vector3.distanceTo(p,path.get(i++));
+                subLines.add(p);
+            }
+            for(Vector3 v:subLines){
+                MathUtils.rotateAround(start.x,start.y,v.x,v.y,rPoint,-90);
+                branchLines.add(new Vector3(rPoint.x,rPoint.y,0));
+            }
+            if (branchLines.size()>1){
+                branchLinesList.add(branchLines);
+            }
+        }*/
+
+        for (int i = 0; i < stepSize-1; i++) {
+            List<Vector3> branchLines = new ArrayList<>();
+            List<Vector3> subLines = mRenderPath.subList(i*indexStep,(i)*indexStep+stepLenght);
+            Vector3 start = subLines.get(0);
+            for(Vector3 v:subLines){
+                MathUtils.rotateAround(start.x,start.y,v.x,v.y,rPoint,-90);
+                branchLines.add(new Vector3(rPoint.x,rPoint.y,0));
+            }
+            if (branchLines.size()>1){
+                branchLinesList.add(branchLines);
+            }
+
         }
         mSceneUpdater.renderCrossRoad(branchLinesList);
     }
