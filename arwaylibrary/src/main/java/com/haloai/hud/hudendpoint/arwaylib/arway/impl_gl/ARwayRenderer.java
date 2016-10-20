@@ -203,7 +203,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     @Override
     public void initScene() {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender initScene called!");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
         //        getCurrentScene().setBackgroundColor(0x393939);
         setFrameRate(FRAME_RATE);
 
@@ -934,7 +934,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     public void arriveDestination() {
         //        getCurrentScene().destroyScene();
         //        removeScene(mCurScene);
-        //        getCurrentScene().initScene();
+        //        getCurrentScene().init();
         //        getCurrentScene().clearChildren();
         //        getCurrentScene().performFrameTasks();
         //        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "children number is " + getCurrentScene().getNumChildren());
@@ -1550,8 +1550,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
 
     private void myInitScene() {
 
+        mSceneUpdater.init();
         getCurrentScene().clearChildren();
-        //        mSceneUpdater.initScene();
+        //        mSceneUpdater.init();
 
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
@@ -1636,85 +1637,61 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private void testBranchLine() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.add(mRenderPath);
-        String branchLine = ARWayConst.BRANCH_LINES;
-        int count = 0;
-        for (int i = 0; i < branchLine.split("\n").length && count < mStepLastPoint.size(); i++) {
-            if (branchLine.split("\n")[i].contains("cross starts")) {
-                Vector3 startPoint = mStepLastPoint.get(count++);
-                for (int j = i + 1; j < branchLine.split("\n").length; j++) {
-                    if (branchLine.split("\n")[j].contains("cross ends")) {
-                        List<Integer> arrStart = new ArrayList<>();
-                        List<Integer> arrEnd = new ArrayList<>();
-                        for (int k = i + 1; k < j; k++) {
-                            if (branchLine.split("\n")[k].contains("cross start=")) {
-                                arrStart.add(k);
-                            } else if (branchLine.split("\n")[k].contains("cross end=")) {
-                                arrEnd.add(k);
+        if (false) {
+            String branchLine = ARWayConst.BRANCH_LINES;
+            int count = 0;
+            for (int i = 0; i < branchLine.split("\n").length && count < mStepLastPoint.size(); i++) {
+                if (branchLine.split("\n")[i].contains("cross starts")) {
+                    Vector3 startPoint = mStepLastPoint.get(count++);
+                    for (int j = i + 1; j < branchLine.split("\n").length; j++) {
+                        if (branchLine.split("\n")[j].contains("cross ends")) {
+                            List<Integer> arrStart = new ArrayList<>();
+                            List<Integer> arrEnd = new ArrayList<>();
+                            for (int k = i + 1; k < j; k++) {
+                                if (branchLine.split("\n")[k].contains("cross start=")) {
+                                    arrStart.add(k);
+                                } else if (branchLine.split("\n")[k].contains("cross end=")) {
+                                    arrEnd.add(k);
+                                }
                             }
-                        }
-                        double offsetX = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[0]);
-                        double offsetY = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[1]);
-                        for (int m = 0; m < arrStart.size(); m++) {
-                            List<Vector3> branchLines = new ArrayList<>();
-                            for (int k = arrStart.get(m) + 1; k < arrEnd.get(m); k++) {
-                                String line = branchLine.split("\n")[k];
-                                Vector3 v = new Vector3(
-                                        Double.parseDouble(line.split(",")[0]) - offsetX + startPoint.x,
-                                        Double.parseDouble(line.split(",")[1]) - offsetY + startPoint.y,
-                                        OBJ_4_CHASE_Z);
-                                branchLines.add(v);
-                            }
+                            double offsetX = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[0]);
+                            double offsetY = Double.parseDouble(branchLine.split("\n")[arrStart.get(0) + 1].split(",")[1]);
+                            for (int m = 0; m < arrStart.size(); m++) {
+                                List<Vector3> branchLines = new ArrayList<>();
+                                for (int k = arrStart.get(m) + 1; k < arrEnd.get(m); k++) {
+                                    String line = branchLine.split("\n")[k];
+                                    Vector3 v = new Vector3(
+                                            Double.parseDouble(line.split(",")[0]) - offsetX + startPoint.x,
+                                            Double.parseDouble(line.split(",")[1]) - offsetY + startPoint.y,
+                                            OBJ_4_CHASE_Z);
+                                    branchLines.add(v);
+                                }
 //                            branchLinesList.add(branchLines);
+                            }
+                            i = j;
+                            break;
                         }
-                        i = j;
-                        break;
                     }
                 }
             }
-        }
-        float STEP_DISTANCE=10f;
-        int stepSize = 20;
-        int stepLenght = 3;
-        int indexStep = mRenderPath.size()/stepSize;
-        PointD rPoint = new PointD();
 
-        List<Vector3> path = mRenderPath;
-        int pathsize = path.size();
-        /*for (Vector3 p:path){
-            HaloLogger.logE("testBranchLine",""+p);
-        }*/
-        /*for(int i = 0; i < pathsize; i++){
-            List<Vector3> branchLines = new ArrayList<>();
-            List<Vector3> subLines = new ArrayList<>();
-            Vector3 start = path.get(i);
-            double dist = 0;
-            subLines.add(start);
-            while (i < pathsize && dist<STEP_DISTANCE){
-                Vector3 p = path.get(i);
-                dist += Vector3.distanceTo(p,path.get(i++));
-                subLines.add(p);
-            }
-            for(Vector3 v:subLines){
-                MathUtils.rotateAround(start.x,start.y,v.x,v.y,rPoint,-90);
-                branchLines.add(new Vector3(rPoint.x,rPoint.y,0));
-            }
-            if (branchLines.size()>1){
-                branchLinesList.add(branchLines);
-            }
-        }*/
+            int stepSize = 20;
+            int stepLenght = 3;
+            int indexStep = mRenderPath.size() / stepSize;
+            PointD rPoint = new PointD();
+            for (int i = 0; i < stepSize - 1; i++) {
+                List<Vector3> branchLines = new ArrayList<>();
+                List<Vector3> subLines = mRenderPath.subList(i * indexStep, (i) * indexStep + stepLenght);
+                Vector3 start = subLines.get(0);
+                for (Vector3 v : subLines) {
+                    MathUtils.rotateAround(start.x, start.y, v.x, v.y, rPoint, -90);
+                    branchLines.add(new Vector3(rPoint.x, rPoint.y, 0));
+                }
+                if (branchLines.size() > 1) {
+                    branchLinesList.add(branchLines);
+                }
 
-        for (int i = 0; i < stepSize-1; i++) {
-            List<Vector3> branchLines = new ArrayList<>();
-            List<Vector3> subLines = mRenderPath.subList(i*indexStep,(i)*indexStep+stepLenght);
-            Vector3 start = subLines.get(0);
-            for(Vector3 v:subLines){
-                MathUtils.rotateAround(start.x,start.y,v.x,v.y,rPoint,-90);
-                branchLines.add(new Vector3(rPoint.x,rPoint.y,0));
             }
-            if (branchLines.size()>1){
-                branchLinesList.add(branchLines);
-            }
-
         }
         mSceneUpdater.renderCrossRoad(branchLinesList);
     }
