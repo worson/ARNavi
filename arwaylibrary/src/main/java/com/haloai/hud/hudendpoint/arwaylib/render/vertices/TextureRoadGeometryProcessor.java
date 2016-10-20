@@ -20,6 +20,13 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
     private static final boolean IS_LOG_OUT       = false;
     private static int mColor = Color.RED;
 
+    private GeometryData mGeometryData = null;
+
+    public TextureRoadGeometryProcessor(List<Vector3> path, float width) {
+        mGeometryData = getGeometryData(path, width, 0);
+        setDateOk(true);
+    }
+
     public static void generateVertices(List<Vector3> path, float[] vertices, float width){
         int size = path.size();
         int index = 0;
@@ -78,10 +85,13 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
      * @param lineCount
      * @param indices
      */
-    public static void generateIndices(int lineCount,int[] indices){
+    public static void generateIndices(int lineCount,int[] indices,boolean noTail){
         int index = 0;
         int offset = 0;
-        final int cnt = lineCount-1;
+        int cnt = lineCount;
+        if (noTail) {
+            cnt = lineCount-1;
+        }
         for (int i = 0; i <cnt ; i++) {
             offset = i*VERTICES_PER_LINE;
             indices[index++] = offset+0;indices[index++] = offset+1;indices[index++] = offset+2;
@@ -91,10 +101,13 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
             indices[index++] = offset+4;indices[index++] = offset+5;indices[index++] = offset+6;
             indices[index++] = offset+6;indices[index++] = offset+5;indices[index++] = offset+7;
         }
-        indices[index++] = offset+0;indices[index++] = offset+1;indices[index++] = offset+2;
-        indices[index++] = offset+2;indices[index++] = offset+1;indices[index++] = offset+3;
-        indices[index++] = offset+2;indices[index++] = offset+3;indices[index++] = offset+4;
-        indices[index++] = offset+4;indices[index++] = offset+3;indices[index++] = offset+5;
+        if (noTail) {
+            offset = cnt*VERTICES_PER_LINE;
+            indices[index++] = offset+0;indices[index++] = offset+1;indices[index++] = offset+2;
+            indices[index++] = offset+2;indices[index++] = offset+1;indices[index++] = offset+3;
+            indices[index++] = offset+2;indices[index++] = offset+3;indices[index++] = offset+4;
+            indices[index++] = offset+4;indices[index++] = offset+3;indices[index++] = offset+5;
+        }
     }
 
     public static void generateNormals(int lineCount,float[] normals){
@@ -123,7 +136,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
      * @param width
      * @return
      */
-    public static ObjectElement getObjectElement(List<Vector3> path, float width, int color){
+    public static GeometryData getGeometryData(List<Vector3> path, float width, int color){
         if (path == null || path.size() <=1) {
             return null;
         }
@@ -132,9 +145,14 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         if(IS_LOG_OUT) {
             print(String.format("path lineCount = %s", lineCount));
         }
-        float[] vertexs = new float[(lineCount)*VERTICES_PER_LINE*3];
-        float[] coords = new float[(lineCount)*VERTICES_PER_LINE*2];
-        int[] indices = new int[(lineCount)*TRIANGLE_PER_LINE*3-6];
+        boolean noTail = true;
+        int removeVertices = 0;
+        if (noTail){
+            removeVertices = 2;
+        }
+        float[] vertexs = new float[(lineCount*VERTICES_PER_LINE)*3];
+        float[] coords = new float[(lineCount*VERTICES_PER_LINE)*2];
+        int[] indices = new int[(lineCount*TRIANGLE_PER_LINE-removeVertices)*3];
 
         float[] normals = new float[(lineCount)*VERTICES_PER_LINE*3];
         float[] colors = new float[(lineCount)*VERTICES_PER_LINE * NUMBER_OF_COLOR];
@@ -143,12 +161,12 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
 //                    vertexs.length, coords.length, indices.length, normals.length, colors.length));
         }
         generateVertices(path,vertexs,width);
-        generateIndices(lineCount,indices);
+        generateIndices(lineCount,indices,noTail);
         generateCoords(lineCount,coords);
         generateNormals(lineCount,normals);
         generateColors(lineCount,colors);
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.setUseTextureCoords(true);
         element.setUseColors(false);
         element.setUseNormals(false);
@@ -169,8 +187,13 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         path.add(new Vector3(8,0,0));
         path.add(new Vector3(12,0,0));
 
-        ObjectElement element = getObjectElement(path,0.1f, Color.RED);
+        GeometryData element = getGeometryData(path,0.1f, Color.RED);
         System.out.print(element.getDebugInfo());
+    }
+
+    @Override
+    public GeometryData getGeometryData() {
+        return mGeometryData;
     }
 
     private static void print(String msg){

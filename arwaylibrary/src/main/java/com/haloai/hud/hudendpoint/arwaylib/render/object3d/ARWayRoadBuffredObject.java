@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
-import com.haloai.hud.hudendpoint.arwaylib.render.vertices.ObjectElement;
+import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 import com.haloai.hud.hudendpoint.arwaylib.render.vertices.TextureRoadGeometryProcessor;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
@@ -42,11 +42,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     private float mRefLineWidth = 0.5f;
     private float            mRoadWidth     = 0.7f;
     private int mRoadColor = Color.WHITE;
-    private ShapeType mShapeType = ShapeType.ROAD;
+    private ShapeType mShapeType = ShapeType.VERTICE_ROAD;
 
     public enum ShapeType {
-        CIRCLE,
-        ROAD,
+        VERTICE_ROAD,
+        TEXTURE_ROAD,
         REFERENCE_LINE
     };
 
@@ -63,7 +63,12 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      */
     public ARWayRoadBuffredObject(float width, int color) {
         this(width,color,mRoadMaterial);
-        mShapeType = ShapeType.ROAD;
+        mShapeType = ShapeType.VERTICE_ROAD;
+    }
+
+    public ARWayRoadBuffredObject(float width, int color,ShapeType type) {
+        this(width,color,mRoadMaterial);
+        mShapeType = type;
     }
 
     /**
@@ -121,6 +126,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
     }
 
+    public ShapeType getShapeType() {
+        return mShapeType;
+    }
+
+    public void setShapeType(ShapeType shapeType) {
+        mShapeType = shapeType;
+    }
+
     /**
      *
      * @param path
@@ -166,8 +179,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             return false;
         }
         replaceGeometry3D(new Geometry3D());
-        ObjectElement referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
-//        ObjectElement referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
+        GeometryData referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
+//        GeometryData referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
         addVerties(referenceLineElement);
         applyVerties();
         mNeedRender = true;
@@ -183,12 +196,12 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mRoadShapePoints = roadPath;
         mRoadShapePointsCount = mRoadShapePoints.size();
         boolean result = true;
-        if(!ARWayConst.IS_USE_ROAD_TEXTURE && type== ShapeType.ROAD){
-            ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,mRoadColor);
+        if(type== ShapeType.VERTICE_ROAD){
+            GeometryData circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,mRoadColor);
             addVerties(circleAndPlaneElement);
             result = true;
-        }else {
-            ObjectElement textureElement = TextureRoadGeometryProcessor.getObjectElement(mRoadShapePoints,mRoadWidth,mRoadColor);
+        }else if(type== ShapeType.TEXTURE_ROAD){
+            GeometryData textureElement = TextureRoadGeometryProcessor.getGeometryData(mRoadShapePoints,mRoadWidth,mRoadColor);
             if (textureElement != null) {
                 addVerties(textureElement);
                 result = true;
@@ -198,12 +211,12 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             }
 
         }
-        /*ObjectElement planeElement = generatePlaneVerties(mRoadWidth/2,-0.001f);
+        /*GeometryData planeElement = generatePlaneVerties(mRoadWidth/2,-0.001f);
         addVerties(planeElement);*/
 
         /*List<Vector3> rotatePath = new ArrayList<>();
         MathUtils.rotatePath(mRoadShapePoints,rotatePath,roadPath.get(0).x,roadPath.get(0).y,PI/2);
-        ObjectElement roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
+        GeometryData roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
         addVerties(roadCircleAndPlaneElement);*/
         if(result){
             applyVerties();
@@ -218,8 +231,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mGeometry.recycleBuffer();
     }
 
-    private ObjectElement generateAntiSawtoothLine(List<Vector3> path, float width, int color) {
-        ObjectElement element = new ObjectElement();
+    private GeometryData generateAntiSawtoothLine(List<Vector3> path, float width, int color) {
+        GeometryData element = new GeometryData();
 
         return element;
     }
@@ -235,7 +248,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @param color
      * @return
      */
-    private ObjectElement generatePlanAndCircleVerties(List<Vector3> path, int segmentsL, int segmentsC, float radius, float height, int color) {
+    private GeometryData generatePlanAndCircleVerties(List<Vector3> path, int segmentsL, int segmentsC, float radius, float height, int color) {
         int numVertices = (segmentsC + 1) * (segmentsL + 1);
         int numIndices = 2 * segmentsC * segmentsL * 3;
         //+(mRoadShapePoints.size()*CIRCLE_SEGMENT
@@ -249,7 +262,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[numIndices];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;
@@ -339,7 +352,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @param color
      * @return
      */
-    private ObjectElement generateRectangleVerties(List<Vector3> points, List<Float> directions, float height, float width, int color) {
+    private GeometryData generateRectangleVerties(List<Vector3> points, List<Float> directions, float height, float width, int color) {
         if (points == null || points.size() <= 1|| directions == null) {
             return null;
         }
@@ -353,7 +366,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[mCountOfPlanes * (6)];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;
@@ -443,7 +456,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         return element;
     }
 
-    private ObjectElement generatePlaneVerties(List<Vector3> points, float radius, float height, int roadColor) {
+    private GeometryData generatePlaneVerties(List<Vector3> points, float radius, float height, int roadColor) {
         mCountOfPlanes = (points.size() - 1);
         mCountOfVerties = mCountOfPlanes * 4;
         //顶点数据之间可以共用
@@ -454,7 +467,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[mCountOfPlanes * (6)];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;

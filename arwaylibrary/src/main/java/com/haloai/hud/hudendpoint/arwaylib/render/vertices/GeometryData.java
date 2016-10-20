@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by wangshengxing on 16/9/9.
  */
-public class ObjectElement {
+public class GeometryData {
 
     //顶点数据之间可以共用
     public float[] vertices = null;
@@ -72,7 +72,7 @@ public class ObjectElement {
         mUseTextureCoords = useTextureCoords;
     }
 
-    public  static ObjectElement addAllElement(List<ObjectElement> elementList){
+    public  static GeometryData addAllElement(List<GeometryData> elementList){
         if (elementList == null || elementList.size()<1) {
             return null;
         }
@@ -88,14 +88,14 @@ public class ObjectElement {
         boolean useTextureCoords = true;
         boolean useNormals = true;
         boolean useColors = true;
-        for(ObjectElement element :elementList){
+        for(GeometryData element :elementList){
             if (element != null) {
                 useTextureCoords &= element.mUseTextureCoords;
                 useNormals &= element.mUseNormals;
                 useColors &= element.mUseColors;
             }
         }
-        for(ObjectElement element :elementList){
+        for(GeometryData element :elementList){
             if(element != null &&  element.isDataValid()){
                 verticesSize += element.vertices.length;
                 indicesSize += element.indices.length;
@@ -112,7 +112,7 @@ public class ObjectElement {
             }
         }
         if(hasData) {
-            ObjectElement totalElement = new ObjectElement();
+            GeometryData totalElement = new GeometryData();
             //顶点数据之间可以共用
             totalElement.vertices = new float[verticesSize];
             totalElement.indices = new int[indicesSize];
@@ -131,7 +131,7 @@ public class ObjectElement {
             int normalsIndex = 0;
             int colorsIndex = 0;
             int indicesIndex = 0;
-            for (ObjectElement element : elementList) {
+            for (GeometryData element : elementList) {
                 if (element != null && element.isDataValid()) {
                     for (int i = 0; i < element.indices.length; i++) {
                         element.indices[i] += indicesIndex;

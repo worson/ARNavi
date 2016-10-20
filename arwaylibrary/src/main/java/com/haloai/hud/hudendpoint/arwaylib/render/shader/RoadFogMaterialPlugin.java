@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.shader;
 
+import android.graphics.Color;
 import android.opengl.GLES20;
 
 import org.rajawali3d.materials.Material;
@@ -44,94 +45,50 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
     public void unbindTextures() {}
 
     public void setFogEndPosition(Vector3 position) {
-        mVertexShader.setFogEndPosition(position);
+        mFragmentShader.setFogEndPosition(position);
     }
 
     public void setFogStartPosition(Vector3 position) {
-        mVertexShader.setFogStartPosition(position);
+        mFragmentShader.setFogStartPosition(position);
     }
 
     private class RoadFogVertexShaderFragment extends AShader implements IShaderFragment {
         public final static String SHADER_ID = "ROAD_FOG_VERTEX";
 
-        private final String U_START_POS = "uStartPosition";
-        private final String U_END_POS   = "uEndPosition";
-        private final String V_DIST_FOG  = "vDistFog";
+        private final String V_FOG_POSITION = "vFogPosition";
 
-        private RVec3  muStartPosition;
-        private RVec3  muEndPosition;
-        private RFloat mvDistFog;
+        private RVec3 mvFogPosition;
 
         private RVec3 mgPosition;
-
-
-
-        private int muStartPositionHandle, muEndPositionHandle, mvDistFogHandle;
-
-        private float[] mStartPosition;
-        private float[] mEndPosition;
 
         public RoadFogVertexShaderFragment() {
             super(ShaderType.VERTEX_SHADER_FRAGMENT);
             initialize();
-            mStartPosition = new float[]{0,0,0,0};
-            mEndPosition = new float[]{0,1,0,0};
+
         }
 
         @Override
         public void initialize()
         {
             super.initialize();
-            muStartPosition = (RVec3) addUniform(U_START_POS, DataType.VEC3);
-            muEndPosition = (RVec3) addUniform(U_END_POS, DataType.VEC3);
-            mvDistFog = (RFloat) addVarying(V_DIST_FOG, DataType.FLOAT);
+            mvFogPosition = (RVec3) addVarying(V_FOG_POSITION, DataType.VEC3);
 
         }
         @Override
         public void main() {
-
-//            float fogFactor = distance(aPosition,uEndPosition)/distance(uStartPosition,uEndPosition);
-//            vDistFog = clamp(fogFactor,0,1);
             mgPosition = (RVec4) addGlobal(DefaultShaderVar.G_POSITION);
-            RFloat fogFactor = new RFloat("fogFactor");
-//            fogFactor.assign(length(mgPosition.subtract(muEndPosition)).divide(length(muEndPosition.subtract(muStartPosition))));
-            fogFactor.assign(distance(mgPosition.xyz(),muEndPosition).divide(distance(muEndPosition,muStartPosition)));
-            mvDistFog.assign(clamp(fogFactor,0,1));
-//            fogFactor.assign(fogFactor.multiply(fogFactor).multiply(fogFactor));
-//            mvDistFog.assign(0.5f);
+            mvFogPosition.assign(mgPosition.xyz());
         }
 
         @Override
         public void setLocations(int programHandle) {
-            muEndPositionHandle = getUniformLocation(programHandle, U_END_POS);
-            muStartPositionHandle = getUniformLocation(programHandle, U_START_POS);
+
         }
 
         @Override
         public void applyParams() {
             super.applyParams();
 
-//            GLES20.glUniform3fv(muCameraPositionHandle, 1, mCameraPosition, 0);
-            GLES20.glUniform3fv(muStartPositionHandle, 1, mStartPosition, 0);
-            GLES20.glUniform3fv(muEndPositionHandle, 1, mEndPosition, 0);
-        }
-
-
-
-        public void setFogStartPosition(Vector3 pos)
-        {
-            float[] p = mStartPosition;
-            p[0] = (float)pos.x;
-            p[1] = (float)pos.y;
-            p[2] = (float)pos.z;
-        }
-
-        public void setFogEndPosition(Vector3 pos)
-        {
-            float[] p = mEndPosition;
-            p[0] = (float)pos.x;
-            p[1] = (float)pos.y;
-            p[2] = (float)pos.z;
         }
 
         @Override
@@ -152,13 +109,34 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
     }
     private class RoadFogFragmentShaderFragment extends AShader implements IShaderFragment {
         public final static String SHADER_ID  = "ROAD_FOG_VERTEX";
-        private final       String V_DIST_FOG = "vDistFog";
-        private RFloat mvDistFog;
+
+        private final String U_START_POS = "uStartPosition";
+        private final String U_END_POS   = "uEndPosition";
+        private final String U_BACKGROUND   = "uBackground";
+
+        private final String V_FOG_POSITION = "vFogPosition";
+
+        private RVec3  muStartPosition;
+        private RVec3  muEndPosition;
+        private RVec3  muBackGround;
+
+        private RVec3 mvFogPosition;
+
+        private RVec4 mgBackground;
+
+        private int muStartPositionHandle, muEndPositionHandle,muBackGroundHandle;
+
+        private float[] mStartPosition;
+        private float[] mEndPosition;
+        private float[] mBackGround;
 
         public RoadFogFragmentShaderFragment()
         {
             super(ShaderType.FRAGMENT_SHADER_FRAGMENT);
             initialize();
+            mStartPosition = new float[]{0,0,0,0};
+            mEndPosition = new float[]{0,0.01f,0,0};
+            mBackGround = new float[]{0x44/0xff,0x44/0xff,0x44/0xff};
         }
 
         @Override
@@ -170,13 +148,60 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         public void initialize()
         {
             super.initialize();
-            mvDistFog = (RFloat) addVarying(V_DIST_FOG, DataType.FLOAT);
+            muStartPosition = (RVec3) addUniform(U_START_POS, DataType.VEC3);
+            muEndPosition = (RVec3) addUniform(U_END_POS, DataType.VEC3);
+            muBackGround = (RVec3) addUniform(U_BACKGROUND, DataType.VEC3);
+            mvFogPosition = (RVec3) addVarying(V_FOG_POSITION, DataType.VEC3);
+
+            mgBackground = (RVec4) addGlobal("mgBackground",DataType.VEC4);
         }
 
         @Override
         public void main() {
+            RFloat fogFactor = new RFloat("fogFactor");
+            fogFactor.assign(distance(mvFogPosition.xyz(),muEndPosition).divide(distance(muEndPosition,muStartPosition)));
+            fogFactor.assign(clamp(fogFactor,0,1));
             RVec4 gColor = (RVec4) getGlobal(DefaultShaderVar.G_COLOR);
-            gColor.assignMultiply(mvDistFog.multiply(mvDistFog).multiply(mvDistFog));
+            gColor.rgb().assignMultiply(fogFactor.multiply(fogFactor).multiply(fogFactor));
+
+            mgBackground.rgb().assign(muBackGround);
+            RFloat one = new RFloat("one");
+            one.assign(1);
+            mgBackground.a().assign(one.subtract(gColor.a()));
+            mgBackground.a().assign(0);
+//            gColor.assignAdd(mgBackground);
+        }
+
+        @Override
+        public void setLocations(int programHandle) {
+            super.setLocations(programHandle);
+            muEndPositionHandle = getUniformLocation(programHandle, U_END_POS);
+            muStartPositionHandle = getUniformLocation(programHandle, U_START_POS);
+            muBackGroundHandle = getUniformLocation(programHandle, U_BACKGROUND);
+        }
+
+        @Override
+        public void applyParams() {
+            super.applyParams();
+            GLES20.glUniform3fv(muStartPositionHandle, 1, mStartPosition, 0);
+            GLES20.glUniform3fv(muEndPositionHandle, 1, mEndPosition, 0);
+            GLES20.glUniform3fv(muBackGroundHandle, 1, mBackGround, 0);
+        }
+
+        public void setFogStartPosition(Vector3 pos)
+        {
+            float[] p = mStartPosition;
+            p[0] = (float)pos.x;
+            p[1] = (float)pos.y;
+            p[2] = (float)pos.z;
+        }
+
+        public void setFogEndPosition(Vector3 pos)
+        {
+            float[] p = mEndPosition;
+            p[0] = (float)pos.x;
+            p[1] = (float)pos.y;
+            p[2] = (float)pos.z;
         }
 
         @Override
