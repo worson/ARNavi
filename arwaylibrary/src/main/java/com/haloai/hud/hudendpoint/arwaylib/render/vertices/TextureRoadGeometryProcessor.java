@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.render.vertices;
 import android.graphics.Color;
 
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.math.vector.Vector3;
@@ -22,33 +23,51 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
 
     private GeometryData mGeometryData = null;
 
-    public TextureRoadGeometryProcessor(List<Vector3> path, float width) {
-        mGeometryData = getGeometryData(path, width, 0);
+    public TextureRoadGeometryProcessor(List<Vector3> path,final Vector3 offset,float width) {
+        mGeometryData = getGeometryData(path, offset,width, 0);
         setDateOk(true);
     }
 
-    public static void generateVertices(List<Vector3> path, float[] vertices, float width){
+    public static void generateVertices(List<Vector3> path, final Vector3 offset,float[] vertices, float width){
         int size = path.size();
         int index = 0;
         int lineCount = size-1;
+        Vector3 sub = new Vector3(offset);
+        Vector3 a = new Vector3();
+        Vector3 b = new Vector3();
+        Vector3 e = new Vector3();
+
+        Vector3 N  = new Vector3();
+        Vector3 S  = new Vector3();
+        Vector3 NE = new Vector3();
+        Vector3 NW = new Vector3();
+        Vector3 SW = new Vector3();
+        Vector3 SE = new Vector3();
+
+        Vector3 v = new Vector3();
+
+        Vector3[] add1 = new Vector3[]{a,a,a,a,b,b,b,b};
+        Vector3[] add2 = new Vector3[]{SW,NW,S,N,S,N,SE,NE};
 
         for (int i = 0; i < lineCount; i++) {
-            Vector3 a = path.get(i);
-            Vector3 b = path.get(i+1);
-            Vector3 e = Vector3.subtractAndCreate(b,a);
+            Vector3 current = path.get(i);
+            Vector3 next = path.get(i+1);
+            a.subtractAndSet(current,sub);
+            b.subtractAndSet(next,sub);
+
+            e.subtractAndSet(b,a);
             e.normalize();
             e.multiply(width);
 
-            Vector3 N = new Vector3(-e.y,e.x,0);
-            Vector3 S = new Vector3(-N.x,-N.y,-N.z);
-            Vector3 NE = Vector3.addAndCreate(N,e);
-            Vector3 NW = Vector3.subtractAndCreate(N,e);
-            Vector3 SW = new Vector3(-NE.x,-NE.y,-NE.z);
-            Vector3 SE = new Vector3(-NW.x,-NW.y,-NW.z);
-            Vector3[] add1 = new Vector3[]{a,a,a,a,b,b,b,b};
-            Vector3[] add2 = new Vector3[]{SW,NW,S,N,S,N,SE,NE};
+            N .setAll(-e.y, e.x, 0);
+            S .setAll(-N.x, -N.y, -N.z);
+            NE.addAndSet(N, e);
+            NW.subtractAndSet(N, e);
+            SW.setAll(-NE.x, -NE.y, -NE.z);
+            SE.setAll(-NW.x, -NW.y, -NW.z);
+
             for (int j = 0; j < VERTICES_PER_LINE; j++) {
-                Vector3 v = Vector3.addAndCreate(add1[j],add2[j]);
+                v.addAndSet(add1[j],add2[j]);
                 vertices[index++] = (float) v.x;
                 vertices[index++] = (float) v.y;
                 vertices[index++] = (float) 0;
@@ -136,7 +155,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
      * @param width
      * @return
      */
-    public static GeometryData getGeometryData(List<Vector3> path, float width, int color){
+    public static GeometryData getGeometryData(List<Vector3> path,Vector3 offset, float width, int color){
         if (path == null || path.size() <=1) {
             return null;
         }
@@ -154,17 +173,15 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         float[] coords = new float[(lineCount*VERTICES_PER_LINE)*2];
         int[] indices = new int[(lineCount*TRIANGLE_PER_LINE-removeVertices)*3];
 
-        float[] normals = new float[(lineCount)*VERTICES_PER_LINE*3];
-        float[] colors = new float[(lineCount)*VERTICES_PER_LINE * NUMBER_OF_COLOR];
-        if(IS_LOG_OUT) {
-//            print(String.format("data size ,vertexs=%s,coords=%s,indices=%s,normals=%s,colors=%s",
-//                    vertexs.length, coords.length, indices.length, normals.length, colors.length));
-        }
-        generateVertices(path,vertexs,width);
+//        float[] normals = new float[(lineCount)*VERTICES_PER_LINE*3];
+//        float[] colors = new float[(lineCount)*VERTICES_PER_LINE * NUMBER_OF_COLOR];
+
+        generateVertices(path,offset,vertexs,width);
         generateIndices(lineCount,indices,noTail);
         generateCoords(lineCount,coords);
-        generateNormals(lineCount,normals);
-        generateColors(lineCount,colors);
+
+//        generateNormals(lineCount,normals);
+//        generateColors(lineCount,colors);
 
         GeometryData element = new GeometryData();
         element.setUseTextureCoords(true);
@@ -180,6 +197,29 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
     }
 
     public static void main(String[] args) {
+
+//        testGetGeometryData();
+        testGetGeometryDataTime();
+
+    }
+
+    private static void testGetGeometryDataTime() {
+        int testCnt = 500;
+        int total = 100000;
+        TimeRecorder timeRecorder = new TimeRecorder();
+        for (int j = 0; j < testCnt; j++) {
+            timeRecorder.start();
+            List<Vector3> path = new ArrayList<>(total);
+            for (int i = 0; i < total; i++) {
+                path.add(new Vector3(i,0,0));
+            }
+            GeometryData element = getGeometryData(path,path.get(0),0.1f, Color.RED);
+            timeRecorder.recordeAndPrint(String.format("testCnt=%s",j));
+        }
+
+    }
+
+    private static void testGetGeometryData() {
         List<Vector3> path = new ArrayList<>();
         path.add(new Vector3(1,0,0));
         path.add(new Vector3(6,0,0));
@@ -187,7 +227,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         path.add(new Vector3(8,0,0));
         path.add(new Vector3(12,0,0));
 
-        GeometryData element = getGeometryData(path,0.1f, Color.RED);
+        GeometryData element = getGeometryData(path,path.get(0),0.1f, Color.RED);
         System.out.print(element.getDebugInfo());
     }
 
@@ -197,6 +237,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
     }
 
     private static void print(String msg){
-        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,msg);
+//        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,msg);
+        System.out.print(msg);
     }
 }

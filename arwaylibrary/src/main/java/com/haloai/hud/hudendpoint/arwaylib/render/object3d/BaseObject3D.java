@@ -92,4 +92,9 @@ public class BaseObject3D extends Object3D {
             mGeometryData.free();
         }
     }
+
+    public void clearChildren(){
+        mChildren.clear();
+    }
+
 }

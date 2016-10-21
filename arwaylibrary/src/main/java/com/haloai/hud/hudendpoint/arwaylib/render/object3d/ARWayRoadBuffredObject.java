@@ -101,29 +101,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         setDoubleSided(true);
     }
 
-    public boolean updateBufferedRoad(List<Vector3> roadPath){
-        generateObjectBuffer(roadPath,mShapeType);
+    public boolean updateBufferedRoad(List<Vector3> roadPath,Vector3 offset){
+        generateObjectBuffer(roadPath,offset,mShapeType);
         return true;
     }
 
-    /**
-     * 更新道路渲染内容，在初始化中初始化宽度
-     * @param roadPath
-     * @return
-     */
-    public boolean updateBufferedRoad(List<Vector3> roadPath, float width){
-        mRoadWidth = width;
-        return generateObjectBuffer(roadPath,mShapeType);
-    }
-
-    /**
-     * 更新道路渲染内容
-     * @param roadPath
-     * @return
-     */
-    public boolean updateBufferedRoad(List<Vector3> roadPath, ShapeType type){
-        return generateObjectBuffer(roadPath,type);
-
+    public boolean updateBufferedRoad(List<Vector3> roadPath){
+        generateObjectBuffer(roadPath,new Vector3(roadPath.get(0)),mShapeType);
+        return true;
     }
 
     public ShapeType getShapeType() {
@@ -140,7 +125,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @param stepLength
      * @return
      */
-    public boolean updateReferenceLine(List<Vector3> path, double stepLength){
+    public boolean updateReferenceLine(List<Vector3> path,Vector3 offset, double stepLength){
         mNeedRender = false;
 
         double distStep = stepLength;
@@ -179,7 +164,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             return false;
         }
         replaceGeometry3D(new Geometry3D());
-        GeometryData referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
+        GeometryData referenceLineElement = generateRectangleVerties(points,offset,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
 //        GeometryData referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
         addVerties(referenceLineElement);
         applyVerties();
@@ -187,7 +172,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         return true;
     }
 
-    private boolean generateObjectBuffer(List<Vector3> roadPath, ShapeType type){
+    private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         if(roadPath == null || roadPath.size()<1){
@@ -201,7 +186,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             addVerties(circleAndPlaneElement);
             result = true;
         }else if(type== ShapeType.TEXTURE_ROAD){
-            GeometryData textureElement = TextureRoadGeometryProcessor.getGeometryData(mRoadShapePoints,mRoadWidth,mRoadColor);
+            GeometryData textureElement = TextureRoadGeometryProcessor.getGeometryData(mRoadShapePoints,offset, mRoadWidth,mRoadColor);
             if (textureElement != null) {
                 addVerties(textureElement);
                 result = true;
@@ -352,7 +337,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @param color
      * @return
      */
-    private GeometryData generateRectangleVerties(List<Vector3> points, List<Float> directions, float height, float width, int color) {
+    private GeometryData generateRectangleVerties(List<Vector3> points,final Vector3 offset, List<Float> directions, float height, float width, int color) {
         if (points == null || points.size() <= 1|| directions == null) {
             return null;
         }
@@ -380,6 +365,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
         int randColor = color;
         float z = 0;
+        Vector3 point = new Vector3();
         Vector3 p1 = new Vector3();
         Vector3 p2 = new Vector3();
         //填充矩形块
@@ -387,7 +373,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
             float direction = directions.get(i);
 //            float direction = (float) Math.random();
-            Vector3 point = points.get(i);
+            point.subtractAndSet(points.get(i),offset);
             p1.x = point.x+ Math.cos(direction)*(height/2);
             p1.y = point.y+ Math.sin(direction)*(height/2);
             p2.x = point.x+ Math.cos(direction)*(-height/2);
