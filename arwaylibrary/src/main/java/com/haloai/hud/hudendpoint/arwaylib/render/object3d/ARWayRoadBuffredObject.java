@@ -40,6 +40,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     //Road
     private float mRefLineHeight = 0.5f;
     private float mRefLineWidth = 0.5f;
+    private float mStepLength = 3f;
     private float            mRoadWidth     = 0.7f;
     private int mRoadColor = Color.WHITE;
     private ShapeType mShapeType = ShapeType.VERTICE_ROAD;
@@ -74,15 +75,16 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     /**
      * 绘制参考线，指定矩形的长和宽
      */
-    public ARWayRoadBuffredObject(float height, float width, int color, Material material) {
+    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color, Material material) {
         this(width,color,material);
         mShapeType = ShapeType.REFERENCE_LINE;
         mRefLineHeight = height;
         mRefLineWidth = width;
+        mStepLength = stepLength;
     }
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
-        this(height,width,color,mRoadMaterial);
+        this(height,width,5,color,mRoadMaterial);
     }
 
     public ARWayRoadBuffredObject(float width, int color, Material material) {
@@ -122,13 +124,12 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     /**
      *
      * @param path
-     * @param stepLength
      * @return
      */
-    public boolean updateReferenceLine(List<Vector3> path,Vector3 offset, double stepLength){
+    public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
         mNeedRender = false;
 
-        double distStep = stepLength;
+        double distStep = mStepLength;
         List<Vector3> points = new ArrayList<>();
         List<Float> directions = new ArrayList<>();
 
@@ -136,7 +137,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         if(cnt>=2){
             Vector3 v1 = path.get(0);
             Vector3 v2 = path.get(1);
-            Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+            Float direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
             points.add(v1);
             directions.add(direction);
             for (int i = 0; i < cnt - 1; i++) {
@@ -150,10 +151,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     v.z = 0;
                     v1 = new Vector3(v);
                     i--;
-                    direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+                    direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
                     directions.add(direction);
                     points.add(v);
-                    distStep = stepLength;
+                    distStep = mStepLength;
                 } else if (temp < distStep) {
                     distStep -= temp;
                     v1 = path.get(i+1);
@@ -572,16 +573,19 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
             RoadFogMaterialPlugin fogMaterialPlugin = null;
-            if(mFogEnable){
-               IMaterialPlugin plugin =  material.getPlugin(RoadFogMaterialPlugin.class);
-                if (plugin != null) {
-                    fogMaterialPlugin =  (RoadFogMaterialPlugin)plugin;
+            IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
+            if (IFogPlugin != null) {
+                fogMaterialPlugin =  (RoadFogMaterialPlugin)IFogPlugin;
+                if(mFogEnable){
                     fogMaterialPlugin.setFogStartPosition(mFogStart);
                     fogMaterialPlugin.setFogEndPosition(mFogEnd);
-                    fogMaterialPlugin.getVertexShaderFragment().applyParams();
-                    fogMaterialPlugin.getFragmentShaderFragment().applyParams();
                 }
+                fogMaterialPlugin.setIsFog(mFogEnable);
+                fogMaterialPlugin.getVertexShaderFragment().applyParams();
+                fogMaterialPlugin.getFragmentShaderFragment().applyParams();
             }
+
+
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
             // -- calculate model view matrix;
