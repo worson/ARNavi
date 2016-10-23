@@ -1006,7 +1006,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 hideARWay();
                 mDrawScene.animShowHide(false);
                 mGlDrawCompass.showHide(true);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath setPath,mode is " + aMapNavi.getNaviPath().getStrategy());
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath onPathUpdate,mode is " + aMapNavi.getNaviPath().getStrategy());
                 if (ARWayConst.ENABLE_LOG_OUT) {
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
                 }
@@ -1014,7 +1014,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     return -2;
                 }
                 if (ARWayConst.IS_DARW_ARWAY) {
-                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.setPath called ");
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.onPathUpdate called ");
                     Projection projection = null;
                     if (ARWayConst.IS_AMAP_VIEW) {
                         projection = mAmapNaviView.getMap().getProjection();
