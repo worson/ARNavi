@@ -15,4 +15,6 @@ public interface INaviPathDataProcessor<NaviPath,NaviInfo,Location> {
 
     //data return
     INaviPathDataProvider getNaviPathDataProvider();
+    IRoadNetDataProvider getRoadNetDataProvider();
+
 }
