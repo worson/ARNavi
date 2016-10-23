@@ -181,7 +181,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
     private ArwaySceneUpdater mSceneUpdater;
 
     private CameraModel mCameraModel            = new CameraModel();
-    private float       mRoadWidthProportion    = 0.4f;
+    private float       mRoadWidthProportion    = 0.3f;
     private float       mCameraPerspectiveAngel = 70;
 
 

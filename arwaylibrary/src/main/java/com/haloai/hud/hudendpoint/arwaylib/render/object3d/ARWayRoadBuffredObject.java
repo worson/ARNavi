@@ -40,6 +40,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     //Road
     private float mRefLineHeight = 0.5f;
     private float mRefLineWidth = 0.5f;
+    private float mStepLength = 3f;
     private float            mRoadWidth     = 0.7f;
     private int mRoadColor = Color.WHITE;
     private ShapeType mShapeType = ShapeType.VERTICE_ROAD;
@@ -74,15 +75,16 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     /**
      * 绘制参考线，指定矩形的长和宽
      */
-    public ARWayRoadBuffredObject(float height, float width, int color, Material material) {
+    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color, Material material) {
         this(width,color,material);
         mShapeType = ShapeType.REFERENCE_LINE;
         mRefLineHeight = height;
         mRefLineWidth = width;
+        mStepLength = stepLength;
     }
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
-        this(height,width,color,mRoadMaterial);
+        this(height,width,5,color,mRoadMaterial);
     }
 
     public ARWayRoadBuffredObject(float width, int color, Material material) {
@@ -101,29 +103,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         setDoubleSided(true);
     }
 
-    public boolean updateBufferedRoad(List<Vector3> roadPath){
-        generateObjectBuffer(roadPath,mShapeType);
+    public boolean updateBufferedRoad(List<Vector3> roadPath,Vector3 offset){
+        generateObjectBuffer(roadPath,offset,mShapeType);
         return true;
     }
 
-    /**
-     * 更新道路渲染内容，在初始化中初始化宽度
-     * @param roadPath
-     * @return
-     */
-    public boolean updateBufferedRoad(List<Vector3> roadPath, float width){
-        mRoadWidth = width;
-        return generateObjectBuffer(roadPath,mShapeType);
-    }
-
-    /**
-     * 更新道路渲染内容
-     * @param roadPath
-     * @return
-     */
-    public boolean updateBufferedRoad(List<Vector3> roadPath, ShapeType type){
-        return generateObjectBuffer(roadPath,type);
-
+    public boolean updateBufferedRoad(List<Vector3> roadPath){
+        generateObjectBuffer(roadPath,new Vector3(roadPath.get(0)),mShapeType);
+        return true;
     }
 
     public ShapeType getShapeType() {
@@ -137,13 +124,12 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     /**
      *
      * @param path
-     * @param stepLength
      * @return
      */
-    public boolean updateReferenceLine(List<Vector3> path, double stepLength){
+    public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
         mNeedRender = false;
 
-        double distStep = stepLength;
+        double distStep = mStepLength;
         List<Vector3> points = new ArrayList<>();
         List<Float> directions = new ArrayList<>();
 
@@ -151,7 +137,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         if(cnt>=2){
             Vector3 v1 = path.get(0);
             Vector3 v2 = path.get(1);
-            Float direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+            Float direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
             points.add(v1);
             directions.add(direction);
             for (int i = 0; i < cnt - 1; i++) {
@@ -165,10 +151,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     v.z = 0;
                     v1 = new Vector3(v);
                     i--;
-                    direction = new Float((float) Math.atan2(v2.y-v1.y,v2.x-v1.x));
+                    direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
                     directions.add(direction);
                     points.add(v);
-                    distStep = stepLength;
+                    distStep = mStepLength;
                 } else if (temp < distStep) {
                     distStep -= temp;
                     v1 = path.get(i+1);
@@ -179,7 +165,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             return false;
         }
         replaceGeometry3D(new Geometry3D());
-        GeometryData referenceLineElement = generateRectangleVerties(points,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
+        GeometryData referenceLineElement = generateRectangleVerties(points,offset,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
 //        GeometryData referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
         addVerties(referenceLineElement);
         applyVerties();
@@ -187,7 +173,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         return true;
     }
 
-    private boolean generateObjectBuffer(List<Vector3> roadPath, ShapeType type){
+    private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         if(roadPath == null || roadPath.size()<1){
@@ -201,7 +187,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             addVerties(circleAndPlaneElement);
             result = true;
         }else if(type== ShapeType.TEXTURE_ROAD){
-            GeometryData textureElement = TextureRoadGeometryProcessor.getGeometryData(mRoadShapePoints,mRoadWidth,mRoadColor);
+            GeometryData textureElement = TextureRoadGeometryProcessor.getGeometryData(mRoadShapePoints,offset, mRoadWidth,mRoadColor);
             if (textureElement != null) {
                 addVerties(textureElement);
                 result = true;
@@ -352,7 +338,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @param color
      * @return
      */
-    private GeometryData generateRectangleVerties(List<Vector3> points, List<Float> directions, float height, float width, int color) {
+    private GeometryData generateRectangleVerties(List<Vector3> points,final Vector3 offset, List<Float> directions, float height, float width, int color) {
         if (points == null || points.size() <= 1|| directions == null) {
             return null;
         }
@@ -380,6 +366,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
         int randColor = color;
         float z = 0;
+        Vector3 point = new Vector3();
         Vector3 p1 = new Vector3();
         Vector3 p2 = new Vector3();
         //填充矩形块
@@ -387,7 +374,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
             float direction = directions.get(i);
 //            float direction = (float) Math.random();
-            Vector3 point = points.get(i);
+            point.subtractAndSet(points.get(i),offset);
             p1.x = point.x+ Math.cos(direction)*(height/2);
             p1.y = point.y+ Math.sin(direction)*(height/2);
             p2.x = point.x+ Math.cos(direction)*(-height/2);
@@ -586,16 +573,19 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
             RoadFogMaterialPlugin fogMaterialPlugin = null;
-            if(mFogEnable){
-               IMaterialPlugin plugin =  material.getPlugin(RoadFogMaterialPlugin.class);
-                if (plugin != null) {
-                    fogMaterialPlugin =  (RoadFogMaterialPlugin)plugin;
+            IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
+            if (IFogPlugin != null) {
+                fogMaterialPlugin =  (RoadFogMaterialPlugin)IFogPlugin;
+                if(mFogEnable){
                     fogMaterialPlugin.setFogStartPosition(mFogStart);
                     fogMaterialPlugin.setFogEndPosition(mFogEnd);
-                    fogMaterialPlugin.getVertexShaderFragment().applyParams();
-                    fogMaterialPlugin.getFragmentShaderFragment().applyParams();
                 }
+                fogMaterialPlugin.setIsFog(mFogEnable);
+                fogMaterialPlugin.getVertexShaderFragment().applyParams();
+                fogMaterialPlugin.getFragmentShaderFragment().applyParams();
             }
+
+
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
             // -- calculate model view matrix;
