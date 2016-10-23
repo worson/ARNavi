@@ -3,12 +3,16 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public interface INaviPathDataProcessor {
+public interface INaviPathDataProcessor<NaviPath,NaviInfo,Location> {
     //data update
-    void onPathUpdate(Object naviPath);
-    void onLocationUpdate(Object location, int curIndex);
+    void onPathUpdate(NaviPath naviPath);
+    void onNaviInfoUpdate(NaviInfo naviInfo);
+    void onLocationUpdate(Location location);
 
-    //state update
+    /*//state update
     void onNaviStop();
-    void onNaviStart();
+    void onNaviStart();*/
+
+    //data return
+    INaviPathDataProvider getNaviPathDataProvider();
 }

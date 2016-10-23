@@ -2,40 +2,40 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.navi.model.AMapNaviPath;
+import com.amap.api.navi.model.NaviInfo;
 
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public class AMapNaviPathDataProcessor implements INaviPathDataProcessor {
+public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNaviPath,NaviInfo,AMapLocation> {
     //Cache all navigation path data.
+    private INaviPathDataProvider mNaviPathDataProvider = null;
 
     @Override
-    public void onPathUpdate(Object aMapNaviPath) {
-        if (!(aMapNaviPath instanceof AMapNaviPath)) {
-            throw new IllegalArgumentException("Needs AMapNaviPath");
-        }
+    public void onPathUpdate(AMapNaviPath aMapNaviPath) {
+        //1.check data legal
+        //2.data pre handle
+        //3.create DataProvider instance
+        //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
     }
 
     @Override
-    public void onLocationUpdate(Object location, int curIndex) {
-        if (!(location instanceof AMapLocation)) {
-            throw new IllegalArgumentException("Needs AMapLocation");
-        } else if (curIndex < 0) {
-            throw new IllegalArgumentException("curIndex < 0 error");
-        }
+    public void onLocationUpdate(AMapLocation location) {
+        //call DataProvider to update anim with cur location
     }
 
     @Override
-    public void onNaviStop() {
-
+    public void onNaviInfoUpdate(NaviInfo naviInfo) {
+        //call DataProvider to update data with naviInfo
     }
 
     @Override
-    public void onNaviStart() {
-
+    public INaviPathDataProvider getNaviPathDataProvider() {
+        return mNaviPathDataProvider;
     }
 
     /**
+     * TODO:暂时不对路网数据进行处理
      * 访问路网模块获取指定steps的路网数据
      */
     private void processSteps(int stepIndex) {
