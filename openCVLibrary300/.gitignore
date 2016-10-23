@@ -1,0 +1,35 @@
+# cscope
+cscope.*
+tags
+
+#Mac
+.DS_Store
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*~
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.class
+
+# generated files
+bin/
+gen/
+.idea/
+build/
+
+# Eclipse setting files
+.settings/
+
+# Eclipse build classpath files
+*.classpath
+*.project
+*.properties
+*.iml
