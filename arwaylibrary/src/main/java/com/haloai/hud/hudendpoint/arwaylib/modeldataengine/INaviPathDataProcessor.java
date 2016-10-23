@@ -5,7 +5,7 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
  */
 public interface INaviPathDataProcessor<NaviPath,NaviInfo,Location> {
     //data update
-    void onPathUpdate(NaviPath naviPath);
+    int onPathUpdate(NaviPath naviPath);
     void onNaviInfoUpdate(NaviInfo naviInfo);
     void onLocationUpdate(Location location);
 
