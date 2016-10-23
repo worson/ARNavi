@@ -9,12 +9,7 @@ public class ConfigurableRenderStrategy extends  RenderStrategy{
     }
 
     @Override
-    public void updateCurrentRoadClass(HaloRoadClass roadClass) {
-
-    }
-
-    @Override
-    public void updateCurrentMPDistance(long distance) {
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
 
     }
 

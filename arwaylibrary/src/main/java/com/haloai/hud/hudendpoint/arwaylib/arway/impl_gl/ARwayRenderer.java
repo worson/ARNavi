@@ -20,6 +20,7 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculator;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadObject;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -64,7 +65,7 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener {
+public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier {
     //content
     private static final double ANIMATION_LENGTH  = 30;
     private static final double OBJ_4_CHASE_Z     = 0;
@@ -2408,5 +2409,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
         if (mCameraPerspectiveAngel > 0 && mCameraPerspectiveAngel < 90) {
             mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
         }
+    }
+
+    @Override
+    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
+
     }
 }

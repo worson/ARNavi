@@ -6,17 +6,24 @@ package com.haloai.hud.hudendpoint.arwaylib.render.strategy;
 public class MockTestRenderStrategy extends RenderStrategy {
 
     @Override
-    public void updateCurrentRoadClass(HaloRoadClass roadClass) {
-
-    }
-
-    @Override
-    public void updateCurrentMPDistance(long distance) {
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
 
     }
 
     @Override
     public RenderParams getCurrentRenderParams() {
         return null;
+    }
+
+    public void setCameraAngle(double cameraAngle) {
+
+    }
+
+    public void setDataLevel(DataLevel dataLevel) {
+
+    }
+
+    public void setLevelInnerScale(double scale) {
+
     }
 }

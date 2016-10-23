@@ -17,6 +17,9 @@ import org.rajawali3d.math.vector.Vector3;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+
+
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
@@ -32,6 +35,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //middle data
     private double mOffsetX;
     private double mOffsetY;
+
+    private IRenderStrategy renderStrategy;
+
 
     @Override
     /**
@@ -95,6 +101,18 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     @Override
     public void onLocationUpdate(AMapLocation location) {
         //call DataProvider to update anim with cur location
+
+        //Calculate the distance of maneuver point.
+        //.....
+        int distanceOfMP = 500;
+        //Get the step road class.
+        int roadClass = IRenderStrategy.HaloRoadClass.MAINWAY;
+        renderStrategy.updateCurrentRoadInfo(roadClass, distanceOfMP);
+    }
+
+    @Override
+    public void setRenderStrategy(IRenderStrategy renderStrategy) {
+        this.renderStrategy = renderStrategy;
     }
 
     @Override

@@ -39,6 +39,8 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.RenderStrategyFactory;
 import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
@@ -137,6 +139,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private boolean mLastIsReady = false;
 
     //navi
+    private IRenderStrategy currentRenderStrategy;
 
     //test
     private static TimeRecorder mUpdatePathRecorder   = null;
@@ -201,6 +204,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         }
         hideARWay();
         mDrawScene.animShowHide(false);
+
+        currentRenderStrategy = RenderStrategyFactory.generateRenderStrategy();
+        currentRenderStrategy.setRenderParamsNotifier(mRenderer);
+        //TODO: INaviPathDataProcessor.setRenderStrategy(currentRenderStrategy);
+
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreateView");
         return mLayout;
     }

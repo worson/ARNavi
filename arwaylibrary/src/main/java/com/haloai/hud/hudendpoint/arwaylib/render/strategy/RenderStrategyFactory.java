@@ -5,15 +5,15 @@ package com.haloai.hud.hudendpoint.arwaylib.render.strategy;
  */
 public class RenderStrategyFactory {
 
-    IRenderStrategy generateRenderStrategy() {
+    public static IRenderStrategy generateRenderStrategy() {
         return new HardcodeRenderStrategy();
     }
 
-    IRenderStrategy generateConfigurableRenderStrategy(String configStr) {
+    public static IRenderStrategy generateConfigurableRenderStrategy(String configStr) {
         return new ConfigurableRenderStrategy(configStr);
     }
 
-    IRenderStrategy generateMockTestRenderStrategy() {
+    public static IRenderStrategy generateMockTestRenderStrategy() {
         return  new MockTestRenderStrategy();
     }
 

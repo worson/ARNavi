@@ -6,18 +6,7 @@ package com.haloai.hud.hudendpoint.arwaylib.render.strategy;
 public class HardcodeRenderStrategy extends RenderStrategy {
 
     @Override
-    public void updateCurrentRoadClass(HaloRoadClass roadClass) {
-
-        boolean needsUpdate = true;
-        if (needsUpdate && this.renderParamsNotifier != null) {
-            //Placeholder
-            this.renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams());
-        }
-    }
-
-    @Override
-    public void updateCurrentMPDistance(long distance) {
-
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
         boolean needsUpdate = true;
         if (needsUpdate && this.renderParamsNotifier != null) {
             //Placeholder
