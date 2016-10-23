@@ -1181,7 +1181,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener {
             mOriginalPath.addAll(path_default);
             return setPathAndCalcData(mOriginalPath, naviPath.getAllLength()/*, naviStepsScreen, naviStepsOpengl*/);
         } else {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway setPath is repeat path");
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway onPathUpdate is repeat path");
             return -2;
         }
     }

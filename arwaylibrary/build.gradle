@@ -68,6 +68,7 @@ dependencies {
     //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
     //    compile project(':rajawali')
     //    compile project(':openCVLibrary300')
-    compile project(':endpointsSharedLib')
     //     compile project(':openCVLibrary300')
+    compile project(':endpointsSharedLib')
+    compile project(path: ':endpointsSharedLib')
 }
