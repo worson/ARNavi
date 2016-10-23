@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 import android.util.Log;
 
-import com.haloai.hud.hudendpoint.arwaylib.render.vertices.ObjectElement;
+import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 
@@ -55,7 +55,7 @@ public class ARWayRoadObject extends SuperRoadObject {
 
     private final float PI = (float) Math.PI;
 
-    private ObjectElement mObjectElement;
+    private GeometryData mGeometryData;
     private static Material mRoadMaterial = new Material();
     static {
         mRoadMaterial.useVertexColors(true);
@@ -77,15 +77,15 @@ public class ARWayRoadObject extends SuperRoadObject {
         setMaterial(material);
         setDoubleSided(true);
 
-        /*ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,color);
+        /*GeometryData circleAndPlaneElement = generatePlanAndCircleVerties(mRoadShapePoints,mRoadShapePointsCount-1,CIRCLE_SEGMENT, mRoadWidth /2,0,color);
         addVerties(circleAndPlaneElement);*/
 
-        ObjectElement planeElement = generatePlaneVerties(width/2,-0.001f);
+        GeometryData planeElement = generatePlaneVerties(width/2,-0.001f);
         addVerties(planeElement);
 
         /*List<Vector3> rotatePath = new ArrayList<>();
         MathUtils.rotatePath(mRoadShapePoints,rotatePath,roadPath.get(0).x,roadPath.get(0).y,PI/2);
-        ObjectElement roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
+        GeometryData roadCircleAndPlaneElement = generatePlanAndCircleVerties(rotatePath,mRoadShapePointsCount-1,CIRCLE_SEGMENT,0.8f*mRoadWidth/2,0.1f,Color.RED);
         addVerties(roadCircleAndPlaneElement);*/
 
         applyVerties();
@@ -121,7 +121,7 @@ public class ARWayRoadObject extends SuperRoadObject {
         return true;
     }
 
-    private ObjectElement generatePlanAndCircleVerties(List<Vector3> path, int segmentsL, int segmentsC, float radius, float height, int color) {
+    private GeometryData generatePlanAndCircleVerties(List<Vector3> path, int segmentsL, int segmentsC, float radius, float height, int color) {
         int numVertices = (segmentsC + 1) * (segmentsL + 1);
         int numIndices = 2 * segmentsC * segmentsL * 3;
         //+(mRoadShapePoints.size()*CIRCLE_SEGMENT
@@ -135,7 +135,7 @@ public class ARWayRoadObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[numIndices];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;
@@ -216,33 +216,33 @@ public class ARWayRoadObject extends SuperRoadObject {
     }
 
     private void generateAllVerties() {
-        List<ObjectElement> allElement = new ArrayList<>();
+        List<GeometryData> allElement = new ArrayList<>();
 
-//        ObjectElement palneElement = generatePlaneVerties();
+//        GeometryData palneElement = generatePlaneVerties();
 //        allElement.add(palneElement);
 //        generateCircleObject();
 
         if(LOG_OUT){
             Log.e(TAG,"generateAllVerties called ");
         }
-//        ObjectElement circleAndPlaneElement = generatePlanAndCircleVerties(0f);
+//        GeometryData circleAndPlaneElement = generatePlanAndCircleVerties(0f);
 //        allElement.add(circleAndPlaneElement);
         if(LOG_OUT){
             Log.e(TAG,"generatePlanAndCircleVerties called ");
         }
-        ObjectElement totalElement = ObjectElement.addAllElement(allElement);
+        GeometryData totalElement = GeometryData.addAllElement(allElement);
         if (totalElement != null && totalElement.isDataValid()) {
             if(LOG_OUT){
                 Log.e(TAG,"setData called ");
             }
-            mObjectElement = totalElement;
+            mGeometryData = totalElement;
             setData(totalElement.vertices, totalElement.normals, totalElement.textureCoords, totalElement.colors, totalElement.indices, false);
             setBlendingEnabled(false);
         }
 
     }
 
-    private ObjectElement generateCircleVerties(int segmentsL,int segmentsC,float radius,float heigth) {
+    private GeometryData generateCircleVerties(int segmentsL, int segmentsC, float radius, float heigth) {
 
         int countOfVertice = mRoadShapePointsCount*(CIRCLE_SEGMENT+1);
         int numIndices = 2 * segmentsL * mRoadShapePointsCount * 3;
@@ -256,7 +256,7 @@ public class ARWayRoadObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[numIndices*NUMBER_OF_INDICE];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;
@@ -413,7 +413,7 @@ public class ARWayRoadObject extends SuperRoadObject {
     }
 
 
-    private ObjectElement generatePlaneVerties(float radius,float height) {
+    private GeometryData generatePlaneVerties(float radius, float height) {
         mCountOfPlanes = (mRoadShapePoints.size() - 1);
         mCountOfVerties = mCountOfPlanes * 4;
         //顶点数据之间可以共用
@@ -424,7 +424,7 @@ public class ARWayRoadObject extends SuperRoadObject {
         //每个三角形的对应三个下标
         int[] indices = new int[mCountOfPlanes * (6)];
 
-        ObjectElement element = new ObjectElement();
+        GeometryData element = new GeometryData();
         element.vertices = vertices;
         element.textureCoords = textureCoords;
         element.normals = normals;

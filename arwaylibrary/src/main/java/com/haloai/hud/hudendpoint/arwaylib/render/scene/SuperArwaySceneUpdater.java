@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import org.rajawali3d.Object3D;
+import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.scene.Scene;
 
 /**
@@ -8,6 +9,7 @@ import org.rajawali3d.scene.Scene;
  */
 public class SuperArwaySceneUpdater {
     protected Scene mScene;
+    protected Vector3 mCurPosition = new Vector3();
 
     public SuperArwaySceneUpdater() {
     }
@@ -65,6 +67,14 @@ public class SuperArwaySceneUpdater {
         if (mScene == null) {
             mScene.clearChildren();
         }
+    }
+
+    public Vector3 getCurrentPosition() {
+        return mCurPosition;
+    }
+
+    public void setCurrentPosition(Vector3 curPosition) {
+        mCurPosition.setAll(curPosition);
     }
 
     @Override

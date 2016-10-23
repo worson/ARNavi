@@ -43,7 +43,7 @@ public class ARWayConst {
     public static final int     NAVI_MAX_RESTRICT_POINT_NUMBER = 5000;
 
     //road obect
-    public static final boolean IS_USE_ROAD_TEXTURE      = false;
+    public static final boolean IS_USE_ROAD_TEXTURE      = true;
 
     //测试岔路模拟数据
     public static final String BRANCH_LINES =

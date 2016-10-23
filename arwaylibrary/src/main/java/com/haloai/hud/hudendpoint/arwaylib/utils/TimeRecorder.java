@@ -51,8 +51,15 @@ public class TimeRecorder {
         return tFrame/cnt;
     }
 
+    public String getLog(String name){
+        return String.format(" %s: interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,interval,getAverageInterval(),frame,getAverageFrame());
+    }
     public void recordeAndLog(String tag,String name){
         recorde();
-        HaloLogger.logE(tag,String.format(" %s: interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,interval,getAverageInterval(),frame,getAverageFrame()));
+        HaloLogger.logE(tag,getLog(name));
+    }
+    public void recordeAndPrint(String name){
+        recorde();
+        System.out.print(getLog(name)+"\n");
     }
 }
