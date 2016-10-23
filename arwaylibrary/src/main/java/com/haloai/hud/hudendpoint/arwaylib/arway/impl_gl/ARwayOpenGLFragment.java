@@ -39,6 +39,8 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.BeanFactory;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.CommonBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.RenderStrategyFactory;
 import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
@@ -137,6 +139,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private boolean mLastIsReady = false;
 
     //navi
+    private IRenderStrategy currentRenderStrategy;
 
     //test
     private static TimeRecorder mUpdatePathRecorder   = null;
@@ -201,6 +204,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         }
         hideARWay();
         mDrawScene.animShowHide(false);
+
+        currentRenderStrategy = RenderStrategyFactory.generateRenderStrategy();
+        currentRenderStrategy.setRenderParamsNotifier(mRenderer);
+        //TODO: INaviPathDataProcessor.setRenderStrategy(currentRenderStrategy);
+
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreateView");
         return mLayout;
     }
@@ -888,6 +896,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         }
         if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY) {
             mRenderer.updateLocation(location, mCurIndexInPath);
+            // TODO: 2016/10/23 ARWay新架构
+            /**
+             * 1.Processor.onLocationUpdate();
+             * 2.Renderer.updateLocation();
+             */
         }
         ARWayController.CommonBeanUpdater.setMatchNaviPath(matchPath);
         onNavingContextChangedView();
@@ -1023,6 +1036,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                         mUpdatePathRecorder.start();
                     }
                     mRenderer.setPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
+                    // TODO: 2016/10/23 ARWay新架构
+                    /**
+                     * 1.Processor.onPathUpdate();
+                     * 2.Renderer.setProvider(Processor.getProvider());
+                     * 3.Renderer.updatePath();
+                     */
                     if (ARWayConst.ENABLE_PERFORM_TEST) {
                         mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
                     }
@@ -1061,6 +1080,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (info == null) {
             return;
         }
+        // TODO: 2016/10/23 ARWay新架构
+        /**
+         * 1.Provider p = Processor.onNaviUpdate();
+         */
         mNaviIcon = info.getIconType();
         mCurPoint = info.getCurPoint();
         mCurStep = info.getCurStep();
