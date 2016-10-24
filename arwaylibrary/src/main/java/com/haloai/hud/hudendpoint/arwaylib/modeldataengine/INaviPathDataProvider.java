@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.List;
@@ -36,6 +38,7 @@ public interface INaviPathDataProvider{
     void setPath(List<Vector3> renderPath);
     void setObjStartOrientation(double rotateZ);
 
-    List<Vector3> getNaviPathByLevel(int level);
+    List<Vector3> getNaviPathByLevel(IRenderStrategy.DataLevel level);
     double getObjStartOrientation();
+    int getCurDataLevelFactor();
 }
