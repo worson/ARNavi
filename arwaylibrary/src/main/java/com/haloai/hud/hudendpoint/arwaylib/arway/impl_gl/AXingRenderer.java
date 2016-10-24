@@ -20,14 +20,14 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculator;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadObject;
-import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
-import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
+import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -65,7 +65,7 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier {
+public class AXingRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier {
     //content
     private static final double ANIMATION_LENGTH  = 30;
     private static final double OBJ_4_CHASE_Z     = 0;
@@ -188,7 +188,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
-    public ARwayRenderer(Context context) {
+    public AXingRenderer(Context context) {
         super(context);
 
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -280,6 +280,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         position.x = cPos.x + offsetX;
         position.y = cPos.y + offsetY;
+
+        /*lookat.x = cPos.x + offsetX;
+        lookat.y = cPos.y + offsetY;*/
 
     }
 
@@ -382,6 +385,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             updateCamera(mObject4Chase);
+        }
+        if (mSceneUpdater != null) {
+            mSceneUpdater.setCamera(getCurrentCamera());
+            mSceneUpdater.onRender(ellapsedRealtime,deltaTime);
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -1552,6 +1559,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void myInitScene() {
 
         mSceneUpdater.reset();
+        mSceneUpdater.setCamera(getCurrentCamera());
         getCurrentScene().clearChildren();
         //        mSceneUpdater.reset();
 

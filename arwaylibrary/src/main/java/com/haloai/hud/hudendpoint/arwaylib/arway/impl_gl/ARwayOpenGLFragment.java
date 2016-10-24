@@ -103,7 +103,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     //opengl
     protected ViewGroup     mLayout;
     protected TextureView   mRenderSurface;
-    protected ARwayRenderer mRenderer;
+    protected AXingRenderer mRenderer;
     private boolean mCameraChangeFinish = false;
 
     //bean
@@ -170,7 +170,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mLayout.addView(mainARWayView);*/
 
         mRenderSurface = (TextureView) mDrawScene.getViewInstance(mContext);
-        mRenderer = (ARwayRenderer) createRenderer();
+        mRenderer = (AXingRenderer) createRenderer();
         onBeforeApplyRenderer();
         applyRenderer();
 
@@ -178,7 +178,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         arway = mRenderSurface;
         arway.setVisibility(View.VISIBLE);
         if (ARWayConst.IS_AMAP_VIEW) {
-            //init amap navi view
+            //reset amap navi view
             mNaviView = mLayout;
             // TODO: 16/9/27 需要显示高德底图时调用
             //            mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);
@@ -394,7 +394,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     @Override
     public ISurfaceRenderer createRenderer() {
         //        return new ARwayOpenGLRenderer(getActivity(),this);
-        return new ARwayRenderer(getActivity());
+        return new AXingRenderer(getActivity());
     }
 
     protected void onBeforeApplyRenderer() {

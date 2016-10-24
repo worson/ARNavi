@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import org.rajawali3d.Object3D;
+import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.scene.Scene;
 
@@ -9,6 +10,7 @@ import org.rajawali3d.scene.Scene;
  */
 public class SuperArwaySceneUpdater {
     protected Scene mScene;
+    protected Camera mCamera;
     protected Vector3 mCurPosition = new Vector3();
 
     public SuperArwaySceneUpdater() {
@@ -43,6 +45,10 @@ public class SuperArwaySceneUpdater {
 
     public void setScene(Scene scene) {
         mScene = scene;
+    }
+
+    public void setCamera(Camera camera) {
+        mCamera = camera;
     }
 
     public boolean addObject(Object3D[] object3Ds){

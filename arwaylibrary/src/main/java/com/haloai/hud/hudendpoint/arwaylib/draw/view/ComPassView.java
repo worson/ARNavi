@@ -95,7 +95,7 @@ public class ComPassView extends View implements SensorEventListener {
         int width,height;
         width = (int)a.getDimension(R.styleable.CustomView_custom_width,240);
         height = (int)a.getDimension(R.styleable.CustomView_custom_height,240);
-        HaloLogger.logE("compass_debug","ComPassView init,width is "+width+"    ,height is "+height);
+        HaloLogger.logE("compass_debug","ComPassView reset,width is "+width+"    ,height is "+height);
         a.recycle();
         initSensor(context);
         initBitmap(context, width, height);
