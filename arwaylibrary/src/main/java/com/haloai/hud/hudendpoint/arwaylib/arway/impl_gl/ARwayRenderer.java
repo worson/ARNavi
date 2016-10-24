@@ -60,8 +60,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
     private static final double CAMERA_CUT_OFFSET = /*0*/0.6/*1*/;
     private static final double LOOK_AT_DIST      = /*0*/1.3;
-    private static final double CAMERA_NEAR_PLANE = 0.5;
-    private static final double CAMERA_FAR_PLANE  = 25;
     private              int    SCREEN_WIDTH      = 0;
     private              int    SCREEN_HEIGHT     = 0;
 
@@ -320,8 +318,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         camera.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
-        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
-        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
+        getCurrentCamera().setNearPlane(ARWayConst.CAMERA_NEAR_PLANE);
+        getCurrentCamera().setFarPlane(ARWayConst.CAMERA_FAR_PLANE);
 
         ARWayCameraCaculator.cameraCaculatorInit(camera);
 

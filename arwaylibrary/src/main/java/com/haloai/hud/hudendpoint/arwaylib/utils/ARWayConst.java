@@ -25,6 +25,10 @@ public class ARWayConst {
     public static final boolean ENABLE_PERFORM_TEST = false;//ARWAY 输出测试log
 
 
+    //camera
+    public static final double CAMERA_NEAR_PLANE = 0.5;
+    public static final double CAMERA_FAR_PLANE  = 25;
+
     //open gl
     public static final int     FRAME_RATE             = 30;
     public static final double DEFAULT_CAMERA_Z           = 15;
