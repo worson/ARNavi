@@ -4,20 +4,34 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:background="#000000"
+                android:background="@color/arway_background"
                 android:orientation="horizontal">
+
+    <FrameLayout
+        android:id="@+id/opengl_viewgroup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/arway_background">
+        <ImageView
+            android:id="@+id/arway_mask_imageview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/arway_background">
+        </ImageView>
+    </FrameLayout>
 
     <RelativeLayout
         android:id="@+id/left_card_viewgroup"
         android:layout_width="134dp"
         android:layout_height="match_parent"
-        android:background="#000000">
+        android:background="@color/arway_background">
 
         <RelativeLayout
             android:id="@+id/navi_indicate_viewgroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
+            android:background="@color/arway_background"
             android:visibility="visible">
 
             <TextView
@@ -30,6 +44,7 @@
                 android:maxLines="1"
                 android:text="进入"
                 android:textColor="#ffffff"
+                android:background="@color/arway_background"
                 android:textSize="12sp"/>
             <TextView
                 android:id="@+id/navi_indicate_road_textview"
@@ -43,6 +58,7 @@
                 android:maxLines="1"
                 android:text="海天一路"
                 android:textColor="#ffffff"
+                android:background="@color/arway_background"
                 android:textSize="14sp"/>
             <TextView
                 android:id="@+id/navi_indicate_direction_textview"
@@ -54,6 +70,7 @@
                 android:padding="0dp"
                 android:maxLines="1"
                 android:text="然后向东行驶"
+                android:background="@color/arway_background"
                 android:textColor="#ffffff"
                 android:textSize="12sp"/>
 
@@ -66,12 +83,14 @@
             android:layout_alignParentTop="true"
             android:layout_marginLeft="3dp"
             android:layout_marginTop="19dp"
+            android:background="@color/arway_background"
             android:visibility="visible">
 
             <ImageView
                 android:id="@+id/next_road_direction_imageview"
                 android:layout_width="33dp"
                 android:layout_height="41dp"
+                android:background="@color/arway_background"
                 android:layout_centerVertical="true"/>
 
             <TextView
@@ -84,6 +103,7 @@
                 android:padding="0dp"
                 android:text="500米"
                 android:textColor="#ffffff"
+                android:background="@color/arway_background"
                 android:textSize="24sp"/>
 
             <TextView
@@ -98,6 +118,7 @@
                 android:padding="0dp"
                 android:text="沿滨海大道行驶"
                 android:textColor="#ffffff"
+                android:background="@color/arway_background"
                 android:textSize="12sp"/>
 
         </RelativeLayout>
@@ -109,7 +130,8 @@
             android:layout_marginLeft="30dp"
             android:layout_marginTop="@dimen/speed_view_pause_margin_top"
             custom:custom_height="@dimen/speed_view_pause_height"
-            custom:custom_width="@dimen/speed_view_pause_width">
+            custom:custom_width="@dimen/speed_view_pause_width"
+            android:background="@color/arway_background">
         </com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedView>
 
         <RelativeLayout
@@ -130,6 +152,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="5dp"
+                android:background="@color/arway_background"
                 android:scaleType="fitXY"/>
 
             <ImageView
@@ -138,6 +161,7 @@
                 android:layout_height="@dimen/digital_speed_height"
                 android:layout_alignTop="@+id/speed_num_hun"
                 android:layout_toRightOf="@+id/speed_num_hun"
+                android:background="@color/arway_background"
                 android:scaleType="fitXY"/>
 
             <ImageView
@@ -146,6 +170,7 @@
                 android:layout_height="@dimen/digital_speed_height"
                 android:layout_alignTop="@+id/speed_num_ten"
                 android:layout_toRightOf="@+id/speed_num_ten"
+                android:background="@color/arway_background"
                 android:scaleType="fitXY"
                 android:src="@drawable/speed_number_0"/>
 
@@ -156,6 +181,7 @@
                 android:layout_alignBottom="@+id/speed_num_one"
                 android:layout_marginStart="6dp"
                 android:layout_toEndOf="@+id/speed_num_one"
+                android:background="@color/arway_background"
                 android:src="@drawable/speed_number_unit"/>
 
         </RelativeLayout>
@@ -193,17 +219,6 @@
         android:layout_width="292dp"
         android:layout_height="fill_parent"
         android:layout_toRightOf="@+id/left_card_viewgroup">
-
-        <FrameLayout
-            android:id="@+id/opengl_viewgroup"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/arway_black">
-            <ImageView
-                android:id="@+id/arway_mask_imageview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"></ImageView>
-        </FrameLayout>
         <RelativeLayout
             android:id="@+id/compass_viewgroup"
             android:layout_width="@dimen/compass_pause_width"
@@ -244,7 +259,7 @@
         android:layout_width="133.3dp"
         android:layout_height="match_parent"
         android:layout_toRightOf="@id/middle_card_viewgroup"
-        android:background="#000000">
+        android:background="@color/arway_background">
 
         <com.haloai.hud.hudendpoint.arwaylib.draw.view.RetainDistanceView
             android:id="@+id/retain_distance_view"
@@ -254,6 +269,7 @@
             android:layout_marginTop="@dimen/distance_view_pause_margin_top"
             custom:custom_height="@dimen/distance_view_pause_height"
             custom:custom_width="@dimen/distance_view_pause_width">
+            android:background="@color/arway_background"
         </com.haloai.hud.hudendpoint.arwaylib.draw.view.RetainDistanceView>
 
         <RelativeLayout
@@ -273,6 +289,7 @@
                 android:layout_alignBaseline="@+id/prefix_time_textview"
                 android:text="min"
                 android:textColor="#ffffff"
+                android:background="@color/arway_background"
                 android:textSize="12sp"/>
             <TextView
                 android:id="@+id/prefix_time_textview"
@@ -283,6 +300,7 @@
                 android:text="32"
                 android:textColor="#ffffff"
                 android:textSize="20sp"
+                android:background="@color/arway_background"
                 />
 
 
@@ -300,5 +318,6 @@
         android:layout_marginTop="40dp"
         android:text="无网络信号,正在搜索."
         android:textColor="@color/arway_red"
+        android:background="@color/arway_background"
         android:textSize="15sp"/>
 </RelativeLayout>

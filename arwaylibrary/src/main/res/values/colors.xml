@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="arway_grey"> #ebebeb</color>
+    <color name="arway_background"> #00000000</color>
     <color name="arway_black"> #000000</color>
     <color name="arway_darkgrey"> #C0C0C0</color>
     <color name="arway_white"> #FFFFFF</color>
