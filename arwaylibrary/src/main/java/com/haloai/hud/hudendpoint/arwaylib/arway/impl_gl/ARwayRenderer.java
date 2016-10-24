@@ -71,7 +71,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //rajawali about
     private Object3D          mObject4Chase;
     private Object3D          mCarObject;
-    private ArwaySceneUpdater mSceneUpdater;
+    private ArwaySceneUpdater mSceneUpdater = null;
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
@@ -87,7 +87,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     //about camera
     private CameraModel mCameraModel            = new CameraModel();
-    private float       mRoadWidthProportion    = 0.3f;
+    private float       mRoadWidthProportion    = 0.13f;
     private float       mCameraPerspectiveAngel = 70;
 
     //time recorder
@@ -115,10 +115,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
         setFrameRate(FRAME_RATE);
-
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
+        mSceneUpdater.initScene();
         mIsInitScene = true;
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
@@ -469,6 +469,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 }
             }
         }
+
     }
 
     @Override
@@ -477,6 +478,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             clearLastAnim();
             startAnim(animData.from, animData.to, animData.degrees, animData.duration);
         }
+
     }
 
     @Override

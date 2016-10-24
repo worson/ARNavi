@@ -28,24 +28,20 @@ public class TileFloor extends DebugObject3D {
         createGridFloor();
     }
 
-    public void preRender() {
-        super.preRender();
-        GLES20.glLineWidth(mSize);
-    }
     private void createGridFloor() {
         final float sizeHalf = mSize * 0.5f;
         final float spacing = mSize / mNumLines;
 
         mPoints = new Stack<>();
 
-        for(float z = -sizeHalf; z <= sizeHalf; z += spacing) {
-            mPoints.add(new Vector3(-sizeHalf, 0, z));
-            mPoints.add(new Vector3(sizeHalf, 0, z));
+        for(float y = -sizeHalf; y <= sizeHalf; y += spacing) {
+            mPoints.add(new Vector3(-sizeHalf, y,0));
+            mPoints.add(new Vector3(sizeHalf, y,0));
         }
 
         for(float x = -sizeHalf; x <= sizeHalf; x += spacing) {
-            mPoints.add(new Vector3(x, 0, -sizeHalf));
-            mPoints.add(new Vector3(x, 0, sizeHalf));
+            mPoints.add(new Vector3(x, -sizeHalf,0));
+            mPoints.add(new Vector3(x, sizeHalf, 0));
         }
 
         setMaterial(new Material());

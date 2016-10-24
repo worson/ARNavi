@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
+import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.BaseObject3D;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
@@ -30,7 +31,7 @@ import java.util.List;
 /**
  * Created by wangshengxing on 16/9/22.
  */
-public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayRoadRender, IRenderStrategy.RenderParamsNotifier{
+public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayRoadRender{
 
     private static final boolean IS_DEBUG_PATH_LINE     = false;
     private static final boolean IS_DEBUG_SHIPE_POINT   = false;
@@ -98,16 +99,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Object3D mCarObject;
 
     private IRenderStrategy.RenderParams mRenderParams;
-    private INaviPathDataProvider mPathDataProvider;
 
-    @Override
-    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
+    /*public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
         if (mRenderParams.dataLevel != renderParams.dataLevel){
             clearNaviRoad();
-            /*List<Vector3> naviPath =  mPathDataProvider.getNaviPathByLevel(renderParams.dataLevel);
-            renderNaviPath(naviPath);*/
+            *//*List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(renderParams.dataLevel);
+            renderNaviPath(naviPath);*//*
         }
-    }
+    }*/
 
 
     private class RoadLayers{
@@ -139,6 +138,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     private ArwaySceneUpdater(Scene scene) {
         super(scene);
+
+    }
+
+
+    public void initScene(){
         if (mGridfloorLayer != null) {
             mGridfloorLayer = new GridFloor(200, Color.DKGRAY, 3, 200);
             mGridfloorLayer.setRotation(Vector3.Axis.X,90);
@@ -151,6 +155,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         initRoadMaterial();
     }
 
+    /**
+     *
+     */
     public void reset() {
         mCrossRoadLayersList.clear();
         mRoadLayersList.clear();
