@@ -7,10 +7,10 @@ import org.rajawali3d.math.vector.Vector3;
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public interface INaviPathDataProcessor<NaviPath,NaviInfo,Location> {
+public interface INaviPathDataProcessor<Navi,NaviPath,NaviInfo,Location> {
     //data update
     void reset();
-    int setPath(NaviPath naviPath);
+    int setPath(Navi amapNavi, NaviPath naviPath);
     void setNaviInfo(NaviInfo naviInfo);
     void setLocation(Location location, Vector3 animPos, double animDegrees);
 
