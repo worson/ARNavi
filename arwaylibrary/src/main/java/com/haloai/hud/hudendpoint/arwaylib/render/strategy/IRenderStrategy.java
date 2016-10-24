@@ -28,8 +28,8 @@ public interface IRenderStrategy {
             this.glCameraAngle = glCameraAngle;
         }
 
-        IRenderStrategy.DataLevel dataLevel;
-        double glCameraAngle;
+        public IRenderStrategy.DataLevel dataLevel;
+        public double glCameraAngle;
     }
     RenderParams getCurrentRenderParams();
 

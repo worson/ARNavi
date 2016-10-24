@@ -11,12 +11,12 @@ import android.view.View;
  */
 public interface IARWay {
     /**
-     * let arway back to init status.
+     * let arway back to reset status.
      */
     void reset();
 
     /**
-     * let arway back to init status , and release the resource about arway.
+     * let arway back to reset status , and release the resource about arway.
      */
     void release();
 

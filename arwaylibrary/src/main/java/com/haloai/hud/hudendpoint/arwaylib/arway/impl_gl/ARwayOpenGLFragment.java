@@ -179,7 +179,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         arway = mRenderSurface;
         arway.setVisibility(View.VISIBLE);
         if (ARWayConst.IS_AMAP_VIEW) {
-            //init amap navi view
+            //reset amap navi view
             mNaviView = mLayout;
             // TODO: 16/9/27 需要显示高德底图时调用
             //            mAmapNaviView = (AMapNaviView) mLayout.findViewById(R.id.amap_navi_amapnaviview);

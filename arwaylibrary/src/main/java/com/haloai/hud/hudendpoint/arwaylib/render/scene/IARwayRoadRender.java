@@ -10,11 +10,13 @@ import java.util.List;
 public interface IARwayRoadRender {
     //渲染当前显示的道路
     public boolean renderNaviPath(List<Vector3> path);
-    public void setAlpha(float alpha);
+
     //渲染蚯蚓线
     public boolean renderDirectorLine(List<Vector3> path);
+
     public boolean renderRoadNet(List<List<Vector3>> cross); //cross数据结构未定
-    public boolean clearRoadnetwork();
-    public boolean clearNaviRoad();
+
+    public void onRender(long ellapsedRealtime, double deltaTime);
+
 
 }
