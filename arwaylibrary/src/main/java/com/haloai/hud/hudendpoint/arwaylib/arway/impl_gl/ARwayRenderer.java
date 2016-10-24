@@ -461,8 +461,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onPathUpdate() {
         if (mNaviPathDataProvider != null) {
-            List<Vector3> path = mNaviPathDataProvider.getNaviPathByLevel(0);
-            mRenderPath = path;
+            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(0);
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -478,6 +477,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             clearLastAnim();
             startAnim(animData.from, animData.to, animData.degrees, animData.duration);
         }
+    }
+
+    @Override
+    public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
+        
     }
 
     @Override

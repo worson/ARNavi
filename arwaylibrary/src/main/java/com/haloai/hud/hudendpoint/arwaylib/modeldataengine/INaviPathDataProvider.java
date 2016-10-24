@@ -27,6 +27,7 @@ public interface INaviPathDataProvider{
     interface INaviPathDataChangeNotifer{
         void onPathUpdate();
         void onAnimUpdate(AnimData animData);
+        void onGuideLineUpdate(List<Vector3> guideLineUpdate);
     }
     void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier);
 
