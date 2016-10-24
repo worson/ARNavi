@@ -11,14 +11,30 @@ import java.util.List;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
  * project_name : hudlauncher;
  */
-public interface INaviPathDataProvider<NaviPath,NaviInfo,Location> {
-    void reset();
-    void setNaviPath(NaviPath naviPath);
-    void setNaviInfo(NaviInfo naviInfo);
-    void setLocation(Location location);
-    List<Vector3> getNaviPathByLevel(int level);
-    public class AnimData{
-
+public interface INaviPathDataProvider{
+    class AnimData{
+        public AnimData(Vector3 _from,Vector3 _to,double _degrees,long _duration){
+            from.setAll(_from);
+            to.setAll(_to);
+            degrees=_degrees;
+            duration=_duration;
+        }
+        public Vector3 from = new Vector3();
+        public Vector3 to = new Vector3();
+        public double degrees;
+        public long duration;
     }
-    AnimData getNaviAnim();
+    interface INaviPathDataChangeNotifer{
+        void onPathUpdate();
+        void onAnimUpdate(AnimData animData);
+    }
+    void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier);
+
+    void reset();
+    void setAnim(Vector3 start,Vector3 end,double degrees,long duration);
+    void setPath(List<Vector3> renderPath);
+    void setObjStartOrientation(double rotateZ);
+
+    List<Vector3> getNaviPathByLevel(int level);
+    double getObjStartOrientation();
 }

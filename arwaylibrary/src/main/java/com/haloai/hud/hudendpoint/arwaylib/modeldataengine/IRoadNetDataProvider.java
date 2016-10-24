@@ -31,6 +31,11 @@ public interface IRoadNetDataProvider {
         int width;
         int height;
     }
+    interface IRoadNetDataNotifier{
+        void onRoadNetDataChange();
+    }
+    void setRoadNetChangeNotifier(IRoadNetDataNotifier roadNetChangeNotifier);
+
     void reset();
     void processStep(List<List<LatLng_RoadNet>> naviLinks,
                      List<NaviInfo_RoadNet> linkInfos,
