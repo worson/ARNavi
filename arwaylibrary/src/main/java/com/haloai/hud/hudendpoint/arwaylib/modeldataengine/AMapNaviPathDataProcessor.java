@@ -27,11 +27,11 @@ import java.util.List;
 public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNaviPath, NaviInfo, AMapNaviLocation> {
     //constant
     private static final String TAG                    = "AMapNaviPathDataProcessor";
-    private static final double OBJ_4_CHASE_Z          = 0;
-    private static final float  TIME_15_20             = 32;
-    private static final int    RAREFY_PIXEL_COUNT     = 1;
-    private static final int    DEFAULT_LEVEL          = 15;
-    private static final int    ANIM_DURATION_REDUNDAN = 100;
+    private static final double OBJ_4_CHASE_Z          = 0;//被追随物体的Z轴高度,用于构建Vector3中的Z
+    private static final float  TIME_15_20             = 32;//15级数据到20级数据转换的系数
+    private static final int    RAREFY_PIXEL_COUNT     = 1;//道格拉斯抽析的像素个数
+    private static final int    DEFAULT_LEVEL          = 15;//默认转换等级15(需要转换成20)
+    private static final int    ANIM_DURATION_REDUNDAN = 100;//动画默认延长时间避免停顿
 
     //Cache all navigation path data.That two member can not change address,because renderer is use that too.
     private INaviPathDataProvider mNaviPathDataProvider = new AMapNaviPathDataProvider();
@@ -137,10 +137,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             v.x *= TIME_15_20;
             v.y *= TIME_15_20;
         }
-        mPointIndexsToKeep = pointIndexsToKeep;
-        mRenderPath = renderPath;
         mPathVector3 = path_vector3;
         mPathLatLng = path_latlng;
+        mRenderPath = renderPath;
+        mPointIndexsToKeep = pointIndexsToKeep;
 
         //calc and save the car need to rotate degrees
         Vector3 p1 = mRenderPath.get(0);
@@ -157,6 +157,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //finally set path and call back to renderer in Provider.
         mNaviPathDataProvider.setPath(mRenderPath);
 
+        LogTest(mRenderPath,TAG,"path");
+        LogTest(mPathVector3,TAG,"screen");
+
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "setPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
         //processSteps(0,1,2)
@@ -164,6 +167,14 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mIsPathInited = true;
         return 1;
+    }
+
+    private void LogTest(List<Vector3> path, String tag, String str) {
+        HaloLogger.logE(tag,"======"+str+" start========");
+        for(Vector3 v:path){
+            HaloLogger.logE(tag,v.x+","+v.y);
+        }
+        HaloLogger.logE(tag,"======"+str+" end==========");
     }
 
     @Override
@@ -182,10 +193,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     mFromDegrees = Math.toDegrees(animDegrees);
                     mFromDegrees = mFromDegrees < 0 ? mFromDegrees + 360 : mFromDegrees;
                 }
+                // TODO: 2016/10/24 测试代码打印
+                PointF pointF = ARWayProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
+                Vector3 v = new Vector3(
+                        (pointF.x - mOffsetX) * TIME_15_20,
+                        (-pointF.y - mOffsetY) * TIME_15_20,
+                        OBJ_4_CHASE_Z);
+                HaloLogger.logE(TAG,v.x+","+v.y);
                 mToPos = convertLocation(location, mCurIndexInPath);
                 mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
-                HaloLogger.logE(TAG,"from="+mFromPos+",to="+mToPos+",degrees="+(mToDegrees-mFromDegrees)+
-                        ",duration="+(duration+ANIM_DURATION_REDUNDAN));
+                HaloLogger.logE(TAG,mToPos.x+","+mToPos.y);
                 mNaviPathDataProvider.setAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             }
             //Calculate the distance of maneuver point.
@@ -206,8 +223,6 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     public void setNaviInfo(NaviInfo naviInfo) {
         if (mIsPathInited && naviInfo!=null) {
             mCurIndexInPath = getIndexInPath(naviInfo.getCurPoint(), naviInfo.getCurStep());
-            HaloLogger.logE(TAG,"cur index in path="+mCurIndexInPath);
-            //call DataProvider to update data with naviInfo
         }
     }
 
@@ -286,10 +301,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @return
      */
     private Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
-        PointF fromPos = ARWayProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
+        PointF pointF = ARWayProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
         Vector3 v = new Vector3(
-                (fromPos.x - mOffsetX) * TIME_15_20,
-                (-fromPos.y - mOffsetY) * TIME_15_20,
+                (pointF.x - mOffsetX) * TIME_15_20,
+                (-pointF.y - mOffsetY) * TIME_15_20,
                 OBJ_4_CHASE_Z);
         for (int i = 0; i < mPointIndexsToKeep.size(); i++) {
             if (!(mPointIndexsToKeep.get(i) < curIndex)) {
@@ -311,6 +326,14 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 v.y = pProjection.y;
                 break;
             }
+        }
+
+        //根据不同的道路等级,拿到的GPS转换到的opengl点也需要做响应的转换
+        int factor = mNaviPathDataProvider.getCurDataLevelFactor();
+        if(factor!=1){
+            v.x/=factor;
+            v.y/=factor;
+            v.z/=factor;
         }
         return v;
     }
