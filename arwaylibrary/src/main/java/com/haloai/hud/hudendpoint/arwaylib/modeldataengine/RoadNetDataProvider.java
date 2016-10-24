@@ -11,7 +11,13 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class RoadNetDataProvider implements IRoadNetDataProvider{
-    List<List<LatLng_RoadNet>> mRoadNetData = new ArrayList<>();
+    private List<List<LatLng_RoadNet>> mRoadNetData = new ArrayList<>();
+    private IRoadNetDataNotifier mRoadNetChangeNotifier;
+
+    @Override
+    public void setRoadNetChangeNotifier(IRoadNetDataNotifier roadNetChangeNotifier) {
+        this.mRoadNetChangeNotifier = roadNetChangeNotifier;
+    }
 
     @Override
     public void reset() {

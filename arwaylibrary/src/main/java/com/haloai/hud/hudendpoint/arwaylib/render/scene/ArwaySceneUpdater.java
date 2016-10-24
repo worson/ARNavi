@@ -109,6 +109,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
     }
 
+
     private class RoadLayers{
         private ARWayRoadBuffredObject bottom  = null;
         private ARWayRoadBuffredObject road    = null;
@@ -391,7 +392,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     @Override
-    public boolean renderCrossRoad(List<List<Vector3>> cross) {
+    public boolean renderRoadNet(List<List<Vector3>> cross) {
         if (cross == null || cross.size()<1) {
             return false;
         }

@@ -1702,7 +1702,7 @@ public class AXingRenderer extends Renderer implements IAnimationListener, IRend
 
             }
         }
-        mSceneUpdater.renderCrossRoad(branchLinesList);
+        mSceneUpdater.renderRoadNet(branchLinesList);
     }
 
     private void insertTestPlane(Vector3 v2) {
