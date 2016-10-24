@@ -19,6 +19,7 @@ public interface IRenderStrategy {
 
     //渲染策略输入参数
     class HaloRoadClass extends RoadClass { }//道路等级参数，重用高德的道路等级划分
+    int getRoadClass(int _roadClassSDK);//将SDK的道路等级转换成我们自定义的道路等级
     void updateCurrentRoadInfo(int roadClass, int mpDistance);//更新当前进入的道路等级和距离下一个机动点的距离
 
     //渲染策略输出
