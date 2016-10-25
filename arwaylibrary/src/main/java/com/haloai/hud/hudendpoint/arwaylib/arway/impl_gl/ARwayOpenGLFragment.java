@@ -215,6 +215,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         //init renderStrategy and data notifier and set provider to renderer
         mCurrentRenderStrategy = RenderStrategyFactory.generateRenderStrategy();
         mCurrentRenderStrategy.setRenderParamsNotifier(mRenderer);
+        mRenderer.initDefaultRenderParams(mCurrentRenderStrategy.getCurrentRenderParams());
+        mCurrentRenderStrategy.getCurrentRenderParams();
         mNaviPathDataProcessor = new AMapNaviPathDataProcessor();
         mNaviPathDataProcessor.setRenderStrategy(mCurrentRenderStrategy);
         mNaviPathDataProcessor.setRoadNetChangeNotifier(mRenderer);
@@ -1328,6 +1330,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mRenderer.setFrameRate(ARWayConst.FRAME_RATE);
     }
 
+
     public void setEvent(int type) {
         mRenderer.setEvent(type);
     }
@@ -1346,4 +1349,5 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public double changeCameraLookDistBy(double changeValue) {
         return mRenderer.changeCameraLookDistBy(changeValue);
     }
+
 }

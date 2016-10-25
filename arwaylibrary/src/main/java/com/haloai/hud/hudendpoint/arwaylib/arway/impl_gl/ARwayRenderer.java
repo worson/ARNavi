@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
@@ -12,6 +13,8 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculator;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.IRefreshDataLevelNotifer;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsRefresher;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -49,7 +52,7 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier {
+public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier,IRefreshDataLevelNotifer {
     //content
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
@@ -83,10 +86,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private boolean mIsMyInitScene  = false;
     private boolean mCanMyInitScene = false;
 
+
     //about camera
     private CameraModel mCameraModel            = new CameraModel();
     private float       mRoadWidthProportion    = 0.13f;
     private float       mCameraPerspectiveAngel = 70;
+
+
+    private RenderParamsRefresher mParamsRefresher = new RenderParamsRefresher();
+
 
     //time recorder
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
@@ -133,6 +141,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         super.onRenderSurfaceDestroyed(surface);
     }
 
+    /*
     private void updateCamera(ATransformable3D transObject) {
         Camera camera = getCurrentCamera();
         Vector3 location = transObject.getPosition();
@@ -149,7 +158,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         camera.setPosition(position);
         camera.setLookAt(lookat);
     }
-
+     */
     // TODO: 2016/10/14 修改道路底边的宽度--修改摄像机的高度和LOOK_DIST
     public void changeRoadShowWidthBy(double changeValue) {
         mRoadWidthProportion += changeValue;
@@ -199,7 +208,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
-            updateCamera(mObject4Chase);
+            //updateCamera(mObject4Chase);
+            mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -279,6 +289,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         System.gc();
     }
 
+    public void initDefaultRenderParams(IRenderStrategy.RenderParams params){
+
+        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale,params.glRoadWidth);
+        mParamsRefresher.setIRefeshDataLevelNotifer(this);
+    }
+
+
     private void myInitScene() {
 
         mSceneUpdater.reset();
@@ -316,18 +333,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         camera.setUpAxis(Vector3.Axis.Z);
         camera.setRotation(0, 0, 0);
         camera.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, CAMERA_OFFSET_Z);
-        updateCamera(mObject4Chase);
-
         getCurrentCamera().setNearPlane(ARWayConst.CAMERA_NEAR_PLANE);
         getCurrentCamera().setFarPlane(ARWayConst.CAMERA_FAR_PLANE);
 
+
+        /*
+        updateCamera(mObject4Chase);
         ARWayCameraCaculator.cameraCaculatorInit(camera);
 
         mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
         mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
-
+        */
         addRoadNet2Scene();
         addNaviPath2Scene();
 
@@ -428,6 +446,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
     //====================================rajawali animation callback end========================================//
 
+
     public void setEvent(int type) {
         if (type == 1) {//左下
             mCameraPerspectiveAngel += 5;
@@ -491,8 +510,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
-
+        Log.e("ylq","onRenderParamsUpdated"+renderParams);
+        mParamsRefresher.setGoalRenderParmars(renderParams.dataLevel.getLevel(),renderParams.glCameraAngle,renderParams.glInScreenProportion,renderParams.glScale,renderParams.glRoadWidth);
     }
+
+    @Override
+    public void onRefreshDataLevel(int DataLevel,double roadWidth){
+        Log.e("ylq","onRefreshDataLevel:"+DataLevel);
+        //add
+    }
+
 
     public void setNaviPathDataProvider(INaviPathDataProvider naviPathDataProvider) {
         this.mNaviPathDataProvider = naviPathDataProvider;
