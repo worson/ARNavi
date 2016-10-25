@@ -1,6 +1,5 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.shader;
 
-import android.graphics.Color;
 import android.opengl.GLES20;
 
 import org.rajawali3d.materials.Material;
@@ -170,7 +169,8 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
             RVec4 gColor = (RVec4) getGlobal(DefaultShaderVar.G_COLOR);
 
             gColor.a().assign(new RVec4("texColor").a());
-            gColor.rgb().assign(new RVec4("color").rgb());
+            gColor.rgb().assign(new RVec4("vColor").rgb());
+            gColor.rgb().multiply(new RFloat("uColorInfluence"));
 
             RFloat fogFactor = new RFloat("fogFactor");
             RFloat roadFog = new RFloat("roadFog");

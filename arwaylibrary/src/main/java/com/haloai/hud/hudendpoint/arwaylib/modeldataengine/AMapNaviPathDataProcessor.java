@@ -166,7 +166,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mNaviPathDataProvider.setPath(mRenderPath);
 
         LogTest(mRenderPath, TAG, "path");
-        LogTest(mPathVector3, TAG, "screen");
+        LogTest(mPathVector3, TAG, "cross");
 
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "setPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
@@ -325,6 +325,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     line_start = mRenderPath.get(i - 1);
                     line_end = mRenderPath.get(i);
                 }
+                HaloLogger.logE(TAG,line_start.x+","+line_start.y);
+                HaloLogger.logE(TAG,line_end.x+","+line_end.y);
                 PointF pProjection = new PointF();
                 MathUtils.getProjectivePoint(new PointF((float) line_start.x, (float) line_start.y),
                                              new PointF((float) line_end.x, (float) line_end.y),

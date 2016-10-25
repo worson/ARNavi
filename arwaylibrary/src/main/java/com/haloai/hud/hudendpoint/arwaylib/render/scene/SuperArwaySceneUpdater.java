@@ -83,9 +83,4 @@ public class SuperArwaySceneUpdater {
         mCurPosition.setAll(curPosition);
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        clearAll();
-    }
 }
