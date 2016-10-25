@@ -40,6 +40,8 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import static android.R.attr.path;
+
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -96,6 +98,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //新架构
     private INaviPathDataProvider mNaviPathDataProvider;
     private IRoadNetDataProvider  mRoadNetDataProvider;
+    private IRenderStrategy.RenderParams mRenderParams;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -493,7 +496,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called"));
+        List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(renderParams.dataLevel);
+        mSceneUpdater.clearSceneObjects();
+        mSceneUpdater.renderNaviPath(naviPath);
 
+        /*
+        if (mRenderParams.dataLevel != renderParams.dataLevel){
+
+        }*/
     }
 
     public void setNaviPathDataProvider(INaviPathDataProvider naviPathDataProvider) {
