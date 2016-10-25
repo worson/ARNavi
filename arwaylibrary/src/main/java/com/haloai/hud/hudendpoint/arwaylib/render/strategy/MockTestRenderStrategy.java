@@ -6,6 +6,11 @@ package com.haloai.hud.hudendpoint.arwaylib.render.strategy;
 public class MockTestRenderStrategy extends RenderStrategy {
 
     @Override
+    public int getRoadClass(int _roadClassSDK) {
+        return 0;
+    }
+
+    @Override
     public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
 
     }

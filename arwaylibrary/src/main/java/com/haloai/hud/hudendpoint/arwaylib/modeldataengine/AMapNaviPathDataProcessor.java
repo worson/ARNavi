@@ -3,6 +3,8 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 import android.graphics.PointF;
 
 import com.amap.api.maps.model.LatLng;
+import com.amap.api.navi.AMapNavi;
+import com.amap.api.navi.model.AMapNaviLink;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
@@ -24,7 +26,7 @@ import java.util.List;
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNaviPath, NaviInfo, AMapNaviLocation> {
+public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNavi, AMapNaviPath, NaviInfo, AMapNaviLocation> {
     //constant
     private static final String TAG                    = "AMapNaviPathDataProcessor";
     private static final double OBJ_4_CHASE_Z          = 0;//被追随物体的Z轴高度,用于构建Vector3中的Z
@@ -32,6 +34,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private static final int    RAREFY_PIXEL_COUNT     = 1;//道格拉斯抽析的像素个数
     private static final int    DEFAULT_LEVEL          = 15;//默认转换等级15(需要转换成20)
     private static final int    ANIM_DURATION_REDUNDAN = 100;//动画默认延长时间避免停顿
+    private static final int    CROSS_COUNT_INIT       = 3;//初始拉取路网数据的路口个数
 
     //Cache all navigation path data.That two member can not change address,because renderer is use that too.
     private INaviPathDataProvider mNaviPathDataProvider = new AMapNaviPathDataProvider();
@@ -41,6 +44,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private IRenderStrategy mRenderStrategy;
 
     //middle data
+    private AMapNavi      mAMapNavi;
     private List<LatLng>  mPathLatLng;
     private List<Vector3> mPathVector3;
     private List<Vector3> mRenderPath;
@@ -53,6 +57,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     //real-time data
     private int mCurIndexInPath;
+    private int mCurRoadNetIndex;
 
     //anim about
     private Vector3 mFromPos     = null;
@@ -64,6 +69,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     @Override
     public void reset() {
         mCurIndexInPath = 0;
+        mCurRoadNetIndex = 2;
         mOffsetX = 0;
         mOffsetY = 0;
         mFromPos = null;
@@ -82,15 +88,17 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @param aMapNaviPath 导航路径
      * @return 1:路径处理正常,可以调用getNaviPathDataProvider获取数据 -1:异常情况
      */
-    public int setPath(AMapNaviPath aMapNaviPath) {
+    public int setPath(AMapNavi amapNavi, AMapNaviPath aMapNaviPath) {
         //0.reset all data
         reset();
 
         //1.check data legal
         HaloLogger.logE(TAG, "setPath check data legal");
-        if (aMapNaviPath == null) {
+        if (amapNavi == null || aMapNaviPath == null) {
             return -1;
         }
+        mAMapNavi = amapNavi;
+
         List<Vector3> path_vector3 = new ArrayList<>();
         List<LatLng> path_latlng = new ArrayList<>();
         List<Integer> step_lengths = new ArrayList<>();
@@ -157,8 +165,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //finally set path and call back to renderer in Provider.
         mNaviPathDataProvider.setPath(mRenderPath);
 
-        LogTest(mRenderPath,TAG,"path");
-        LogTest(mPathVector3,TAG,"screen");
+        LogTest(mRenderPath, TAG, "path");
+        LogTest(mPathVector3, TAG, "cross");
 
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "setPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
@@ -170,11 +178,11 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     }
 
     private void LogTest(List<Vector3> path, String tag, String str) {
-        HaloLogger.logE(tag,"======"+str+" start========");
-        for(Vector3 v:path){
-            HaloLogger.logE(tag,v.x+","+v.y);
+        HaloLogger.logE(tag, "======" + str + " start========");
+        for (Vector3 v : path) {
+            HaloLogger.logE(tag, v.x + "," + v.y);
         }
-        HaloLogger.logE(tag,"======"+str+" end==========");
+        HaloLogger.logE(tag, "======" + str + " end==========");
     }
 
     @Override
@@ -199,30 +207,30 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                         (pointF.x - mOffsetX) * TIME_15_20,
                         (-pointF.y - mOffsetY) * TIME_15_20,
                         OBJ_4_CHASE_Z);
-                HaloLogger.logE(TAG,v.x+","+v.y);
+                HaloLogger.logE(TAG, v.x + "," + v.y);
                 mToPos = convertLocation(location, mCurIndexInPath);
                 mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
-                HaloLogger.logE(TAG,mToPos.x+","+mToPos.y);
+                HaloLogger.logE(TAG, mToPos.x + "," + mToPos.y);
                 mNaviPathDataProvider.setAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             }
-            //Calculate the distance of maneuver point.
-            //.....
-            int distanceOfMP = 500;
-            //Get the step road class.
-            int roadClass = IRenderStrategy.HaloRoadClass.MAINWAY;
-            mRenderStrategy.updateCurrentRoadInfo(roadClass, distanceOfMP);
-
-            //Maybe Road Net is change
-            //checkNeedToProcessSteps();//is or not cur step index is change
-            //processSteps(N);
-            //mRoadNetDataProvider.setDataXX();
         }
     }
 
     @Override
     public void setNaviInfo(NaviInfo naviInfo) {
-        if (mIsPathInited && naviInfo!=null) {
+        if (mIsPathInited && naviInfo != null) {
             mCurIndexInPath = getIndexInPath(naviInfo.getCurPoint(), naviInfo.getCurStep());
+            //1.Maybe Road Net is change
+            if (naviInfo.getCurStep() > mCurRoadNetIndex) {
+                //拉取数据processSteps(curStep)
+                //mRoadNetDataProvider.setDataXX();
+                mCurRoadNetIndex = naviInfo.getCurStep();
+            }
+            //2.Calculate the distance of maneuver point and get road class.
+            int distanceOfMP = naviInfo.getCurStepRetainDistance();
+            AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
+                    .getLinks().get(naviInfo.getCurLink());
+            mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP);
         }
     }
 
@@ -263,7 +271,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * 访问路网模块获取指定steps的路网数据
      */
     private void processSteps(int stepIndex) {
-
+        //1.根据stepIndex构建数据{1.机动点前后道路link形式 2.每个link的info 3.机动点经纬度 4.}
     }
 
     /**
@@ -317,6 +325,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     line_start = mRenderPath.get(i - 1);
                     line_end = mRenderPath.get(i);
                 }
+                HaloLogger.logE(TAG,line_start.x+","+line_start.y);
+                HaloLogger.logE(TAG,line_end.x+","+line_end.y);
                 PointF pProjection = new PointF();
                 MathUtils.getProjectivePoint(new PointF((float) line_start.x, (float) line_start.y),
                                              new PointF((float) line_end.x, (float) line_end.y),
@@ -330,10 +340,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         //根据不同的道路等级,拿到的GPS转换到的opengl点也需要做响应的转换
         int factor = mNaviPathDataProvider.getCurDataLevelFactor();
-        if(factor!=1){
-            v.x/=factor;
-            v.y/=factor;
-            v.z/=factor;
+        if (factor != 1) {
+            v.x /= factor;
+            v.y /= factor;
+            v.z /= factor;
         }
         return v;
     }
