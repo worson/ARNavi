@@ -735,8 +735,8 @@ public class MathUtils {
      */
     public static void getProjectivePoint(PointF pLine, double k, PointF pOut, PointF pProject) {
         if (k == 0) {//垂线斜率不存在情况
-            pProject.x = pOut.x;
-            pProject.y = pLine.y;
+            pProject.x = pLine.x;
+            pProject.y = pOut.y;
         } else {
             pProject.x = (float) ((k * pLine.x + pOut.x / k + pOut.y - pLine.y) / (1 / k + k));
             pProject.y = (float) (-1 / k * (pProject.x - pOut.x) + pOut.y);
