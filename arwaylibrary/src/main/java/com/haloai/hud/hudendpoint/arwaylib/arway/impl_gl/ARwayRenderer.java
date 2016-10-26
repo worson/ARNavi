@@ -40,8 +40,6 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.R.attr.path;
-
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -297,7 +295,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
         mObject4Chase.isDepthTestEnabled();
-        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, 0);
+        mObject4Chase.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, 0);
         Material material = new Material();
         material.setColorInfluence(0);
         try {
@@ -322,7 +320,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         camera.enableLookAt();
         camera.setUpAxis(Vector3.Axis.Z);
         camera.setRotation(0, 0, 0);
-        camera.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, CAMERA_OFFSET_Z);
+        camera.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, CAMERA_OFFSET_Z);
         updateCamera(mObject4Chase);
 
         getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
@@ -346,11 +344,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void addRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.add(mRenderPath);
+        HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
         mSceneUpdater.renderRoadNet(branchLinesList);
     }
 
     private void addNaviPath2Scene() {
-        mSceneUpdater.renderNaviPath(mRenderPath);
+        //mSceneUpdater.renderNaviPath(mRenderPath);
     }
 
     private void clearLastAnim() {
@@ -463,10 +462,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
 
     ///////////////////////////////////////新架构///////////////////////////////////////
+
     @Override
-    public void onPathUpdate() {
+    public void onPathInit() {
         if (mNaviPathDataProvider != null) {
-            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20);
+            Vector3 curObjPos = new Vector3(0,0,0);
+            if(mIsMyInitScene){
+                curObjPos.setAll(mObject4Chase.getPosition());
+            }
+            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_18,curObjPos.x,curObjPos.y).get(0);
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -474,6 +478,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 }
             }
         }
+    }
+
+    @Override
+    public void onPathUpdate() {
 
     }
 
@@ -515,6 +523,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     public double getCurDegrees() {
         return mObject4Chase == null ? 0 : mObject4Chase.getRotZ();
+    }
+
+    public void changeStrategy(IRenderStrategy.DataLevel level){
+        clearLastAnim();
+        //HaloLogger.logE("test__hah","screen start");
+        //HaloLogger.logE("test__hah",mObject4Chase.getX()+","+mObject4Chase.getY());
+        //HaloLogger.logE("test__hah","screen end");
+        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
+        addRoadNet2Scene();
     }
 
     /**********************************SceneUpdater*********************************************/
