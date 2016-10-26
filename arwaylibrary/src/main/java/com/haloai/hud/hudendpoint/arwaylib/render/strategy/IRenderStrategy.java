@@ -9,7 +9,9 @@ public interface IRenderStrategy {
 
     enum DataLevel {
         LEVEL_20(20),
+        LEVEL_19(19),
         LEVEL_18(18),
+        LEVEL_17(17),
         LEVEL_16(16),
         LEVEL_15(15),
         LEVEL_14(14),
@@ -34,19 +36,17 @@ public interface IRenderStrategy {
 
     //渲染策略输出
     class RenderParams {
-        public RenderParams(DataLevel dataLevel, double glCameraAngle ,double glScale,double glInScreenProportion,double glRoadWidth) {
+        public RenderParams(DataLevel dataLevel, double glCameraAngle ,double glScale,double glInScreenProportion) {
             this.dataLevel = dataLevel;
             this.glCameraAngle = glCameraAngle;
             this.glScale = glScale;
             this.glInScreenProportion = glInScreenProportion;
-            this.glRoadWidth = glRoadWidth;
         }
 
         public IRenderStrategy.DataLevel dataLevel;
         public double glCameraAngle;
         public double glScale;
         public double glInScreenProportion;
-        public double glRoadWidth;
     }
     RenderParams getCurrentRenderParams();
 

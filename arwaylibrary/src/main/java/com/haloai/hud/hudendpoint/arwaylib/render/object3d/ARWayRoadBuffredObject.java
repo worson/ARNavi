@@ -127,6 +127,8 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @return
      */
     public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
+        return false;
+        /*
         mNeedRender = false;
 
         double distStep = mStepLength;
@@ -171,6 +173,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         applyVerties();
         mNeedRender = true;
         return true;
+        */
     }
 
     private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){

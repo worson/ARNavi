@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.strategy;
 
+import java.util.logging.Level;
+
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 23/10/2016.
  */
@@ -14,43 +16,65 @@ public class HardcodeRenderStrategy extends RenderStrategy {
     @Override
     public void updateCurrentRoadInfo(int _roadClassSDK, int mpDistance) {
         int roadClass = getRoadClass(_roadClassSDK);
-        boolean needsUpdate = true;
-        if (mpDistance > 300){
-            if (currentDataLevel != DataLevel.LEVEL_16){
-                currentDataLevel = DataLevel.LEVEL_16;
-                currentGLCameraAngle = 60;
-                currentGLScale = 1.0;
-                currentGLInScreenProportion = 0.0;
-                currentGLRoadWidth = 0.25;
-            }else {
-                needsUpdate = false;
+        boolean needsUpdate = false;
+
+        if (mpDistance >1000){
+            if (currentDataLevel != DataLevel.LEVEL_17){
+                currentDataLevel = DataLevel.LEVEL_17;
+                needsUpdate = true;
             }
-        }else if (mpDistance > 100 && mpDistance <= 300){
+            if (currentGLCameraAngle != 60){
+                currentGLCameraAngle = 60;
+                needsUpdate = true;
+            }
+
+        }else if (mpDistance <= 1000 && mpDistance >500){
             if (currentDataLevel != DataLevel.LEVEL_18){
                 currentDataLevel = DataLevel.LEVEL_18;
-                currentGLCameraAngle = 30;
-                currentGLScale = 1.0;
-                currentGLInScreenProportion = 0;
-                currentGLRoadWidth = 0.5;
-            }else {
-                needsUpdate = false;
+                needsUpdate = true;
             }
-        }else {
+            if (currentGLCameraAngle != 60){
+                currentGLCameraAngle = 60;
+                needsUpdate = true;
+            }
+
+
+        }else if (mpDistance <=500&&mpDistance >100){
+            if (currentDataLevel != DataLevel.LEVEL_19){
+                currentDataLevel = DataLevel.LEVEL_19;
+                needsUpdate = true;
+            }
+            if (mpDistance <= 300 && mpDistance >100){
+                if (currentGLCameraAngle != 30){
+                    currentGLCameraAngle =30;
+                    needsUpdate = true;
+                }
+            }
+
+
+        }else if (mpDistance <=100){
             if (currentDataLevel != DataLevel.LEVEL_20){
                 currentDataLevel = DataLevel.LEVEL_20;
-                currentGLCameraAngle = 0;
-                currentGLScale = 1.0;
-                currentGLInScreenProportion = 0;
-                currentGLRoadWidth = 1;
-            }else {
-                needsUpdate = false;
+                needsUpdate = true;
+                if (currentGLCameraAngle != 10){
+                    currentGLCameraAngle = 10;
+                    needsUpdate = true;
+                }
             }
         }
+
+
+
         if (needsUpdate && this.renderParamsNotifier != null) {
             //Placeholder
             this.renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams());
         }
     }
+
+
+
+
+
 
     @Override
     public RenderParams getCurrentRenderParams() {

@@ -59,7 +59,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
     private static final int    FRAME_RATE        = ARWayConst.FRAME_RATE;
-    private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
+    //private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
     private static final double CAMERA_OFFSET_X   = 0;
     private static final double CAMERA_OFFSET_Y   = 0;
     private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
@@ -105,6 +105,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private INaviPathDataProvider mNaviPathDataProvider;
     private IRoadNetDataProvider  mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
+
+    private int mInitializationLevel;
+
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -294,7 +297,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     public void initDefaultRenderParams(IRenderStrategy.RenderParams params){
 
-        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale,params.glRoadWidth);
+        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale);
         mParamsRefresher.setIRefeshDataLevelNotifer(this);
     }
 
@@ -302,6 +305,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void myInitScene() {
 
         mSceneUpdater.reset();
+        //啊奇
+        mInitializationLevel = mParamsRefresher.getInitializtionLevel();
+        mSceneUpdater.setRoadWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         clearScene();
 
         if (mObject4Chase != null) {
@@ -481,7 +487,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onPathUpdate() {
         if (mNaviPathDataProvider != null) {
-            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20);
+            //啊奇
+            IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
+            for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
+                if (temple.getLevel() == mInitializationLevel){
+                    level = temple;
+                    break;
+                }
+            }
+
+            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level);
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -514,7 +529,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
         Log.e("ylq","onRenderParamsUpdated"+renderParams);
-        mParamsRefresher.setGoalRenderParmars(renderParams.dataLevel.getLevel(),renderParams.glCameraAngle,renderParams.glInScreenProportion,renderParams.glScale,renderParams.glRoadWidth);
+        mParamsRefresher.setGoalRenderParmars(renderParams.dataLevel.getLevel(),renderParams.glCameraAngle,renderParams.glInScreenProportion,renderParams.glScale);
     }
 
     @Override
@@ -531,6 +546,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
 
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called"));
+        mSceneUpdater.setRoadWidth((float)roadWidth);
         List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level);
         mSceneUpdater.clearSceneObjects();
         mSceneUpdater.renderNaviPath(naviPath);
