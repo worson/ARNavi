@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.opengl.GLES20;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
@@ -303,6 +304,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mNaviRoadWidth = roadWidth;
     }
 
+    @Override
+    public void renderFloor(float left,float top,float right,float bottom,float spacing) {
+        mGridfloorLayer.clearChildren();
+        mGridfloorLayer.addChild(createFloor(right-left,right-bottom,spacing));
+        mGridfloorLayer.setPosition((right+left)/2,(right+bottom)/2,0);
+    }
+
     /**
      * 渲染当前显示的道路
      * @param path
@@ -495,15 +503,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void clearSceneObjects(){
-        mScene.clearChildren();
-        BaseObject3D[] layers = new BaseObject3D[]{mGridfloorLayer,mCrossRoadBottom,mCrossRoad,
-                mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
-                mNaviDirectorLayer};
-        for(BaseObject3D layer:layers){
-            if (layer != null) {
-                layer.clearChildren();
-            }
-        }
+        clearRoadnetwork();
+        clearNaviRoad();
     }
     @Override
     public void setCurrentPosition(Vector3 curPosition) {
@@ -517,10 +518,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      */
     public boolean clearRoadnetwork(){
         boolean result = true;
-        Object3D[] layers = new Object3D[]{mCrossRoadBottom,mCrossRoad};
-        for(Object3D layer:layers){
+        BaseObject3D[] layers = new BaseObject3D[]{mCrossRoadBottom,mCrossRoad};
+        for(BaseObject3D layer:layers){
             if (layer != null) {
-                removeObject(layer);
+                layer.clearChildren();
             }
         }
         return result;
@@ -532,10 +533,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      */
     public boolean clearNaviRoad(){
         boolean result = true;
-        Object3D[] layers = new Object3D[]{mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine, mNaviDirectorLayer};
-        for(Object3D layer:layers){
+        BaseObject3D[] layers = new BaseObject3D[]{mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine, mNaviDirectorLayer};
+        for(BaseObject3D layer:layers){
             if (layer != null) {
-                removeObject(layer);
+                layer.clearChildren();
             }
         }
         return result;
