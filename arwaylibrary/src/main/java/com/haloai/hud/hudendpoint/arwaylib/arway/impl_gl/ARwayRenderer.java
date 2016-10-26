@@ -40,6 +40,8 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import static android.R.attr.path;
+
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -96,6 +98,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //新架构
     private INaviPathDataProvider mNaviPathDataProvider;
     private IRoadNetDataProvider  mRoadNetDataProvider;
+    private IRenderStrategy.RenderParams mRenderParams;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -119,7 +122,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
+        mSceneUpdater.setCamera(getCurrentCamera());
+
         mIsInitScene = true;
+        initSceneAnimation();
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
@@ -283,9 +289,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void myInitScene() {
 
-        mSceneUpdater.reset();
         clearScene();
-
+        mSceneUpdater.reset();
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
         }
@@ -530,4 +535,76 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
         addRoadNet2Scene();
     }
+
+    /**********************************SceneUpdater*********************************************/
+
+    private Animation mSceneDisappearAnimation = null;
+    private Animation mSceneAppearAnimation = null;
+
+    private  void sceneDisappear(){
+        mSceneDisappearAnimation.reset();
+        mSceneDisappearAnimation.play();
+    }
+
+    private  void sceneAppear(){
+        mSceneAppearAnimation.reset();
+        mSceneAppearAnimation.play();
+    }
+
+
+    private void initSceneAnimation(){
+        final String tag = "animation";
+        int duration = 500;
+        mSceneDisappearAnimation = new Animation() {
+            @Override
+            protected void applyTransformation() {
+                mSceneUpdater.setAlpha((float) (1-getInterpolatedTime()));
+            }
+        };
+        mSceneDisappearAnimation.registerListener(new IAnimationListener() {
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                HaloLogger.logE(tag,"onAnimationEnd");
+                mSceneDisappearAnimation.reset();
+                mSceneDisappearAnimation.play();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationUpdate(Animation animation, double v) {
+
+            }
+        });
+        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
+        mSceneDisappearAnimation.setDurationMilliseconds(duration);
+        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
+        getCurrentScene().registerAnimation(mSceneDisappearAnimation);
+
+        mSceneAppearAnimation = new Animation() {
+            @Override
+            protected void applyTransformation() {
+                mSceneUpdater.setAlpha((float) (getInterpolatedTime()));
+            }
+        };
+        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
+        mSceneAppearAnimation.setDurationMilliseconds(duration);
+        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
+        getCurrentScene().registerAnimation(mSceneAppearAnimation);
+
+    }
+
+    public ArwaySceneUpdater getSceneUpdater() {
+        return mSceneUpdater;
+    }
+
 }
