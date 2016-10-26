@@ -8,8 +8,10 @@ import com.amap.api.navi.enums.RoadClass;
 public abstract class RenderStrategy implements IRenderStrategy {
     protected RenderParamsNotifier renderParamsNotifier;
 
-    protected DataLevel currentDataLevel = DataLevel.LEVEL_18;
-    protected double currentGLCameraAngle = 75.0;
+    protected DataLevel currentDataLevel = DataLevel.LEVEL_20;
+    protected double currentGLCameraAngle = 45;
+    protected double currentGLScale = 1.0;
+    protected double currentGLInScreenProportion = 0.0;
 
     @Override
     public void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier) {
@@ -18,7 +20,7 @@ public abstract class RenderStrategy implements IRenderStrategy {
 
     public RenderParams getDefaultRenderParams() {
         //return the default params
-        return new RenderParams(currentDataLevel, currentGLCameraAngle);
+        return new RenderParams(currentDataLevel, currentGLCameraAngle,currentGLScale,currentGLInScreenProportion);
     }
 
 

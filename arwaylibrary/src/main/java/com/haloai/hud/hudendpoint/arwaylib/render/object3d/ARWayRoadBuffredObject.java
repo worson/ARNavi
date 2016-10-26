@@ -130,39 +130,6 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      */
     public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
         mNeedRender = false;
-
-        /*List<Vector3> points = new ArrayList<>();
-        List<Float> directions = new ArrayList<>();
-
-        double distStep = mStepLength;
-        int cnt = path.size();
-        if(cnt>=2){
-            Vector3 v1 = path.get(0);
-            Float direction = new Float(0);
-            for (int i = 0; i < cnt - 1; i++) {
-                Vector3 v2 = path.get(i + 1);
-                double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-                if (temp >= distStep) {
-                    double scale = distStep / temp;
-                    Vector3 v = new Vector3();
-                    v.x = v1.x + (v2.x - v1.x) * scale;
-                    v.y = v1.y + (v2.y - v1.y) * scale;
-                    v.z = 0;
-                    v1 = new Vector3(v);//移动计算点
-                    i--;//两点的距离大于指定值时，需要保证计算最前方的点不动
-                    direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
-                    directions.add(direction);
-                    points.add(v);
-                    distStep = mStepLength;
-                } else if (temp < distStep) {
-//                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
-                    v1 = path.get(i+1);
-                }
-            }
-
-        }else {
-            return false;
-        }*/
         replaceGeometry3D(new Geometry3D());
         GeometryData referenceLineElement = generateRectangleVerties(path,offset,mRefLineHeight,mRefLineWidth,mRoadColor);
 //        GeometryData referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
@@ -170,6 +137,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         applyVerties();
         mNeedRender = true;
         return true;
+
     }
 
     private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
