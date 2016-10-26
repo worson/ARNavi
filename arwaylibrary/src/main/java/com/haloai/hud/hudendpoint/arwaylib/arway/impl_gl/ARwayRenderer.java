@@ -106,7 +106,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private IRoadNetDataProvider  mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
 
-    private int mInitializationLevel;
 
 
     public ARwayRenderer(Context context) {
@@ -306,7 +305,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         mSceneUpdater.reset();
         //啊奇
-        mInitializationLevel = mParamsRefresher.getInitializtionLevel();
         mSceneUpdater.setRoadWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         clearScene();
 
@@ -490,7 +488,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //啊奇
             IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
             for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
-                if (temple.getLevel() == mInitializationLevel){
+                if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
                     level = temple;
                     break;
                 }
