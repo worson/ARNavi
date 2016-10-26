@@ -33,6 +33,7 @@ import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
+import org.rajawali3d.view.TextureView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private              int    SCREEN_WIDTH      = 0;
     private              int    SCREEN_HEIGHT     = 0;
 
+    private TextureView mTextureView = null;
     //list data
     private List<Vector3> mRenderPath = new ArrayList<>();
 
@@ -105,6 +107,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         SCREEN_WIDTH = wm.getDefaultDisplay().getWidth();
         SCREEN_HEIGHT = wm.getDefaultDisplay().getHeight();
         setFrameRate(FRAME_RATE);
+    }
+
+    public void setTextureView(TextureView textureView) {
+        mTextureView = textureView;
     }
 
     @Override
