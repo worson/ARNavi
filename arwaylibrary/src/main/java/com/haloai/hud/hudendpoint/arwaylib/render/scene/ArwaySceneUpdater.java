@@ -5,8 +5,6 @@ import android.graphics.Color;
 import android.opengl.GLES20;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
-import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
-import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.BaseObject3D;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
@@ -404,7 +402,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             return false;
         }
         boolean result = true;
-        if(++mCrossRoadLayersCnt>MAX_CROSS_ROAD_DISPLAY){
+        if(true){
             mCrossRoadLayersCnt=0;
 //            mCrossRoadLayersList.clear();
             mCrossRoadBottom.clearChildren();

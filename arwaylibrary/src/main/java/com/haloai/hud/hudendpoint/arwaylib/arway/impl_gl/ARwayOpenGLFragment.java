@@ -1024,7 +1024,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 hideARWay();
                 mDrawScene.animShowHide(false);
                 mGlDrawCompass.showHide(true);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath setPath,mode is " + aMapNavi.getNaviPath().getStrategy());
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath initPath,mode is " + aMapNavi.getNaviPath().getStrategy());
                 if (ARWayConst.ENABLE_LOG_OUT) {
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
                 }
@@ -1032,7 +1032,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     return -2;
                 }
                 if (ARWayConst.IS_DARW_ARWAY) {
-                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.setPath called ");
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "mRenderer.initPath called ");
                     Projection projection = null;
                     if (ARWayConst.IS_AMAP_VIEW) {
                         projection = mAmapNaviView.getMap().getProjection();
@@ -1040,7 +1040,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     if (mUpdatePathRecorder != null) {
                         mUpdatePathRecorder.start();
                     }
-                    //mRenderer.setPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
+                    //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
                     mNaviPathDataProcessor.setPath(mAMapNavi,naviPath);
                     if (ARWayConst.ENABLE_PERFORM_TEST) {
                         mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
@@ -1345,5 +1345,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     // TODO: 2016/10/14
     public double changeCameraLookDistBy(double changeValue) {
         return mRenderer.changeCameraLookDistBy(changeValue);
+    }
+
+    public void changeStrategy(boolean bol){
+        if(bol){
+            mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_20);
+        }else{
+            mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_18);
+        }
     }
 }

@@ -27,6 +27,7 @@ public interface INaviPathDataProvider{
         public long duration;
     }
     interface INaviPathDataChangeNotifer{
+        void onPathInit();
         void onPathUpdate();
         void onAnimUpdate(AnimData animData);
         void onGuideLineUpdate(List<Vector3> guideLineUpdate);
@@ -34,11 +35,14 @@ public interface INaviPathDataProvider{
     void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier);
 
     void reset();
+    void initPath(List<List<Vector3>> renderPath);
+    void updatePath(List<Vector3> newPath);
     void setAnim(Vector3 start,Vector3 end,double degrees,long duration);
-    void setPath(List<Vector3> renderPath);
     void setObjStartOrientation(double rotateZ);
 
-    List<Vector3> getNaviPathByLevel(IRenderStrategy.DataLevel level);
+    List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level,double offsetX,double offsetY);
     double getObjStartOrientation();
     int getCurDataLevelFactor();
+    double getCurOffsetX();
+    double getCurOffsetY();
 }
