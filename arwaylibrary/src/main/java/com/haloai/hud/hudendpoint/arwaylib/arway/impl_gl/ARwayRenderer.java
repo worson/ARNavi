@@ -40,8 +40,6 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.R.attr.path;
-
 /**
  * author       : 龙;
  * date         : 2016/6/29;
