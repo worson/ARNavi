@@ -45,8 +45,8 @@ public class HardcodeRenderStrategy extends RenderStrategy {
                 needsUpdate = true;
             }
             if (mpDistance <= 300 && mpDistance >100){
-                if (currentGLCameraAngle != 30){
-                    currentGLCameraAngle =30;
+                if (currentGLCameraAngle != 60){
+                    currentGLCameraAngle =60;
                     needsUpdate = true;
                 }
             }
@@ -56,8 +56,8 @@ public class HardcodeRenderStrategy extends RenderStrategy {
             if (currentDataLevel != DataLevel.LEVEL_20){
                 currentDataLevel = DataLevel.LEVEL_20;
                 needsUpdate = true;
-                if (currentGLCameraAngle != 10){
-                    currentGLCameraAngle = 10;
+                if (currentGLCameraAngle != 60){
+                    currentGLCameraAngle = 60;
                     needsUpdate = true;
                 }
             }

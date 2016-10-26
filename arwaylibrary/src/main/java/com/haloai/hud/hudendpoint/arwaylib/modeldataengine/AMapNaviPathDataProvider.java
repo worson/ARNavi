@@ -14,12 +14,15 @@ import java.util.List;
  * package_name : com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
  * project_name : hudlauncher;
  */
-public class AMapNaviPathDataProvider implements INaviPathDataProvider{
+public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     private INaviPathDataChangeNotifer mNaviPathChangeNotifier;
-    private List<Vector3>              mRenderPath;
+    private List<List<Vector3>>        mRenderPath;
     private double                     mObjStartOrientation;
-    private IRenderStrategy.DataLevel  mCurDataLevel;
-    private int  mCurFactor;
+
+    private IRenderStrategy.DataLevel mCurDataLevel;
+    private int                       mCurFactor;
+    private double                    mCurOffsetX;
+    private double                    mCurOffsetY;
 
     @Override
     public void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier) {
@@ -30,19 +33,29 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider{
     public void reset() {
         mCurDataLevel = IRenderStrategy.DataLevel.LEVEL_20;
         mCurFactor = 1;
+        mCurOffsetX = 0;
+        mCurOffsetY = 0;
     }
 
     @Override
     public void setAnim(Vector3 from, Vector3 to, double degrees, long duration) {
-        if(mNaviPathChangeNotifier!=null) {
+        if (mNaviPathChangeNotifier != null) {
             mNaviPathChangeNotifier.onAnimUpdate(new AnimData(from, to, degrees, duration));
         }
     }
 
     @Override
-    public void setPath(List<Vector3> renderPath) {
+    public void initPath(List<List<Vector3>> renderPath) {
         mRenderPath = renderPath;
-        if(mNaviPathChangeNotifier!=null)
+        if (mNaviPathChangeNotifier != null)
+            mNaviPathChangeNotifier.onPathInit();
+    }
+
+    @Override
+    public void updatePath(List<Vector3> newPath) {
+        mRenderPath.remove(0);
+        mRenderPath.add(newPath);
+        if (mNaviPathChangeNotifier != null)
             mNaviPathChangeNotifier.onPathUpdate();
     }
 
@@ -52,10 +65,40 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider{
     }
 
     @Override
-    public List<Vector3> getNaviPathByLevel(IRenderStrategy.DataLevel level) {
+    public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
+        //假设curPoint为15级时的数据,现在拉取的是18级的数据
+        IRenderStrategy.DataLevel lastLevel = mCurDataLevel;
+        //factor_last_new =getFactorByLevel(lastLevel)/getFactorByLevel(level)
+        int oldFactor = getFactorByLevel(lastLevel);
+        int newFactor = getFactorByLevel(level);
+        //curPointX+=mCurOffsetX;
+        //curPointY+=mCurOffsetY;
+        mCurOffsetX = (curPointX+mCurOffsetX) * oldFactor / newFactor - (curPointX);
+        mCurOffsetY = (curPointY+mCurOffsetY) * oldFactor / newFactor - (curPointY);
         mCurDataLevel = level;
+        int factor = newFactor;
+        mCurFactor = factor;
+        List<List<Vector3>> renderElseLevel = new ArrayList<>();
+        for (List<Vector3> path : mRenderPath) {
+            List<Vector3> _path = new ArrayList<>();
+            for (Vector3 v : path) {
+                _path.add(new Vector3(v.x / mCurFactor - mCurOffsetX, v.y / mCurFactor - mCurOffsetY, v.z / mCurFactor));
+            }
+            renderElseLevel.add(_path);
+        }
+        return renderElseLevel;
+    }
+
+    /**
+     * 根据道路等级获取当前的转换系数(From 20)
+     * N*factor=20_N
+     * N位传入的等级对应的数据,20_N对应的是20级下对应的数据
+     * @param level
+     * @return
+     */
+    private int getFactorByLevel(IRenderStrategy.DataLevel level) {
         int factor = 1;
-        switch (level){
+        switch (level) {
             case LEVEL_20:
                 break;
             case LEVEL_18:
@@ -77,15 +120,7 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider{
                 factor = 256;
                 break;
         }
-        mCurFactor = factor;
-        if(factor==1){
-            return mRenderPath;
-        }
-        List<Vector3> renderElseLevel = new ArrayList<>();
-        for(Vector3 v : mRenderPath){
-            renderElseLevel.add(new Vector3(v.x/factor,v.y/factor,v.z/factor));
-        }
-        return renderElseLevel;
+        return factor;
     }
 
     @Override
@@ -96,5 +131,15 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider{
     @Override
     public int getCurDataLevelFactor() {
         return mCurFactor;
+    }
+
+    @Override
+    public double getCurOffsetX() {
+        return mCurOffsetX;
+    }
+
+    @Override
+    public double getCurOffsetY() {
+        return mCurOffsetY;
     }
 }

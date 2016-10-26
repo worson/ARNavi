@@ -88,7 +88,7 @@ public class RenderParamsRefresher {
     }
 
     public void cameraRefresh(Camera currentCamera,Vector3 location,double rotZ){
-                                                                                        currentAngel += step_Angel;
+        currentAngel += step_Angel;
         currentInScreenProportion += step_InScreenProportion;
         currentScale += step_Scale;
 
