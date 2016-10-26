@@ -122,7 +122,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
+        mSceneUpdater.setCamera(getCurrentCamera());
+
         mIsInitScene = true;
+        initSceneAnimation();
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
@@ -286,9 +289,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void myInitScene() {
 
-        mSceneUpdater.reset();
         clearScene();
-
+        mSceneUpdater.reset();
         if (mObject4Chase != null) {
             mObject4Chase.destroy();
         }
@@ -496,15 +498,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called"));
-        List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(renderParams.dataLevel);
-        mSceneUpdater.clearSceneObjects();
-        mSceneUpdater.renderNaviPath(naviPath);
 
-        /*
-        if (mRenderParams.dataLevel != renderParams.dataLevel){
-
-        }*/
     }
 
     public void setNaviPathDataProvider(INaviPathDataProvider naviPathDataProvider) {
@@ -522,4 +516,76 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public double getCurDegrees() {
         return mObject4Chase == null ? 0 : mObject4Chase.getRotZ();
     }
+
+    /**********************************SceneUpdater*********************************************/
+
+    private Animation mSceneDisappearAnimation = null;
+    private Animation mSceneAppearAnimation = null;
+
+    private  void sceneDisappear(){
+        mSceneDisappearAnimation.reset();
+        mSceneDisappearAnimation.play();
+    }
+
+    private  void sceneAppear(){
+        mSceneAppearAnimation.reset();
+        mSceneAppearAnimation.play();
+    }
+
+
+    private void initSceneAnimation(){
+        final String tag = "animation";
+        int duration = 500;
+        mSceneDisappearAnimation = new Animation() {
+            @Override
+            protected void applyTransformation() {
+                mSceneUpdater.setAlpha((float) (1-getInterpolatedTime()));
+            }
+        };
+        mSceneDisappearAnimation.registerListener(new IAnimationListener() {
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                HaloLogger.logE(tag,"onAnimationEnd");
+                mSceneDisappearAnimation.reset();
+                mSceneDisappearAnimation.play();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationUpdate(Animation animation, double v) {
+
+            }
+        });
+        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
+        mSceneDisappearAnimation.setDurationMilliseconds(duration);
+        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
+        getCurrentScene().registerAnimation(mSceneDisappearAnimation);
+
+        mSceneAppearAnimation = new Animation() {
+            @Override
+            protected void applyTransformation() {
+                mSceneUpdater.setAlpha((float) (getInterpolatedTime()));
+            }
+        };
+        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
+        mSceneAppearAnimation.setDurationMilliseconds(duration);
+        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
+        getCurrentScene().registerAnimation(mSceneAppearAnimation);
+
+    }
+
+    public ArwaySceneUpdater getSceneUpdater() {
+        return mSceneUpdater;
+    }
+
 }
