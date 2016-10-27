@@ -386,12 +386,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         branchLinesList.add(mRenderPath);
         HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
         mSceneUpdater.renderRoadNet(branchLinesList);
-        mSceneUpdater.applyRender();
+        mSceneUpdater.commitRender();
     }
 
     private void addNaviPath2Scene() {
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.applyRender();
+        mSceneUpdater.commitRender();
     }
 
     private void clearLastAnim() {
@@ -644,7 +644,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     break;
                 case SCENE_RENDER_APLLY_ID:
                     mSceneUpdater.clearSceneObjects();
-                    mSceneUpdater.applyRender();
+                    mSceneUpdater.commitRender();
                     break;
                 default:
             }

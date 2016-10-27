@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static android.R.attr.path;
 import static org.rajawali3d.util.RajLog.TAG;
 
 /**
@@ -53,8 +52,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private BaseObject3D mNaviRoadRefLine   = null;
     private BaseObject3D mNaviDirectorLayer = null;
 
-    private List<RoadLayers> mCrossRoadList = new ArrayList();
-    private List<RoadLayers> mNaviRoadList = new ArrayList();
+    private List<RoadLayers>  mCrossRoadList        = new ArrayList();
+    private List<RoadLayers>  mNaviRoadList         = new ArrayList();
+    private List<ObjectLayer> mFloorObjectLayerList = new ArrayList<>();
 
     private boolean mIsNaviRoadDirty  = true;
     private boolean mIsCrossRoadDirty = true;
@@ -105,6 +105,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     private float mSceneAlpha = 1;
 
+    private class ObjectLayer {
+        private Vector3 postion = new Vector3();
+        private Object3D object = null;
+
+        public ObjectLayer(Object3D object) {
+            this.object = object;
+        }
+    }
 
     private class RoadLayers{
         private Vector3 postion = new Vector3();
@@ -314,10 +322,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     @Override
     public void renderFloor(float left,float top,float right,float bottom,float spacing) {
-        TileFloor floor=createFloor(right-left,top-bottom,spacing);
-        mGridfloorLayer.clearChildren();
-        mGridfloorLayer.addChild(floor);
-        mGridfloorLayer.setPosition((right+left)/2,(top+bottom)/2,0);
+        mFloorObjectLayerList.clear();
+        ObjectLayer objectLayer = new ObjectLayer(createFloor(right-left,top-bottom,spacing));
+        objectLayer.postion.setAll((right+left)/2,(top+bottom)/2,0);
+        mFloorObjectLayerList.add(objectLayer);
+        mIsFloorDirty = true;
     }
 
     /**
@@ -365,8 +374,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
         return result;
     }
-    int rendercnt = 0;
-
     @Override
     public boolean renderDirectorLine(List<Vector3> path) {
         if (path == null || path.size()<2) {
@@ -465,9 +472,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     @Override
-    public void applyRender() {
+    public void commitRender() {
         if(IS_DEBUG_MODE){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("applyRender called"));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("commitRender called"));
         }
         if (mIsNaviRoadDirty){
             mIsNaviRoadDirty = false;
@@ -507,6 +514,16 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     roadLayers.road.setMaterial(mCrossRoadTopMaterial);
                     mCrossRoadBottom.addChild(roadLayers.bottom);
                     mCrossRoad.addChild(roadLayers.road);
+                }
+            }
+        }
+        if (mIsFloorDirty){
+            mIsFloorDirty = true;
+            if(mFloorObjectLayerList.size()>0){
+                mGridfloorLayer.clearChildren();
+                for(ObjectLayer layer:mFloorObjectLayerList){
+                    mGridfloorLayer.addChild(layer.object);
+                    mGridfloorLayer.setPosition(layer.postion);
                 }
             }
         }

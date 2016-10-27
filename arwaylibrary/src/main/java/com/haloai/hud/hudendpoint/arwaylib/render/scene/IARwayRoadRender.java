@@ -21,7 +21,7 @@ public interface IARwayRoadRender {
 
     public void renderFloor(float left,float top,float right,float bottom,float spacing);
 
-    public void applyRender();
+    public void commitRender();
 
 
 }
