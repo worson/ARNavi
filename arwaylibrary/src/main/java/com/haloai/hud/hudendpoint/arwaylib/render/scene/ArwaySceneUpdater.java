@@ -1,14 +1,8 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.opengl.GLES20;
-import android.os.Handler;
-import android.os.Message;
-import android.view.View;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
@@ -28,15 +22,12 @@ import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.scene.Scene;
 import org.rajawali3d.util.RajLog;
-import org.rajawali3d.view.TextureView;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.LogRecord;
 
-import static android.R.attr.debuggable;
-import static android.R.attr.duration;
+import static android.R.attr.path;
 import static org.rajawali3d.util.RajLog.TAG;
 
 /**
@@ -63,6 +54,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private BaseObject3D mNaviDirectorLayer = null;
 
     private List<RoadLayers> mCrossRoadList = new ArrayList();
+    private List<RoadLayers> mNaviRoadList = new ArrayList();
+
+    private boolean mIsNaviRoadDirty  = true;
+    private boolean mIsCrossRoadDirty = true;
+    private boolean mIsFloorDirty     = true;
+    private boolean mIsGuideLineDirty = true;
 
 
     //basic
@@ -107,10 +104,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Object3D mCarObject;
 
     private float mSceneAlpha = 1;
-    private TextureView mTextureView;
 
 
     private class RoadLayers{
+        private Vector3 postion = new Vector3();
+
         private ARWayRoadBuffredObject bottom  = null;
         private ARWayRoadBuffredObject road    = null;
         private ARWayRoadBuffredObject refLine = null;
@@ -146,10 +144,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         RajLog.setDebugEnabled(false);
         initMaterial();
         initAllLayer();
-    }
-    public void setTextureView(TextureView textureView) {
-        mTextureView = textureView;
-        initSceneAnimator();
     }
 
     public void reset() {
@@ -255,15 +249,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         float refLineHegiht = roadWidth*1.35f;
         float naviScale = 0.5f;
         float stepLength = roadWidth*2.5f;
-        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor, mCrossRoadBottomMaterial);
-        ARWayRoadBuffredObject road = new ARWayRoadBuffredObject(roadWidth * roadRate , mCrossRoadColor, mCrossRoadTopMaterial);
+        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor);
+        ARWayRoadBuffredObject road = new ARWayRoadBuffredObject(roadWidth * roadRate , mCrossRoadColor);
         bottom.setColor(mRoadBottomColor);
         road.setColor(mRoadColor);
 
-        ARWayRoadBuffredObject refline = new ARWayRoadBuffredObject(refLineHegiht, roadWidth,stepLength, mRefLineColor, mRoadReflineMaterial);
+        ARWayRoadBuffredObject refline = new ARWayRoadBuffredObject(refLineHegiht, roadWidth,stepLength, mRefLineColor);
         refline.setColor(mRefLineColor);
 
-        ARWayRoadBuffredObject navi = new ARWayRoadBuffredObject(roadWidth * naviScale, mMainRoadColor, mMainRoadMaterial);
+        ARWayRoadBuffredObject navi = new ARWayRoadBuffredObject(roadWidth * naviScale, mMainRoadColor);
         navi.setColor(mNaviLineColor);
 
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
@@ -282,6 +276,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     private TileFloor createFloor(float width,float height,float spacing){
+        if (width<=0 || height<=0 || spacing<=0){
+            return null;
+        }
         TileFloor tileFloor = new TileFloor(width,height,spacing);
         tileFloor.setMaterial(mFloorMaterial);
         tileFloor.setBlendingEnabled(true);
@@ -292,9 +289,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return  tileFloor;
     }
     private RoadLayers createCrossRoadLayer(float roadWidth, float roadRate,Material material){
-        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor, mCrossRoadBottomMaterial);
+        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor);
         bottom.setColor(mCrossRoadBottomColor);
-        ARWayRoadBuffredObject road = new  ARWayRoadBuffredObject(roadWidth*roadRate, mCrossRoadColor, mCrossRoadTopMaterial);
+        ARWayRoadBuffredObject road = new  ARWayRoadBuffredObject(roadWidth*roadRate, mCrossRoadColor);
         road.setColor(mCrossRoadColor);
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
         if(!ARWayConst.IS_USE_ROAD_TEXTURE){
@@ -317,9 +314,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     @Override
     public void renderFloor(float left,float top,float right,float bottom,float spacing) {
+        TileFloor floor=createFloor(right-left,top-bottom,spacing);
         mGridfloorLayer.clearChildren();
-        mGridfloorLayer.addChild(createFloor(right-left,right-bottom,spacing));
-        mGridfloorLayer.setPosition((right+left)/2,(right+bottom)/2,0);
+        mGridfloorLayer.addChild(floor);
+        mGridfloorLayer.setPosition((right+left)/2,(top+bottom)/2,0);
     }
 
     /**
@@ -332,17 +330,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             return false;
         }
         boolean result = true;
-        mHandler.sendEmptyMessage(SCENE_HIDE_ID);
-
         final Vector3 offset = new Vector3(path.get(0));
-        if(IS_DEBUG_MODE){
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s",path.size()));
+        if (IS_DEBUG_MODE) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s", path.size()));
         }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
         }
         float roadWidth = mRoadWidth;
-        RoadLayers roadLayers = createNaviRoadLayer(1*roadWidth);
+
+        RoadLayers roadLayers = createNaviRoadLayer(1 * roadWidth);
+        mNaviRoadList.clear();
+        mNaviRoadList.add(roadLayers);
         Vector3 postion = new Vector3(0);
         roadLayers.bottom.setFogEnable(false);
         roadLayers.road.setFogEnable(false);
@@ -352,35 +351,21 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         roadLayers.refLine.setPosition(postion);
         roadLayers.navi.setPosition(postion);
 
-        result &= roadLayers.bottom.updateBufferedRoad(path,offset);
-        result &= roadLayers.road.updateBufferedRoad(path,offset);
-        result &= roadLayers.navi.updateBufferedRoad(path,offset);
+        roadLayers.postion.setAll(offset);
 
-        mNaviRoadBottom.clearChildren();
-        mNaviRoad.clearChildren();
-        mNaviRoadTop.clearChildren();
-        mNaviRoadRefLine.clearChildren();
+        result &= roadLayers.bottom.updateBufferedRoad(path, offset);
+        result &= roadLayers.road.updateBufferedRoad(path, offset);
+        result &= roadLayers.navi.updateBufferedRoad(path, offset);
+        result &= roadLayers.refLine.updateReferenceLine(path, offset);
 
-        mNaviRoadBottom.addChild(roadLayers.bottom);
-        mNaviRoad.addChild(roadLayers.navi);
-        mNaviRoadTop.addChild(roadLayers.road);
-        mNaviRoadRefLine.addChild(roadLayers.refLine);
+        mIsNaviRoadDirty = true;
 
-        mNaviRoadBottom.setPosition(offset);
-        mNaviRoad.setPosition(offset);
-        mNaviRoadTop.setPosition(offset);
-        mNaviRoadRefLine.setPosition(offset);
-
-
-
-        if(IS_DRAW_RFERENCE_LINT){
-            result &= roadLayers.refLine.updateReferenceLine(path,offset);
-        }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.recordeAndLog("performance","renderNaviPath");
         }
         return result;
     }
+    int rendercnt = 0;
 
     @Override
     public boolean renderDirectorLine(List<Vector3> path) {
@@ -430,7 +415,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (cross == null || cross.size()<1) {
             return false;
         }
-        mHandler.sendEmptyMessage(SCENE_HIDE_ID);
         boolean result = true;
         mCrossRoadList.clear();
         int crossSize = cross.size();
@@ -439,8 +423,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (crossStart != null) {
             offset.setAll(offset);
         }
-        mCrossRoadBottom.setPosition(offset);
-        mCrossRoad.setPosition(offset);
+
         for (int i = crossSize-1; i >= 0; i--) {
             List<Vector3> road = cross.get(i);
             if (road != null && road.size()>0) {
@@ -453,6 +436,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     fogEng = new Vector3(0.01,0,0);
                 }
                 boolean isFog = IS_ROAD_FOG;
+                roadLayers.postion.setAll(offset);
                 roadLayers.road.setFogEnable(isFog);
                 roadLayers.bottom.setFogEnable(isFog);
                 roadLayers.road.updateBufferedRoad(road,offset);
@@ -463,12 +447,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                 roadLayers.bottom.setFogEnd(fogEng);
             }
         }
-        mCrossRoadBottom.clearChildren();
-        mCrossRoad.clearChildren();
-        for (RoadLayers roadLayers:mCrossRoadList) {
-            mCrossRoadBottom.addChild(roadLayers.bottom);
-            mCrossRoad.addChild(roadLayers.road);
-        }
+        mIsCrossRoadDirty = true;
         return result;
     }
 
@@ -486,8 +465,51 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     @Override
-    public void onRender(long ellapsedRealtime, double deltaTime) {
+    public void applyRender() {
+        if(IS_DEBUG_MODE){
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("applyRender called"));
+        }
+        if (mIsNaviRoadDirty){
+            mIsNaviRoadDirty = false;
+            if(mNaviRoadList.size()>0){
+                mNaviRoadBottom.clearChildren();
+                mNaviRoad.clearChildren();
+                mNaviRoadTop.clearChildren();
+                mNaviRoadRefLine.clearChildren();
 
+                RoadLayers roadLayers = mNaviRoadList.get(0);
+                roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
+                roadLayers.navi.setMaterial(mMainRoadMaterial);
+                roadLayers.road.setMaterial(mCrossRoadTopMaterial);
+                roadLayers.refLine.setMaterial(mRoadReflineMaterial);
+
+                mNaviRoadBottom.addChild(roadLayers.bottom);
+                mNaviRoad.addChild(roadLayers.navi);
+                mNaviRoadTop.addChild(roadLayers.road);
+                mNaviRoadRefLine.addChild(roadLayers.refLine);
+
+                mNaviRoadBottom.setPosition(roadLayers.postion);
+                mNaviRoad.setPosition(roadLayers.postion);
+                mNaviRoadTop.setPosition(roadLayers.postion);
+                mNaviRoadRefLine.setPosition(roadLayers.postion);
+            }
+        }
+        if (mIsCrossRoadDirty){
+            mIsCrossRoadDirty = false;
+            if(mCrossRoadList.size()>0){
+                Vector3 offset = mCrossRoadList.get(0).postion;
+                mCrossRoadBottom.setPosition(offset);
+                mCrossRoad.setPosition(offset);
+                mCrossRoadBottom.clearChildren();
+                mCrossRoad.clearChildren();
+                for (RoadLayers roadLayers:mCrossRoadList) {
+                    roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
+                    roadLayers.road.setMaterial(mCrossRoadTopMaterial);
+                    mCrossRoadBottom.addChild(roadLayers.bottom);
+                    mCrossRoad.addChild(roadLayers.road);
+                }
+            }
+        }
     }
 
     private void reloadAllLayer(){
@@ -523,6 +545,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void clearSceneObjects(){
+        mGridfloorLayer.clearChildren();
         clearRoadnetwork();
         clearNaviRoad();
     }
@@ -560,69 +583,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             }
         }
         return result;
-    }
-
-    private ObjectAnimator createViewAlphaAnimator(View view, float from, float to, long duration){
-        ObjectAnimator animator=  ObjectAnimator
-                .ofFloat(view, "Alpha", from, to);
-        animator.setDuration(duration);
-        return animator;
-    }
-    private void restartAnimator(ObjectAnimator a){
-        if(a.isStarted()){
-            a.cancel();
-        }
-        a.start();
-    }
-
-    public static final int SCENE_HIDE_ID = 0;
-
-    private Handler        mHandler      = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what){
-                case SCENE_HIDE_ID:
-                    restartAnimator(mHideAnimator);
-                    break;
-                default:
-            }
-        }
-    };
-    private ObjectAnimator mHideAnimator = null;
-    private ObjectAnimator mShowAnimator = null;
-    private void initSceneAnimator(){
-        int duration = 1000;
-        float invivable = 0.2f;
-        mShowAnimator = createViewAlphaAnimator(mTextureView,invivable,1,duration);
-        mHideAnimator = createViewAlphaAnimator(mTextureView,1,invivable,duration);
-        mHideAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                restartAnimator(mShowAnimator);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        mHideAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                HaloLogger.logE(TAG,"onAnimationUpdate");
-            }
-        });
     }
 }
 

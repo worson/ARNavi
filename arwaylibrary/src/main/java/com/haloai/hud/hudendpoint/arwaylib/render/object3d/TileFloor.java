@@ -10,7 +10,6 @@ public class TileFloor extends BaseObject3D {
 
     public TileFloor(float width,float height,float spacing) {
         super();
-//        createGridFloor();
         initGridFloor(width, height, spacing);
     }
 
@@ -18,7 +17,6 @@ public class TileFloor extends BaseObject3D {
         GeometryData geometryData = getGeometryData2(width, height, spacing);
         addVerties(geometryData);
         applyVerties();
-//        setDrawingMode(GLES20.GL_LINES);
     }
     public static GeometryData getGeometryData2(float width,float height,float spacing){
         int widthNum = (int) (width/spacing)+1;
@@ -77,7 +75,6 @@ public class TileFloor extends BaseObject3D {
             }
         }
         print(String.format("coords index = %s,length=%s\n",index,coords.length));
-
         index = 0;
         for (int i = 0; i < vertexsCnt; i += 4) {
             indices[index++] = i+0;

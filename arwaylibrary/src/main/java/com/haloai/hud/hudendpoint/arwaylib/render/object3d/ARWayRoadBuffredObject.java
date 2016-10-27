@@ -59,26 +59,16 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     private int           mCountOfPlanes;
     private int           mCountOfVerties;
 
-    /**
-     * 默认道路绘制，只需要指定路宽和颜色
-     * @param width
-     * @param color
-     */
-    public ARWayRoadBuffredObject(float width, int color) {
-        this(width,color,mRoadMaterial);
-        mShapeType = ShapeType.VERTICE_ROAD;
-    }
-
     public ARWayRoadBuffredObject(float width, int color,ShapeType type) {
-        this(width,color,mRoadMaterial);
+        this(width,color);
         mShapeType = type;
     }
 
     /**
      * 绘制参考线，指定矩形的长和宽
      */
-    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color, Material material) {
-        this(width,color,material);
+    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color) {
+        this(width,color);
         mShapeType = ShapeType.REFERENCE_LINE;
         mRefLineHeight = height;
         mRefLineWidth = width;
@@ -86,18 +76,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
-        this(height,width,5,color,mRoadMaterial);
+        this(height,width,5,color);
     }
 
-    public ARWayRoadBuffredObject(float width, int color, Material material) {
+    public ARWayRoadBuffredObject(float width, int color) {
         super();
+        mShapeType = ShapeType.VERTICE_ROAD;
         mRoadWidth =  width;
         mRoadColor = color;
-        if (material != null) {
-            setMaterial(material);
-        }else {
-            setMaterial(mRoadMaterial);
-        }
         setDepthTestEnabled(false);
         setBlendingEnabled(true);
         setDepthMaskEnabled(false);
