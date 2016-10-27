@@ -401,7 +401,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void addNaviPath2Scene() {
-        //mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderNaviPath(mRenderPath);
     }
 
     private void clearLastAnim() {

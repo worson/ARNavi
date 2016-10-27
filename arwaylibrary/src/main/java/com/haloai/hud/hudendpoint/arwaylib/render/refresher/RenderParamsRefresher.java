@@ -60,11 +60,13 @@ public class RenderParamsRefresher {
 
 
     public void setGoalRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
+        /*
         if (currentLevel != goalLevel||currentScale!=goalScale){
             currentLevel = goalLevel;
             currentScale = goalScale;
             mNotifer.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
         }
+        */
 
         goalLevel = dateLevel;
         goalScale = scale;
@@ -151,16 +153,16 @@ public class RenderParamsRefresher {
                 roadWidth = 1.0/2;
             break;
             case 19:
-                roadWidth = 0.4;
+                roadWidth = 1.0/4;
                 break;
             case 18:
-                roadWidth = 0.32;
+                roadWidth = 1.0/8;
                 break;
             case 17:
-                roadWidth = 0.26;
+                roadWidth = 1.0/16;
                 break;
             case 16:
-                roadWidth = 0.22;
+                roadWidth = 1.0/32;
                 break;
             case 15:
                 roadWidth = 1.0/64;

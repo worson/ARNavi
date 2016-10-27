@@ -337,8 +337,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
         mNaviRoadBottom.addChild(roadLayers.bottom);
         mNaviRoad.addChild(roadLayers.navi);
-//        mNaviRoadTop.addChild(roadLayers.road);
-//        mNaviRoadRefLine.addChild(roadLayers.refLine);
+        mNaviRoadTop.addChild(roadLayers.road);
+        mNaviRoadRefLine.addChild(roadLayers.refLine);
 
         mNaviRoadBottom.setPosition(offset);
         mNaviRoad.setPosition(offset);

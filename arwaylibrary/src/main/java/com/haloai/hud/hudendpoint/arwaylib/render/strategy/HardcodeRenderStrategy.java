@@ -18,25 +18,20 @@ public class HardcodeRenderStrategy extends RenderStrategy {
         int roadClass = getRoadClass(_roadClassSDK);
         boolean needsUpdate = false;
 
+
         if (mpDistance >1000){
             if (currentDataLevel != DataLevel.LEVEL_17){
                 currentDataLevel = DataLevel.LEVEL_17;
                 needsUpdate = true;
             }
-            if (currentGLCameraAngle != 60){
-                currentGLCameraAngle = 60;
-                needsUpdate = true;
-            }
+
 
         }else if (mpDistance <= 1000 && mpDistance >500){
             if (currentDataLevel != DataLevel.LEVEL_18){
                 currentDataLevel = DataLevel.LEVEL_18;
                 needsUpdate = true;
             }
-            if (currentGLCameraAngle != 60){
-                currentGLCameraAngle = 60;
-                needsUpdate = true;
-            }
+
 
 
         }else if (mpDistance <=500&&mpDistance >100){
@@ -44,26 +39,54 @@ public class HardcodeRenderStrategy extends RenderStrategy {
                 currentDataLevel = DataLevel.LEVEL_19;
                 needsUpdate = true;
             }
-            if (mpDistance <= 300 && mpDistance >100){
-                if (currentGLCameraAngle != 60){
-                    currentGLCameraAngle =60;
-                    needsUpdate = true;
-                }
-            }
+
 
 
         }else if (mpDistance <=100){
             if (currentDataLevel != DataLevel.LEVEL_20){
                 currentDataLevel = DataLevel.LEVEL_20;
                 needsUpdate = true;
-                if (currentGLCameraAngle != 60){
-                    currentGLCameraAngle = 60;
-                    needsUpdate = true;
-                }
+
             }
         }
 
 
+//        if (mpDistance >100){
+//            if (currentDataLevel != DataLevel.LEVEL_18){
+//                currentDataLevel = DataLevel.LEVEL_18;
+//                needsUpdate = true;
+//            }
+//            if (currentGLCameraAngle != 5){
+//                currentGLCameraAngle = 5;
+//                needsUpdate = true;
+//            }
+//            if (currentGLScale != 1.98){
+//                currentGLScale = 1.98;
+//                needsUpdate = true;
+//            }
+//            if (currentGLInScreenProportion != 0.0){
+//                currentGLInScreenProportion = 0.0;
+//                needsUpdate = true;
+//            }
+//
+//        }else {
+//            if (currentDataLevel != DataLevel.LEVEL_18) {
+//                currentDataLevel = DataLevel.LEVEL_18;
+//                needsUpdate = true;
+//            }
+//            if (currentGLCameraAngle != 20) {
+//                currentGLCameraAngle = 20;
+//                needsUpdate = true;
+//            }
+//            if (currentGLScale != 1.0) {
+//                currentGLScale = 1.0;
+//                needsUpdate = true;
+//            }
+//            if (currentGLInScreenProportion != 0.5){
+//                currentGLInScreenProportion = 0.5;
+//                needsUpdate = true;
+//            }
+//        }
 
         if (needsUpdate && this.renderParamsNotifier != null) {
             //Placeholder
