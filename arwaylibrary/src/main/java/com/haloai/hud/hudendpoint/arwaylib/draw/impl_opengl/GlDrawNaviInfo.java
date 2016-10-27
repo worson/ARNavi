@@ -218,9 +218,9 @@ public class GlDrawNaviInfo extends DrawObject implements IViewOperation {
 
     private void updateNextRoadIndicate() {
         if (mRoadIndicateTextView != null) {
-            String roadName = mNaviInfoBean.getCurrentRoadName();
+            String roadName = mNaviInfoBean.getNextRoadName();
             if (roadName != null && roadName.trim() !="" ) {//&& roadName.trim() !="无名路"
-                String text = "沿"+roadName+"行驶";
+                String text = "进入"+roadName;
                 mRoadIndicateTextView.setText(text);
             }else {
                 mRoadIndicateTextView.setText("");

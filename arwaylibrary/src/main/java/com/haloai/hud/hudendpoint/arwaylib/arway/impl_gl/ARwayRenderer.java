@@ -76,7 +76,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //rajawali about
     private Object3D          mObject4Chase;
     private Object3D          mCarObject;
-    private ArwaySceneUpdater mSceneUpdater = null;
+    private ArwaySceneUpdater mSceneUpdater = ArwaySceneUpdater.getInstance();
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
@@ -112,15 +112,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     public ARwayRenderer(Context context) {
         super(context);
-
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         SCREEN_WIDTH = wm.getDefaultDisplay().getWidth();
         SCREEN_HEIGHT = wm.getDefaultDisplay().getHeight();
-        setFrameRate(FRAME_RATE);
     }
 
     public void setTextureView(TextureView textureView) {
         mTextureView = textureView;
+        mSceneUpdater.setTextureView(textureView);
     }
 
     @Override
@@ -131,6 +130,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
+        getCurrentScene().setBackgroundColor(0,0,0,0);
         setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setContext(getContext());
