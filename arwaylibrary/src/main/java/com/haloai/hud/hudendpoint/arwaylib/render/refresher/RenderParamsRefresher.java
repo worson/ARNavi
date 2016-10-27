@@ -151,16 +151,16 @@ public class RenderParamsRefresher {
                 roadWidth = 1.0/2;
             break;
             case 19:
-                roadWidth = 1.0/4;
+                roadWidth = 0.4;
                 break;
             case 18:
-                roadWidth = 1.0/8;
+                roadWidth = 0.32;
                 break;
             case 17:
-                roadWidth = 1.0/16;
+                roadWidth = 0.26;
                 break;
             case 16:
-                roadWidth = 1.0/32;
+                roadWidth = 0.22;
                 break;
             case 15:
                 roadWidth = 1.0/64;
