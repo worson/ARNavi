@@ -18,9 +18,10 @@ public interface IARwayRoadRender {
 
     public boolean renderRoadNet(List<List<Vector3>> cross); //cross数据结构未定
 
-    public void onRender(long ellapsedRealtime, double deltaTime);
 
     public void renderFloor(float left,float top,float right,float bottom,float spacing);
+
+    public void commitRender();
 
 
 }

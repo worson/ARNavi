@@ -172,6 +172,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         mRenderSurface = (TextureView) mDrawScene.getViewInstance(mContext);
         mRenderer = (ARwayRenderer) createRenderer();
+        mRenderer.setTextureViewAndInit(mRenderSurface);
         onBeforeApplyRenderer();
         applyRenderer();
         initDataAbout();
