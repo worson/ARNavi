@@ -107,6 +107,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private IRenderStrategy.RenderParams mRenderParams;
 
 
+    private Sphere mCarPosSphere;
+    private Sphere mChangeSphere;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -217,7 +219,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             //updateCamera(mObject4Chase);
+             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
+            mCarPosSphere.setPosition(mObject4Chase.getPosition());
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -377,6 +381,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         branchLinesList.add(mRenderPath);
         HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
         mSceneUpdater.renderRoadNet(branchLinesList);
+        //// TODO: 16/10/27
+
+
+
+        mChangeSphere = new Sphere(0.05f,10,10);
+        mChangeSphere.setScale(2);
+        mChangeSphere.setMaterial(new Material());
+        mChangeSphere.setColor(Color.GREEN);
+        mChangeSphere.setPosition(new Vector3(0,0,0));
+        getCurrentScene().addChild(mChangeSphere);
+
+        mCarPosSphere = new Sphere(0.05f,10,10);
+        mCarPosSphere.setScale(1);
+        mCarPosSphere.setMaterial(new Material());
+        mCarPosSphere.setColor(Color.RED);
+        mCarPosSphere.setPosition(new Vector3(0,0,0));
+        getCurrentScene().addChild(mCarPosSphere);
     }
 
     private void addNaviPath2Scene() {
@@ -566,6 +587,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
 
         clearLastAnim();
+        mChangeSphere.setPosition(mObject4Chase.getPosition());
+        mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called"));
         mSceneUpdater.setRoadWidth((float)roadWidth);
         List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);

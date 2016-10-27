@@ -11,7 +11,7 @@ public abstract class RenderStrategy implements IRenderStrategy {
     protected DataLevel currentDataLevel = DataLevel.LEVEL_20;
     protected double currentGLCameraAngle = 45;
     protected double currentGLScale = 1.0;
-    protected double currentGLInScreenProportion = 0.0;
+    protected double currentGLInScreenProportion = 0.5;
 
     @Override
     public void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier) {
