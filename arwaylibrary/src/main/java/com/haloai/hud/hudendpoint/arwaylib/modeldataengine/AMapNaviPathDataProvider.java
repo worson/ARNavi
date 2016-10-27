@@ -71,10 +71,12 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
         //factor_last_new =getFactorByLevel(lastLevel)/getFactorByLevel(level)
         int oldFactor = getFactorByLevel(lastLevel);
         int newFactor = getFactorByLevel(level);
-        //curPointX+=mCurOffsetX;
-        //curPointY+=mCurOffsetY;
-        mCurOffsetX = (curPointX+mCurOffsetX) * oldFactor / newFactor - (curPointX);
-        mCurOffsetY = (curPointY+mCurOffsetY) * oldFactor / newFactor - (curPointY);
+        //curPointX+mCurOffsetX -- 将当前点平移回以0,0点为原点的坐标系中
+        // * oldFactor -- 将数据恢复到20级下的数据
+        // / newFactor -- 将数据计算到请求的新级别下的数据
+        // - curPointX -- 求新级别与旧级别之间的offsetX
+        mCurOffsetX = (curPointX+mCurOffsetX) * oldFactor / newFactor - curPointX;
+        mCurOffsetY = (curPointY+mCurOffsetY) * oldFactor / newFactor - curPointY;
         mCurDataLevel = level;
         int factor = newFactor;
         mCurFactor = factor;

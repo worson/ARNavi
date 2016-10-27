@@ -66,11 +66,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private              int    SCREEN_HEIGHT     = 0;
 
     //list data
-    private List<Vector3> mRenderPath = new ArrayList<>();
+    private List<List<Vector3>> mRenderPaths = new ArrayList<>();
+    private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
-    private Object3D          mObject4Chase;
-    private Object3D          mCarObject;
+    private Object3D mObject4Chase;
+    private Object3D mCarObject;
     private ArwaySceneUpdater mSceneUpdater = null;
 
     //about animation
@@ -94,8 +95,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
     //新架构
-    private INaviPathDataProvider mNaviPathDataProvider;
-    private IRoadNetDataProvider  mRoadNetDataProvider;
+    private INaviPathDataProvider        mNaviPathDataProvider;
+    private IRoadNetDataProvider         mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
 
     public ARwayRenderer(Context context) {
@@ -343,13 +344,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void addRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
-        branchLinesList.add(mRenderPath);
-        HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
+        branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
     }
 
     private void addNaviPath2Scene() {
-        //mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderNaviPath(mRenderPath);
     }
 
     private void clearLastAnim() {
@@ -381,8 +381,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void startAnim(Vector3 from, Vector3 to, double degrees, long duration) {
         mTransAnim = createTranslateAnim(from, to, duration, mObject4Chase);
         mRotateAnim = createRotateAnim(Vector3.Axis.Z,
-                Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
-                duration, mObject4Chase);
+                                       Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
+                                       duration, mObject4Chase);
         mTransAnim.play();
         mRotateAnim.play();
     }
@@ -466,11 +466,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onPathInit() {
         if (mNaviPathDataProvider != null) {
-            Vector3 curObjPos = new Vector3(0,0,0);
-            if(mIsMyInitScene){
+            Vector3 curObjPos = new Vector3(0, 0, 0);
+            if (mIsMyInitScene) {
                 curObjPos.setAll(mObject4Chase.getPosition());
             }
-            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_18,curObjPos.x,curObjPos.y).get(0);
+            mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20, curObjPos.x, curObjPos.y);
+            mRenderPath = mRenderPaths.get(0);
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -525,45 +526,47 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         return mObject4Chase == null ? 0 : mObject4Chase.getRotZ();
     }
 
-    public void changeStrategy(IRenderStrategy.DataLevel level){
+    public void changeStrategy(IRenderStrategy.DataLevel level) {
         clearLastAnim();
         //HaloLogger.logE("test__hah","screen start");
         //HaloLogger.logE("test__hah",mObject4Chase.getX()+","+mObject4Chase.getY());
         //HaloLogger.logE("test__hah","screen end");
-        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
+        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level, mObject4Chase.getX(), mObject4Chase.getY()).get(0);
         addRoadNet2Scene();
     }
 
-    /**********************************SceneUpdater*********************************************/
+    /**********************************
+     * SceneUpdater
+     *********************************************/
 
     private Animation mSceneDisappearAnimation = null;
-    private Animation mSceneAppearAnimation = null;
+    private Animation mSceneAppearAnimation    = null;
 
-    private  void sceneDisappear(){
+    private void sceneDisappear() {
         mSceneDisappearAnimation.reset();
         mSceneDisappearAnimation.play();
     }
 
-    private  void sceneAppear(){
+    private void sceneAppear() {
         mSceneAppearAnimation.reset();
         mSceneAppearAnimation.play();
     }
 
 
-    private void initSceneAnimation(){
+    private void initSceneAnimation() {
         final String tag = "animation";
         int duration = 500;
         mSceneDisappearAnimation = new Animation() {
             @Override
             protected void applyTransformation() {
-                mSceneUpdater.setAlpha((float) (1-getInterpolatedTime()));
+                mSceneUpdater.setAlpha((float) (1 - getInterpolatedTime()));
             }
         };
         mSceneDisappearAnimation.registerListener(new IAnimationListener() {
             @Override
             public void onAnimationEnd(Animation animation) {
 
-                HaloLogger.logE(tag,"onAnimationEnd");
+                HaloLogger.logE(tag, "onAnimationEnd");
                 mSceneDisappearAnimation.reset();
                 mSceneDisappearAnimation.play();
             }

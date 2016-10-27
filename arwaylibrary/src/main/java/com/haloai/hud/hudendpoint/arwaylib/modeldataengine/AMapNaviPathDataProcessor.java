@@ -35,9 +35,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private static final int    DEFAULT_LEVEL                 = 15;//默认转换等级15(需要转换成20)
     private static final int    ANIM_DURATION_REDUNDAN        = 100;//动画默认延长时间避免停顿
     private static final int    CROSS_COUNT_INIT              = 3;//初始拉取路网数据的路口个数
-    private static final double NEED_OPENGL_LENGTH            = 20;//摄像头高度角度不考虑时视口需要显示的opengl长度
+    private static final double NEED_OPENGL_LENGTH            = 50;//摄像头高度角度不考虑时视口需要显示的opengl长度
     private static final double FACTOR_LEVEL20_OPENGL_2_METER = 1;//20级下opengl到米的转换系数
-    private static final double SEGMENT_OPENGL_LEGNTH         = 5;//每一个小段对应的opengl长度(也就是说需要四段20/5)
+    private static final double SEGMENT_OPENGL_LEGNTH         = 10;//每一个小段对应的opengl长度(也就是说需要四段20/5)
 
     //Cache all navigation path data.That two member can not change address,because renderer is use that too.
     private INaviPathDataProvider mNaviPathDataProvider = new AMapNaviPathDataProvider();
@@ -73,6 +73,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //dynamic load
     private int           mCurLevelNeedMeter;
     private List<Integer> mSplitPointIndexs;
+    private int           mCurIndexInSplitPoints;
+    private double        mMeter2Opengl;
+    private double        NEED_LOAD_METER;
+    private double        mLeftMeterLength;
 
     @Override
     public void reset() {
@@ -87,6 +91,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mPreTime = 0;
         mIsPathInited = false;
         mTotalSize = 0;
+        mCurIndexInSplitPoints = 0;
+        mLeftMeterLength = 0;
         mCurLevelNeedMeter = (int) (NEED_OPENGL_LENGTH * FACTOR_LEVEL20_OPENGL_2_METER);
         mRoadNetDataProvider.reset();
         mNaviPathDataProvider.reset();
@@ -112,8 +118,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         List<LatLng> path_latlng = new ArrayList<>();
         List<Integer> step_lengths = new ArrayList<>();
         for (AMapNaviStep step : aMapNaviPath.getSteps()) {
-            step_lengths.add(step.getCoords().size());
             if (step != null) {
+                step_lengths.add(step.getCoords().size());
                 for (int i = 0; i < step.getCoords().size(); i++) {
                     NaviLatLng coord = step.getCoords().get(i);
                     LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
@@ -184,21 +190,46 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 addUpLength = 0;
             } else if (i == mDouglasPath.size() - 2) {
                 splitPointIndexs.add(i + 1);
+                break;
             }
         }
         mSplitPointIndexs = splitPointIndexs;
 
         //finally set path to provider and call back to renderer in Provider.
         //segmentCount = NEED_OPENGL_LENGTH / SEGMENT_OPENGL_LEGNTH + 1;
-        List<List<Vector3>> renderPath = new ArrayList<>();
-        /*for (int i = 0; i < NEED_OPENGL_LENGTH / SEGMENT_OPENGL_LEGNTH + 1 && i < mSplitPointIndexs.size() - 1; i++) {
+        /*List<List<Vector3>> renderPath = new ArrayList<>();
+        double showLength = 0;
+        for (int i = 0; i < mSplitPointIndexs.size() - 1; i++) {
             int start = mSplitPointIndexs.get(i);
             int end = mSplitPointIndexs.get(i + 1);
-            renderPath.add(mDouglasPath.subList(start, end));
-        }*/
-        HaloLogger.logE(TAG,"size="+mDouglasPath.size());
-        renderPath.add(mDouglasPath);
+            renderPath.add(mDouglasPath.subList(start, end + 1));
+            double partLength = 0;
+            for (int j = 0; j < renderPath.get(renderPath.size() - 1).size() - 1; j++) {
+                Vector3 v1 = renderPath.get(renderPath.size() - 1).get(j);
+                Vector3 v2 = renderPath.get(renderPath.size() - 1).get(j + 1);
+                partLength += (MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y));
+            }
+            showLength += partLength;
+            if (showLength >= NEED_OPENGL_LENGTH || i == mSplitPointIndexs.size() - 2) {
+                mCurIndexInSplitPoints = i;
+                break;
+            }
+        }
+        double totalLen = 0;
+        for (int i = 0; i < mDouglasPath.size() - 1; i++) {
+            Vector3 v1 = mDouglasPath.get(i);
+            Vector3 v2 = mDouglasPath.get(i + 1);
+            totalLen += MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
+        }
+        //表示一个opengl单位表示多少米--  20级别下--1opengl~=16.5meter
+        mMeter2Opengl = aMapNaviPath.getAllLength() / totalLen;
+        NEED_LOAD_METER = mMeter2Opengl * SEGMENT_OPENGL_LEGNTH ;
+        mLeftMeterLength = aMapNaviPath.getAllLength();
+
         mRenderPath = renderPath;
+        mNaviPathDataProvider.initPath(mRenderPath);*/
+        mRenderPath = new ArrayList<>();
+        mRenderPath.add(mDouglasPath);
         mNaviPathDataProvider.initPath(mRenderPath);
 
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
@@ -243,7 +274,23 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
                     .getLinks().get(naviInfo.getCurLink());
             mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP);
-            //2.Maybe Road Net is change
+            /*//2.dynamic load with current path retain distance
+            HaloLogger.logE(TAG,"mLeftMeterLength - naviInfo.getPathRetainDistance() = "+(mLeftMeterLength - naviInfo.getPathRetainDistance()));
+            HaloLogger.logE(TAG,"NEED_LOAD_METER = "+NEED_LOAD_METER);
+            if(mLeftMeterLength - naviInfo.getPathRetainDistance() >= NEED_LOAD_METER){
+                if(mCurIndexInSplitPoints<mSplitPointIndexs.size()-1) {
+                    //dynamic load
+                    HaloLogger.logE(TAG,"dynamic load");
+                    int start = mSplitPointIndexs.get(mCurIndexInSplitPoints);
+                    int end = mSplitPointIndexs.get(mCurIndexInSplitPoints + 1);
+                    HaloLogger.logE(TAG,"start = "+start);
+                    HaloLogger.logE(TAG,"end = "+end);
+                    mNaviPathDataProvider.updatePath(mDouglasPath.subList(start, end + 1));
+                    mCurIndexInSplitPoints++;
+                    mLeftMeterLength = naviInfo.getPathRetainDistance();
+                }
+            }*/
+            //3.Maybe Road Net is change
             if (naviInfo.getCurStep() > mCurRoadNetIndex) {
                 //拉取processSteps(curStep)
                 //mRoadNetDataProvider.setDataXX();
@@ -357,8 +404,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         v.z /= factor;
         double offsetX = mNaviPathDataProvider.getCurOffsetX();
         double offsetY = mNaviPathDataProvider.getCurOffsetY();
-        v.x-=offsetX;
-        v.y-=offsetY;
+        v.x -= offsetX;
+        v.y -= offsetY;
         return v;
     }
 }
