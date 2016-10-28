@@ -15,7 +15,7 @@ public class ARWayCameraCaculatorY {
     static final private double mFarPlaneDistance = ARWayConst.CAMERA_FAR_PLANE;
     static final private double mNearPlaneHeight = 2.0 * Math.tan(Math.toRadians(mFieldOfView/2)) * mNearPlaneDistance;
 
-    static final private double DEFAULTP = 4.0;//在Scale为1.0时，摄像机与参考点的距离／摄像机与参考点映射到近平面上的点的距离 ＝4.0
+    static final private double DEFAULTP = 8.0;//在Scale为1.0时，摄像机与参考点的距离／摄像机与参考点映射到近平面上的点的距离 ＝4.0
 
     public static void calculateCameraPositionAndLookAtPoint(CameraParam param,Vector3 position, Vector3 lookAt){
         double angelR = Math.atan(mNearPlaneHeight*(0.5-param.mInScreenPorportion)/mNearPlaneDistance);

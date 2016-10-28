@@ -27,7 +27,9 @@ public interface IRenderStrategy {
         }
     }
 
-
+    int SCALE_TYPE = 1 << 0;
+    int ANGLE_TYPE = 1 << 1;
+    int INSCREENPROPORTION_TYPE = 1 << 2;
 
     //渲染策略输入参数
     class HaloRoadClass extends RoadClass { }//道路等级参数，重用高德的道路等级划分
@@ -51,7 +53,7 @@ public interface IRenderStrategy {
     RenderParams getCurrentRenderParams();
 
     interface RenderParamsNotifier {
-        void onRenderParamsUpdated(RenderParams renderParams);
+        void onRenderParamsUpdated(RenderParams renderParams,int animationType,double duration);
     }
     void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier);
 

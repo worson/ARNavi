@@ -17,7 +17,7 @@ public class RenderParamsRefresher {
     static final int FPS = 30;//帧数
 
 
-    static final double MaxScale = 2.0;
+    static final double MaxScale = 4.0;
     static final double MinScale = 1.0;
 
     private IRefreshDataLevelNotifer mNotifer;
@@ -27,16 +27,16 @@ public class RenderParamsRefresher {
 
 
     private double currentAngel;
-    private double goalAngel;
-    private double step_Angel = 0;
+    private double mgoalAngel;
+    private double step_Angel = 0.0;
 
     private double currentInScreenProportion;
-    private double goalInScreenProportion;
-    private double step_InScreenProportion = 0;
+    private double mgoalInScreenProportion;
+    private double step_InScreenProportion = 0.0;
 
     private double currentScale;
-    private double goalScale;
-    private double step_Scale = 0;
+    private double mgoalScale;
+    private double step_Scale = 0.0;
 
 
     public void setIRefeshDataLevelNotifer(IRefreshDataLevelNotifer notifer){
@@ -44,27 +44,41 @@ public class RenderParamsRefresher {
     }
 
     public void initDefaultRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
-
-
         currentLevel = dateLevel;
         currentAngel = angel;
         currentInScreenProportion = inScreenProportion;
         currentScale = scale;
 
         goalLevel = dateLevel;
-        goalAngel = angel;
-        goalInScreenProportion = inScreenProportion;
-        goalScale = scale;
+        mgoalAngel = angel;
+        mgoalScale = scale;
+        mgoalInScreenProportion = inScreenProportion;
+
         Log.e("ylq","initDefault");
     }
 
 
+    public void doScaleAnimation(int goalDateLevel,double goalScale,double duration){
+        goalLevel = goalDateLevel;
+        mgoalScale = goalScale;
+
+        int levelNum = goalLevel - currentLevel;
+        step_Scale = (levelNum + goalScale - currentScale )/(FPS*duration);
+    }
+
+    public void doAngelAnimation(double goalAngel,double duration){
+        mgoalAngel = goalAngel;
+        step_Angel = (goalAngel - currentAngel)/(FPS * duration);
+    }
+
+    public void doInScreenProportion(double goalInScreenProportion,double duration){
+        mgoalInScreenProportion = goalInScreenProportion;
+        step_InScreenProportion = (goalInScreenProportion - currentInScreenProportion)/(FPS *duration);
+    }
+
+
+    /*
     public void setGoalRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
-        if (currentLevel != goalLevel||currentScale!=goalScale){
-            currentLevel = goalLevel;
-            currentScale = goalScale;
-            mNotifer.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
-        }
 
         goalLevel = dateLevel;
         goalScale = scale;
@@ -86,21 +100,40 @@ public class RenderParamsRefresher {
 
 
     }
-
+    */
     public void cameraRefresh(Camera currentCamera,Vector3 location,double rotZ){
         currentAngel += step_Angel;
         currentInScreenProportion += step_InScreenProportion;
         currentScale += step_Scale;
 
-        Vector3 position = new Vector3();
-        Vector3 lookAt = new Vector3();
-        CameraParam param = new CameraParam(location,rotZ,currentScale,currentAngel,currentInScreenProportion);
-        ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param,position,lookAt);
-        currentCamera.setPosition(position);
-        currentCamera.setLookAt(lookAt);
+        if (step_Angel >= 0){
+            if (currentAngel >= mgoalAngel){
+                currentAngel = mgoalAngel;
+                step_Angel = 0;
+            }
+        }else {
+            if (currentAngel <= mgoalAngel){
+                currentAngel = mgoalAngel;
+                step_Angel = 0;
+            }
+        }
+
+        if (step_InScreenProportion >= 0){
+            if (currentInScreenProportion >= mgoalInScreenProportion){
+                currentInScreenProportion = mgoalInScreenProportion;
+                step_InScreenProportion = 0;
+            }
+        }else {
+            if (currentInScreenProportion <= mgoalInScreenProportion){
+                currentInScreenProportion = mgoalInScreenProportion;
+                step_InScreenProportion = 0;
+            }
+        }
+
+
 
         if (currentLevel != goalLevel) {
-            if (step_Scale >= 0) {
+            if (step_Scale >= 0.0) {
                 if (currentScale >= MaxScale) {
                     currentLevel++;
                     currentScale = MinScale;
@@ -114,24 +147,28 @@ public class RenderParamsRefresher {
                 }
             }
         }else {
-            if (step_Scale >= 0){
-                if (currentScale >= goalScale){
-                    currentScale = goalScale;
-                    step_Scale = 0;
-                    step_Angel = 0;
-                    step_InScreenProportion = 0;
+            if (step_Scale >= 0.0){
+                if (currentScale >= mgoalScale){
+                    currentScale = mgoalScale;
+                    step_Scale = 0.0;
                 }
             }else {
-                if (step_Scale < 0){
-                    if (currentScale <=goalScale){
-                        currentScale = goalScale;
-                        step_Scale = 0;
-                        step_Angel = 0;
-                        step_InScreenProportion = 0;
+                if (step_Scale < 0.0){
+                    if (currentScale <=mgoalScale){
+                        currentScale = mgoalScale;
+                        step_Scale = 0.0;
                     }
                 }
             }
         }
+
+
+        Vector3 position = new Vector3();
+        Vector3 lookAt = new Vector3();
+        CameraParam param = new CameraParam(location,rotZ,currentScale,currentAngel,currentInScreenProportion);
+        ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param,position,lookAt);
+        currentCamera.setPosition(position);
+        currentCamera.setLookAt(lookAt);
     }
 
 
@@ -148,10 +185,10 @@ public class RenderParamsRefresher {
         double roadWidth = 0;
         switch (dataLevel){
             case 20:
-                roadWidth = 1.0/2;
+                roadWidth = 0.32;
             break;
             case 19:
-                roadWidth = 1.0/4;
+                roadWidth = 0.35;
                 break;
             case 18:
                 roadWidth = 1.0/8;
