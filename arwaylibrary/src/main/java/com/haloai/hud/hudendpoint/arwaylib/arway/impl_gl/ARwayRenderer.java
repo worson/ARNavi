@@ -48,7 +48,6 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -413,6 +412,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void addNaviPath2Scene() {
         mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderFloor(-100,100,100,-100,1);
         mSceneUpdater.commitRender();
     }
 
@@ -545,7 +545,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             if(mIsMyInitScene){
                 curObjPos.setAll(mObject4Chase.getPosition());
             }
-            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_18,curObjPos.x,curObjPos.y).get(0);
+            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,curObjPos.x,curObjPos.y).get(0);
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -580,9 +580,40 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     @Override
-    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
-        Log.e("ylq","onRenderParamsUpdated"+renderParams);
-        mParamsRefresher.setGoalRenderParmars(renderParams.dataLevel.getLevel(),renderParams.glCameraAngle,renderParams.glInScreenProportion,renderParams.glScale);
+    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams,int animationType,double duration){
+        Log.e("ylq","onRenderParamsUpdated");
+        switch (animationType){
+            case IRenderStrategy.SCALE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE:
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                break;
+            case IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.ANGLE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                break;
+            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.SCALE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            default:
+                //
+                Log.e("ylq","Worng AnimationType");
+                break;
+        }
     }
 
     @Override
@@ -680,7 +711,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private ObjectAnimator mShowAnimator = null;
 
     private void initSceneAnimator(){
-        int duration = 400;
+        int duration = 100;
         float invivable = 0.6f;
         mShowAnimator = createViewAlphaAnimator(mTextureView,invivable,1,duration);
         mHideAnimator = createViewAlphaAnimator(mTextureView,1,invivable,duration);
