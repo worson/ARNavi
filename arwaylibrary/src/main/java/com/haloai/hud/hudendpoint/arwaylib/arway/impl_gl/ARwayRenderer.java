@@ -317,7 +317,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         clearScene();
         mSceneUpdater.reset();
         //啊奇
-        mSceneUpdater.setRoadWidth((float) mParamsRefresher.getInitializtionRoadWidth());
+        mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         
         mSceneUpdater.reset();
         if (mObject4Chase != null) {
@@ -549,7 +549,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-        mSceneUpdater.renderDirectorLine(guideLineUpdate);
+        mSceneUpdater.renderGuideLine(guideLineUpdate);
     }
 
     @Override
@@ -578,7 +578,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         clearLastAnim();
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called,thread is = %s",Thread.currentThread().getId()));
-        mSceneUpdater.setRoadWidth((float)roadWidth);
+        mSceneUpdater.getRenderOptions().setLayersWidth((float)roadWidth);
 //        mSceneUpdater.renderFloor(-100,100,100,-100,1);
         List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
         mSceneUpdater.renderNaviPath(naviPath);

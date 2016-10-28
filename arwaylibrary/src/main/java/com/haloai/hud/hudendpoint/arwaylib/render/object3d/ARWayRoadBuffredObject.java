@@ -64,6 +64,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mShapeType = type;
     }
 
+    public ARWayRoadBuffredObject(float height, float width, float stepLength){
+        this(height,width,stepLength,Color.RED);
+    }
     /**
      * 绘制参考线，指定矩形的长和宽
      */
@@ -79,6 +82,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         this(height,width,5,color);
     }
 
+    public ARWayRoadBuffredObject(float width) {
+        this(width,Color.RED);
+    }
     public ARWayRoadBuffredObject(float width, int color) {
         super();
         mShapeType = ShapeType.VERTICE_ROAD;
@@ -378,7 +384,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 p2.x = point.x+ Math.cos(direction)*(-height/2);
                 p2.y = point.y+ Math.sin(direction)*(-height/2);
 
-                MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width/2);
+                MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width);
 
                 int vIndex = rectCnt * 4 * 3;
                 //左上
