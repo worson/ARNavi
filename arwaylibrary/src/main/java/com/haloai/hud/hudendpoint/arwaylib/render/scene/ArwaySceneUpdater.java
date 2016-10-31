@@ -163,7 +163,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private void initMaterial(){
         int[] textureIds = new int[]{R.drawable.road_circle_alpha_change,R.drawable.triangle_arrow,
                 R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor,
-                R.drawable.arway_img_car_1};
+                R.drawable.arway_tex_car_1};
         List<Material> materialList = new LinkedList();
         float colorInfluence = 1;
         float textureInfluence = 1;
