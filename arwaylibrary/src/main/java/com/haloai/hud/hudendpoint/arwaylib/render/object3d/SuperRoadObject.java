@@ -1,15 +1,8 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.object3d;
 
-import android.util.Log;
-
-import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
-
-import org.rajawali3d.Geometry3D;
-import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.math.vector.Vector3;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**

@@ -8,6 +8,7 @@ import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.BaseObject3D;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.TileFloor;
+import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.TextureAlphaMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -15,6 +16,8 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
+import org.rajawali3d.loader.LoaderOBJ;
+import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.amap.api.mapcore.util.r.f;
 import static org.rajawali3d.util.RajLog.TAG;
 
 /**
@@ -42,15 +46,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private ARWayRoadBuffredObject mIndicationLine  = null;
     private Plane                  mIndicationArrow = null;
 
-    private BaseObject3D mArwayMap          = null;
-    private BaseObject3D mGridfloorLayer    = null;
-    private BaseObject3D mCrossRoadBottom   = null;
-    private BaseObject3D mCrossRoad         = null;
-    private BaseObject3D mNaviRoadBottom    = null;
-    private BaseObject3D mNaviRoadTop       = null;
-    private BaseObject3D mNaviRoad          = null;
-    private BaseObject3D mNaviRoadRefLine   = null;
-    private BaseObject3D mNaviDirectorLayer = null;
+    private BaseObject3D mArwayMap           = null;
+    private BaseObject3D mGridfloorLayer     = null;
+    private BaseObject3D mCrossRoadBottom    = null;
+    private BaseObject3D mCrossRoad          = null;
+    private BaseObject3D mNaviRoadBottom     = null;
+    private BaseObject3D mNaviRoadTop        = null;
+    private BaseObject3D mNaviRoad           = null;
+    private BaseObject3D mNaviRoadRefLine    = null;
+    private BaseObject3D mNaviGuideLineLayer = null;
+    private BaseObject3D mNaviSymbolLayer    = null;
+    private BaseObject3D mCarObject          = null;
 
     private List<RoadLayers>  mCrossRoadList        = new ArrayList();
     private List<RoadLayers>  mNaviRoadList         = new ArrayList();
@@ -66,29 +72,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Context mContext;
 
     //VERTICE_ROAD
-    private static final float    ROAD_WIDTH                 = 0.8f;
-    //render configuration
-    private float mRoadLevel         = 20;
-    private float mNaviRoadWidth     = ROAD_WIDTH;
-    private float mRoadWidth         = ROAD_WIDTH*1f;
-    private float mIndicationWidth   = ROAD_WIDTH*0.3f;
-    private float mRefLineHeight     = ROAD_WIDTH;
-    private float mRefLineWidth      = ROAD_WIDTH;
-    private float mRefLineStepLength = ROAD_WIDTH;
-
-    private int ALPHA_MASK            = 0xffffffff;
-    private int mIndicationColor      = Color.GREEN&ALPHA_MASK;
-    private int mRefLineColor         = Color.BLACK;//Color.argb(0xff,0,160,233)
-    private int mNaviLineColor        = Color.argb(0xff,0,174,195);
-    private int mCrossRoadBottomColor = Color.WHITE&ALPHA_MASK;
-    private int mCrossRoadColor       = Color.GRAY&ALPHA_MASK;
-    private int mMainRoadColor        = Color.BLUE&ALPHA_MASK;
-    private int mRoadBottomColor      = Color.GRAY;
-    private int mRoadColor            = Color.BLACK;
+    private RoadRenderOption             mOptions = new RoadRenderOption();
+    private RoadRenderOption.LayersColor mColors  = null;
 
     private Material mRoadMaterial            = null;
     private Material mTestMaterial            = null;
-    private Material mMaterial                = null;
     private Material mCrossRoadBottomMaterial = null;
     private Material mCrossRoadTopMaterial    = null;
     private Material mMainRoadMaterial        = null;
@@ -96,12 +84,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Material mCommonRoadMaterial      = null;
     private Material mArrowMaterial           = null;
     private Material mFloorMaterial           = null;
+    private Material mCarMaterial           = null;
     private List<Material> mMaterialList            = new ArrayList<>();
 
     private static ArwaySceneUpdater mArwaySceneUpdater    = new ArwaySceneUpdater(null);
     private        TimeRecorder      mSceneUpdaterRecorder = new TimeRecorder();
 
-    private Object3D mCarObject;
+
 
     private float mSceneAlpha = 1;
 
@@ -145,6 +134,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     private ArwaySceneUpdater(Scene scene) {
         super(scene);
+        mColors = mOptions.getRoadColors();
     }
 
 
@@ -152,6 +142,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         RajLog.setDebugEnabled(false);
         initMaterial();
         initAllLayer();
+
+        initCarObject();
     }
 
     public void reset() {
@@ -167,21 +159,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mContext = context;
     }
 
-    public float getRoadLevel() {
-        return mRoadLevel;
-    }
-
-    public void setRoadLevel(float roadLevel) {
-        mRoadLevel = roadLevel;
-    }
-
-    public void setCarObject(Object3D carObject) {
-        mCarObject = carObject;
-    }
 
     private void initMaterial(){
         int[] textureIds = new int[]{R.drawable.road_circle_alpha_change,R.drawable.triangle_arrow,
-                R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor};
+                R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor,
+                R.drawable.arway_tex_car_1};
         List<Material> materialList = new LinkedList();
         float colorInfluence = 1;
         float textureInfluence = 1;
@@ -218,11 +200,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mRoadReflineMaterial = materialList.get(3);
 
         mFloorMaterial =materialList.get(4);
+        mCarMaterial =materialList.get(5);
+        mCarMaterial.setColorInfluence(0);
 
         mArrowMaterial = materialList.get(1);
         mArrowMaterial.getTextureList().get(0).setInfluence(1f);
-
-        mMaterial = new Material();
 
         mRoadMaterial            = new Material();
         mTestMaterial            = new Material();
@@ -238,7 +220,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mRoadReflineMaterial.addPlugin(textureAlphaPlugin);
         mArrowMaterial.addPlugin(textureAlphaPlugin);
         mFloorMaterial.addPlugin(textureAlphaPlugin);
-
         {
             mMaterialList.add(mCrossRoadBottomMaterial);
             mMaterialList.add(mCrossRoadTopMaterial);
@@ -250,23 +231,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         }
     }
 
-    private RoadLayers createNaviRoadLayer(float width) {
-
-        float roadWidth = width*1.1f;
+    private RoadLayers createNaviRoadLayer() {
         float roadRate = 0.8f;
-        float refLineHegiht = roadWidth*1.35f;
-        float naviScale = 0.5f;
-        float stepLength = roadWidth*2.5f;
-        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor);
-        ARWayRoadBuffredObject road = new ARWayRoadBuffredObject(roadWidth * roadRate , mCrossRoadColor);
-        bottom.setColor(mRoadBottomColor);
-        road.setColor(mRoadColor);
+        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(mOptions.roadWidth);
+        ARWayRoadBuffredObject road = new ARWayRoadBuffredObject(mOptions.roadWidth * roadRate);
+        bottom.setColor(mColors.bottomRoad);
+        road.setColor(mColors.road);
 
-        ARWayRoadBuffredObject refline = new ARWayRoadBuffredObject(refLineHegiht, roadWidth,stepLength, mRefLineColor);
-        refline.setColor(mRefLineColor);
+        ARWayRoadBuffredObject refline = new ARWayRoadBuffredObject(mOptions.refLineHeight, mOptions.refLineWidth, mOptions.refLineStepLength);
+        refline.setColor(mColors.refLine);
 
-        ARWayRoadBuffredObject navi = new ARWayRoadBuffredObject(roadWidth * naviScale, mMainRoadColor);
-        navi.setColor(mNaviLineColor);
+        ARWayRoadBuffredObject navi = new ARWayRoadBuffredObject(mOptions.naviRoadWidth);
+        navi.setColor(mColors.naviLine);
 
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
         if (!ARWayConst.IS_USE_ROAD_TEXTURE) {
@@ -283,11 +259,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return roadLayers;
     }
 
-    private TileFloor createFloor(float width,float height,float spacing){
+    private TileFloor createFloor(float width,float height,float spacing,float widthrate){
         if (width<=0 || height<=0 || spacing<=0){
             return null;
         }
-        TileFloor tileFloor = new TileFloor(width,height,spacing);
+        TileFloor tileFloor = new TileFloor(width,height,spacing,widthrate);
         tileFloor.setMaterial(mFloorMaterial);
         tileFloor.setBlendingEnabled(true);
         tileFloor.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -296,11 +272,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         tileFloor.setColor(Color.DKGRAY);
         return  tileFloor;
     }
-    private RoadLayers createCrossRoadLayer(float roadWidth, float roadRate,Material material){
-        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mCrossRoadBottomColor);
-        bottom.setColor(mCrossRoadBottomColor);
-        ARWayRoadBuffredObject road = new  ARWayRoadBuffredObject(roadWidth*roadRate, mCrossRoadColor);
-        road.setColor(mCrossRoadColor);
+    private RoadLayers createNetRoadLayer(){
+        float roadRate = 0.9f;
+        float roadWidth = mOptions.netRoadWidth;
+        ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mColors.netRoadBottom);
+        bottom.setColor(mColors.netRoadBottom);
+        ARWayRoadBuffredObject road = new  ARWayRoadBuffredObject(roadWidth*roadRate, mColors.netRoad);
+        road.setColor(mColors.netRoad);
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
         if(!ARWayConst.IS_USE_ROAD_TEXTURE){
             type = ARWayRoadBuffredObject.ShapeType.VERTICE_ROAD;
@@ -311,19 +289,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return roadLayers;
     }
 
-    /**
-     * 每次绽放级别渲染前，需要重新设置路宽
-     * @param roadWidth
-     */
-    public void setRoadWidth(float roadWidth) {
-        mRoadWidth = roadWidth;
-        mNaviRoadWidth = roadWidth;
+    public RoadRenderOption getRenderOptions() {
+        return mOptions;
     }
 
     @Override
-    public void renderFloor(float left,float top,float right,float bottom,float spacing) {
+    public void renderFloor(float left,float top,float right,float bottom,float spacing,float widthrate) {
         mFloorObjectLayerList.clear();
-        ObjectLayer objectLayer = new ObjectLayer(createFloor(right-left,top-bottom,spacing));
+        ObjectLayer objectLayer = new ObjectLayer(createFloor(right-left,top-bottom,spacing,widthrate));
         objectLayer.postion.setAll((right+left)/2,(top+bottom)/2,0);
         mFloorObjectLayerList.add(objectLayer);
         mIsFloorDirty = true;
@@ -346,9 +319,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
         }
-        float roadWidth = mRoadWidth;
-
-        RoadLayers roadLayers = createNaviRoadLayer(1 * roadWidth);
+        RoadLayers roadLayers = createNaviRoadLayer();
         mNaviRoadList.clear();
         mNaviRoadList.add(roadLayers);
         Vector3 postion = new Vector3(0);
@@ -372,39 +343,142 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.recordeAndLog("performance","renderNaviPath");
         }
+
         return result;
     }
+
+    public BaseObject3D getCarObject() {
+        return mCarObject;
+    }
+
+    public void initCarObject(){
+        RajLog.setDebugEnabled(true);
+        TimeRecorder recorder = new TimeRecorder();
+        recorder.start();
+
+        Object3D object = new Plane(0.5f,1f,10,10, Vector3.Axis.Z,
+                true,false,1,true);
+        object.setMaterial(mCarMaterial);
+        object.setTransparent(true);
+        object.setPosition(0,-1*0.15,0);
+        mCarObject.clearChildren();
+        mCarObject.addChild(object);
+
+        /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
+                mTextureManager,R.raw.blender_numbers_obj);
+        try {
+            objParser.parse();
+            Object3D object = objParser.getParsedObject();
+//            object.setMaterial(new Material());
+//            object.setColor(Color.RED);
+            float oScale = 0.5f;
+            object.setScale(new Vector3(oScale,oScale,oScale));
+            object.setPosition(0,0,0);
+            mCarObject.clearChildren();
+            mCarObject.addChild(object);
+            object.rotate(Vector3.Axis.X,270);
+        } catch (ParsingException e) {
+            e.printStackTrace();
+        }*/
+
+        /*try {
+            LoaderFBX parser = new LoaderFBX(mRenderer,
+                    R.raw.arway_car_fbx);
+            parser.parse();
+            Object3D o = parser.getParsedObject();
+            float oScale = 0.1f;
+            o.setScale(new Vector3(oScale,oScale,oScale));
+            o.setY(-.5f);
+            mScene.addChild(o);
+        } catch (ParsingException e) {
+            e.printStackTrace();
+        }*/
+
+
+        /*Loader3DSMax objParser = new Loader3DSMax(mRenderer,R.raw.arway_3ds_car_1);
+        try {
+            objParser.parse();
+            Object3D object = objParser.getParsedObject();
+            object.setMaterial(new Material());
+//            object.setColor(Color.RED);
+            float oScale = 0.001f;
+            object.setScale(new Vector3(oScale,oScale,oScale));
+            object.setPosition(0,0,0);
+            mScene.addChild(object);
+            object.rotate(Vector3.Axis.X,90);
+        } catch (ParsingException e) {
+            e.printStackTrace();
+        }*/
+
+
+
+
+        recorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"object parser ");
+
+
+
+        /*OrthPlane plane = new OrthPlane(1.5f,1.5f,10,10, Vector3.Axis.Z,
+                true,false,1,true);
+        plane.setDepthTestEnabled(false);
+        plane.setColor(Color.RED);
+        plane.setMaterial(new Material());
+        Vector3 pos = path.get(6);
+        plane.setPosition(pos.x,pos.y,0);
+        plane.setScale(0.5);
+
+//        mNaviSymbolLayer.addChild(plane);
+        mScene.addChild(plane);*/
+    }
     @Override
-    public boolean renderDirectorLine(List<Vector3> path) {
+    public int romoveNaviPath(int index) {
+        if(index<0||  mNaviRoadList.size()<= index){
+            return -1;
+        }
+        mNaviRoadList.remove(index);
+        return 0;
+    }
+
+    @Override
+    public int romoveRoadNet(int index) {
+        return 0;
+    }
+
+    @Override
+    public int romoveFloor(int index) {
+        return 0;
+    }
+
+    @Override
+    public boolean renderGuideLine(List<Vector3> path) {
         if (path == null || path.size()<2) {
             return false;
         }
         int pathSize = path.size();
         final Vector3 offset = new Vector3(path.get(0));
         if (mIndicationLine != null) {
-            mNaviDirectorLayer.removeChild(mIndicationLine);
+            mNaviGuideLineLayer.removeChild(mIndicationLine);
             mIndicationLine = null;
         }
         if (mIndicationLine == null) {
-            mIndicationLine = new ARWayRoadBuffredObject(mIndicationWidth,mIndicationColor, ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD);
+            mIndicationLine = new ARWayRoadBuffredObject(mOptions.guideLineWidth,mColors.guideLine, ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD);
             mIndicationLine.setMaterial(mCommonRoadMaterial);
-            mIndicationLine.setColor(mIndicationColor);
-            if (mNaviDirectorLayer != null) {
-                mNaviDirectorLayer.addChild(mIndicationLine);
+            mIndicationLine.setColor(mColors.guideLine);
+            if (mNaviGuideLineLayer != null) {
+                mNaviGuideLineLayer.addChild(mIndicationLine);
             }
         }
         if (mIndicationArrow == null) {
-            mIndicationArrow = new Plane(mIndicationWidth*4,mIndicationWidth*4,10,10, Vector3.Axis.Z,
+            mIndicationArrow = new Plane(mOptions.guideLineWidth*4, mOptions.guideLineWidth*4,10,10, Vector3.Axis.Z,
                     true,false,1,true);
-            mIndicationArrow.setColor(mIndicationColor);
+            mIndicationArrow.setColor(mColors.guideLine);
             mIndicationArrow.setMaterial(mArrowMaterial);
             mIndicationArrow.setBlendingEnabled(true);
             mIndicationArrow.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-            if (mNaviDirectorLayer != null) {
-                mNaviDirectorLayer.addChild(mIndicationArrow);
+            if (mNaviGuideLineLayer != null) {
+                mNaviGuideLineLayer.addChild(mIndicationArrow);
             }
         }
-        mNaviDirectorLayer.setPosition(offset);
+        mNaviGuideLineLayer.setPosition(offset);
         mIndicationLine.setPosition(0,0,0);
         mIndicationLine.updateBufferedRoad(path,offset);
 
@@ -434,7 +508,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         for (int i = crossSize-1; i >= 0; i--) {
             List<Vector3> road = cross.get(i);
             if (road != null && road.size()>0) {
-                RoadLayers roadLayers = createCrossRoadLayer(mRoadWidth,0.9f,mRoadMaterial);
+                RoadLayers roadLayers = createNetRoadLayer();
                 mCrossRoadList.add(roadLayers);
                 Vector3 fogStart = road.get(0);
                 Vector3 fogEng = road.get(road.size()-1);
@@ -457,6 +531,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mIsCrossRoadDirty = true;
         return result;
     }
+
 
     public void setAlpha(float alpha) {
         mSceneAlpha = alpha;
@@ -538,25 +613,27 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         boolean result = true;
         mScene.clearChildren();
 
-        mArwayMap          = new BaseObject3D();
-        mGridfloorLayer    = new BaseObject3D();
-        mCrossRoadBottom   = new BaseObject3D();
-        mCrossRoad         = new BaseObject3D();
-        mNaviRoadBottom    = new BaseObject3D();
-        mNaviRoadTop       = new BaseObject3D();
-        mNaviRoad          = new BaseObject3D();
-        mNaviRoadRefLine   = new BaseObject3D();
-        mNaviDirectorLayer = new BaseObject3D();
+        mArwayMap = new BaseObject3D();
+        mGridfloorLayer = new BaseObject3D();
+        mCrossRoadBottom = new BaseObject3D();
+        mCrossRoad = new BaseObject3D();
+        mNaviRoadBottom = new BaseObject3D();
+        mNaviRoadTop = new BaseObject3D();
+        mNaviRoad = new BaseObject3D();
+        mNaviRoadRefLine = new BaseObject3D();
+        mNaviGuideLineLayer = new BaseObject3D();
+        mNaviSymbolLayer = new BaseObject3D();
+        mCarObject = new BaseObject3D();
 
         Object3D[] layers = new Object3D[]{mGridfloorLayer,mCrossRoadBottom,mCrossRoad,
                 mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
-                mNaviDirectorLayer,mCarObject};
-        mScene.addChild(mArwayMap);
+                mNaviGuideLineLayer,mNaviSymbolLayer,mCarObject};
         for(Object3D layer:layers){
             if (layer != null) {
                 mArwayMap.addChild(layer);
             }
         }
+        mScene.addChild(mArwayMap);
         HaloLogger.logE(TAG,String.format("initAllLayer,Scene child =%s,mArwayMap child =%s",mScene.getNumChildren(),mArwayMap.getNumChildren()));
         return result;
     }
@@ -593,7 +670,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      */
     public boolean clearNaviRoad(){
         boolean result = true;
-        BaseObject3D[] layers = new BaseObject3D[]{mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine, mNaviDirectorLayer};
+        BaseObject3D[] layers = new BaseObject3D[]{mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine, mNaviGuideLineLayer};
         for(BaseObject3D layer:layers){
             if (layer != null) {
                 layer.clearChildren();

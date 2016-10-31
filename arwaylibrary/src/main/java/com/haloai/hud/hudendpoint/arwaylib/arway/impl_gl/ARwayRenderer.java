@@ -48,6 +48,9 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import static android.R.attr.y;
+
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -109,10 +112,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private INaviPathDataProvider mNaviPathDataProvider;
     private IRoadNetDataProvider  mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
-
-
-    private Sphere mCarPosSphere;
-    private Sphere mChangeSphere;
 
     public ARwayRenderer(Context context) {
         super(context);
@@ -228,7 +227,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //updateCamera(mObject4Chase);
              //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
-            mCarPosSphere.setPosition(mObject4Chase.getPosition());
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -320,24 +318,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         clearScene();
         mSceneUpdater.reset();
         //啊奇
-        mSceneUpdater.setRoadWidth((float) mParamsRefresher.getInitializtionRoadWidth());
+        mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         
         mSceneUpdater.reset();
-        if (mObject4Chase != null) {
-            mObject4Chase.destroy();
-        }
 
-        mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
-        mObject4Chase.isDepthTestEnabled();
-        mObject4Chase.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, 0);
-        Material material = new Material();
-        material.setColorInfluence(0);
-        try {
-            material.addTexture(new Texture("obj_4_chase", R.drawable.car_and_compass));
-        } catch (ATexture.TextureException e) {
-            e.printStackTrace();
+        if (mObject4Chase == null) {
+            mObject4Chase = mSceneUpdater.getCarObject();
         }
-        mObject4Chase.setMaterial(material);
+        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y,0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
 
@@ -348,7 +336,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCarObject.setPosition(mObject4Chase.getPosition());
         //        getCurrentScene().addChild(mCarObject);
 
-        mSceneUpdater.setCarObject(mCarObject);
+//        mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
         camera.enableLookAt();
@@ -390,29 +378,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
         mSceneUpdater.renderRoadNet(branchLinesList);
         //// TODO: 16/10/27
-
-
-
-        mChangeSphere = new Sphere(0.05f,10,10);
-        mChangeSphere.setScale(2);
-        mChangeSphere.setMaterial(new Material());
-        mChangeSphere.setColor(Color.GREEN);
-        mChangeSphere.setPosition(new Vector3(0,0,0));
-        getCurrentScene().addChild(mChangeSphere);
-
-        mCarPosSphere = new Sphere(0.05f,10,10);
-        mCarPosSphere.setScale(1);
-        mCarPosSphere.setMaterial(new Material());
-        mCarPosSphere.setColor(Color.RED);
-        mCarPosSphere.setPosition(new Vector3(0,0,0));
-        getCurrentScene().addChild(mCarPosSphere);
         mSceneUpdater.commitRender();
 
     }
 
     private void addNaviPath2Scene() {
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.renderFloor(-100,100,100,-100,1);
+        mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
         mSceneUpdater.commitRender();
     }
 
@@ -571,7 +543,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-        mSceneUpdater.renderDirectorLine(guideLineUpdate);
+        mSceneUpdater.renderGuideLine(guideLineUpdate);
     }
 
     @Override
@@ -631,11 +603,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         clearLastAnim();
 
-        mChangeSphere.setPosition(mObject4Chase.getPosition());
         mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
 
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called,thread is = %s",Thread.currentThread().getId()));
-        mSceneUpdater.setRoadWidth((float)roadWidth);
+        mSceneUpdater.getRenderOptions().setLayersWidth((float)roadWidth);
 //        mSceneUpdater.renderFloor(-100,100,100,-100,1);
         List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
         mSceneUpdater.renderNaviPath(naviPath);
