@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMap.OnCameraChangeListener;
@@ -163,6 +164,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
         View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.arway_opengl_layout);
+        ImageView maskView = (ImageView)mLayout.findViewById(R.id.arway_mask_imageview);
+        maskView.setBackgroundResource(R.drawable.arway_mask1);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
             ViewGroup vg = (ViewGroup)mainARWayView.getParent();

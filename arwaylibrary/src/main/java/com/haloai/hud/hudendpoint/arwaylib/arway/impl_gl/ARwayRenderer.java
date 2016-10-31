@@ -48,6 +48,9 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+import static android.R.attr.y;
+
 /**
  * author       : 龙;
  * date         : 2016/6/29;
@@ -229,6 +232,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
              //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
             mCarPosSphere.setPosition(mObject4Chase.getPosition());
+//            mSceneUpdater.getCarObject().setPosition(mObject4Chase.getPosition());
+//            mSceneUpdater.getCarObject().setRotation(mObject4Chase.getRotZ())
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -323,13 +328,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         
         mSceneUpdater.reset();
-        if (mObject4Chase != null) {
+
+
+        /*if (mObject4Chase != null) {
             mObject4Chase.destroy();
         }
 
         mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
         mObject4Chase.isDepthTestEnabled();
-        mObject4Chase.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, 0);
         Material material = new Material();
         material.setColorInfluence(0);
         try {
@@ -337,7 +343,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
-        mObject4Chase.setMaterial(material);
+        mObject4Chase.setMaterial(material);*/
+
+        if (mObject4Chase == null) {
+            mObject4Chase = mSceneUpdater.getCarObject();
+        }
+        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y,0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
 
@@ -348,7 +359,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCarObject.setPosition(mObject4Chase.getPosition());
         //        getCurrentScene().addChild(mCarObject);
 
-        mSceneUpdater.setCarObject(mCarObject);
+//        mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
         camera.enableLookAt();
