@@ -76,31 +76,6 @@ public class RenderParamsRefresher {
         step_InScreenProportion = (goalInScreenProportion - currentInScreenProportion)/(FPS *duration);
     }
 
-
-    /*
-    public void setGoalRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
-
-        goalLevel = dateLevel;
-        goalScale = scale;
-
-        int levelNum = goalLevel - currentLevel;
-
-        int timeLength = Math.abs(levelNum);
-        if (timeLength == 0){
-            timeLength = 1;
-        }
-        step_Scale = (levelNum + goalScale - currentScale )/(FPS*timeLength);
-
-        goalAngel = angel;
-        step_Angel = (goalAngel - currentAngel)/(FPS * timeLength);
-
-        goalInScreenProportion = inScreenProportion;
-        step_InScreenProportion = (goalInScreenProportion - currentInScreenProportion)/(FPS *timeLength);
-
-
-
-    }
-    */
     public void cameraRefresh(Camera currentCamera,Vector3 location,double rotZ){
         currentAngel += step_Angel;
         currentInScreenProportion += step_InScreenProportion;

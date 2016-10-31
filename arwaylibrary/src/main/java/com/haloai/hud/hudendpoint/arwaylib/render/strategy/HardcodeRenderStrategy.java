@@ -68,17 +68,17 @@ public class HardcodeRenderStrategy extends RenderStrategy {
             if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 3.8) {
                 currentDataLevel = DataLevel.LEVEL_20;
                 currentGLScale = 3.8;
-                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
+                renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
             }
             if (currentGLCameraAngle != 45.0) {
                 currentGLCameraAngle = 45.0;
-                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 3.0);
+                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 1.5);
             }
             if (currentGLInScreenProportion != 0.0) {
                 currentGLInScreenProportion = 0.0;
                 //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.INSCREENPROPORTION_TYPE, 3.0);
             }
-            renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.ANGLE_TYPE,3.0);
+            renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE,1.5);
         } else if (mpDistance <=150 && mpDistance >100){
                 if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 2.0) {
                     currentDataLevel = DataLevel.LEVEL_20;
@@ -94,22 +94,32 @@ public class HardcodeRenderStrategy extends RenderStrategy {
                 //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 3.0);
             }
             renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.ANGLE_TYPE,2.0);
-        }else if (mpDistance <=100){
+        }else if (mpDistance <=100 && mpDistance >50){
+            if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 1.5) {
+                currentDataLevel = DataLevel.LEVEL_20;
+                currentGLScale = 1.5;
+                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
+            }
+            if (currentGLCameraAngle != 90.0- Math.toDegrees(Math.atan(3.8/7.46))-22.5) {
+                currentGLCameraAngle = 90.0- Math.toDegrees(Math.atan(3.8/7.46))-22.5;
+                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 2.0);
+            }
+            if (currentGLInScreenProportion != 0.25) {
+                currentGLInScreenProportion = 0.25;
+                // renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.INSCREENPROPORTION_TYPE, 3.0);
+            }
+            renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.ANGLE_TYPE,2.0);
+        }else if (mpDistance <=50){
             if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 1.0) {
                 currentDataLevel = DataLevel.LEVEL_20;
                 currentGLScale = 1.0;
                 //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
             }
-            if (currentGLCameraAngle != 90.0- Math.toDegrees(Math.atan(4/7.46))-20.0) {
-                currentGLCameraAngle = 90.0- Math.toDegrees(Math.atan(4/7.46))-20.0;
-                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 2.0);
-            }
             if (currentGLInScreenProportion != 0.5) {
                 currentGLInScreenProportion = 0.5;
-                // renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.INSCREENPROPORTION_TYPE, 3.0);
-                renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.ANGLE_TYPE,3.0);
+                //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.INSCREENPROPORTION_TYPE, 2.0);
             }
-
+            renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(),IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE,2.0);
         }
 
 
