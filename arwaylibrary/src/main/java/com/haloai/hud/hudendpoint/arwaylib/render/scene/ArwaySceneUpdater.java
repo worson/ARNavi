@@ -370,7 +370,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         TimeRecorder recorder = new TimeRecorder();
         recorder.start();
 
-        LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
+        /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
                 mTextureManager, R.raw.car_33333);
         try {
             objParser.parse();
@@ -384,7 +384,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 //            object.rotate(Vector3.Axis.X, 270);
         } catch (ParsingException e) {
             e.printStackTrace();
-        }
+        }*/
 
         /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
                 mTextureManager,R.raw.blender_numbers_obj);

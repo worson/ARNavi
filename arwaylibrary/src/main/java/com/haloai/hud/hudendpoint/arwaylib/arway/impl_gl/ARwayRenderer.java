@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
-import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
@@ -35,10 +34,7 @@ import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.TextureView;
@@ -48,8 +44,6 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import static android.R.attr.y;
 
 /**
  * author       : 龙;
