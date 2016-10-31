@@ -84,7 +84,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Material mCommonRoadMaterial      = null;
     private Material mArrowMaterial           = null;
     private Material mFloorMaterial           = null;
-    private Material mCarMaterial           = null;
+    private Material mCarMaterial             = null;
+    private Material mNaviSymbolMaterial      = null;
     private List<Material> mMaterialList            = new ArrayList<>();
 
     private static ArwaySceneUpdater mArwaySceneUpdater    = new ArwaySceneUpdater(null);
@@ -206,8 +207,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         mArrowMaterial = materialList.get(1);
         mArrowMaterial.getTextureList().get(0).setInfluence(1f);
 
-        mRoadMaterial            = new Material();
-        mTestMaterial            = new Material();
+        mRoadMaterial = new Material();
+        mTestMaterial = new Material();
+        mNaviSymbolMaterial = new Material();
         mRoadMaterial.useVertexColors(true);
         mTestMaterial.setColor(Color.GREEN);
 
@@ -351,18 +353,38 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return mCarObject;
     }
 
-    public void initCarObject(){
+    public void renderBoard() {
+        mNaviSymbolLayer.setRotation(Vector3.X,90);
+
+        Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
+                true,false,1,true);
+        object.setMaterial(mCarMaterial);
+        object.setColor(Color.RED);
+//        object.setTransparent(true);
+        object.setPosition(0,-1*0.15,0);
+        mCarObject.clearChildren();
+        mCarObject.addChild(object);
+    }
+    public void testModelObject(){
         RajLog.setDebugEnabled(true);
         TimeRecorder recorder = new TimeRecorder();
         recorder.start();
 
-        Object3D object = new Plane(0.5f,1f,10,10, Vector3.Axis.Z,
-                true,false,1,true);
-        object.setMaterial(mCarMaterial);
-        object.setTransparent(true);
-        object.setPosition(0,-1*0.15,0);
-        mCarObject.clearChildren();
-        mCarObject.addChild(object);
+        LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
+                mTextureManager, R.raw.car_33333);
+        try {
+            objParser.parse();
+            Object3D object = objParser.getParsedObject();
+//            object.setMaterial(new Material());
+//            object.setColor(Color.RED);
+            object.setScale(1);
+            object.setPosition(0, 0, 0);
+            mCarObject.clearChildren();
+            mCarObject.addChild(object);
+//            object.rotate(Vector3.Axis.X, 270);
+        } catch (ParsingException e) {
+            e.printStackTrace();
+        }
 
         /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
                 mTextureManager,R.raw.blender_numbers_obj);
@@ -428,6 +450,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
 //        mNaviSymbolLayer.addChild(plane);
         mScene.addChild(plane);*/
+    }
+    public void initCarObject(){
+
+        Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
+                true,false,1,true);
+        object.setMaterial(mCarMaterial);
+        object.setTransparent(true);
+        object.rotate(Vector3.Axis.Z,90);
+        object.setPosition(0,-1*0.15,0);
+        mCarObject.clearChildren();
+        mCarObject.addChild(object);
+
     }
     @Override
     public int romoveNaviPath(int index) {
