@@ -30,7 +30,6 @@ public class Douglas {
     }
 
     /**
-     * 该工具类的入口函数
      * @param pointIndexsToKeep 需要在抽析中保留的点的index
      * @param vertices 需要进行抽析的数据集合
      * @param tolerance 抽析的容差,这个值越大,抽析掉的点越多
@@ -55,6 +54,9 @@ public class Douglas {
 
         douglasPeuckerReduction(vertices, firstPoint, lastPoint, tolerance,
                                 pointIndexsToKeep);
+
+        // revert the former sequence
+        Collections.sort(pointIndexsToKeep);
         return;
     }
 
@@ -101,13 +103,10 @@ public class Douglas {
         // revert the former sequence
         Collections.sort(pointIndexsToKeep);
 
-        HaloLogger.logE("branch_line_douglas","vertices size:"+vertices.size());
-
         for (int i = 0; i < pointIndexsToKeep.size(); i++) {
             int vIndex = pointIndexsToKeep.get(i);
             returnPoints.add(vertices.get(vIndex));
         }
-        HaloLogger.logE("branch_line_douglas","return size:"+returnPoints.size());
         return;
     }
 
@@ -231,7 +230,7 @@ public class Douglas {
      * @param y2
      * @throws Exception 如果x1==x2,则抛出该异常
      */
-    public static double getSlope(double x1, double y1, double x2, double y2) throws Exception {
+    private static double getSlope(double x1, double y1, double x2, double y2) throws Exception {
         if (x1 == x2) {
             throw new Exception("Slope is not existence,and div by zero!");
         }

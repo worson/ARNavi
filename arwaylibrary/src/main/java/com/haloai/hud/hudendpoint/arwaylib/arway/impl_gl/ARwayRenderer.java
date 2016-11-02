@@ -15,7 +15,6 @@ import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -54,7 +53,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
     private static final int    FRAME_RATE        = ARWayConst.FRAME_RATE;
-    private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
+    private static final double ROAD_WIDTH        = 0.122;//大概相当于20级下现实世界2M//ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
     private static final double CAMERA_OFFSET_X   = 0;
     private static final double CAMERA_OFFSET_Y   = 0;
     private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
@@ -204,9 +203,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         if (mObject4Chase != null) {
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
-            //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
-            //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             updateCamera(mObject4Chase);
+            //mCarObject.setPosition(mObject4Chase.getPosition());
         }
         super.onRender(ellapsedRealtime, deltaTime);
 
@@ -313,7 +311,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         cMaterial.setColor(Color.argb(0, 76, 0, 0));//Color.argb(255,76,0,0)
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
-        //        getCurrentScene().addChild(mCarObject);
+        //getCurrentScene().addChild(mCarObject);
 
         mSceneUpdater.setCarObject(mCarObject);
 

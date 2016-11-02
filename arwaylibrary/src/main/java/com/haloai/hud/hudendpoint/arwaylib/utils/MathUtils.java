@@ -619,20 +619,17 @@ public class MathUtils {
         return angle;
     }
 
+    /**
+     * 使用了double型不会造成误差
+     * @param line1Start
+     * @param line1End
+     * @param line2Start
+     * @param line2End
+     * @param intersectionPoint
+     * @return 0:无交点 1:相交,交点在线上 -1相交,交点不再线上
+     */
     public static int getIntersection(Vector3 line1Start, Vector3 line1End, Vector3 line2Start, Vector3 line2End, Vector3 intersectionPoint) {
-        PointF line1Start_ = new PointF((float) line1Start.x, (float) line1Start.y);
-        PointF line1End_ = new PointF((float) line1End.x, (float) line1End.y);
-        PointF line2Start_ = new PointF((float) line2Start.x, (float) line2Start.y);
-        PointF line2End_ = new PointF((float) line2End.x, (float) line2End.y);
-        PointF intersectionPoint_ = new PointF();
-        int result = getIntersection(line1Start_, line1End_, line2Start_, line2End_, intersectionPoint_);
-        intersectionPoint.x = intersectionPoint_.x;
-        intersectionPoint.y = intersectionPoint_.y;
-        return result;
-    }
-
-    public static int getIntersection(PointF line1Start, PointF line1End, PointF line2Start, PointF line2End, PointF intersectionPoint) {
-        PointF intersection = new PointF(0, 0);
+        Vector3 intersection = new Vector3(0, 0, 0);
 
         if (Math.abs(line1End.y - line1Start.y) + Math.abs(line1End.x - line1Start.x) + Math.abs(line2End.y - line2Start.y)
                 + Math.abs(line2End.x - line2Start.x) == 0) {
@@ -673,20 +670,21 @@ public class MathUtils {
                 * (line1End.y - line1Start.y) * (line2Start.x - line2End.x) + line1Start.y * (line1End.x - line1Start.x) * (line2Start.y - line2End.y))
                 / ((line1End.x - line1Start.x) * (line2Start.y - line2End.y) - (line1End.y - line1Start.y) * (line2Start.x - line2End.x));
 
-        if ((intersection.x - line1Start.x) * (intersection.x - line1End.x) <= 0
-                && (intersection.x - line2Start.x) * (intersection.x - line2End.x) <= 0
-                && (intersection.y - line1Start.y) * (intersection.y - line1End.y) <= 0
-                && (intersection.y - line2Start.y) * (intersection.y - line2End.y) <= 0) {
+        double x = 0.000000000001;
+        if ((intersection.x - line1Start.x) * (intersection.x - line1End.x) <= x
+                && (intersection.x - line2Start.x) * (intersection.x - line2End.x) <= x
+                && (intersection.y - line1Start.y) * (intersection.y - line1End.y) <= x
+                && (intersection.y - line2Start.y) * (intersection.y - line2End.y) <= x) {
 
             //            Log.e("helong_debug","线段相交于点(" + intersection.x + "," + intersection.y + ")！");
             intersectionPoint.x = intersection.x;
             intersectionPoint.y = intersection.y;
-            return 1; // '相交
+            return 1; // '相交'
         } else {
             //            Log.e("helong_debug","线段相交于虚交点(" + intersection.x + "," + intersection.y + ")！");
             intersectionPoint.x = intersection.x;
             intersectionPoint.y = intersection.y;
-            return -1; // '相交但不在线段上
+            return -1; // '相交但不在线段上'
         }
     }
 

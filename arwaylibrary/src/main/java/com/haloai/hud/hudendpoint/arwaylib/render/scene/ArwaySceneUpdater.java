@@ -58,7 +58,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     private Context mContext;
 
     //VERTICE_ROAD
-    private static final float    ROAD_WIDTH                 = 0.8f;
+    private static final float    ROAD_WIDTH                 = 0.122f;//在20级下相当于现实世界的2M
     //render configuration
     private float mRoadLevel         = 20;
     private float mNaviRoadWidth     = ROAD_WIDTH;

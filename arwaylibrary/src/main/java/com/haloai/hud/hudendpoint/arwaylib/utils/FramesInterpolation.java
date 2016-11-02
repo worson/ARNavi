@@ -38,7 +38,7 @@ public class FramesInterpolation<T> {
 			mP1Item = newItem;
 		}else {
 			if(mInterpolationItem!=null){
-				Log.e("hanyu", "replace mInterpolationItem :"+ mInterpolationItem + " p2item: "+ mP2Item);
+				Log.e("hanyu", "mapping mInterpolationItem :"+ mInterpolationItem + " p2item: "+ mP2Item);
 				mP2Item = mInterpolationItem;
 				
 			}else{

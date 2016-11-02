@@ -1008,12 +1008,12 @@ public class AXingRenderer extends Renderer implements IAnimationListener, IRend
                 for (int i = 0; i < step.getCoords().size(); i++) {
                     NaviLatLng coord = step.getCoords().get(i);
                     LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
-                    PointF pf = mProjection.toOpenGLLocation(latLng, DEFAULT_LEVEL);
-                    path_default.add(new Vector3(pf.x, -pf.y, 0));
-                    pf = mProjection.toOpenGLLocation(latLng, NEXT_LEVEL);
-                    path_next.add(new Vector3(pf.x, -pf.y, 0));
-                    pf = mProjection.toOpenGLLocation(latLng, FINAL_LEVEL);
-                    path_final.add(new Vector3(pf.x, -pf.y, 0));
+                    ARWayProjection.PointD pd = mProjection.toOpenGLLocation(latLng, DEFAULT_LEVEL);
+                    path_default.add(new Vector3(pd.x, -pd.y, 0));
+                    pd = mProjection.toOpenGLLocation(latLng, NEXT_LEVEL);
+                    path_next.add(new Vector3(pd.x, -pd.y, 0));
+                    pd = mProjection.toOpenGLLocation(latLng, FINAL_LEVEL);
+                    path_final.add(new Vector3(pd.x, -pd.y, 0));
                     path_latlng.add(new LatLng(coord.getLatitude(), coord.getLongitude()));
                     if (i == step.getCoords().size() - 1) {
                         mStepLastPointIndex.add(path_default.size() - 1);
@@ -1956,7 +1956,7 @@ public class AXingRenderer extends Renderer implements IAnimationListener, IRend
      * @return
      */
     private Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
-        PointF fromPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
+        ARWayProjection.PointD fromPos = mProjection.toOpenGLLocation(DrawUtils.naviLatLng2LatLng(location.getCoord()), DEFAULT_LEVEL);
         Vector3 v = new Vector3(
                 (fromPos.x * BIGGER_TIME - mOffsetX) * TIME_15_20,
                 (-fromPos.y * BIGGER_TIME - mOffsetY) * TIME_15_20,
