@@ -24,6 +24,8 @@ import org.rajawali3d.util.RajLog;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.path;
+
 /**
  * Created by wangshengxing on 16/9/10.
  */
@@ -57,26 +59,19 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     private int           mCountOfPlanes;
     private int           mCountOfVerties;
 
-    /**
-     * 默认道路绘制，只需要指定路宽和颜色
-     * @param width
-     * @param color
-     */
-    public ARWayRoadBuffredObject(float width, int color) {
-        this(width,color,mRoadMaterial);
-        mShapeType = ShapeType.VERTICE_ROAD;
-    }
-
     public ARWayRoadBuffredObject(float width, int color,ShapeType type) {
-        this(width,color,mRoadMaterial);
+        this(width,color);
         mShapeType = type;
     }
 
+    public ARWayRoadBuffredObject(float height, float width, float stepLength){
+        this(height,width,stepLength,Color.RED);
+    }
     /**
      * 绘制参考线，指定矩形的长和宽
      */
-    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color, Material material) {
-        this(width,color,material);
+    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color) {
+        this(width,color);
         mShapeType = ShapeType.REFERENCE_LINE;
         mRefLineHeight = height;
         mRefLineWidth = width;
@@ -84,18 +79,17 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
-        this(height,width,5,color,mRoadMaterial);
+        this(height,width,5,color);
     }
 
-    public ARWayRoadBuffredObject(float width, int color, Material material) {
+    public ARWayRoadBuffredObject(float width) {
+        this(width,Color.RED);
+    }
+    public ARWayRoadBuffredObject(float width, int color) {
         super();
+        mShapeType = ShapeType.VERTICE_ROAD;
         mRoadWidth =  width;
         mRoadColor = color;
-        if (material != null) {
-            setMaterial(material);
-        }else {
-            setMaterial(mRoadMaterial);
-        }
         setDepthTestEnabled(false);
         setBlendingEnabled(true);
         setDepthMaskEnabled(false);
@@ -128,49 +122,14 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      */
     public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
         mNeedRender = false;
-
-        double distStep = mStepLength;
-        List<Vector3> points = new ArrayList<>();
-        List<Float> directions = new ArrayList<>();
-
-        int cnt = path.size();
-        if(cnt>=2){
-            Vector3 v1 = path.get(0);
-            Vector3 v2 = path.get(1);
-            Float direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
-            points.add(v1);
-            directions.add(direction);
-            for (int i = 0; i < cnt - 1; i++) {
-                v2 = path.get(i + 1);
-                double temp = MathUtils.calculateDistance(v1.x, v1.y, v2.x, v2.y);
-                if (temp >= distStep) {
-                    double scale = distStep / temp;
-                    Vector3 v = new Vector3();
-                    v.x = v1.x + (v2.x - v1.x) * scale;
-                    v.y = v1.y + (v2.y - v1.y) * scale;
-                    v.z = 0;
-                    v1 = new Vector3(v);
-                    i--;
-                    direction = new Float((float) Math.PI+Math.atan2(v2.y-v1.y,v2.x-v1.x));
-                    directions.add(direction);
-                    points.add(v);
-                    distStep = mStepLength;
-                } else if (temp < distStep) {
-                    distStep -= temp;
-                    v1 = path.get(i+1);
-                }
-            }
-
-        }else {
-            return false;
-        }
         replaceGeometry3D(new Geometry3D());
-        GeometryData referenceLineElement = generateRectangleVerties(points,offset,directions,mRefLineHeight,mRefLineWidth,mRoadColor);
+        GeometryData referenceLineElement = generateRectangleVerties(path,offset,mRefLineHeight,mRefLineWidth,mRoadColor);
 //        GeometryData referenceLineElement = generatePlaneVerties(points,mRefLineWidth,0,mRoadColor);
         addVerties(referenceLineElement);
         applyVerties();
         mNeedRender = true;
         return true;
+
     }
 
     private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
@@ -331,18 +290,44 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     /***
      * * 单位形状点GPU内存消耗
      * (4)*(3+2+3+4+1.25)
-     * @param points
-     * @param directions
      * @param height
      * @param width
      * @param color
      * @return
      */
-    private GeometryData generateRectangleVerties(List<Vector3> points,final Vector3 offset, List<Float> directions, float height, float width, int color) {
-        if (points == null || points.size() <= 1|| directions == null) {
+    private GeometryData generateRectangleVerties(List<Vector3> path,final Vector3 offset, float height, float width, int color) {
+        if (path == null || path.size() <=2) {
             return null;
         }
-        mCountOfPlanes = (points.size() - 1);
+        double distStep = mStepLength;
+        int lineCnt = 0;
+        int cnt = path.size();
+
+        Vector3 c1 = path.get(0);
+        Vector3 v = new Vector3();
+        for (int i = 0; i < cnt - 1; i++) {
+            Vector3 c2 = path.get(i + 1);
+            double temp = MathUtils.calculateDistance(c1.x, c1.y, c2.x, c2.y);
+            if (temp >= distStep) {
+                double scale = distStep / temp;
+                v.x = c1.x + (c2.x - c1.x) * scale;
+                v.y = c1.y + (c2.y - c1.y) * scale;
+                v.z = 0;
+
+                c1 = v;//移动计算点
+                i--;//两点的距离大于指定值时，需要保证计算最前方的点不动
+                lineCnt++;
+                distStep = mStepLength;
+            } else if (temp < distStep) {
+//                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                c1 = path.get(i+1);
+            }
+        }
+
+        if (lineCnt<2){
+            return null;
+        }
+        mCountOfPlanes = (lineCnt - 1);
         mCountOfVerties = mCountOfPlanes * 4;
         //顶点数据之间可以共用
         float[] vertices = new float[mCountOfVerties * NUMBER_OF_VERTIX];
@@ -370,75 +355,101 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         Vector3 p1 = new Vector3();
         Vector3 p2 = new Vector3();
         //填充矩形块
-        for (int i = 0; i < points.size() - 1; ++i) {
+        float direction = 0;
+        c1 = path.get(0);
+        int rectCnt = 0;
+        for (int i = 0; i < cnt - 1; i++) {
+            Vector3 c2 = path.get(i + 1);
+            double temp = MathUtils.calculateDistance(c1.x, c1.y, c2.x, c2.y);
+            if (temp >= distStep) {
+                double scale = distStep / temp;
+                v.x = c1.x + (c2.x - c1.x) * scale;
+                v.y = c1.y + (c2.y - c1.y) * scale;
+                v.z = 0;
 
-            float direction = directions.get(i);
-//            float direction = (float) Math.random();
-            point.subtractAndSet(points.get(i),offset);
-            p1.x = point.x+ Math.cos(direction)*(height/2);
-            p1.y = point.y+ Math.sin(direction)*(height/2);
-            p2.x = point.x+ Math.cos(direction)*(-height/2);
-            p2.y = point.y+ Math.sin(direction)*(-height/2);
+                c1 = v;//移动计算点
+                i--;//两点的距离大于指定值时，需要保证计算最前方的点不动
+                distStep = mStepLength;
 
-            MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width/2);
+                if(lineCnt-1<=rectCnt){
+                    break;
+                }
 
-            int vIndex = i * 4 * 3;
-            //左上
-            vertices[vIndex + 0] = (float) leftUp.x;
-            vertices[vIndex + 1] = (float) leftUp.y;
-            vertices[vIndex + 2] = (float) z;
-            //右上
+                //开始计算顶点数据
+                direction = new Float((float) Math.PI+Math.atan2(c2.y-c1.y,c2.x-c1.x));
 
-            vertices[vIndex + 3] = (float) rightUp.x;
-            vertices[vIndex + 4] = (float) rightUp.y;
-            vertices[vIndex + 5] = (float) z;
-            //右下
-            vertices[vIndex + 6] = (float) rightDown.x;
-            vertices[vIndex + 7] = (float) rightDown.y;
-            vertices[vIndex + 8] = (float) z;
+                point.subtractAndSet(c1,offset);
+                p1.x = point.x+ Math.cos(direction)*(height/2);
+                p1.y = point.y+ Math.sin(direction)*(height/2);
+                p2.x = point.x+ Math.cos(direction)*(-height/2);
+                p2.y = point.y+ Math.sin(direction)*(-height/2);
 
-            //左下
-            vertices[vIndex + 9] = (float) leftDown.x;
-            vertices[vIndex + 10] = (float) leftDown.y;
-            vertices[vIndex + 11] = (float) z;
+                MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width);
 
-            for (int j = 0; j < 12; j += 3) {
-                normals[vIndex + j] = 0;
-                normals[vIndex + j + 1] = 0;
-                normals[vIndex + j + 2] = 1;
+                int vIndex = rectCnt * 4 * 3;
+                //左上
+                vertices[vIndex + 0] = (float) leftUp.x;
+                vertices[vIndex + 1] = (float) leftUp.y;
+                vertices[vIndex + 2] = (float) z;
+                //右上
+
+                vertices[vIndex + 3] = (float) rightUp.x;
+                vertices[vIndex + 4] = (float) rightUp.y;
+                vertices[vIndex + 5] = (float) z;
+                //右下
+                vertices[vIndex + 6] = (float) rightDown.x;
+                vertices[vIndex + 7] = (float) rightDown.y;
+                vertices[vIndex + 8] = (float) z;
+
+                //左下
+                vertices[vIndex + 9] = (float) leftDown.x;
+                vertices[vIndex + 10] = (float) leftDown.y;
+                vertices[vIndex + 11] = (float) z;
+
+                for (int j = 0; j < 12; j += 3) {
+                    normals[vIndex + j] = 0;
+                    normals[vIndex + j + 1] = 0;
+                    normals[vIndex + j + 2] = 1;
+                }
+
+                vIndex = rectCnt * 4 * 4;
+                for (int j = 0; j < 16; j += 4) {
+                    colors[vIndex + j] = Color.red(randColor) / 255f;
+                    colors[vIndex + j + 1] = Color.green(randColor) / 255f;
+                    colors[vIndex + j + 2] = Color.blue(randColor) / 255f;
+                    colors[vIndex + j + 3] = 1.0f;
+                }
+
+                vIndex = rectCnt * 4 * 2;
+                float u1 = 0;
+                float v1 = 0;
+                float u2 = 1;
+                float v2 = 1;
+
+                textureCoords[vIndex + 0] = u2;
+                textureCoords[vIndex + 1] = v1;
+                textureCoords[vIndex + 2] = u1;
+                textureCoords[vIndex + 3] = v1;
+                textureCoords[vIndex + 4] = u1;
+                textureCoords[vIndex + 5] = v2;
+                textureCoords[vIndex + 6] = u2;
+                textureCoords[vIndex + 7] = v2;
+
+                vIndex = rectCnt * 4;
+                int iindex = rectCnt * 6;
+                indices[iindex + 0] = (short) (vIndex + 0);
+                indices[iindex + 1] = (short) (vIndex + 1);
+                indices[iindex + 2] = (short) (vIndex + 3);
+                indices[iindex + 3] = (short) (vIndex + 1);
+                indices[iindex + 4] = (short) (vIndex + 2);
+                indices[iindex + 5] = (short) (vIndex + 3);
+
+                rectCnt++;
+
+            } else if (temp < distStep) {
+//                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                c1 = path.get(i+1);
             }
-
-            vIndex = i * 4 * 4;
-            for (int j = 0; j < 16; j += 4) {
-                colors[vIndex + j] = Color.red(randColor) / 255f;
-                colors[vIndex + j + 1] = Color.green(randColor) / 255f;
-                colors[vIndex + j + 2] = Color.blue(randColor) / 255f;
-                colors[vIndex + j + 3] = 1.0f;
-            }
-
-            vIndex = i * 4 * 2;
-            float u1 = 0;
-            float v1 = 0;
-            float u2 = 1;
-            float v2 = 1;
-
-            textureCoords[vIndex + 0] = u2;
-            textureCoords[vIndex + 1] = v1;
-            textureCoords[vIndex + 2] = u1;
-            textureCoords[vIndex + 3] = v1;
-            textureCoords[vIndex + 4] = u1;
-            textureCoords[vIndex + 5] = v2;
-            textureCoords[vIndex + 6] = u2;
-            textureCoords[vIndex + 7] = v2;
-
-            vIndex = i * 4;
-            int iindex = i * 6;
-            indices[iindex + 0] = (short) (vIndex + 0);
-            indices[iindex + 1] = (short) (vIndex + 1);
-            indices[iindex + 2] = (short) (vIndex + 3);
-            indices[iindex + 3] = (short) (vIndex + 1);
-            indices[iindex + 4] = (short) (vIndex + 2);
-            indices[iindex + 5] = (short) (vIndex + 3);
         }
         return element;
     }

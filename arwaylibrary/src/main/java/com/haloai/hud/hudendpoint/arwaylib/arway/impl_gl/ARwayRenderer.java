@@ -1,17 +1,25 @@
 package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
-import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
-import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculator;
+import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
+import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.IRefreshDataLevelNotifer;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsRefresher;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -26,12 +34,10 @@ import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
+import org.rajawali3d.view.TextureView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,30 +54,29 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier {
+public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier,IRefreshDataLevelNotifer {
     //content
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
     private static final int    FRAME_RATE        = ARWayConst.FRAME_RATE;
-    private static final double ROAD_WIDTH        = 0.122;//大概相当于20级下现实世界2M//ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
+    //private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
     private static final double CAMERA_OFFSET_X   = 0;
     private static final double CAMERA_OFFSET_Y   = 0;
     private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
     private static final double CAMERA_CUT_OFFSET = /*0*/0.6/*1*/;
     private static final double LOOK_AT_DIST      = /*0*/1.3;
-    private static final double CAMERA_NEAR_PLANE = 0.5;
-    private static final double CAMERA_FAR_PLANE  = 25;
     private              int    SCREEN_WIDTH      = 0;
     private              int    SCREEN_HEIGHT     = 0;
 
+    private TextureView mTextureView = null;
     //list data
     private List<List<Vector3>> mRenderPaths = new ArrayList<>();
     private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
-    private Object3D mObject4Chase;
-    private Object3D mCarObject;
-    private ArwaySceneUpdater mSceneUpdater = null;
+    private Object3D          mObject4Chase;
+    private Object3D          mCarObject;
+    private ArwaySceneUpdater mSceneUpdater = ArwaySceneUpdater.getInstance();
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
@@ -85,10 +90,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private boolean mIsMyInitScene  = false;
     private boolean mCanMyInitScene = false;
 
+
     //about camera
     private CameraModel mCameraModel            = new CameraModel();
     private float       mRoadWidthProportion    = 0.13f;
     private float       mCameraPerspectiveAngel = 70;
+
+
+    private RenderParamsRefresher mParamsRefresher = new RenderParamsRefresher();
+
 
     //time recorder
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
@@ -100,11 +110,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     public ARwayRenderer(Context context) {
         super(context);
-
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         SCREEN_WIDTH = wm.getDefaultDisplay().getWidth();
         SCREEN_HEIGHT = wm.getDefaultDisplay().getHeight();
-        setFrameRate(FRAME_RATE);
+    }
+
+    public void setTextureViewAndInit(TextureView textureView) {
+        mTextureView = textureView;
+        initSceneAnimator();
     }
 
     @Override
@@ -115,15 +128,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
+        getCurrentScene().setBackgroundColor(0,0,0,0);
         setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
         mSceneUpdater.setCamera(getCurrentCamera());
 
         mIsInitScene = true;
-        initSceneAnimation();
         if (!mIsMyInitScene && mCanMyInitScene) {
             myInitScene();
         }
@@ -139,6 +153,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         super.onRenderSurfaceDestroyed(surface);
     }
 
+    /*
     private void updateCamera(ATransformable3D transObject) {
         Camera camera = getCurrentCamera();
         Vector3 location = transObject.getPosition();
@@ -155,7 +170,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         camera.setPosition(position);
         camera.setLookAt(lookat);
     }
-
+     */
     // TODO: 2016/10/14 修改道路底边的宽度--修改摄像机的高度和LOOK_DIST
     public void changeRoadShowWidthBy(double changeValue) {
         mRoadWidthProportion += changeValue;
@@ -203,9 +218,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         if (mObject4Chase != null) {
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
-            updateCamera(mObject4Chase);
-            //mCarObject.setPosition(mObject4Chase.getPosition());
+            //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
+            //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
+            //updateCamera(mObject4Chase);
+             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
+            mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
         }
+        mSceneUpdater.onRender(ellapsedRealtime,deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
 
         if (ARWayConst.ENABLE_PERFORM_TEST) {
@@ -284,25 +303,26 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         System.gc();
     }
 
+    public void initDefaultRenderParams(IRenderStrategy.RenderParams params){
+
+        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale);
+        mParamsRefresher.setIRefeshDataLevelNotifer(this);
+    }
+
+
     private void myInitScene() {
 
         clearScene();
         mSceneUpdater.reset();
-        if (mObject4Chase != null) {
-            mObject4Chase.destroy();
-        }
+        //啊奇
+        mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
+        
+        mSceneUpdater.reset();
 
-        mObject4Chase = new Plane(0.4f, 0.4f, 1, 1);
-        mObject4Chase.isDepthTestEnabled();
-        mObject4Chase.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, 0);
-        Material material = new Material();
-        material.setColorInfluence(0);
-        try {
-            material.addTexture(new Texture("obj_4_chase", R.drawable.car_and_compass));
-        } catch (ATexture.TextureException e) {
-            e.printStackTrace();
+        if (mObject4Chase == null) {
+            mObject4Chase = mSceneUpdater.getCarObject();
         }
-        mObject4Chase.setMaterial(material);
+        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y,0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
 
@@ -313,25 +333,34 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCarObject.setPosition(mObject4Chase.getPosition());
         //getCurrentScene().addChild(mCarObject);
 
-        mSceneUpdater.setCarObject(mCarObject);
+//        mSceneUpdater.setCarObject(mCarObject);
 
         Camera camera = getCurrentCamera();
         camera.enableLookAt();
         camera.setUpAxis(Vector3.Axis.Z);
-        camera.setRotation(0, 0, 0);
-        camera.setPosition(mRenderPath.get(0)/*.get(0)*/.x, mRenderPath.get(0)/*.get(0)*/.y, CAMERA_OFFSET_Z);
+
+        getCurrentCamera().setNearPlane(ARWayConst.CAMERA_NEAR_PLANE);
+        getCurrentCamera().setFarPlane(ARWayConst.CAMERA_FAR_PLANE);
+
+        Vector3 position = new Vector3();
+        Vector3 lookAt = new Vector3();
+        CameraParam param = new CameraParam(mObject4Chase.getPosition(),mObject4Chase.getRotZ(),1.0,60,0);
+        ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param,position,lookAt);
+        getCurrentCamera().setPosition(position);
+        getCurrentCamera().setLookAt(lookAt);
+
+
+
+        /*
         updateCamera(mObject4Chase);
-
-        getCurrentCamera().setNearPlane(CAMERA_NEAR_PLANE);
-        getCurrentCamera().setFarPlane(CAMERA_FAR_PLANE);
-
         ARWayCameraCaculator.cameraCaculatorInit(camera);
 
         mCameraModel.setNearPlaneWithDrawPlane_Angel(mCameraPerspectiveAngel);
         mCameraModel.setRoadWidthProportion(mRoadWidthProportion);
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
-
+        */
+        mSceneUpdater.clearSceneObjects();
         addRoadNet2Scene();
         addNaviPath2Scene();
 
@@ -344,10 +373,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
+        //// TODO: 16/10/27
+        mSceneUpdater.commitRender();
+
     }
 
     private void addNaviPath2Scene() {
+        mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
+        mSceneUpdater.commitRender();
     }
 
     private void clearLastAnim() {
@@ -432,6 +467,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
     //====================================rajawali animation callback end========================================//
 
+
     public void setEvent(int type) {
         if (type == 1) {//左下
             mCameraPerspectiveAngel += 5;
@@ -464,12 +500,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onPathInit() {
         if (mNaviPathDataProvider != null) {
+            //啊奇
+            IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
+            for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
+                if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
+                    level = temple;
+                    break;
+                }
+            }
+
             Vector3 curObjPos = new Vector3(0, 0, 0);
             if (mIsMyInitScene) {
                 curObjPos.setAll(mObject4Chase.getPosition());
             }
-            mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20, curObjPos.x, curObjPos.y);
+            mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
             mRenderPath = mRenderPaths.get(0);
+            
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -495,7 +541,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-
+        mSceneUpdater.renderGuideLine(guideLineUpdate);
     }
 
     @Override
@@ -504,9 +550,69 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     @Override
-    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams) {
-
+    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams,int animationType,double duration){
+        Log.e("ylq","onRenderParamsUpdated");
+        switch (animationType){
+            case IRenderStrategy.SCALE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE:
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                break;
+            case IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.ANGLE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                break;
+            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.SCALE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                break;
+            default:
+                //
+                Log.e("ylq","Worng AnimationType");
+                break;
+        }
     }
+
+    @Override
+    public void onRefreshDataLevel(int DataLevel,double roadWidth){
+        Log.e("ylq","onRefreshDataLevel:"+DataLevel);
+        //add
+
+        IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
+        for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
+            if (temple.getLevel() == DataLevel){
+                level = temple;
+                break;
+            }
+        }
+
+        clearLastAnim();
+
+        mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
+
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called,thread is = %s",Thread.currentThread().getId()));
+        mSceneUpdater.getRenderOptions().setLayersWidth((float)roadWidth);
+//        mSceneUpdater.renderFloor(-100,100,100,-100,1);
+        List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
+        mSceneUpdater.renderNaviPath(naviPath);
+
+        mHandler.sendEmptyMessage(SCENE_HIDE_ANIMATION_ID);
+    }
+    int mRefreshDataCnt = 0;
+
 
     public void setNaviPathDataProvider(INaviPathDataProvider naviPathDataProvider) {
         this.mNaviPathDataProvider = naviPathDataProvider;
@@ -533,77 +639,75 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         addRoadNet2Scene();
     }
 
-    /**********************************
-     * SceneUpdater
-     *********************************************/
-
-    private Animation mSceneDisappearAnimation = null;
-    private Animation mSceneAppearAnimation    = null;
-
-    private void sceneDisappear() {
-        mSceneDisappearAnimation.reset();
-        mSceneDisappearAnimation.play();
+    /**********************************SceneUpdater*********************************************/
+    public ArwaySceneUpdater getSceneUpdater() {
+        return mSceneUpdater;
     }
 
-    private void sceneAppear() {
-        mSceneAppearAnimation.reset();
-        mSceneAppearAnimation.play();
+    private ObjectAnimator createViewAlphaAnimator(View view, float from, float to, long duration){
+        ObjectAnimator animator=  ObjectAnimator
+                .ofFloat(view, "Alpha", from, to);
+        animator.setDuration(duration);
+        return animator;
+    }
+    private void restartAnimator(ObjectAnimator a){
+        if(a.isStarted()){
+            a.cancel();
+        }
+        a.start();
     }
 
+    public static final int SCENE_HIDE_ANIMATION_ID = 0;
+    public static final int SCENE_RENDER_APLLY_ID = 1;
 
-    private void initSceneAnimation() {
-        final String tag = "animation";
-        int duration = 500;
-        mSceneDisappearAnimation = new Animation() {
-            @Override
-            protected void applyTransformation() {
-                mSceneUpdater.setAlpha((float) (1 - getInterpolatedTime()));
+    private Handler        mHandler      = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case SCENE_HIDE_ANIMATION_ID:
+                    restartAnimator(mHideAnimator);
+                    break;
+                case SCENE_RENDER_APLLY_ID:
+                    mSceneUpdater.clearSceneObjects();
+                    mSceneUpdater.commitRender();
+                    break;
+                default:
             }
-        };
-        mSceneDisappearAnimation.registerListener(new IAnimationListener() {
+        }
+    };
+    private ObjectAnimator mHideAnimator = null;
+    private ObjectAnimator mShowAnimator = null;
+
+    private void initSceneAnimator(){
+        int duration = 100;
+        float invivable = 0.6f;
+        mShowAnimator = createViewAlphaAnimator(mTextureView,invivable,1,duration);
+        mHideAnimator = createViewAlphaAnimator(mTextureView,1,invivable,duration);
+        mHideAnimator.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationEnd(Animation animation) {
-
-                HaloLogger.logE(tag, "onAnimationEnd");
-                mSceneDisappearAnimation.reset();
-                mSceneDisappearAnimation.play();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationStart(Animation animation) {
+            public void onAnimationStart(Animator animation) {
 
             }
 
             @Override
-            public void onAnimationUpdate(Animation animation, double v) {
+            public void onAnimationEnd(Animator animation) {
+                mHandler.sendEmptyMessage(SCENE_RENDER_APLLY_ID);
+                restartAnimator(mShowAnimator);
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onAnimationEnd called,thread is = %s",Thread.currentThread().getId()));
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
 
             }
         });
-        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
-        mSceneDisappearAnimation.setDurationMilliseconds(duration);
-        mSceneDisappearAnimation.setInterpolator(new LinearInterpolator());
-        getCurrentScene().registerAnimation(mSceneDisappearAnimation);
 
-        mSceneAppearAnimation = new Animation() {
-            @Override
-            protected void applyTransformation() {
-                mSceneUpdater.setAlpha((float) (getInterpolatedTime()));
-            }
-        };
-        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
-        mSceneAppearAnimation.setDurationMilliseconds(duration);
-        mSceneAppearAnimation.setInterpolator(new LinearInterpolator());
-        getCurrentScene().registerAnimation(mSceneAppearAnimation);
-
-    }
-
-    public ArwaySceneUpdater getSceneUpdater() {
-        return mSceneUpdater;
     }
 
 }

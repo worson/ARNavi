@@ -8,14 +8,28 @@ import com.amap.api.navi.enums.RoadClass;
 public interface IRenderStrategy {
 
     enum DataLevel {
-        LEVEL_20,
-        LEVEL_18,
-        LEVEL_16,
-        LEVEL_15,
-        LEVEL_14,
-        LEVEL_13,
-        LEVEL_12
+        LEVEL_20(20),
+        LEVEL_19(19),
+        LEVEL_18(18),
+        LEVEL_17(17),
+        LEVEL_16(16),
+        LEVEL_15(15),
+        LEVEL_14(14),
+        LEVEL_13(13),
+        LEVEL_12(12);
+
+        int nCode;
+        DataLevel(int _nCode){
+            this.nCode = _nCode;
+        }
+        public int getLevel(){
+            return this.nCode;
+        }
     }
+
+    int SCALE_TYPE = 1 << 0;
+    int ANGLE_TYPE = 1 << 1;
+    int INSCREENPROPORTION_TYPE = 1 << 2;
 
     //渲染策略输入参数
     class HaloRoadClass extends RoadClass { }//道路等级参数，重用高德的道路等级划分
@@ -24,18 +38,22 @@ public interface IRenderStrategy {
 
     //渲染策略输出
     class RenderParams {
-        public RenderParams(DataLevel dataLevel, double glCameraAngle) {
+        public RenderParams(DataLevel dataLevel, double glCameraAngle ,double glScale,double glInScreenProportion) {
             this.dataLevel = dataLevel;
             this.glCameraAngle = glCameraAngle;
+            this.glScale = glScale;
+            this.glInScreenProportion = glInScreenProportion;
         }
 
         public IRenderStrategy.DataLevel dataLevel;
         public double glCameraAngle;
+        public double glScale;
+        public double glInScreenProportion;
     }
     RenderParams getCurrentRenderParams();
 
     interface RenderParamsNotifier {
-        void onRenderParamsUpdated(RenderParams renderParams);
+        void onRenderParamsUpdated(RenderParams renderParams,int animationType,double duration);
     }
     void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier);
 

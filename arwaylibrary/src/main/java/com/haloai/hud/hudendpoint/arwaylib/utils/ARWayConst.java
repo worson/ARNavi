@@ -15,8 +15,8 @@ public class ARWayConst {
     public static final boolean IS_CAT_MULL_ROM = false; //
 
     // debug log
-    public static final String  INDICATE_LOG_TAG = "sen_debug_gl";
-    public static final String  ERROR_LOG_TAG = "sen_debug_gl";
+    public static final String  INDICATE_LOG_TAG = "arway_indication";
+    public static final String  ERROR_LOG_TAG = "arway_error";
     public static final String  SPECIAL_LOG_TAG = "arway_special";
     public static final boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
     public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
@@ -24,6 +24,10 @@ public class ARWayConst {
     public static final boolean ENABLE_TEST_LOG = false;//ARWAY 输出测试log
     public static final boolean ENABLE_PERFORM_TEST = false;//ARWAY 输出测试log
 
+
+    //camera
+    public static final double CAMERA_NEAR_PLANE = 0.5;
+    public static final double CAMERA_FAR_PLANE  = 25;
 
     //open gl
     public static final int     FRAME_RATE             = 30;

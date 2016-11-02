@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
@@ -34,6 +35,8 @@ public class DrawScene extends DrawObject implements IViewOperation{
             mTextureView = new TextureView(context);
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
+            mTextureView.setBackgroundColor(Color.TRANSPARENT);
+            mTextureView.setAlpha(1.0f);
         }
         return mTextureView;
     }
@@ -70,7 +73,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
                 if (animator != null) {
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setRepeatCount(0);
-                    animator.start();
+//                    animator.start();
                 }
             }
         }
