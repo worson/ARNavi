@@ -130,6 +130,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         getCurrentScene().setBackgroundColor(0,0,0,0);
         setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
@@ -222,6 +223,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
              //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
         }
+        mSceneUpdater.onRender(ellapsedRealtime,deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
 
         if (ARWayConst.ENABLE_PERFORM_TEST) {
@@ -377,6 +379,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void addNaviPath2Scene() {
+        mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
         mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
         mSceneUpdater.commitRender();

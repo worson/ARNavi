@@ -25,4 +25,6 @@ public interface IARwayRoadRender {
     public void commitRender();
 
 
+    public void onRender(long ellapsedRealtime, double deltaTime);
+
 }

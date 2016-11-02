@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
@@ -11,13 +12,17 @@ import com.haloai.hud.hudendpoint.arwaylib.render.object3d.TileFloor;
 import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.TextureAlphaMaterialPlugin;
+import com.haloai.hud.hudendpoint.arwaylib.render.utils.TDrawText;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Object3D;
+import org.rajawali3d.animation.Animation3D;
+import org.rajawali3d.cameras.Camera;
+import org.rajawali3d.loader.ALoader;
 import org.rajawali3d.loader.LoaderOBJ;
-import org.rajawali3d.loader.ParsingException;
+import org.rajawali3d.loader.async.IAsyncLoaderCallback;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
@@ -30,7 +35,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.amap.api.mapcore.util.r.f;
 import static org.rajawali3d.util.RajLog.TAG;
 
 /**
@@ -209,9 +213,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
         mRoadMaterial = new Material();
         mTestMaterial = new Material();
-        mNaviSymbolMaterial = new Material();
         mRoadMaterial.useVertexColors(true);
         mTestMaterial.setColor(Color.GREEN);
+
+        mNaviSymbolMaterial = new Material();
 
         RoadFogMaterialPlugin fogMaterialPlugin = new RoadFogMaterialPlugin();
         mCrossRoadBottomMaterial.addPlugin(fogMaterialPlugin);
@@ -354,103 +359,82 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void renderBoard() {
-        mNaviSymbolLayer.setRotation(Vector3.X,90);
+        //保持显示效果为垂直
+//        mNaviSymbolLayer.setRotation(Vector3.X,90);
+
+        Material boadMaterial = new Material();
+        boadMaterial.setColorInfluence(0.1f);
+
+        Bitmap bitmap =  TDrawText.drawBitmapText("halo hud",15,0,new int[4],Color.WHITE,Color.BLUE,
+                Color.BLACK,1);
+        try {
+            boadMaterial.addTexture(new Texture("timeTexture", bitmap));
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
 
         Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
                 true,false,1,true);
-        object.setMaterial(mCarMaterial);
-        object.setColor(Color.RED);
-//        object.setTransparent(true);
-        object.setPosition(0,-1*0.15,0);
+        object.setPosition(0,0,0);
+        object.setMaterial(boadMaterial); //mNaviSymbolMaterial
+        object.setDoubleSided(true);
+        object.setColor(Color.GREEN);
+        object.setScale(3);
+
+        mNaviSymbolLayer.clearChildren();
+        mNaviSymbolLayer.addChild(object);
+
         mCarObject.clearChildren();
-        mCarObject.addChild(object);
     }
-    public void testModelObject(){
-        RajLog.setDebugEnabled(true);
-        TimeRecorder recorder = new TimeRecorder();
+
+    /**
+     *
+     * @param position
+     * @param degree 以3点钟为0度，逆时针计算
+     */
+    public void renderTrafficLight(Vector3 position,float degree){
+        final TimeRecorder recorder = new TimeRecorder();
         recorder.start();
 
-        /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager, R.raw.car_33333);
-        try {
-            objParser.parse();
-            Object3D object = objParser.getParsedObject();
-//            object.setMaterial(new Material());
-//            object.setColor(Color.RED);
-            object.setScale(1);
-            object.setPosition(0, 0, 0);
-            mCarObject.clearChildren();
-            mCarObject.addChild(object);
-//            object.rotate(Vector3.Axis.X, 270);
-        } catch (ParsingException e) {
-            e.printStackTrace();
-        }*/
+        mNaviSymbolLayer.setPosition(position);
+        if(mNaviSymbolLayer.getNumChildren()<=0){
+            int objectId = R.raw.arway_car4;
+            final LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
+                    mTextureManager, objectId);
+            mRenderer.loadModel(objParser, new IAsyncLoaderCallback() {
+                @Override
+                public void onModelLoadComplete(ALoader aLoader) {
+                    final Object3D object = objParser.getParsedObject();
+                    object.setScale(0.3f);
+                    object.setAlpha(0);
+                    object.setColor(Color.BLUE);
+                    object.setRotation(Vector3.Axis.X,-90);
+                    mNaviSymbolLayer.clearChildren();
+                    mNaviSymbolLayer.addChild(object);
 
-        /*LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
-                mTextureManager,R.raw.blender_numbers_obj);
-        try {
-            objParser.parse();
-            Object3D object = objParser.getParsedObject();
-//            object.setMaterial(new Material());
-//            object.setColor(Color.RED);
-            float oScale = 0.5f;
-            object.setScale(new Vector3(oScale,oScale,oScale));
-            object.setPosition(0,0,0);
-            mCarObject.clearChildren();
-            mCarObject.addChild(object);
-            object.rotate(Vector3.Axis.X,270);
-        } catch (ParsingException e) {
-            e.printStackTrace();
-        }*/
+                    Animation3D animation = new Animation3D() {
+                        @Override
+                        protected void applyTransformation() {
+                            object.setAlpha((float) getInterpolatedTime());
+                        }
+                    };
+                    animation.setTransformable3D(object);
+                    mScene.registerAnimation(animation);
+                    animation.setDurationMilliseconds(3000);
+//                    animation.play();
+                    recorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"object parser ");
+                }
 
-        /*try {
-            LoaderFBX parser = new LoaderFBX(mRenderer,
-                    R.raw.arway_car_fbx);
-            parser.parse();
-            Object3D o = parser.getParsedObject();
-            float oScale = 0.1f;
-            o.setScale(new Vector3(oScale,oScale,oScale));
-            o.setY(-.5f);
-            mScene.addChild(o);
-        } catch (ParsingException e) {
-            e.printStackTrace();
-        }*/
+                @Override
+                public void onModelLoadFailed(ALoader aLoader) {
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"Model load failed: " + aLoader);
+                }
+            }, objectId);
+        }
+        mNaviSymbolLayer.setRotation(Vector3.Axis.Z,-90-degree);
 
-
-        /*Loader3DSMax objParser = new Loader3DSMax(mRenderer,R.raw.arway_3ds_car_1);
-        try {
-            objParser.parse();
-            Object3D object = objParser.getParsedObject();
-            object.setMaterial(new Material());
-//            object.setColor(Color.RED);
-            float oScale = 0.001f;
-            object.setScale(new Vector3(oScale,oScale,oScale));
-            object.setPosition(0,0,0);
-            mScene.addChild(object);
-            object.rotate(Vector3.Axis.X,90);
-        } catch (ParsingException e) {
-            e.printStackTrace();
-        }*/
-
-
-
-
-        recorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG,"object parser ");
-
-
-
-        /*OrthPlane plane = new OrthPlane(1.5f,1.5f,10,10, Vector3.Axis.Z,
-                true,false,1,true);
-        plane.setDepthTestEnabled(false);
-        plane.setColor(Color.RED);
-        plane.setMaterial(new Material());
-        Vector3 pos = path.get(6);
-        plane.setPosition(pos.x,pos.y,0);
-        plane.setScale(0.5);
-
-//        mNaviSymbolLayer.addChild(plane);
-        mScene.addChild(plane);*/
     }
+
     public void initCarObject(){
 
         Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
@@ -458,7 +442,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         object.setMaterial(mCarMaterial);
         object.setTransparent(true);
         object.rotate(Vector3.Axis.Z,90);
-        object.setPosition(0,-1*0.15,0);
+        object.setPosition(0,1*0.15,0);
         mCarObject.clearChildren();
         mCarObject.addChild(object);
 
@@ -711,6 +695,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             }
         }
         return result;
+    }
+
+    @Override
+    public void onRender(long ellapsedRealtime, double deltaTime) {
+//        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
     }
 }
 
