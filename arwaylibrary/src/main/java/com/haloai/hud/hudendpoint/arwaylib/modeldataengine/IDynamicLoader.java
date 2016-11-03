@@ -11,14 +11,12 @@ public interface IDynamicLoader {
     int updateOriginPath(AMapNaviPath path, int dataLevel);
 
 
-    void updateCurPoint(int curIndex);
+    void updateCurPoint(int realPointIndex);
 
 
 
     interface IDynamicLoadNotifer{
-        void removeOldRoad();
-
-        void addNewRoad(int startIndex,int endIndex);
+        void loadNewRoad(int startIndex,int endIndex);
     }
 
     void setIDynamicLoadNotifer(IDynamicLoadNotifer dynamicLoadNotifer);

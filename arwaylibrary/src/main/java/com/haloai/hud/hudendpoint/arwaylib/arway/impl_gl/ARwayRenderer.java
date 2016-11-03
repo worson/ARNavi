@@ -553,7 +553,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams,int animationType,double duration){
-        Log.e("ylq","onRenderParamsUpdated");
+        //Log.e("ylq","onRenderParamsUpdated");
         switch (animationType){
             case IRenderStrategy.SCALE_TYPE:
                 mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);

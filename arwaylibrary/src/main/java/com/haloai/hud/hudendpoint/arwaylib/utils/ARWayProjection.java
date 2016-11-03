@@ -10,7 +10,8 @@ import com.amap.api.maps.model.LatLng;
  */
 public class ARWayProjection {
 
-    public static final double NEAR_PLANE_WIDTH      = ARWayConst.CAMERA_NEAR_PLANE * Math.tan(Math.toRadians(22.5))*2*1.43;//0.8
+    public static final double NEAR_PLANE_Height     = ARWayConst.CAMERA_NEAR_PLANE * Math.tan(Math.toRadians(22.5))*2;
+    public static final double NEAR_PLANE_WIDTH      = NEAR_PLANE_Height*1.43;//0.8
     public static final double K                     = (12.0 /0.1375)/ NEAR_PLANE_WIDTH; //莫卡托转换成opengl坐标的比例  20级的莫卡托转换下0.8openGL长度代表12米
 
     public static class PointD {

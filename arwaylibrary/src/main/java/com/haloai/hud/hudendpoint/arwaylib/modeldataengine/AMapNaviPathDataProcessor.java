@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import android.graphics.PointF;
+import android.util.Log;
 
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
@@ -26,7 +27,7 @@ import java.util.List;
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNavi, AMapNaviPath, NaviInfo, AMapNaviLocation> {
+public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNavi, AMapNaviPath, NaviInfo, AMapNaviLocation>,IDynamicLoader.IDynamicLoadNotifer {
     //constant
     private static final String TAG                           = "AMapNaviPathDataProcessor";
     private static final double OBJ_4_CHASE_Z                 = 0;//被追随物体的Z轴高度,用于构建Vector3中的Z
@@ -74,6 +75,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private int           mCurLevelNeedMeter;
     private List<Integer> mSplitPointIndexs;
 
+    //ylqtest
+    private IDynamicLoader mDynamicLoader = new DynamicLoader();
+
     @Override
     public void reset() {
         mCurIndexInPath = 0;
@@ -100,7 +104,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     public int setPath(AMapNavi amapNavi, AMapNaviPath aMapNaviPath) {
         //0.reset all data
         reset();
-
+        mDynamicLoader.setIDynamicLoadNotifer(this);
+        int endIndex = mDynamicLoader.updateOriginPath(aMapNaviPath,20);
         //1.check data legal
         HaloLogger.logE(TAG, "initPath check data legal");
         if (amapNavi == null || aMapNaviPath == null) {
@@ -199,7 +204,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         HaloLogger.logE(TAG,"size="+mDouglasPath.size());
         renderPath.add(mDouglasPath);
         mRenderPath = renderPath;
-        mNaviPathDataProvider.initPath(mRenderPath);
+
+        List<Vector3> vecList = new ArrayList<>();
+        vecList.addAll(mPathVector3.subList(0,endIndex));
+        List<List<Vector3>> myRenderPath = new ArrayList<>();
+        myRenderPath.add(vecList);
+        mNaviPathDataProvider.initPath(myRenderPath);
 
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "initPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
@@ -208,6 +218,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mIsPathInited = true;
         return 1;
+    }
+
+    @Override
+    public void loadNewRoad(int startIndex,int endIndex){
+        Log.e("ylq","startIndex:"+startIndex +" endIndex"+endIndex);
+        List<Vector3> vecList = new ArrayList<>();
+        vecList.addAll(mPathVector3.subList(startIndex,endIndex));
+        List<List<Vector3>> myRenderPath = new ArrayList<>();
+        myRenderPath.add(vecList);
+        mNaviPathDataProvider.initPath(myRenderPath);
     }
 
     @Override
@@ -238,6 +258,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         if (mIsPathInited && naviInfo != null) {
             //0.calc and save useful data.
             mCurIndexInPath = getIndexInPath(naviInfo.getCurPoint(), naviInfo.getCurStep());
+            mDynamicLoader.updateCurPoint(mCurIndexInPath);
             //1.Calculate the distance of maneuver point and get road class.
             int distanceOfMP = naviInfo.getCurStepRetainDistance();
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
