@@ -39,12 +39,9 @@ import static org.rajawali3d.util.RajLog.TAG;
 /**
  * Created by wangshengxing on 16/9/22.
  */
-public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayRoadRender{
-
-    private static final boolean IS_DEBUG_MODE          = true;
-    private static final boolean IS_DRAW_RFERENCE_LINT  = true;
-    public static        boolean IS_SINGLETON           = true;
-    private static final boolean IS_ROAD_FOG            = false;
+public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRender,ISceneController {
+    private static boolean IS_DEBUG_MODE = true;
+    public static  boolean IS_SINGLETON  = true;
 
     private ARWayRoadBuffredObject mIndicationLine  = null;
     private Plane                  mIndicationArrow = null;
@@ -576,7 +573,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     fogStart = new Vector3(0,0,0);
                     fogEng = new Vector3(0.01,0,0);
                 }
-                boolean isFog = IS_ROAD_FOG;
+                boolean isFog = mOptions.isRoadFog;
                 roadLayers.road.setFogEnable(isFog);
                 roadLayers.bottom.setFogEnable(isFog);
                 roadLayers.road.updateBufferedRoad(road,offset);
@@ -738,7 +735,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return result;
     }
 
-    @Override
     public void onRender(long ellapsedRealtime, double deltaTime) {
 //        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
     }

@@ -191,6 +191,8 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
                 // TODO: 2016/11/2
                 roadFog.assign(roadFog.multiply(roadFog).multiply(roadFog));
                 roadFog.assign(mvFog);
+
+
             }
             endif();
 

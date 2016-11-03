@@ -208,6 +208,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         if (path == null || path.size() <=1) {
             return null;
         }
+        boolean isFog = false;
         mColor = color;
         int lineCount = path.size()-1;
         if(IS_LOG_OUT) {
@@ -230,17 +231,21 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         generateCoords(lineCount,coords);
 
 //        generateNormals(lineCount,normals);
-//        generateNormalsAlpha(path,lineCount,normals);
+        if(isFog){
+            generateNormalsAlpha(path,lineCount,normals);
+        }
 //        generateColors(lineCount,colors);
 
         GeometryData element = new GeometryData();
         element.setUseTextureCoords(true);
         element.setUseColors(false);
-        element.setUseNormals(false);
+        element.setUseNormals(isFog);
         element.vertices = vertexs;
         element.textureCoords = coords;
         element.indices = indices;
-        element.normals = normals;
+        if(isFog){
+            element.normals = normals;
+        }
         /*element.colors = colors;*/
 
         return element;
