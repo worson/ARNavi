@@ -225,9 +225,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         Log.e("ylq","startIndex:"+startIndex +" endIndex"+endIndex);
         List<Vector3> vecList = new ArrayList<>();
         vecList.addAll(mPathVector3.subList(startIndex,endIndex));
-        List<List<Vector3>> myRenderPath = new ArrayList<>();
-        myRenderPath.add(vecList);
-        mNaviPathDataProvider.initPath(myRenderPath);
+//        List<List<Vector3>> myRenderPath = new ArrayList<>();
+//        myRenderPath.add(vecList);
+        mNaviPathDataProvider.updatePath(vecList);
     }
 
     @Override

@@ -298,8 +298,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             return -1;
         }
         mNaviRoadList.remove(index);
-        mIsNaviRoadDirty = true;
-        commitRender();
+        /*mIsNaviRoadDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -308,8 +308,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             return -1;
         }
         mCrossRoadList.remove(index);
-        mIsCrossRoadDirty = true;
-        commitRender();
+        /*mIsCrossRoadDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -318,8 +318,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             return -1;
         }
         mFloorObjectLayerList.remove(index);
-        mIsFloorDirty = true;
-        commitRender();
+        /*mIsFloorDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -381,7 +381,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s", path.size()));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
@@ -607,16 +607,22 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public void commitRender() {
+        String tag = "updater";
         if(IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("commitRender called"));
         }
         if (mIsNaviRoadDirty){
             mIsNaviRoadDirty = false;
+
+            mNaviRoadBottom.clearChildren();
+            mNaviRoad.clearChildren();
+            mNaviRoadTop.clearChildren();
+            mNaviRoadRefLine.clearChildren();
             if(mNaviRoadList.size()>0){
-                mNaviRoadBottom.clearChildren();
-                mNaviRoad.clearChildren();
-                mNaviRoadTop.clearChildren();
-                mNaviRoadRefLine.clearChildren();
+                mNaviRoadBottom.setPosition(0,0,0);
+                mNaviRoad.setPosition(0,0,0);
+                mNaviRoadTop.setPosition(0,0,0);
+                mNaviRoadRefLine.setPosition(0,0,0);
 
                 for(RoadLayers roadLayers:mNaviRoadList) {
                     roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
@@ -630,15 +636,16 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                     mNaviRoadRefLine.addChild(roadLayers.refLine);
                 }
             }
+            HaloLogger.logE(tag,String.format(" child size %s,scene %s,parent %s ",mNaviRoadBottom.getNumChildren(),mScene.getNumChildren(),mNaviRoadBottom.getParent()));
         }
         if (mIsCrossRoadDirty){
             mIsCrossRoadDirty = false;
+            mCrossRoadBottom.clearChildren();
+            mCrossRoad.clearChildren();
             if(mCrossRoadList.size()>0){
                 Vector3 offset = new Vector3(0);
                 mCrossRoadBottom.setPosition(offset);
                 mCrossRoad.setPosition(offset);
-                mCrossRoadBottom.clearChildren();
-                mCrossRoad.clearChildren();
                 for ( List<RoadLayers> roadNet:mCrossRoadList) {
                     for(RoadLayers roadLayers:roadNet) {
                         roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
@@ -650,9 +657,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             }
         }
         if (mIsFloorDirty){
-            mIsFloorDirty = true;
+            mIsFloorDirty = false;
+            mGridfloorLayer.setPosition(0,0,0);
+            mGridfloorLayer.clearChildren();
             if(mFloorObjectLayerList.size()>0){
-                mGridfloorLayer.clearChildren();
                 for(ObjectLayer layer:mFloorObjectLayerList){
                     mGridfloorLayer.addChild(layer.object);
                 }
