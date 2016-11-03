@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
-import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
@@ -35,10 +34,7 @@ import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.textures.ATexture;
-import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.TextureView;
@@ -48,8 +44,6 @@ import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import static android.R.attr.y;
 
 /**
  * author       : 龙;
@@ -136,6 +130,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         getCurrentScene().setBackgroundColor(0,0,0,0);
         setFrameRate(FRAME_RATE);
         mSceneUpdater = ArwaySceneUpdater.getInstance();
+        mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
@@ -228,6 +223,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
              //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
         }
+        mSceneUpdater.onRender(ellapsedRealtime,deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
 
         if (ARWayConst.ENABLE_PERFORM_TEST) {
@@ -376,6 +372,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.add(mRenderPath);
         HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
+        mSceneUpdater.removeRoadNet();
         mSceneUpdater.renderRoadNet(branchLinesList);
         //// TODO: 16/10/27
         mSceneUpdater.commitRender();
@@ -383,6 +380,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void addNaviPath2Scene() {
+        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        mSceneUpdater.removeNaviPath();
         mSceneUpdater.renderNaviPath(mRenderPath);
         mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
         mSceneUpdater.commitRender();

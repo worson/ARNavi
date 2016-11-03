@@ -165,7 +165,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.arway_opengl_layout);
         ImageView maskView = (ImageView)mLayout.findViewById(R.id.arway_mask_imageview);
-        maskView.setBackgroundResource(R.drawable.arway_mask1);
+//        maskView.setBackgroundResource(R.drawable.arway_mask1);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
             ViewGroup vg = (ViewGroup)mainARWayView.getParent();

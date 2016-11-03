@@ -16,6 +16,52 @@ public class TDrawText {
     public final static Paint pt = new Paint();
     public static int[] buffer = null;
 
+    public synchronized static Bitmap drawBitmapText(String mstr, int iFontSize, int iFontStyle, int[] iParam, int txtrgb,
+                                              int srgb, int colorbg, int iHaloWidth) {
+        if(DEBUG) {
+            TNLogUtil.d("drawText mstr:" + mstr + " iFontSize:" + iFontSize + " iFontStyle:" + iFontStyle + " txtrgb:" + txtrgb + " srgb:" + srgb + " colorbg:" + colorbg + " iHaloWidth:" + iHaloWidth);
+        }
+        int iWordHeight = 0;
+        int iWordWidth = 0;
+        pt.reset();
+        pt.setSubpixelText(true);
+        pt.setAntiAlias(true);
+        pt.setTextSize(iFontSize);
+        // 设置为无衬线体
+        pt.setTypeface(Typeface.SANS_SERIF);
+
+        // 单行
+        FontMetrics fm = pt.getFontMetrics();
+        iWordWidth = (int) pt.measureText(mstr);
+        iWordHeight = (int) Math.ceil(fm.descent - fm.ascent);
+        iParam[0] = iWordWidth;
+        iParam[1] = iWordHeight;
+        iParam[2] = iWordWidth;
+        iParam[3] = iWordHeight;
+
+        Canvas canvas = GLBitmapUtil.lockCanvas(iWordWidth, iWordHeight);
+        if (iHaloWidth != 0) {
+            pt.setStrokeWidth(iHaloWidth);
+            // 尽量减少描边交接处像素
+            pt.setStrokeCap(Paint.Cap.BUTT);
+            pt.setStrokeJoin(Paint.Join.BEVEL);
+            pt.setStyle(Paint.Style.STROKE);
+            pt.setColor(srgb);
+            // 设置透明度为90
+            pt.setAlpha(230);
+            canvas.drawText(mstr, 0, 0 - fm.ascent, pt); //注意Drawtext的第二个参数为基准线(baseline),
+        }
+        pt.setStrokeCap(Paint.Cap.ROUND);
+        pt.setStrokeJoin(Paint.Join.ROUND);
+        pt.setStyle(Paint.Style.FILL);
+        pt.setColor(txtrgb);
+        pt.setAlpha(255);
+        canvas.drawText(mstr, 0, 0 - fm.ascent, pt);
+        Bitmap bmp = GLBitmapUtil.getLockedBitmap();
+//        GLBitmapUtil.unlockCanvas();
+        return bmp;
+    }
+
     public synchronized static int[] drawText(String mstr, int iFontSize, int iFontStyle, int[] iParam, int txtrgb,
                                               int srgb, int colorbg, int iHaloWidth) {
         if(DEBUG) {
