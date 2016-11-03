@@ -527,7 +527,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathUpdate() {
-
+        Vector3 curObjPos = new Vector3(0,0,0);
+        if(mIsMyInitScene){
+            curObjPos.setAll(mObject4Chase.getPosition());
+        }
+        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y).get(0);
+        if (mRenderPath != null && mRenderPath.size() >= 2) {
+            addNaviPath2Scene();
+        }
     }
 
     @Override
