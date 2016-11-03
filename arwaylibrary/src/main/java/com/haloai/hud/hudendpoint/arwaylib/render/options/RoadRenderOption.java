@@ -8,6 +8,8 @@ import android.graphics.Color;
 public class RoadRenderOption {
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
+
+    public boolean isRoadFog = false;
     //render configuration
     public float mRoadLevel         = 20;
 

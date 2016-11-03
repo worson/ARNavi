@@ -18,8 +18,8 @@ import java.util.List;
 public class DynamicLoader implements IDynamicLoader {
 
 
-    static final private int DEFAULTLOADDISTANCE = 1000;// 默认一次加载的道路的道路长度单位：米
-    static final private int DEFAULTDANGERDISTANCE = 100;// 默认的预留距离
+    static final private int DEFAULTLOADDISTANCE = 2000;// 默认一次加载的道路的道路长度单位：米
+    static final private int DEFAULTDANGERDISTANCE = 200;// 默认的预留距离
     private IDynamicLoader.IDynamicLoadNotifer mDynamicLoadNotifer;
 
     private List<NaviLatLng> mCoordList = new ArrayList<>();
@@ -74,7 +74,7 @@ public class DynamicLoader implements IDynamicLoader {
                     updateIndex = i+1;
                 }
                 if (distance >= realLOAD_DISTANCE&&updateIndex!=0){
-                    if (i+1 > updateIndex&&AMapUtils.calculateLineDistance(lat1,new LatLng(mCoordList.get(updateIndex).getLatitude(),mCoordList.get(updateIndex).getLongitude()))>=DEFAULTLOADDISTANCE*2/5){
+                    if (i+1 > updateIndex&&AMapUtils.calculateLineDistance(lat1,new LatLng(mCoordList.get(updateIndex).getLatitude(),mCoordList.get(updateIndex).getLongitude()))>=DEFAULTLOADDISTANCE/2-realDANGER_DISTANCE){
                         curEndIndex =i+1;
                         break;
                     }

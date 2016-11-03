@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 
 import org.rajawali3d.math.vector.Vector3;
 
@@ -23,6 +24,12 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     private int                       mCurFactor;
     private double                    mCurOffsetX;
     private double                    mCurOffsetY;
+
+    //float left,float top,float right,float bottom,float spacing,float widthrate
+    private double mLeftborder;
+    private double mRightborder;
+    private double mTopborder;
+    private double mBottomborder;
 
     @Override
     public void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier) {
@@ -66,6 +73,8 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
 
     @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
+
+        double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 8;
         //假设curPoint为15级时的数据,现在拉取的是18级的数据
         IRenderStrategy.DataLevel lastLevel = mCurDataLevel;
         //factor_last_new =getFactorByLevel(lastLevel)/getFactorByLevel(level)
@@ -81,8 +90,30 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
         List<List<Vector3>> renderElseLevel = new ArrayList<>();
         for (List<Vector3> path : mRenderPath) {
             List<Vector3> _path = new ArrayList<>();
+            boolean isFirst = true;
             for (Vector3 v : path) {
-                _path.add(new Vector3(v.x / mCurFactor - mCurOffsetX, v.y / mCurFactor - mCurOffsetY, v.z / mCurFactor));
+                Vector3 vec = new Vector3(v.x / mCurFactor - mCurOffsetX, v.y / mCurFactor - mCurOffsetY, v.z / mCurFactor);
+                _path.add(vec);
+                if (isFirst){
+                    mLeftborder = v.x - add_Width;
+                    mRightborder = v.x + add_Width;
+                    mTopborder = v.y + add_Width;
+                    mBottomborder = v.y - add_Width;
+                    isFirst = false;
+                }else {
+                    if (v.x - add_Width < mLeftborder){
+                        mLeftborder = v.x - add_Width;
+                    }
+                    if (v.x + add_Width > mRightborder){
+                        mRightborder = v.x + add_Width;
+                    }
+                    if (v.y - add_Width < mBottomborder){
+                        mBottomborder = v.y - add_Width;
+                    }
+                    if (v.y + add_Width > mTopborder){
+                        mTopborder = v.y + add_Width;
+                    }
+                }
             }
             renderElseLevel.add(_path);
         }
@@ -142,4 +173,16 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     public double getCurOffsetY() {
         return mCurOffsetY;
     }
+
+    @Override
+    public double getLeftborder(){return mLeftborder;}
+
+    @Override
+    public double getRightborder(){return mRightborder;}
+
+    @Override
+    public double getTopborder(){return mTopborder;}
+
+    @Override
+    public double getBottomborder(){return  mBottomborder;}
 }

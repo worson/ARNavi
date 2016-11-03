@@ -39,12 +39,9 @@ import static org.rajawali3d.util.RajLog.TAG;
 /**
  * Created by wangshengxing on 16/9/22.
  */
-public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayRoadRender{
-
-    private static final boolean IS_DEBUG_MODE          = true;
-    private static final boolean IS_DRAW_RFERENCE_LINT  = true;
-    public static        boolean IS_SINGLETON           = true;
-    private static final boolean IS_ROAD_FOG            = false;
+public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRender,ISceneController {
+    private static boolean IS_DEBUG_MODE = true;
+    public static  boolean IS_SINGLETON  = true;
 
     private ARWayRoadBuffredObject mIndicationLine  = null;
     private Plane                  mIndicationArrow = null;
@@ -301,8 +298,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             return -1;
         }
         mNaviRoadList.remove(index);
-        mIsNaviRoadDirty = true;
-        commitRender();
+        /*mIsNaviRoadDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -311,8 +308,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             return -1;
         }
         mCrossRoadList.remove(index);
-        mIsCrossRoadDirty = true;
-        commitRender();
+        /*mIsCrossRoadDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -321,8 +318,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             return -1;
         }
         mFloorObjectLayerList.remove(index);
-        mIsFloorDirty = true;
-        commitRender();
+        /*mIsFloorDirty = true;
+        commitRender();*/
         return 0;
     }
 
@@ -384,7 +381,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s", path.size()));
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         }
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.start();
@@ -576,7 +573,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     fogStart = new Vector3(0,0,0);
                     fogEng = new Vector3(0.01,0,0);
                 }
-                boolean isFog = IS_ROAD_FOG;
+                boolean isFog = mOptions.isRoadFog;
                 roadLayers.road.setFogEnable(isFog);
                 roadLayers.bottom.setFogEnable(isFog);
                 roadLayers.road.updateBufferedRoad(road,offset);
@@ -610,16 +607,22 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     @Override
     public void commitRender() {
+        String tag = "updater";
         if(IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("commitRender called"));
         }
         if (mIsNaviRoadDirty){
             mIsNaviRoadDirty = false;
+
+            mNaviRoadBottom.clearChildren();
+            mNaviRoad.clearChildren();
+            mNaviRoadTop.clearChildren();
+            mNaviRoadRefLine.clearChildren();
             if(mNaviRoadList.size()>0){
-                mNaviRoadBottom.clearChildren();
-                mNaviRoad.clearChildren();
-                mNaviRoadTop.clearChildren();
-                mNaviRoadRefLine.clearChildren();
+                mNaviRoadBottom.setPosition(0,0,0);
+                mNaviRoad.setPosition(0,0,0);
+                mNaviRoadTop.setPosition(0,0,0);
+                mNaviRoadRefLine.setPosition(0,0,0);
 
                 for(RoadLayers roadLayers:mNaviRoadList) {
                     roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
@@ -633,15 +636,16 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                     mNaviRoadRefLine.addChild(roadLayers.refLine);
                 }
             }
+            HaloLogger.logE(tag,String.format(" child size %s,scene %s,parent %s ",mNaviRoadBottom.getNumChildren(),mScene.getNumChildren(),mNaviRoadBottom.getParent()));
         }
         if (mIsCrossRoadDirty){
             mIsCrossRoadDirty = false;
+            mCrossRoadBottom.clearChildren();
+            mCrossRoad.clearChildren();
             if(mCrossRoadList.size()>0){
                 Vector3 offset = new Vector3(0);
                 mCrossRoadBottom.setPosition(offset);
                 mCrossRoad.setPosition(offset);
-                mCrossRoadBottom.clearChildren();
-                mCrossRoad.clearChildren();
                 for ( List<RoadLayers> roadNet:mCrossRoadList) {
                     for(RoadLayers roadLayers:roadNet) {
                         roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
@@ -653,9 +657,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
             }
         }
         if (mIsFloorDirty){
-            mIsFloorDirty = true;
+            mIsFloorDirty = false;
+            mGridfloorLayer.setPosition(0,0,0);
+            mGridfloorLayer.clearChildren();
             if(mFloorObjectLayerList.size()>0){
-                mGridfloorLayer.clearChildren();
                 for(ObjectLayer layer:mFloorObjectLayerList){
                     mGridfloorLayer.addChild(layer.object);
                 }
@@ -738,7 +743,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return result;
     }
 
-    @Override
     public void onRender(long ellapsedRealtime, double deltaTime) {
 //        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
     }

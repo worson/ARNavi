@@ -316,8 +316,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         
-        mSceneUpdater.reset();
-
         if (mObject4Chase == null) {
             mObject4Chase = mSceneUpdater.getCarObject();
         }
@@ -360,7 +358,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCameraModel.setBottomDistanceProportion(0.0f);
         */
         addRoadNet2Scene();
-        addNaviPath2Scene();
+        initNaviPath2Scene();
 
         //update flag
         mIsMyInitScene = true;
@@ -371,18 +369,26 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.add(mRenderPath);
         HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
-        mSceneUpdater.removeRoadNet();
         mSceneUpdater.renderRoadNet(branchLinesList);
+        mSceneUpdater.removeRoadNet();
         //// TODO: 16/10/27
         mSceneUpdater.commitRender();
 
     }
 
+    private void initNaviPath2Scene() {
+        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
+        mSceneUpdater.commitRender();
+    }
+
     private void addNaviPath2Scene() {
         //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
-        mSceneUpdater.removeNaviPath();
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
+        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
+        mSceneUpdater.removeFloor();
+        mSceneUpdater.removeNaviPath();
         mSceneUpdater.commitRender();
     }
 
