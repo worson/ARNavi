@@ -383,18 +383,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.commitRender();
     }
 
-    int mAddPathCnt = 0 ;
     private void addNaviPath2Scene() {
         //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
-        String tag = "addPath";
-        HaloLogger.logE(tag,tag+" start  "+mAddPathCnt++);
-        for (int i = 0; i < mRenderPath.size(); i++) {
-            Vector3 p = mRenderPath.get(i);
-            HaloLogger.logE(tag,String.format("%s , %s ",p.x,p.y));
-        }
-        HaloLogger.logE(tag,tag+" end");
         mSceneUpdater.renderNaviPath(mRenderPath);
-//        mSceneUpdater.removeNaviPath();
+        mSceneUpdater.removeNaviPath();
         mSceneUpdater.commitRender();
     }
 
