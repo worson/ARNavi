@@ -18,8 +18,8 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
-import com.haloai.hud.hudendpoint.arwaylib.render.refresher.IRefreshDataLevelNotifer;
-import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsRefresher;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -54,7 +54,7 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier,IRefreshDataLevelNotifer {
+public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier,RenderParamsInterpolatorListener {
     //content
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
@@ -96,7 +96,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private float       mCameraPerspectiveAngel = 70;
 
 
-    private RenderParamsRefresher mParamsRefresher = new RenderParamsRefresher();
+    private RenderParamsInterpolator mParamsRefresher = new RenderParamsInterpolator();
 
 
     //time recorder
@@ -305,7 +305,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void initDefaultRenderParams(IRenderStrategy.RenderParams params){
 
         mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale);
-        mParamsRefresher.setIRefeshDataLevelNotifer(this);
+        mParamsRefresher.setRenderParamsInterpolatorListener(this);
     }
 
 
