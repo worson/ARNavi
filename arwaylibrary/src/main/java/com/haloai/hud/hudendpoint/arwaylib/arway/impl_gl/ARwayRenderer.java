@@ -359,7 +359,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
         */
-        mSceneUpdater.clearSceneObjects();
         addRoadNet2Scene();
         addNaviPath2Scene();
 
@@ -670,7 +669,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     restartAnimator(mHideAnimator);
                     break;
                 case SCENE_RENDER_APLLY_ID:
-                    mSceneUpdater.clearSceneObjects();
                     mSceneUpdater.commitRender();
                     break;
                 default:

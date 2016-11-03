@@ -656,6 +656,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         ARWayController.ARWayStatusUpdater.resetData();
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
 
+//        ARWayController.NaviInfoBeanUpdate.reset();
+//        ARWayController.RouteBeanUpdater.reset();
+//        ARWayController.CommonBeanUpdater.reset();
+//        ARWayController.SpeedBeanUpdater.reset();
+
         resetNaviStatus();
 
         onNavingStopView();

@@ -151,7 +151,23 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
     }
 
     public void reset() {
+        mNaviRoadList.clear();
+        mCrossRoadList.clear();
+        mFloorObjectLayerList.clear();
+
+        mNaviGuideLineLayer.clearChildren();
+
+        mIndicationLine = null;
+        mIndicationArrow = null;
+
+        mIsNaviRoadDirty  = true;
+        mIsCrossRoadDirty = true;
+        mIsFloorDirty     = true;
+        mIsGuideLineDirty = true;
+
         reloadAllLayer();
+
+        commitRender();
     }
 
     @Override
@@ -480,7 +496,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
 
     }
 
-    public void initCarObject(){
+    private void initCarObject(){
 
         Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
                 true,false,1,true);
@@ -523,14 +539,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
                 mNaviGuideLineLayer.addChild(mIndicationArrow);
             }
         }
-        mNaviGuideLineLayer.setPosition(offset);
-        mIndicationLine.setPosition(0,0,0);
+        mNaviGuideLineLayer.setPosition(0,0,0);
+        mIndicationLine.setPosition(offset);
         mIndicationLine.updateBufferedRoad(path,offset);
 
         Vector3 start = path.get(pathSize-2);
         Vector3 end = path.get(pathSize-1);
         float cDegree = (float) Math.toDegrees(Math.atan2((end.y-start.y),(end.x-start.x)));
-        mIndicationArrow.setPosition(Vector3.subtractAndCreate(end,offset));
+//        mIndicationArrow.setPosition(Vector3.subtractAndCreate(end,offset));
+        mIndicationArrow.setPosition(end);
         mIndicationArrow.setRotation(Vector3.Axis.Z,-(cDegree-90));
 
         return true;
@@ -680,7 +697,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
         return result;
     }
 
-    public void clearSceneObjects(){
+    private void clearSceneObjects(){
         mGridfloorLayer.clearChildren();
         clearRoadnetwork();
         clearNaviRoad();
@@ -695,7 +712,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      * 清除显示的路网
      * @return
      */
-    public boolean clearRoadnetwork(){
+    private boolean clearRoadnetwork(){
         boolean result = true;
         BaseObject3D[] layers = new BaseObject3D[]{mCrossRoadBottom,mCrossRoad};
         for(BaseObject3D layer:layers){
@@ -710,7 +727,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IARwayR
      * 清除显示的导航路
      * @return
      */
-    public boolean clearNaviRoad(){
+    private boolean clearNaviRoad(){
         boolean result = true;
         BaseObject3D[] layers = new BaseObject3D[]{mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine, mNaviGuideLineLayer};
         for(BaseObject3D layer:layers){

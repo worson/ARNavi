@@ -48,7 +48,9 @@ public class DynamicLoader implements IDynamicLoader {
         realDANGER_DISTANCE = (int)(DEFAULTDANGERDISTANCE* Math.pow(2.0,20 - dataLevel));
         curStartIndex = 0;
         updateIndex = 0;
+        curEndIndex = 0;
         lookForSuitableValues();
+        Log.e("ylq","updateOringinPath"+"size:"+mCoordList.size());
         return curEndIndex;
     }
 
@@ -68,7 +70,7 @@ public class DynamicLoader implements IDynamicLoader {
             LatLng lat1 = new LatLng(mCoordList.get(i+1).getLatitude(),mCoordList.get(i+1).getLongitude());
             distance += AMapUtils.calculateLineDistance(lat,lat1);
             if (i != mCoordList.size() - 2){
-                if (distance >= realLOAD_DISTANCE/2+realDANGER_DISTANCE&&updateIndex==0&&i+1>curEndIndex){
+                if (distance >= realLOAD_DISTANCE/2+realDANGER_DISTANCE&&updateIndex==0&&i+1>=curEndIndex){
                     updateIndex = i+1;
                 }
                 if (distance >= realLOAD_DISTANCE&&updateIndex!=0){
