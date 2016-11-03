@@ -230,13 +230,13 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         generateCoords(lineCount,coords);
 
 //        generateNormals(lineCount,normals);
-        generateNormalsAlpha(path,lineCount,normals);
+//        generateNormalsAlpha(path,lineCount,normals);
 //        generateColors(lineCount,colors);
 
         GeometryData element = new GeometryData();
         element.setUseTextureCoords(true);
         element.setUseColors(false);
-        element.setUseNormals(true);
+        element.setUseNormals(false);
         element.vertices = vertexs;
         element.textureCoords = coords;
         element.indices = indices;
@@ -289,7 +289,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
     }
 
     private static void print(String msg){
-        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,msg);
+//        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,msg);
 //        System.out.print(msg);
     }
 }
