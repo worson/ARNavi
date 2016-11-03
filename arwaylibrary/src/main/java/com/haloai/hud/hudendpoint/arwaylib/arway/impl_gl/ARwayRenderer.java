@@ -541,7 +541,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-        mSceneUpdater.renderGuideLine(guideLineUpdate);
+        if(mIsMyInitScene) {
+            mSceneUpdater.renderGuideLine(guideLineUpdate);
+        }
     }
 
     @Override

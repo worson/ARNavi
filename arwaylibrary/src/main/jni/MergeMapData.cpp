@@ -1488,7 +1488,7 @@ int MergeMapData::matchMainRoadCenterInNet3(const vector<HAMapPoint>& vecMainRoa
 		
 	// 获取屏幕边界上的主路起点、终点
 	HAMapPoint hamPrePt, hamNextPt;
-#if 1
+#if 0
 	nRet = getStartEndPoint(vecMainRoad, nCenterSi, rtScreen, hamPrePt, hamNextPt);
 	if (nRet<0)
 	{

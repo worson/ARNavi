@@ -290,6 +290,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mRenderPath.add(0, temp);
         mNaviPathDataProvider.initPath(mRenderPath);
 
+        //显示第一根蚯蚓线
+        processGuildLine(mStepPointIndexs.get(0));
+
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "initPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
         //processSteps(0,1,2)
@@ -348,11 +351,26 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     mLeftMeterLength = naviInfo.getPathRetainDistance();
                 }
             }*/
-            //3.Maybe Road Net is change
             if (naviInfo.getCurStep() > mCurRoadNetIndex) {
+                //3.Guide line change
+                processGuildLine(mStepPointIndexs.get(naviInfo.getCurStep()));
+                //4.Maybe Road Net is change
                 mCurRoadNetIndex = naviInfo.getCurStep();
                 //processSteps(mCurRoadNetIndex);
             }
+        }
+    }
+
+    private void processGuildLine(int curIndexInPath) {
+        List<LatLng> guildLine = mProportionMappingEngine.mappingGuide(curIndexInPath);
+        if(guildLine!=null){
+            List<Vector3> guildLineVector3 = new ArrayList<>();
+            for(LatLng latlng:guildLine) {
+                ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
+                Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
+                guildLineVector3.add(v);
+            }
+            mNaviPathDataProvider.setGuildLine(guildLineVector3);
         }
     }
 
@@ -403,112 +421,40 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
             List<List<LatLngOutSide>> links = new ArrayList<>();
             List<LatLngOutSide> link = new ArrayList<>();
-            double latlng_width = szCover.width * PIXEL_2_LATLNG;
-            double latlng_height = szCover.height * PIXEL_2_LATLNG;
-            LatLng centerLatLng = mPathLatLng.get(mStepPointIndexs.get(stepIndex));
-            LatLng[] point8 = new LatLng[8];
-            //上,右,下,左
-            point8[0] = new LatLng(centerLatLng.latitude - latlng_width / 2, centerLatLng.longitude - latlng_height / 2);
-            point8[1] = new LatLng(centerLatLng.latitude + latlng_width / 2, centerLatLng.longitude - latlng_height / 2);
-            point8[2] = new LatLng(centerLatLng.latitude + latlng_width / 2, centerLatLng.longitude - latlng_height / 2);
-            point8[3] = new LatLng(centerLatLng.latitude + latlng_width / 2, centerLatLng.longitude + latlng_height / 2);
-            point8[4] = new LatLng(centerLatLng.latitude + latlng_width / 2, centerLatLng.longitude + latlng_height / 2);
-            point8[5] = new LatLng(centerLatLng.latitude - latlng_width / 2, centerLatLng.longitude + latlng_height / 2);
-            point8[6] = new LatLng(centerLatLng.latitude - latlng_width / 2, centerLatLng.longitude + latlng_height / 2);
-            point8[7] = new LatLng(centerLatLng.latitude - latlng_width / 2, centerLatLng.longitude - latlng_height / 2);
-            link.add(new LatLngOutSide(centerLatLng.latitude, centerLatLng.longitude));
-            //breakStart:JNI部分数据返回后用于拼接抽析数据部分的开始下标
-            //breakEnd:结束下标
-            int breakStart = 0;
-            for (int i = mStepPointIndexs.get(stepIndex) - 1; i >= 0; i--) {
-                LatLng latlng = mPathLatLng.get(i);
-                double offsetLat = Math.abs(centerLatLng.latitude - latlng.latitude);
-                double offsetLng = Math.abs(centerLatLng.longitude - latlng.longitude);
-                if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
-                    if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
-                        link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
-                        breakStart = i <= 0 ? 0 : i - 1;
-                    } else {
-                        LatLng preLatLng = mPathLatLng.get(i + 1);
-                        for (int j = 0; j < point8.length; j += 2) {
-                            LatLng lineStart = point8[j];
-                            LatLng lineEnd = point8[j + 1];
-                            Vector3 result = new Vector3();
-                            int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
-                                                                new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
-                                                                new Vector3(lineStart.latitude, lineStart.longitude, 0),
-                                                                new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
-                                                                result);
-                            if (res == 1) {
-                                link.add(0, new LatLngOutSide(result.x, result.y));
-                                breakStart = i;
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                } else if (i == 0) {
-                    breakStart = 0;
-                    link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
-                    break;
-                } else {
-                    link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
-                }
-            }
-            int breakEnd = 0;
-            for (int i = mStepPointIndexs.get(stepIndex) + 1; i < mPathLatLng.size(); i++) {
-                LatLng latlng = mPathLatLng.get(i);
-                double offsetLat = Math.abs(centerLatLng.latitude - latlng.latitude);
-                double offsetLng = Math.abs(centerLatLng.longitude - latlng.longitude);
-                if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
-                    if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
-                        link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
-                        breakEnd = i >= mPathLatLng.size() - 1 ? mPathLatLng.size() - 1 : i + 1;
-                        HaloLogger.logE(TAG, "offset bigger than width or height,offsetLat == latlng_width/2");
-                    } else {
-                        LatLng preLatLng = mPathLatLng.get(i - 1);
-                        for (int j = 0; j < point8.length; j += 2) {
-                            LatLng lineStart = point8[j];
-                            LatLng lineEnd = point8[j + 1];
-                            Vector3 result = new Vector3();
-                            int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
-                                                                new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
-                                                                new Vector3(lineStart.latitude, lineStart.longitude, 0),
-                                                                new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
-                                                                result);
-                            if (res == 1) {
-                                link.add(new LatLngOutSide(result.x, result.y));
-                                breakEnd = i;
-                                break;
-                            }
-                        }
-                        HaloLogger.logE(TAG, "offset bigger than width or height,res == ???");
-                    }
-                    break;
-                } else if (i == mPathLatLng.size() - 1) {
-                    HaloLogger.logE(TAG, "offset bigger than width or height,i == mPathLatLng.size()-1");
-                    breakEnd = mPathLatLng.size() - 1;
-                    link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
-                    break;
-                } else {
-                    link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
-                }
-            }
+            LatLngOutSide centerLatLng = new LatLngOutSide();
+            int[] se = getPartPathFromCover(szCover,stepIndex,mPathLatLng,centerLatLng,link);
+            int breakStart = se[0];
+            int breakEnd = se[1];
             if (breakStart < mPreEndBreak) {
+                //1.合并两个step,问题是按照当前算法路线越长越复杂,越容易匹配到错误的道路
                 /*LatLng lastEnd = mPathLatLng.get(mPreEndBreak);
                 LatLng thisStart = mPathLatLng.get(breakStart);
                 szCover.width = (int) (szCover.width*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
                 szCover.height = (int) (szCover.height*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
                 HaloLogger.logE(TAG,"width="+szCover.width);
                 HaloLogger.logE(TAG,"height="+szCover.height);
+                //将扩充后的窗口中的点也添加到link中
+                for(int i=breakStart;i>=mPreStartBreak;i--){
+                    link.add(0,new LatLngOutSide(mPathLatLng.get(i).latitude,mPathLatLng.get(i).longitude));
+                }
                 breakStart = mPreStartBreak;
                 mPreEndBreak = breakEnd;*/
-                // TODO: 2016/11/1 暂时先跳过该路口不做处理,因为合并处理时得不到岔路
+                //2.暂时先跳过该路口不做处理,因为合并处理时得不到岔路,问题是可能会跳过多个路口,导致路口显示过少
                 continue;
-            }else{
+                //3.当覆盖时,缩小窗口,同时缩短Path到新窗口的边缘
+                /*LatLng lastEnd = mPathLatLng.get(mPreEndBreak);
+                LatLng thisStart = mPathLatLng.get(breakStart);
+                szCover.width = (int) (szCover.width-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
+                szCover.height = (int) (szCover.height-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
+                se = getPartPathFromCover(szCover,stepIndex,mPathLatLng,centerLatLng,link);
+                breakStart = se[0];
+                breakEnd = se[1];*/
+            }else {
                 mPreStartBreak = breakStart;
                 mPreEndBreak = breakEnd;
             }
+
+            HaloLogger.logE(TAG,"width="+szCover.width+",height="+szCover.height);
             if (breakEnd == 0) {
                 breakEnd = mPathLatLng.size() - 1;
             }
@@ -518,8 +464,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             List<LinkInfoOutside> linkInfos = new ArrayList<>();
 
             LatLngOutSide centerPoint = new LatLngOutSide();
-            centerPoint.lat = centerLatLng.latitude;
-            centerPoint.lng = centerLatLng.longitude;
+            centerPoint.lat = centerLatLng.lat;
+            centerPoint.lng = centerLatLng.lng;
 
             String filePath = "/sdcard/haloaimapdata_32.hmd";
 
@@ -551,11 +497,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     //此links代表的是岔路
                     mRenderPath.add(crossLinkVector3);
                 }
-                /*HaloLogger.logE(TAG, "crossLink cross start");
+                HaloLogger.logE(TAG, "crossLink cross start");
+                for (LatLngOutSide latlng : link) {
+                    HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+                }
+                HaloLogger.logE(TAG, "crossLink cross end");
+                HaloLogger.logE(TAG, "crossLink cross start");
                 for (LatLngOutSide latlng : mainRoad) {
                     HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
                 }
-                HaloLogger.logE(TAG, "crossLink cross end");*/
+                HaloLogger.logE(TAG, "crossLink cross end");
                 //2.2处理主路以及对主路部分进行抽析
                 List<LatLng> subPath = new ArrayList<>();
                 for (LatLngOutSide latlng : mainRoad) {
@@ -570,6 +521,113 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             }
         }
         HaloLogger.logE(TAG, "process steps end");
+    }
+
+    /**
+     * 根据覆盖区域大小,中心点角标,以及原Path求出该覆盖区域的部分Path
+     * 并填充到out中
+     * @param szCover
+     * @param stepIndex
+     * @param path
+     * @param centerLatLng
+     * @param link [out]
+     * @return
+     */
+    private int[] getPartPathFromCover(Size2iOutside szCover,int stepIndex,List<LatLng> path,LatLngOutSide centerLatLng,List<LatLngOutSide> link){
+        link.clear();
+        double latlng_width = szCover.width * PIXEL_2_LATLNG;
+        double latlng_height = szCover.height * PIXEL_2_LATLNG;
+        centerLatLng.lat = path.get(mStepPointIndexs.get(stepIndex)).latitude;
+        centerLatLng.lng = path.get(mStepPointIndexs.get(stepIndex)).longitude;
+        LatLng[] point8 = new LatLng[8];
+        //上,右,下,左
+        point8[0] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng - latlng_height / 2);
+        point8[1] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
+        point8[2] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
+        point8[3] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
+        point8[4] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
+        point8[5] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng + latlng_height / 2);
+        point8[6] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng + latlng_height / 2);
+        point8[7] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng - latlng_height / 2);
+        link.add(new LatLngOutSide(centerLatLng.lat, centerLatLng.lng));
+        //breakStart:JNI部分数据返回后用于拼接抽析数据部分的开始下标
+        //breakEnd:结束下标
+        int breakStart = 0;
+        for (int i = mStepPointIndexs.get(stepIndex) - 1; i >= 0; i--) {
+            LatLng latlng = path.get(i);
+            double offsetLat = Math.abs(centerLatLng.lat - latlng.latitude);
+            double offsetLng = Math.abs(centerLatLng.lng - latlng.longitude);
+            if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
+                if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
+                    link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+                    breakStart = i <= 0 ? 0 : i - 1;
+                } else {
+                    LatLng preLatLng = path.get(i + 1);
+                    for (int j = 0; j < point8.length; j += 2) {
+                        LatLng lineStart = point8[j];
+                        LatLng lineEnd = point8[j + 1];
+                        Vector3 result = new Vector3();
+                        int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
+                                                            new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
+                                                            new Vector3(lineStart.latitude, lineStart.longitude, 0),
+                                                            new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
+                                                            result);
+                        if (res == 1) {
+                            link.add(0, new LatLngOutSide(result.x, result.y));
+                            breakStart = i;
+                            break;
+                        }
+                    }
+                }
+                break;
+            } else if (i == 0) {
+                breakStart = 0;
+                link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+                break;
+            } else {
+                link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+            }
+        }
+        int breakEnd = 0;
+        for (int i = mStepPointIndexs.get(stepIndex) + 1; i < path.size(); i++) {
+            LatLng latlng = path.get(i);
+            double offsetLat = Math.abs(centerLatLng.lat - latlng.latitude);
+            double offsetLng = Math.abs(centerLatLng.lng - latlng.longitude);
+            if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
+                if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
+                    link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+                    breakEnd = i >= path.size() - 1 ? path.size() - 1 : i + 1;
+                    HaloLogger.logE(TAG, "offset bigger than width or height,offsetLat == latlng_width/2");
+                } else {
+                    LatLng preLatLng = path.get(i - 1);
+                    for (int j = 0; j < point8.length; j += 2) {
+                        LatLng lineStart = point8[j];
+                        LatLng lineEnd = point8[j + 1];
+                        Vector3 result = new Vector3();
+                        int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
+                                                            new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
+                                                            new Vector3(lineStart.latitude, lineStart.longitude, 0),
+                                                            new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
+                                                            result);
+                        if (res == 1) {
+                            link.add(new LatLngOutSide(result.x, result.y));
+                            breakEnd = i;
+                            break;
+                        }
+                    }
+                    HaloLogger.logE(TAG, "offset bigger than width or height,res == ???");
+                }
+                break;
+            } else if (i == path.size() - 1) {
+                HaloLogger.logE(TAG, "offset bigger than width or height,i == path.size()-1");
+                breakEnd = path.size() - 1;
+                link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+                break;
+            } else {
+                link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+            }
+        }
+        return new int[]{breakStart,breakEnd};
     }
 
     /**

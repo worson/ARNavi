@@ -65,6 +65,13 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
+    public void setGuildLine(List<Vector3> guildLine) {
+        if(mNaviPathChangeNotifier!=null){
+            mNaviPathChangeNotifier.onGuideLineUpdate(guildLine);
+        }
+    }
+
+    @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
         //假设curPoint为15级时的数据,现在拉取的是18级的数据
         IRenderStrategy.DataLevel lastLevel = mCurDataLevel;
