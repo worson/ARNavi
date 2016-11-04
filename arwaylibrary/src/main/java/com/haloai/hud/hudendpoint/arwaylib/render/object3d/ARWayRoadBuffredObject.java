@@ -384,7 +384,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 p2.x = point.x+ Math.cos(direction)*(-height/2);
                 p2.y = point.y+ Math.sin(direction)*(-height/2);
 
-                MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width);
+                MathUtils.expandPath(p1.x,p1.y,p2.x,p2.y,leftDown,leftUp,rightDown,rightUp,width/2);
 
                 int vIndex = rectCnt * 4 * 3;
                 //左上

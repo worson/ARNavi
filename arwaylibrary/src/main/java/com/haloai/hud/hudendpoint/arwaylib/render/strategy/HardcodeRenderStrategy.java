@@ -65,9 +65,9 @@ public class HardcodeRenderStrategy extends RenderStrategy {
 
 
         if (mpDistance >150) {
-            if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 3.8) {
+            if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 3.9) {
                 currentDataLevel = DataLevel.LEVEL_20;
-                currentGLScale = 3.8;
+                currentGLScale = 3.9;
                 renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
             }
             if (currentGLCameraAngle != 45.0) {
@@ -100,8 +100,8 @@ public class HardcodeRenderStrategy extends RenderStrategy {
                 currentGLScale = 1.5;
                 //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.SCALE_TYPE, 3.0);
             }
-            if (currentGLCameraAngle != 90.0- Math.toDegrees(Math.atan(3.8/7.46))-22.5) {
-                currentGLCameraAngle = 90.0- Math.toDegrees(Math.atan(3.8/7.46))-22.5;
+            if (currentGLCameraAngle != 90.0- Math.toDegrees(Math.atan(4.0/7.46))-22.5) {
+                currentGLCameraAngle = 90.0- Math.toDegrees(Math.atan(4.0/7.46))-22.5;
                 //renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.ANGLE_TYPE, 2.0);
             }
             if (currentGLInScreenProportion != 0.25) {

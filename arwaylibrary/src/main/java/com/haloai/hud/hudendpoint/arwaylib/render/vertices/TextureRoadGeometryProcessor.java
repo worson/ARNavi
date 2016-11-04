@@ -11,6 +11,10 @@ import org.rajawali3d.math.vector.Vector3;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.R.attr.x;
+import static com.loc.e.j;
+import static org.rajawali3d.math.vector.Vector3.distanceTo;
+
 /**
  * Created by wangshengxing on 16/10/10.
  */
@@ -129,6 +133,51 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         }
     }
 
+    private static void generateNormalsAlpha(List<Vector3> path, int lineCount, float[] normals) {
+        if (lineCount<=0 || normals == null ){
+            return;
+        }
+        lineCount +=1;
+        float[] alphas = new float[lineCount];
+        double distSum = 0;
+        for (int i = 0; i < lineCount-1; i++) {
+            Vector3 p0 = path.get(i);
+            Vector3 p1 = path.get(i+1);
+            double dist =  Vector3.distanceTo(p0,p1);
+            alphas[i] = (float)distSum;
+            distSum += dist;
+        }
+        alphas[alphas.length-1] = (float)distSum;
+        int index = 0;
+        print("start");
+        for (int i = 0; i <lineCount-1 ; i++) {
+            float a0 = 1-(float) ((alphas[i])/distSum);
+            float a1 = 1-(float) ((alphas[i+1])/distSum);
+//            a0 = (float) Math.sqrt((1-Math.pow(1-a0,2)));
+//            a1 = (float) Math.sqrt((1-Math.pow(1-a1,2)));
+//            print("a="+a0);
+            for (int j = 0; j < VERTICES_PER_LINE-4; j++) {
+                normals[index++] = a0;
+                normals[index++] = a0;
+                normals[index++] = a0;
+            }
+            for (int j = 4; j < VERTICES_PER_LINE; j++) {
+                normals[index++] = a1;
+                normals[index++] = a1;
+                normals[index++] = a1;
+            }
+        }
+        /*for (int j = 0; j < VERTICES_PER_LINE-4; j++) {
+            normals[index++] = 0;
+            normals[index++] = 0;
+            normals[index++] = 0;
+        }*/
+        for (int i = 0; i < normals.length; i++) {
+            print("i="+i+" a="+normals[i]);
+        }
+        print("end");
+    }
+
     public static void generateNormals(int lineCount,float[] normals){
         int index = 0;
         final int cnt = lineCount*VERTICES_PER_LINE;
@@ -159,6 +208,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         if (path == null || path.size() <=1) {
             return null;
         }
+        boolean isFog = true;
         mColor = color;
         int lineCount = path.size()-1;
         if(IS_LOG_OUT) {
@@ -173,7 +223,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         float[] coords = new float[(lineCount*VERTICES_PER_LINE)*2];
         int[] indices = new int[(lineCount*TRIANGLE_PER_LINE-removeVertices)*3];
 
-//        float[] normals = new float[(lineCount)*VERTICES_PER_LINE*3];
+        float[] normals = new float[(lineCount)*VERTICES_PER_LINE*3];
 //        float[] colors = new float[(lineCount)*VERTICES_PER_LINE * NUMBER_OF_COLOR];
 
         generateVertices(path,offset,vertexs,width);
@@ -181,20 +231,27 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         generateCoords(lineCount,coords);
 
 //        generateNormals(lineCount,normals);
+        if(isFog){
+            generateNormalsAlpha(path,lineCount,normals);
+        }
 //        generateColors(lineCount,colors);
 
         GeometryData element = new GeometryData();
         element.setUseTextureCoords(true);
         element.setUseColors(false);
-        element.setUseNormals(false);
+        element.setUseNormals(isFog);
         element.vertices = vertexs;
         element.textureCoords = coords;
         element.indices = indices;
-        /*element.normals = normals;
-        element.colors = colors;*/
+        if(isFog){
+            element.normals = normals;
+        }
+        /*element.colors = colors;*/
 
         return element;
     }
+
+
 
     public static void main(String[] args) {
 
@@ -238,6 +295,6 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
 
     private static void print(String msg){
 //        HaloLogger.logE(ARWayConst.SPECIAL_LOG_TAG,msg);
-        System.out.print(msg);
+//        System.out.print(msg);
     }
 }

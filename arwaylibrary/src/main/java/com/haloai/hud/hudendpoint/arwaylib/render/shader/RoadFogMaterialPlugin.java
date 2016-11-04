@@ -58,8 +58,10 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         public final static String SHADER_ID = "ROAD_FOG_VERTEX";
 
         private final String V_FOG_POSITION = "vFogPosition";
+        private final String V_FOG = "vFog";
 
         private RVec3 mvFogPosition;
+        private RFloat mvFog;
 
         private RVec3 mgPosition;
 
@@ -74,10 +76,12 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         {
             super.initialize();
             mvFogPosition = (RVec3) addVarying(V_FOG_POSITION, DataType.VEC3);
+            mvFog = (RFloat) addVarying(V_FOG, DataType.FLOAT);
 
         }
         @Override
         public void main() {
+            mvFog.assign(new RVec3("aNormal").x());
             mgPosition = (RVec4) addGlobal(DefaultShaderVar.G_POSITION);
             mvFogPosition.assign(mgPosition.xyz());
         }
@@ -117,6 +121,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         private final String U_BACKGROUND   = "uBackground";
         private final String U_IS_FOG   = "uIsFog";
 
+        private final String V_FOG = "vFog";
         private final String V_FOG_POSITION = "vFogPosition";
 
         private RVec3  muStartPosition;
@@ -124,6 +129,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
         private RVec3  muBackGround;
         private RBool  muIsFog;
 
+        private RFloat mvFog;
         private RVec3 mvFogPosition;
 
         private RVec4 mgBackground;
@@ -160,6 +166,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
             muIsFog = (RBool) addUniform(U_IS_FOG, DataType.BOOL);
 
             mvFogPosition = (RVec3) addVarying(V_FOG_POSITION, DataType.VEC3);
+            mvFog = (RFloat) addVarying(V_FOG, DataType.FLOAT);
 
             mgBackground = (RVec4) addGlobal("mgBackground",DataType.VEC4);
         }
@@ -181,15 +188,17 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
             startif(new Condition(muIsFog,Operator.EQUALS,true));{
                 roadFog.assign(distance(mvFogPosition.xyz(),muEndPosition).divide(distance(muEndPosition,muStartPosition)));
                 roadFog.assign(clamp(roadFog,0,1));
+                // TODO: 2016/11/2
                 roadFog.assign(roadFog.multiply(roadFog).multiply(roadFog));
+                roadFog.assign(mvFog);
+
+                coordFog.assign(new RFloat("1.0").subtract(distance(mvFogPosition.xyz(),new RVec4("vec3(0,0,0)"))));
+                fogFactor.assign(roadFog);
+
+                gColor.assignMultiply(fogFactor);//rgb().
+
             }
             endif();
-
-
-            coordFog.assign(new RFloat("1.0").subtract(distance(mvFogPosition.xyz(),new RVec4("vec3(0,0,0)"))));
-            fogFactor.assign(roadFog);
-
-            gColor.rgb().assignMultiply(fogFactor);
 
 //            mgBackground.rgb().assign(muBackGround);
 //

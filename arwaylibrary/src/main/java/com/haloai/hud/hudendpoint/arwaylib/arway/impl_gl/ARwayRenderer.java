@@ -317,8 +317,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
         
-        mSceneUpdater.reset();
-
         if (mObject4Chase == null) {
             mObject4Chase = mSceneUpdater.getCarObject();
         }
@@ -360,9 +358,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
         */
-        mSceneUpdater.clearSceneObjects();
         addRoadNet2Scene();
-        addNaviPath2Scene();
+        initNaviPath2Scene();
 
         //update flag
         mIsMyInitScene = true;
@@ -373,15 +370,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
+        mSceneUpdater.removeRoadNet();
         //// TODO: 16/10/27
         mSceneUpdater.commitRender();
 
     }
 
-    private void addNaviPath2Scene() {
-        mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+    private void initNaviPath2Scene() {
+        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
         mSceneUpdater.renderFloor(-100,100,100,-100,1,0.f);
+        mSceneUpdater.commitRender();
+    }
+
+    private void addNaviPath2Scene() {
+        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.removeNaviPath();
         mSceneUpdater.commitRender();
     }
 
@@ -527,7 +532,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathUpdate() {
-
+        Vector3 curObjPos = new Vector3(0,0,0);
+        if(mIsMyInitScene){
+            curObjPos.setAll(mObject4Chase.getPosition());
+        }
+        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y).get(0);
+        if (mRenderPath != null && mRenderPath.size() >= 2) {
+            addNaviPath2Scene();
+        }
     }
 
     @Override
@@ -553,7 +565,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams,int animationType,double duration){
-        Log.e("ylq","onRenderParamsUpdated");
+        //Log.e("ylq","onRenderParamsUpdated");
         switch (animationType){
             case IRenderStrategy.SCALE_TYPE:
                 mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
@@ -671,7 +683,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     restartAnimator(mHideAnimator);
                     break;
                 case SCENE_RENDER_APLLY_ID:
-                    mSceneUpdater.clearSceneObjects();
                     mSceneUpdater.commitRender();
                     break;
                 default:

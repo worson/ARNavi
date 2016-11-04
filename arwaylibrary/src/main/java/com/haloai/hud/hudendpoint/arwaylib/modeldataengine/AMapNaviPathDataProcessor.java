@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.util.Log;
 
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
@@ -30,7 +31,7 @@ import java.util.List;
 /**
  * @author Created by Mo Bing(mobing@haloai.com) on 22/10/2016.
  */
-public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNavi, AMapNaviPath, NaviInfo, AMapNaviLocation> {
+public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNavi, AMapNaviPath, NaviInfo, AMapNaviLocation>,IDynamicLoader.IDynamicLoadNotifer {
     //constant
     private static final String TAG                           = "AMapNaviPathDataProcessor";
     private static final double DEFAULT_OPENGL_Z              = 0;//被追随物体的Z轴高度,用于构建Vector3中的Z
@@ -93,6 +94,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //proportion mapping
     private ProportionMappingEngine mProportionMappingEngine;
 
+    //ylqtest
+    private IDynamicLoader mDynamicLoader = new DynamicLoader();
+
     @Override
     public void reset() {
         mCurIndexInPath = 0;
@@ -124,7 +128,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     public int setPath(AMapNavi amapNavi, AMapNaviPath aMapNaviPath) {
         //0.reset all data
         reset();
-
+        mDynamicLoader.setIDynamicLoadNotifer(this);
+        int endIndex = mDynamicLoader.updateOriginPath(aMapNaviPath,20);
         //1.check data legal
         HaloLogger.logE(TAG, "initPath check data legal");
         if (amapNavi == null || aMapNaviPath == null) {
@@ -277,7 +282,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         HaloLogger.logE(TAG, "mPathLatLng path end");
         for (int i = 0; i < mStepLengths.size(); i++) {
-            processSteps(i);
+            //processSteps(i);
         }
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
         for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
@@ -285,6 +290,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen end");
 
+		//0,endIndex
         List<Vector3> mainRoad = new ArrayList<>();
         for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
             ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.latitude, latlng.longitude), DEFAULT_LEVEL);
@@ -303,6 +309,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mIsPathInited = true;
         return 1;
+    }
+
+    @Override
+    public void loadNewRoad(int startIndex,int endIndex){
+        Log.e("ylq","startIndex:"+startIndex +" endIndex"+endIndex);
+        List<Vector3> vecList = new ArrayList<>();
+        vecList.addAll(mPathVector3.subList(startIndex,endIndex));
+//        List<List<Vector3>> myRenderPath = new ArrayList<>();
+//        myRenderPath.add(vecList);
+        mNaviPathDataProvider.updatePath(vecList);
     }
 
     @Override
@@ -333,6 +349,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         if (mIsPathInited && naviInfo != null) {
             //0.calc and save useful data.
             mCurIndexInPath = getIndexInPath(naviInfo.getCurPoint(), naviInfo.getCurStep());
+            mDynamicLoader.updateCurPoint(mCurIndexInPath);
             //1.Calculate the distance of maneuver point and get road class.
             int distanceOfMP = naviInfo.getCurStepRetainDistance();
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
