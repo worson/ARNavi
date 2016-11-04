@@ -20,7 +20,8 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 							 string strDictPath,
 							 std::vector<std::vector<HALocationCoordinate2D> >& vecCrossGpsLinks,
 							 std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet,
-							 std::vector<int>& vecCrossPointIndex)
+							 std::vector<int>& vecCrossPointIndex,
+							 int& nCenterIndex)
 {
 	// �����Լ�
 	int nNumLink = vecMainRoadGpslinks.size();
@@ -88,7 +89,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	int nScrW = szCover.width;
 	int nScrH = szCover.height;
 	cv::Rect rtScreen(hamPixelCenter.x-nScrW/2, hamPixelCenter.y-nScrH/2,nScrW,nScrH);	
-	nRet = merMapdata.matchMainRoadCenterInNet3(vecMainRoadPixelPt,
+	nRet = merMapdata.matchMainRoadCenterInNet4(vecMainRoadPixelPt,
 												hamPixelCenter,
 												vecRoadNetLinkInfo,
 												vecRoadNetLink,
@@ -97,6 +98,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 												vecMainRoadLinkInfosInNet,
 												vecMainRoadLinksInNet,
 												vecMainRoadPixelInNet,
+												nCenterIndex,
 												vecCrossPointIndex,
 												vecCrossPixelLinks);
 	if (nRet<0)

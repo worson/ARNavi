@@ -6,6 +6,7 @@ import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
+import com.haloai.hud.hudendpoint.arwaylib.utils.PrintUtils;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
@@ -75,7 +76,12 @@ public class ProportionMappingEngine {
         mRenderPath = new ArrayList<>();
         mProportionListRender = new ArrayList<>();
 
-        /*List<Integer> keepInRarefy = new ArrayList<>();
+        /*HaloLogger.logE(TAG,"cross start");
+        for(LatLng latlng : renderPath){
+            HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+        }
+        HaloLogger.logE(TAG,"cross end");
+        List<Integer> keepInRarefy = new ArrayList<>();
         List<PointF> vertices = new ArrayList<>();
         for(LatLng latlng:renderPath){
             ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, defaultLevel);
@@ -83,27 +89,54 @@ public class ProportionMappingEngine {
         }
         Douglas.rarefyGetIndexs(keepInRarefy,vertices,tolerance);
         for(int i=0;i<keepInRarefy.size();i++){
-            HaloLogger.logE(TAG,"index:"+keepInRarefy.get(i));
             mRenderPath.add(renderPath.get(keepInRarefy.get(i)));
             mProportionListRender.add(proportionListRender.get(keepInRarefy.get(i)));
-        }*/
+        }
+        HaloLogger.logE(TAG,"cross start");
+        for(LatLng latlng : mRenderPath){
+            HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+        }
+        HaloLogger.logE(TAG,"cross end");*/
 
         for (int i = 0; i < keepIndexs.size() - 1; i++) {
             int start = keepIndexs.get(i);
             int end = keepIndexs.get(i + 1) + 1;
+            HaloLogger.logE(TAG,"start="+start);
+            HaloLogger.logE(TAG,"end="+end);
             List<LatLng> partPath = renderPath.subList(start, end);
+            HaloLogger.logE(TAG,"part path size="+partPath.size());
             List<Double> partProp = proportionListRender.subList(start, end);
+            HaloLogger.logE(TAG,"part prop size="+partProp.size());
             List<Integer> keepInRarefy = new ArrayList<>();
             rarefy(tolerance, defaultLevel, partPath, keepInRarefy);
+            HaloLogger.logE(TAG,"keepInRarefy size="+keepInRarefy.size());
+            PrintUtils.printList(keepInRarefy, TAG, "keep in rarefy");
+            List<LatLng> test = new ArrayList<>();
             if (i == 0) {
                 mRenderPath.add(partPath.get(0));
                 mProportionListRender.add(partProp.get(0));
+                test.add(partPath.get(0));
             }
             for (int j = 1; j < keepInRarefy.size(); j++) {
                 int index = keepInRarefy.get(j);
                 mRenderPath.add(partPath.get(index));
+                test.add(partPath.get(index));
                 mProportionListRender.add(partProp.get(index));
             }
+            HaloLogger.logE(TAG,"screen start");
+            HaloLogger.logE(TAG,partPath.get(0).latitude+","+partPath.get(0).longitude);
+            HaloLogger.logE(TAG,partPath.get(partPath.size()-1).latitude+","+partPath.get(partPath.size()-1).longitude);
+            HaloLogger.logE(TAG,"screen end");
+            HaloLogger.logE(TAG,"cross start");
+            for(LatLng latlng : partPath){
+                HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+            }
+            HaloLogger.logE(TAG,"cross end");
+            HaloLogger.logE(TAG,"cross start");
+            for(LatLng latlng : test){
+                HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+            }
+            HaloLogger.logE(TAG,"cross end");
         }
     }
 

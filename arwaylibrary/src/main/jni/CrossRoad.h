@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-//#include "core.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "types.h"
@@ -28,6 +27,7 @@ public:
 		[out]vector<vector<HALocationCoordinate2D> >& vecCrossGpsLinks - ·�����ݣ���·����
 		[out]std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet - ·����ƥ�����·
 		[out]std::vector<int>& vecCrossPointIndex - ��·���·��������·�е��±�
+		[out]int& nCenterIndex - ƥ�������·�е�λ��
 	���أ�
 		0 - ���������� - �쳣
 	*/
@@ -38,7 +38,8 @@ public:
 					string strDictPath,
 					std::vector<std::vector<HALocationCoordinate2D> >& vecCrossGpsLinks,
 					std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet,
-					std::vector<int>& vecCrossPointIndex);
+					std::vector<int>& vecCrossPointIndex,
+					int& nCenterIndex);
 
 private:
 	/*

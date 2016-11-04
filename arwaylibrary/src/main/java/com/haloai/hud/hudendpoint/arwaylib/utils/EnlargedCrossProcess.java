@@ -97,7 +97,9 @@ public class EnlargedCrossProcess {
      * @param centerPoint 机动点的经纬度
      * @param szCover 400*400的矩形
      * @param filePath 二进制文件的路径,目前写死成/sdcard/xxxx.hmd
-     * @param crossLinks 输出:路网数据由crossLink表示,index=0的crossLink为导航link,由其替代原来的导航路
+     * @param crossLinks [out]:路网数据中的岔路部分
+     * @param mainRoad [out]:路网中的主路部分
+     * @param crossPointIndexs [out]:主路中与岔路相交部分的角标,最后一个点为路网中导航路的中心点角标
      * @return 0:正常,数据可用 其他:错误
      */
     public int updateCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,

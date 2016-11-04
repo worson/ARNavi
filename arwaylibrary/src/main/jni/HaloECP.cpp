@@ -254,8 +254,10 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     vector <vector<HALocationCoordinate2D> > _crossLinks;
     vector<HALocationCoordinate2D> _mainRoad;
     vector<int> _vecCrossPointIndex;
+    int _centerPointInMainRoad;
     CrossRoad crossRoad;
-    int res = crossRoad.getCrossLinks(_links, _mainRoadLinkInfos, _centerPoint, _szCover, _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex);
+    int res = crossRoad.getCrossLinks(_links, _mainRoadLinkInfos, _centerPoint, _szCover,
+                                      _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex,_centerPointInMainRoad);
 
     if(res == 0) {
         //使用_crossLinks初始化crossLinks数据
@@ -304,6 +306,12 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
             if (obj_int) {
                 env->DeleteLocalRef(obj_int);
             }
+        }
+        //使用_centerPointInMainRoad初始化,作为crossPointIndexs的最后一个点
+        jobject obj_int = env->NewObject(cls_int, construct_int, _centerPointInMainRoad);
+        env->CallBooleanMethod(crossPointIndexs, arrayList_add, obj_int);
+        if (obj_int) {
+            env->DeleteLocalRef(obj_int);
         }
     }
     return res;

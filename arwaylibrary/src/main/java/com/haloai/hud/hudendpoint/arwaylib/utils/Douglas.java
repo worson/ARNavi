@@ -74,6 +74,7 @@ public class Douglas {
         //在函数调用前判断了
         int pointSize = vertices.size();
         if (vertices.isEmpty() || (pointSize < 3)) {
+            returnPoints.addAll(vertices);
             return;
         }
 
