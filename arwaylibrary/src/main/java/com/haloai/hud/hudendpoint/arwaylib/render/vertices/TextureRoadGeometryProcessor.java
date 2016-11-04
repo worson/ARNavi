@@ -208,7 +208,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
         if (path == null || path.size() <=1) {
             return null;
         }
-        boolean isFog = false;
+        boolean isFog = true;
         mColor = color;
         int lineCount = path.size()-1;
         if(IS_LOG_OUT) {
