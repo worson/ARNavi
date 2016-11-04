@@ -52,11 +52,24 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
-    public void updatePath(List<Vector3> newPath) {
-        mRenderPath.remove(0);
-        mRenderPath.add(newPath);
-        if (mNaviPathChangeNotifier != null)
+    public void updatePath(List<List<Vector3>> newPath) {
+        mRenderPath = newPath;
+
+        /*//TODO test dynamic data
+        for(List<Vector3> path:mRenderPath) {
+            HaloLogger.logE("test_dynamic", "cross start");
+            for(Vector3 v:path){
+                HaloLogger.logE("test_dynamic", v.x+","+v.y);
+            }
+            HaloLogger.logE("test_dynamic", "cross end");
+        }
+        for(int i=1;i<mRenderPath.size();i++) {
+            mRenderPath.remove(i);
+        }*/
+
+        if (mNaviPathChangeNotifier != null) {
             mNaviPathChangeNotifier.onPathUpdate();
+        }
     }
 
     @Override

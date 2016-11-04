@@ -358,7 +358,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
         */
-        addRoadNet2Scene();
+        initRoadNet2Scene();
         initNaviPath2Scene();
 
         //update flag
@@ -366,12 +366,18 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCanMyInitScene = false;
     }
 
+    private void initRoadNet2Scene(){
+        List<List<Vector3>> branchLinesList = new ArrayList<>();
+        branchLinesList.addAll(mRenderPaths);
+        mSceneUpdater.renderRoadNet(branchLinesList);
+        mSceneUpdater.commitRender();
+    }
+
     private void addRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
         mSceneUpdater.removeRoadNet();
-        //// TODO: 16/10/27
         mSceneUpdater.commitRender();
 
     }
@@ -520,7 +526,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             }
             mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
             mRenderPath = mRenderPaths.get(0);
-            
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -536,8 +541,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if(mIsMyInitScene){
             curObjPos.setAll(mObject4Chase.getPosition());
         }
-        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y).get(0);
+        mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y);
+        mRenderPath = mRenderPaths.get(0);
+        HaloLogger.logE("ylq","paths size = "+mRenderPaths.size());
+        HaloLogger.logE("ylq","path size = "+mRenderPath.size());
         if (mRenderPath != null && mRenderPath.size() >= 2) {
+            addRoadNet2Scene();
             addNaviPath2Scene();
         }
     }

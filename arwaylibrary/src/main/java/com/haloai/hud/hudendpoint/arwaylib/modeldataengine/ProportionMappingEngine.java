@@ -315,6 +315,32 @@ public class ProportionMappingEngine {
     }
 
     /**
+     * 根据在原始路径中的起始点和结束点,返回一段渲染路径
+     * @param start 原始路径的起点
+     * @param end 原始路径的终点
+     * @return
+     */
+    public List<LatLng> mapping(int start,int end){
+        double startProp = mProportionListOri.get(start);
+        double endProp = mProportionListOri.get(end);
+        for(int i=0;i<mProportionListRender.size()-1;i++){
+            double prop = mProportionListRender.get(i);
+            if(prop>=startProp){
+                int startRender = prop==startProp?i:i==0?0:i-1;
+                for(int j=i;j<mProportionListRender.size();j++){
+                    prop = mProportionListRender.get(j);
+                    if(prop>=endProp){
+                        int endRender = j;
+                        return mRenderPath.subList(startRender,endRender+1);
+                    }
+                }
+                break;
+            }
+        }
+        return null;
+    }
+
+    /**
      * 传入机动点的角标,返回蚯蚓线的Path
      * 默认长度是30m,前后各15m
      *
