@@ -18,13 +18,12 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
-import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayCurver;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -72,7 +71,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private TextureView mTextureView = null;
     //list data
-    private List<Vector3> mRenderPath = new ArrayList<>();
+    private List<List<Vector3>> mRenderPaths = new ArrayList<>();
+    private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
     private Object3D          mObject4Chase;
@@ -105,8 +105,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
 
     //新架构
-    private INaviPathDataProvider mNaviPathDataProvider;
-    private IRoadNetDataProvider  mRoadNetDataProvider;
+    private INaviPathDataProvider        mNaviPathDataProvider;
+    private IRoadNetDataProvider         mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
 
     public ARwayRenderer(Context context) {
@@ -330,7 +330,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         cMaterial.setColor(Color.argb(0, 76, 0, 0));//Color.argb(255,76,0,0)
         mCarObject.setMaterial(cMaterial);
         mCarObject.setPosition(mObject4Chase.getPosition());
-        //        getCurrentScene().addChild(mCarObject);
+        //getCurrentScene().addChild(mCarObject);
 
 //        mSceneUpdater.setCarObject(mCarObject);
 
@@ -359,7 +359,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCameraModel.setRoadWidth(ROAD_WIDTH);
         mCameraModel.setBottomDistanceProportion(0.0f);
         */
-        addRoadNet2Scene();
+        initRoadNet2Scene();
         initNaviPath2Scene();
 
         //update flag
@@ -367,13 +367,18 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCanMyInitScene = false;
     }
 
+    private void initRoadNet2Scene(){
+        List<List<Vector3>> branchLinesList = new ArrayList<>();
+        branchLinesList.addAll(mRenderPaths);
+        mSceneUpdater.renderRoadNet(branchLinesList);
+        mSceneUpdater.commitRender();
+    }
+
     private void addRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
-        branchLinesList.add(mRenderPath);
-        HaloLogger.logE("AMapNaviPathDataProcessor","__size="+mRenderPath.size());
+        branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
         mSceneUpdater.removeRoadNet();
-        //// TODO: 16/10/27
         mSceneUpdater.commitRender();
 
     }
@@ -423,8 +428,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void startAnim(Vector3 from, Vector3 to, double degrees, long duration) {
         mTransAnim = createTranslateAnim(from, to, duration, mObject4Chase);
         mRotateAnim = createRotateAnim(Vector3.Axis.Z,
-                Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
-                duration, mObject4Chase);
+                                       Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
+                                       duration, mObject4Chase);
         mTransAnim.play();
         mRotateAnim.play();
     }
@@ -518,12 +523,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 }
             }
 
-           
-            Vector3 curObjPos = new Vector3(0,0,0);
-            if(mIsMyInitScene){
+            Vector3 curObjPos = new Vector3(0, 0, 0);
+            if (mIsMyInitScene) {
                 curObjPos.setAll(mObject4Chase.getPosition());
             }
-            mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,curObjPos.x,curObjPos.y).get(0);
+            mRenderPaths = new ArrayList<>();
+            List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
+            for(List<Vector3> path:renderPaths){
+                List<Vector3> curvePath = new ArrayList<>();
+                ARWayCurver.makeCurvePlanB(path, curvePath);
+                mRenderPaths.add(curvePath);
+            }
+            //mRenderPaths = renderPaths;
+            mRenderPath = mRenderPaths.get(0);
+
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -539,8 +552,25 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if(mIsMyInitScene){
             curObjPos.setAll(mObject4Chase.getPosition());
         }
-        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y).get(0);
+        //啊奇
+        IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
+        for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
+            if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
+                level = temple;
+                break;
+            }
+        }
+        mRenderPaths = new ArrayList<>();
+        List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
+        for(List<Vector3> path:renderPaths){
+            List<Vector3> curvePath = new ArrayList<>();
+            ARWayCurver.makeCurvePlanB(path, curvePath);
+            mRenderPaths.add(curvePath);
+        }
+        //mRenderPaths = renderPaths;
+        mRenderPath = mRenderPaths.get(0);
         if (mRenderPath != null && mRenderPath.size() >= 2) {
+            addRoadNet2Scene();
             addNaviPath2Scene();
         }
     }
@@ -556,7 +586,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-        mSceneUpdater.renderGuideLine(guideLineUpdate);
+        if(mIsMyInitScene) {
+            mSceneUpdater.renderGuideLine(guideLineUpdate);
+        }
     }
 
     @Override
@@ -645,12 +677,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         return mObject4Chase == null ? 0 : mObject4Chase.getRotZ();
     }
 
-    public void changeStrategy(IRenderStrategy.DataLevel level){
+    public void changeStrategy(IRenderStrategy.DataLevel level) {
         clearLastAnim();
         //HaloLogger.logE("test__hah","screen start");
         //HaloLogger.logE("test__hah",mObject4Chase.getX()+","+mObject4Chase.getY());
         //HaloLogger.logE("test__hah","screen end");
-        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
+        mRenderPath = mNaviPathDataProvider.getNaviPathByLevel(level, mObject4Chase.getX(), mObject4Chase.getY()).get(0);
         addRoadNet2Scene();
     }
 

@@ -23,6 +23,14 @@ JNIEXPORT jobjectArray JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_En
 JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetHopPointInCrossImage
   (JNIEnv *, jobject, jlong, jobject);
 
+/*
+ * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
+ * Method:    nativeGetCrossLinks
+ * Signature: (Ljava/util/List;Ljava/util/List;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/LatLngOutSide;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/Size2iOutside;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;)I
+ */
+JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetCrossLinks
+  (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jstring, jobject, jobject, jobject);
+
 #ifdef __cplusplus
 }
 #endif

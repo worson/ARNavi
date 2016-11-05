@@ -36,9 +36,10 @@ public interface INaviPathDataProvider{
 
     void reset();
     void initPath(List<List<Vector3>> renderPath);
-    void updatePath(List<Vector3> newPath);
+    void updatePath(List<List<Vector3>> newPath);
     void setAnim(Vector3 start,Vector3 end,double degrees,long duration);
     void setObjStartOrientation(double rotateZ);
+    void setGuildLine(List<Vector3> guildLine);
 
     List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level,double offsetX,double offsetY);
     double getObjStartOrientation();

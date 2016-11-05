@@ -1,7 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 import android.graphics.Point;
-import android.graphics.PointF;
 
 import com.amap.api.maps.model.LatLng;
 
@@ -47,16 +46,16 @@ public class ARWayProjection {
     }
 
     //经纬度坐标转opengl坐标
-    public static PointF toOpenGLLocation(LatLng coordinate){
+    public static PointD toOpenGLLocation(LatLng coordinate){
         Point mktPoint = pixelPointFromCoordinate(coordinate,20.0);
-        PointF mapPoint = new PointF((float)(mktPoint.x/K),(float)(mktPoint.y/K));
+        PointD mapPoint = new PointD((mktPoint.x/K),(mktPoint.y/K));
         return mapPoint;
     }
 
     //经纬度坐标转opengl坐标
-    public static PointF toOpenGLLocation(LatLng coordinate,double level){
+    public static PointD toOpenGLLocation(LatLng coordinate,double level){
         Point mktPoint = pixelPointFromCoordinate(coordinate,level);
-        PointF mapPoint = new PointF((float)(mktPoint.x/K),(float)(mktPoint.y/K));
+        PointD mapPoint = new PointD((mktPoint.x/K),(mktPoint.y/K));
         return mapPoint;
     }
 

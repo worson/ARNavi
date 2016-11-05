@@ -4,10 +4,6 @@ import android.util.Log;
 
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
-import com.amap.api.navi.model.AMapNaviPath;
-import com.amap.api.navi.model.AMapNaviStep;
-import com.amap.api.navi.model.NaviLatLng;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +18,7 @@ public class  DynamicLoader implements IDynamicLoader {
     static final private int DEFAULTDANGERDISTANCE = 200;// 默认的预留距离
     private IDynamicLoader.IDynamicLoadNotifer mDynamicLoadNotifer;
 
-    private List<NaviLatLng> mCoordList = new ArrayList<>();
+    private List<LatLng> mCoordList = new ArrayList<>();
 
     private int curStartIndex;
 
@@ -39,11 +35,9 @@ public class  DynamicLoader implements IDynamicLoader {
 
     }
 
-    public int updateOriginPath(AMapNaviPath path, int dataLevel){  //更新原始的高德导航路径
+    public int updateOriginPath(List<LatLng> path, int dataLevel){  //更新原始的高德导航路径
         mCoordList.clear();
-        for (AMapNaviStep temple : path.getSteps()){
-            mCoordList.addAll(temple.getCoords());
-        }
+        mCoordList.addAll(path);
         realLOAD_DISTANCE = (int) (DEFAULTLOADDISTANCE * Math.pow(2.0,20 - dataLevel));
         realDANGER_DISTANCE = (int)(DEFAULTDANGERDISTANCE* Math.pow(2.0,20 - dataLevel));
         curStartIndex = 0;
@@ -66,15 +60,15 @@ public class  DynamicLoader implements IDynamicLoader {
     private void lookForSuitableValues(){
         int distance = 0;
         for (int i  = curStartIndex;i < mCoordList.size() - 1;i++){
-            LatLng lat = new LatLng(mCoordList.get(i).getLatitude(),mCoordList.get(i).getLongitude());
-            LatLng lat1 = new LatLng(mCoordList.get(i+1).getLatitude(),mCoordList.get(i+1).getLongitude());
+            LatLng lat = new LatLng(mCoordList.get(i).latitude,mCoordList.get(i).longitude);
+            LatLng lat1 = new LatLng(mCoordList.get(i+1).latitude,mCoordList.get(i+1).longitude);
             distance += AMapUtils.calculateLineDistance(lat,lat1);
             if (i != mCoordList.size() - 2){
                 if (distance >= realLOAD_DISTANCE/2+realDANGER_DISTANCE&&updateIndex==0&&i+1>=curEndIndex){
                     updateIndex = i+1;
                 }
                 if (distance >= realLOAD_DISTANCE&&updateIndex!=0){
-                    if (i+1 > updateIndex&&AMapUtils.calculateLineDistance(lat1,new LatLng(mCoordList.get(updateIndex).getLatitude(),mCoordList.get(updateIndex).getLongitude()))>=DEFAULTLOADDISTANCE/2-realDANGER_DISTANCE){
+                    if (i+1 > updateIndex&&AMapUtils.calculateLineDistance(lat1,new LatLng(mCoordList.get(updateIndex).latitude,mCoordList.get(updateIndex).longitude))>=DEFAULTLOADDISTANCE/2-realDANGER_DISTANCE){
                         curEndIndex =i+1;
                         break;
                     }
@@ -94,8 +88,8 @@ public class  DynamicLoader implements IDynamicLoader {
         int distance = 0;
         int i;
         for (i = curPointIndex;i > 0;i--){
-            LatLng lat = new LatLng(mCoordList.get(i).getLatitude(),mCoordList.get(i).getLongitude());
-            LatLng lat1 = new LatLng(mCoordList.get(i-1).getLatitude(),mCoordList.get(i-1).getLongitude());
+            LatLng lat = new LatLng(mCoordList.get(i).latitude,mCoordList.get(i).longitude);
+            LatLng lat1 = new LatLng(mCoordList.get(i-1).latitude,mCoordList.get(i-1).longitude);
             distance += AMapUtils.calculateLineDistance(lat,lat1);
             if (distance >= realDANGER_DISTANCE){
                 break;

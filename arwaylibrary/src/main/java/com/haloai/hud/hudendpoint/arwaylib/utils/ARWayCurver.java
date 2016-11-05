@@ -136,6 +136,11 @@ public class ARWayCurver {
                 i--;
             }
         }
+
+        if (originPoints.size() < 3){
+            curvePoints.addAll(originPoints);
+            return;
+        }
         curvePoints.add(originPoints.get(0));
         double currentLineLength = getLengthFromTwoPoint(originPoints.get(0),originPoints.get(1));
         for (int i = 0;i < originPoints.size()-2;i ++){
@@ -176,7 +181,7 @@ public class ARWayCurver {
         controlPoints.add(endPoint);
 
         float u = 1;
-        float step = (float) 0.05;
+        float step = (float) 0.2;
         while (u >= 0){
             double px = bezier2funcX(u,controlPoints);
             double py = bezier2funcY(u,controlPoints);

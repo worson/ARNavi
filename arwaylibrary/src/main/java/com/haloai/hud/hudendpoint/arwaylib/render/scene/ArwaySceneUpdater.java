@@ -544,6 +544,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 true,false,1,true);
         object.setMaterial(mCarMaterial);
         object.setTransparent(true);
+        object.setDepthTestEnabled(false);
         object.rotate(Vector3.Axis.Z,90);
         object.setPosition(0,1*0.15,0);
         mCarObject.clearChildren();
@@ -573,6 +574,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (mIndicationArrow == null) {
             mIndicationArrow = new Plane(mOptions.guideLineWidth*4, mOptions.guideLineWidth*4,10,10, Vector3.Axis.Z,
                     true,false,1,true);
+            mIndicationArrow.setDepthTestEnabled(false);
             mIndicationArrow.setColor(mColors.guideLine);
             mIndicationArrow.setMaterial(mArrowMaterial);
             mIndicationArrow.setBlendingEnabled(true);

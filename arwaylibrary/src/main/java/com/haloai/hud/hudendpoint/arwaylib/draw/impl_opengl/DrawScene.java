@@ -36,7 +36,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
             mTextureView.setBackgroundColor(Color.TRANSPARENT);
-            mTextureView.setAlpha(1.0f);
+            mTextureView.setAlpha(1f);
         }
         return mTextureView;
     }

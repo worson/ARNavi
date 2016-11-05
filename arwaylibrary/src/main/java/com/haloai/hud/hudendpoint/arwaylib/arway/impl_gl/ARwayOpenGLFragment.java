@@ -865,7 +865,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         paint.setAntiAlias(true);// 防抖动
         paint.setDither(true);// 图像过滤
         paint.setFilterBitmap(true);
-        paint.setARGB(255, 0, 0, 0); // ARGB for the color to replace
+        paint.setARGB(255, 0, 0, 0); // ARGB for the color to mapping
 
         paint.setXfermode(new AvoidXfermode(0x616161, 50, AvoidXfermode.Mode.TARGET));
         c.drawPaint(paint);
