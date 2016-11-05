@@ -46,4 +46,12 @@ public interface INaviPathDataProvider{
     int getCurDataLevelFactor();
     double getCurOffsetX();
     double getCurOffsetY();
+
+    double getLeftborder();
+
+    double getRightborder();
+
+    double getTopborder();
+
+    double getBottomborder();
 }

@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
-import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.math.vector.Vector3;
@@ -12,7 +11,7 @@ import org.rajawali3d.math.vector.Vector3;
 /**
  * Created by ylq on 16/10/25.
  */
-public class RenderParamsRefresher {
+public class RenderParamsInterpolator {
 
     static final int FPS = 30;//帧数
 
@@ -20,7 +19,7 @@ public class RenderParamsRefresher {
     static final double MaxScale = 4.0;
     static final double MinScale = 1.0;
 
-    private IRefreshDataLevelNotifer mNotifer;
+    private RenderParamsInterpolatorListener mListener;
 
     private int currentLevel;
     private int goalLevel;
@@ -39,8 +38,8 @@ public class RenderParamsRefresher {
     private double step_Scale = 0.0;
 
 
-    public void setIRefeshDataLevelNotifer(IRefreshDataLevelNotifer notifer){
-        this.mNotifer = notifer;
+    public void setRenderParamsInterpolatorListener(RenderParamsInterpolatorListener listener){
+        this.mListener = listener;
     }
 
     public void initDefaultRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
@@ -112,13 +111,13 @@ public class RenderParamsRefresher {
                 if (currentScale >= MaxScale) {
                     currentLevel++;
                     currentScale = MinScale;
-                    mNotifer.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
+                    mListener.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
                 }
             } else {
                 if (currentScale <= MinScale){
                     currentLevel --;
                     currentScale = MaxScale;
-                    mNotifer.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
+                    mListener.onRefreshDataLevel(currentLevel,getSuitableRoadWidth(currentLevel));
                 }
             }
         }else {

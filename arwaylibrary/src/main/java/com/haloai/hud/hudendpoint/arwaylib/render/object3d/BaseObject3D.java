@@ -6,6 +6,11 @@ import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 
 import org.rajawali3d.Geometry3D;
 import org.rajawali3d.Object3D;
+import org.rajawali3d.cameras.Camera;
+import org.rajawali3d.materials.Material;
+import org.rajawali3d.math.Matrix4;
+import org.rajawali3d.math.Quaternion;
+import org.rajawali3d.renderer.AFrameTask;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,13 +41,15 @@ public class BaseObject3D extends Object3D {
     protected volatile boolean  mNeedRender = false;
     private boolean hasVerticesColor = false;
 
+    private boolean mIsOrth       = false;
+    private double  mDisplayScale = 1;
+
+    private final LinkedList<AFrameTask> mFrameTaskQueue;
 
     public BaseObject3D() {
+        mFrameTaskQueue = new LinkedList<>();
     }
 
-    public BaseObject3D(String name) {
-        super(name);
-    }
 
     public boolean isHasVerticesColor() {
         return hasVerticesColor;
@@ -93,8 +100,79 @@ public class BaseObject3D extends Object3D {
         }
     }
 
-    public void clearChildren(){
-        mChildren.clear();
+    @Override
+    public void addChild(final Object3D child) {
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                mChildren.add(child);
+            }
+        };
+        internalOfferTask(task);
     }
 
+    public void clearChildren(){
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                mChildren.clear();
+            }
+        };
+        internalOfferTask(task);
+    }
+
+    public void setOrthographic(boolean isOrth, float displayScale){
+        mIsOrth = isOrth;
+        mDisplayScale = displayScale;
+    }
+
+    /**
+     * Adds a task to the frame task queue.
+     *
+     * @param task AFrameTask to be added.
+     * @return boolean True on successful addition to queue.
+     */
+    private boolean internalOfferTask(AFrameTask task) {
+        synchronized (mFrameTaskQueue) {
+            return mFrameTaskQueue.offer(task);
+        }
+    }
+
+    /**
+     * Internal method for performing frame tasks. Should be called at the
+     * start of onDrawFrame() prior to render().
+     */
+    public void performFrameTasks() {
+        synchronized (mFrameTaskQueue) {
+            //Fetch the first task
+            AFrameTask task = mFrameTaskQueue.poll();
+            while (task != null) {
+                task.run();
+                //Retrieve the next task
+                task = mFrameTaskQueue.poll();
+            }
+        }
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
+        super.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        performFrameTasks(); //Handle the task queue
+        if(mIsOrth) {
+            double dist = Math.sqrt(Math.pow(camera.getPosition().x - getPosition().x, 2.0)
+                    + Math.pow(camera.getPosition().y - getPosition().y, 2.0)
+                    + Math.pow(camera.getPosition().z - getPosition().z, 2.0));
+            double near = camera.getNearPlane();
+            double convert = (near) / ((dist + near));
+            setScale(mDisplayScale/convert);
+            Quaternion quaternion = camera.getOrientation();
+            quaternion.multiply(-1);
+            setOrientation(quaternion);
+        }
+        super.render(camera, vpMatrix, projMatrix, vMatrix, parentMatrix, sceneMaterial);
+    }
 }
