@@ -54,7 +54,7 @@ public class  DynamicLoader implements IDynamicLoader {
         return curEndIndex;
     }
 
-    public void updateCurPoint(int realPointIndex){  //更新当前小车位置的前一个形状点和step点
+    public void updateCurPoint(int realPointIndex){  //更新当前小车位置的前一个形状点
         if (realPointIndex >= curEndIndex||realPointIndex >= updateIndex){
             curStartIndex = lookForStartIndex(realPointIndex);
             updateIndex = 0;

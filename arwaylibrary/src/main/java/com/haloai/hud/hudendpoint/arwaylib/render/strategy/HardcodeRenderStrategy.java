@@ -21,49 +21,6 @@ public class HardcodeRenderStrategy extends RenderStrategy {
             //Placeholder
             return;
         }
-        /*
-        boolean needsUpdate = false;
-        //this.renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams());
-        if (mpDistance >100){
-            if (currentDataLevel != DataLevel.LEVEL_20){
-                currentDataLevel = DataLevel.LEVEL_20;
-                needsUpdate = true;
-            }
-            if (currentGLCameraAngle != 45.0){
-                currentGLCameraAngle = 45.0;
-                needsUpdate = true;
-            }
-            if (currentGLScale != 3.8){
-                currentGLScale = 3.8;
-                needsUpdate = true;
-            }
-            if (currentGLInScreenProportion != 0.0){
-                currentGLInScreenProportion = 0.0;
-                needsUpdate = true;
-            }
-
-        }else {
-            if (currentDataLevel != DataLevel.LEVEL_20) {
-                currentDataLevel = DataLevel.LEVEL_20;
-                needsUpdate = true;
-            }
-            if (currentGLCameraAngle != 35.0) {
-                currentGLCameraAngle = 35.0;
-                needsUpdate = true;
-            }
-            if (currentGLScale != 1.0) {
-                currentGLScale = 1.0;
-                needsUpdate = true;
-            }
-            if (currentGLInScreenProportion != 0.5){
-                currentGLInScreenProportion = 0.5;
-                needsUpdate = true;
-            }
-        }
-       */
-
-
-
         if (mpDistance >150) {
             if (currentDataLevel != DataLevel.LEVEL_20 || currentGLScale != 3.9) {
                 currentDataLevel = DataLevel.LEVEL_20;
