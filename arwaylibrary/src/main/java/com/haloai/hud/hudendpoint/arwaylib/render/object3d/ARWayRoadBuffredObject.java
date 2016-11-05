@@ -575,6 +575,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        performFrameTasks();
         if(!mNeedRender){
             return;
         }
