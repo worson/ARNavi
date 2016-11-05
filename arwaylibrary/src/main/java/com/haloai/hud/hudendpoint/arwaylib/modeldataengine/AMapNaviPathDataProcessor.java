@@ -17,6 +17,7 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.PrintUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LinkInfoOutside;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.Size2iOutside;
@@ -305,6 +306,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 processSteps(mStepPointIndexs.indexOf(i));
             }
         }
+        /*for (int i = 0; i < mStepPointIndexs.size(); i++) {
+            processSteps(i);
+        }*/
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
         for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
             HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
@@ -334,14 +338,19 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     @Override
     public void loadNewRoad(int startIndex, int endIndex) {
         Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
+        Log.e("ylq", "remove start");
         //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
         for (int i = mPreDynamicStartIndex; i < startIndex; i++) {
             if (mBranchInPathIndexs.contains(i)) {
                 int index = mBranchInPathIndexs.indexOf(i);
-                mBranchInPathIndexs.remove(index);
+                int removeIndex = mBranchInPathIndexs.remove(index);
                 mBranchPaths.remove(index);
+                Log.e("ylq", "i=" + i);
+                Log.e("ylq", "index=" + index);
+                Log.e("ylq", "removeIndex=" + removeIndex);
             }
         }
+        Log.e("ylq", "remove end");
         //2.拉取新的部分的路网数据
         for (int i = startIndex; i < endIndex; i++) {
             if (mStepPointIndexs.contains(i)) {
@@ -425,11 +434,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     }
 
     private void processGuildLine(int curIndexInPath) {
-        List<LatLng> guildLine = mProportionMappingEngine.mappingGuide(curIndexInPath);
+//        List<LatLng> guildLine = mProportionMappingEngine.mappingGuide(curIndexInPath);
+        List<ARWayProjection.PointD> guildLine = mProportionMappingEngine.mappingGuideV(curIndexInPath);
         if (guildLine != null) {
             List<Vector3> guildLineVector3 = new ArrayList<>();
-            for (LatLng latlng : guildLine) {
-                ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
+            for (ARWayProjection.PointD pointD : guildLine) {
+                //ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
                 Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
                 guildLineVector3.add(v);
             }
@@ -471,6 +481,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      */
     private void processSteps(int... stepIndexs) {
         HaloLogger.logE(TAG, "process steps start");
+        Log.e("ylq", "add start");
         for (Integer stepIndex : stepIndexs) {
             if (mAlreadyLoadStep.contains(stepIndex)) {
                 continue;
@@ -599,6 +610,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     //此links代表的是岔路
                     mBranchPaths.add(crossLinkVector3);
                     mBranchInPathIndexs.add(mStepPointIndexs.get(stepIndex));
+                    Log.e("ylq", "add index = " + mStepPointIndexs.get(stepIndex));
                 }
                 /*HaloLogger.logE(TAG, "crossLink cross start");
                 for (LatLngOutSide latlng : link) {
@@ -611,7 +623,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 }
                 HaloLogger.logE(TAG, "crossLink cross end");*/
                 //2.2处理新的中心点下表
+                PrintUtils.printList(crossPointIndexs, "test_center", "cross indexs");
                 int newCenterIndex = crossPointIndexs.remove(crossPointIndexs.size() - 1);
+                if(!crossPointIndexs.contains(newCenterIndex)){
+                    for(int i=0;i<crossPointIndexs.size();i++){
+                        if(crossPointIndexs.get(i)>newCenterIndex){
+                            crossPointIndexs.add(i,newCenterIndex);
+                        }
+                    }
+                }
+                //mProportionMappingEngine.mappingC(mStepPointIndexs.get(stepIndex),newCenterIndex);
                 //2.2处理主路以及对主路部分进行抽析
                 List<LatLng> subPath = new ArrayList<>();
                 for (LatLngOutSide latlng : mainRoad) {
@@ -627,6 +648,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 HaloLogger.logE(TAG, "jiaodian cross end");*/
             }
         }
+        Log.e("ylq", "add end");
         HaloLogger.logE(TAG, "process steps end");
     }
 

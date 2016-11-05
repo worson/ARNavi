@@ -394,4 +394,90 @@ public class ProportionMappingEngine {
         }
         return guildLine;
     }
+
+    /**
+     * 传入机动点的角标,返回蚯蚓线的Path
+     * 默认长度是30m,前后各15m
+     *
+     * @param curIndexInPath
+     * @return null表示没有蚯蚓线需要显示
+     */
+    public List<ARWayProjection.PointD> mappingGuideV(int curIndexInPath) {
+        double GUILD_LENGTH = 80;
+        if (curIndexInPath >= mProportionListOri.size() - 1) {
+            return null;
+        }
+        double prop = mProportionListOri.get(curIndexInPath);
+        List<ARWayProjection.PointD> guildLine = new ArrayList<>();
+        for (int i = 1; i < mProportionListRender.size(); i++) {
+            double nextProp = mProportionListRender.get(i);
+            if (nextProp >= prop) {
+                LatLng nextLatLng = mRenderPath.get(i);
+                double preProp = mProportionListRender.get(i - 1);
+                LatLng preLatLng = mRenderPath.get(i - 1);
+                double lat = preLatLng.latitude + (nextLatLng.latitude - preLatLng.latitude) * ((prop - preProp) / (nextProp - preProp));
+                double lng = preLatLng.longitude + (nextLatLng.longitude - preLatLng.longitude) * ((prop - preProp) / (nextProp - preProp));
+                LatLng curLatLng = new LatLng(lat, lng);
+                //left
+                double addUp = 0;
+                for (int j = i - 1; j >= 0; j--) {
+                    guildLine.add(0, ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
+                    double dist;
+                    if (j == i - 1) {
+                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, preLatLng));
+                    } else {
+                        addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j + 1), mRenderPath.get(j)));
+                    }
+                    if (addUp >= GUILD_LENGTH / 2) {
+                        if(addUp > GUILD_LENGTH / 2){
+                            ARWayProjection.PointD prePD = guildLine.get(1);
+                            ARWayProjection.PointD nextPD = guildLine.remove(0);
+                            double scale = 1-((addUp-GUILD_LENGTH)/dist);
+                            double x = prePD.x+(nextPD.x-prePD.x)*scale;
+                            double y = prePD.y+(nextPD.y-prePD.y)*scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);
+                            guildLine.add(makePD);
+                        }
+                        break;
+                    }
+                }
+                //right
+                addUp = 0;
+                for (int j = i; j < mRenderPath.size(); j++) {
+                    guildLine.add(ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
+                    double dist;
+                    if (j == i) {
+                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, nextLatLng));
+                    } else {
+                        addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j), mRenderPath.get(j-1)));
+                    }
+                    if (addUp >= GUILD_LENGTH / 2) {
+                        if(addUp > GUILD_LENGTH / 2){
+                            ARWayProjection.PointD prePD = guildLine.get(guildLine.size()-2);
+                            ARWayProjection.PointD nextPD = guildLine.remove(guildLine.size()-1);
+                            double scale = 1-((addUp-GUILD_LENGTH)/dist);
+                            double x = prePD.x+(nextPD.x-prePD.x)*scale;
+                            double y = prePD.y+(nextPD.y-prePD.y)*scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);
+                            guildLine.add(makePD);
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return guildLine;
+    }
+
+    /**
+     * TODO : 是否需要这一步??
+     * 将一个旧的中心点指向到替换后的部分主路的新中心点上
+     * 在调用蚯蚓线的映射函数时需要使用到该部分对应关系
+     * @param oldCenterIndexInPath
+     * @param newCenterIndexInPart
+     */
+    public void mappingC(int oldCenterIndexInPath, int newCenterIndexInPart) {
+
+    }
 }
