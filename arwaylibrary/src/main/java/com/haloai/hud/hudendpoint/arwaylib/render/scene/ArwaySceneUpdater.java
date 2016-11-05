@@ -88,6 +88,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private Material mFloorMaterial           = null;
     private Material mCarMaterial             = null;
     private Material mNaviSymbolMaterial      = null;
+    private Material mNaviIconMaterial      = null;
     private List<Material> mMaterialList            = new ArrayList<>();
 
     private static ArwaySceneUpdater mArwaySceneUpdater    = new ArwaySceneUpdater(null);
@@ -143,7 +144,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     public void initScene(){
         RajLog.setDebugEnabled(true);
-        initMaterial();
+        initRoadMaterial();
+        initTextureMaterial();
         initAllLayer();
 
         initCarObject();
@@ -178,11 +180,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mContext = context;
     }
 
+    private void initTextureMaterial() {
+        int[] textureIds = new int[]{};
+        List<Material> materialList = new LinkedList();
+        Material m = new Material();
+        m.getTextureList().clear();
+    }
 
-    private void initMaterial(){
+    private void initRoadMaterial(){
         int[] textureIds = new int[]{R.drawable.road_circle_alpha_change,R.drawable.triangle_arrow,
                 R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor,
-                R.drawable.arway_tex_car_1,R.drawable.road_circle_alpha_change};
+                R.drawable.arway_tex_car_1,R.drawable.road_circle_alpha_change,R.drawable.scene_traffic_light};
         List<Material> materialList = new LinkedList();
         float colorInfluence = 1;
         float textureInfluence = 1;
@@ -206,7 +214,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             try {
                 material.addTexture(texture);
             } catch (ATexture.TextureException e) {
-                HaloLogger.logE("initMaterial","initMaterial addTexture failed");
+                HaloLogger.logE("initRoadMaterial","initRoadMaterial addTexture failed");
                 e.printStackTrace();
             }
         }
@@ -226,6 +234,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mCarMaterial.setColorInfluence(0);
 
         mCrossRefMaterial = materialList.get(6);
+
+        mNaviIconMaterial = materialList.get(7);
+        mNaviIconMaterial.setColorInfluence(0);
 
         mRoadMaterial = new Material();
         mTestMaterial = new Material();
@@ -377,6 +388,30 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mIsFloorDirty = true;
         }
     }
+    private void testAddPlane( List<Vector3> path) {
+        int index = 3;
+        for (int i = 0; i < path.size(); i+=5) {
+            HaloLogger.logE("testAddPlane","testAddPlane");
+            index=i;
+            Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
+                    true,false,1,true);//,Color.BLACK
+//            plane.setDoubleSided(true);
+            plane.setTransparent(true);
+//            plane.setColor(Color.RED);
+            plane.setPosition(0,0,0.5);
+            // plane.setAlpha(0.1f);//不作用于顶点颜色
+            plane.setMaterial(mNaviIconMaterial);
+
+            BaseObject3D baseObject3D = new BaseObject3D();
+//            baseObject3D.setMaterial(m);
+            baseObject3D.setOrthographic(true,0.04f);
+            baseObject3D.addChild(plane);
+            baseObject3D.setPosition(path.get(index).x,path.get(index).y,0.0);
+
+            mScene.addChild(baseObject3D);
+        }
+
+    }
 
     /**
      * 渲染当前显示的道路
@@ -387,6 +422,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (path == null || path.size()<2) {
             return false;
         }
+        testAddPlane(path);
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {
@@ -684,11 +720,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
     }
 
-    private void reloadAllLayer(){
-        mScene.clearChildren();
-        addObject(mArwayMap);
-    }
-
     private boolean initAllLayer(){
         boolean result = true;
         mScene.clearChildren();
@@ -706,6 +737,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolLayer = new BaseObject3D();
         mCarObject = new BaseObject3D();
 
+        /*mCrossRoadBottom.setRenderChildrenAsBatch(true);
+        mCrossRoad.setRenderChildrenAsBatch(true);
+        mCrossRefLine.setRenderChildrenAsBatch(true);*/
+
+
         Object3D[] layers = new Object3D[]{mGridfloorLayer,mCrossRoadBottom,mCrossRoad,mCrossRefLine,
                 mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
                 mNaviGuideLineLayer,mNaviSymbolLayer,mCarObject};
@@ -717,6 +753,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mScene.addChild(mArwayMap);
         HaloLogger.logE(TAG,String.format("initAllLayer,Scene child =%s,mArwayMap child =%s",mScene.getNumChildren(),mArwayMap.getNumChildren()));
         return result;
+    }
+
+    private void reloadAllLayer(){
+        mScene.clearChildren();
+        addObject(mArwayMap);
     }
 
     private void clearSceneObjects(){
