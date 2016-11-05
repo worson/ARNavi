@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by ylq on 16/10/31.
  */
-public class DynamicLoader implements IDynamicLoader {
+public class  DynamicLoader implements IDynamicLoader {
 
 
     static final private int DEFAULTLOADDISTANCE = 2000;// 默认一次加载的道路的道路长度单位：米
