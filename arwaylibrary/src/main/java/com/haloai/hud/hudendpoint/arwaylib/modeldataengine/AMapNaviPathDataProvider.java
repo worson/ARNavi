@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
+import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.math.vector.Vector3;
 
@@ -74,6 +75,7 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
             mRenderPath.remove(i);
         }*/
 
+        HaloLogger.logE("ylq","updatePath  path size="+mRenderPath.size());
         if (mNaviPathChangeNotifier != null) {
             mNaviPathChangeNotifier.onPathUpdate();
         }
@@ -94,7 +96,7 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
 
-        double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 8;
+        double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 10;
         //假设curPoint为15级时的数据,现在拉取的是18级的数据
         IRenderStrategy.DataLevel lastLevel = mCurDataLevel;
         //factor_last_new =getFactorByLevel(lastLevel)/getFactorByLevel(level)
@@ -116,24 +118,26 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
             for (Vector3 v : path) {
                 Vector3 vec = new Vector3(v.x / mCurFactor - mCurOffsetX, v.y / mCurFactor - mCurOffsetY, v.z / mCurFactor);
                 _path.add(vec);
-                if (isFirst){
-                    mLeftborder = v.x - add_Width;
-                    mRightborder = v.x + add_Width;
-                    mTopborder = v.y + add_Width;
-                    mBottomborder = v.y - add_Width;
-                    isFirst = false;
-                }else {
-                    if (v.x - add_Width < mLeftborder){
+                if(path == mRenderPath.get(0)) {
+                    if (isFirst) {
                         mLeftborder = v.x - add_Width;
-                    }
-                    if (v.x + add_Width > mRightborder){
                         mRightborder = v.x + add_Width;
-                    }
-                    if (v.y - add_Width < mBottomborder){
-                        mBottomborder = v.y - add_Width;
-                    }
-                    if (v.y + add_Width > mTopborder){
                         mTopborder = v.y + add_Width;
+                        mBottomborder = v.y - add_Width;
+                        isFirst = false;
+                    } else {
+                        if (v.x - add_Width < mLeftborder) {
+                            mLeftborder = v.x - add_Width;
+                        }
+                        if (v.x + add_Width > mRightborder) {
+                            mRightborder = v.x + add_Width;
+                        }
+                        if (v.y - add_Width < mBottomborder) {
+                            mBottomborder = v.y - add_Width;
+                        }
+                        if (v.y + add_Width > mTopborder) {
+                            mTopborder = v.y + add_Width;
+                        }
                     }
                 }
             }

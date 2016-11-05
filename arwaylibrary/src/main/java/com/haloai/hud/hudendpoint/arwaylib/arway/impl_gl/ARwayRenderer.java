@@ -18,13 +18,12 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
-import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
+import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayCurver;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -528,8 +527,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             if (mIsMyInitScene) {
                 curObjPos.setAll(mObject4Chase.getPosition());
             }
-            mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
+            mRenderPaths = new ArrayList<>();
+            List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
+            for(List<Vector3> path:renderPaths){
+                List<Vector3> curvePath = new ArrayList<>();
+                ARWayCurver.makeCurvePlanB(path, curvePath);
+                mRenderPaths.add(curvePath);
+            }
+            //mRenderPaths = renderPaths;
             mRenderPath = mRenderPaths.get(0);
+
             if (mRenderPath != null && mRenderPath.size() >= 2) {
                 mCanMyInitScene = true;
                 if (mIsInitScene) {
@@ -545,10 +552,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if(mIsMyInitScene){
             curObjPos.setAll(mObject4Chase.getPosition());
         }
-        mRenderPaths = mNaviPathDataProvider.getNaviPathByLevel(IRenderStrategy.DataLevel.LEVEL_20,curObjPos.x,curObjPos.y);
+        //啊奇
+        IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
+        for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
+            if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
+                level = temple;
+                break;
+            }
+        }
+        mRenderPaths = new ArrayList<>();
+        List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
+        for(List<Vector3> path:renderPaths){
+            List<Vector3> curvePath = new ArrayList<>();
+            ARWayCurver.makeCurvePlanB(path, curvePath);
+            mRenderPaths.add(curvePath);
+        }
+        //mRenderPaths = renderPaths;
         mRenderPath = mRenderPaths.get(0);
-        HaloLogger.logE("ylq","paths size = "+mRenderPaths.size());
-        HaloLogger.logE("ylq","path size = "+mRenderPath.size());
         if (mRenderPath != null && mRenderPath.size() >= 2) {
             addRoadNet2Scene();
             addNaviPath2Scene();

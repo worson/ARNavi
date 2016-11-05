@@ -422,7 +422,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (path == null || path.size()<2) {
             return false;
         }
-        testAddPlane(path);
+//        testAddPlane(path);
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {

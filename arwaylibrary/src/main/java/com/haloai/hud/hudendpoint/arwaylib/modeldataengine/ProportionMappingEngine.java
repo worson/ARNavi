@@ -6,7 +6,6 @@ import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
-import com.haloai.hud.hudendpoint.arwaylib.utils.PrintUtils;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
@@ -101,42 +100,19 @@ public class ProportionMappingEngine {
         for (int i = 0; i < keepIndexs.size() - 1; i++) {
             int start = keepIndexs.get(i);
             int end = keepIndexs.get(i + 1) + 1;
-            HaloLogger.logE(TAG,"start="+start);
-            HaloLogger.logE(TAG,"end="+end);
             List<LatLng> partPath = renderPath.subList(start, end);
-            HaloLogger.logE(TAG,"part path size="+partPath.size());
             List<Double> partProp = proportionListRender.subList(start, end);
-            HaloLogger.logE(TAG,"part prop size="+partProp.size());
             List<Integer> keepInRarefy = new ArrayList<>();
             rarefy(tolerance, defaultLevel, partPath, keepInRarefy);
-            HaloLogger.logE(TAG,"keepInRarefy size="+keepInRarefy.size());
-            PrintUtils.printList(keepInRarefy, TAG, "keep in rarefy");
-            List<LatLng> test = new ArrayList<>();
             if (i == 0) {
                 mRenderPath.add(partPath.get(0));
                 mProportionListRender.add(partProp.get(0));
-                test.add(partPath.get(0));
             }
             for (int j = 1; j < keepInRarefy.size(); j++) {
                 int index = keepInRarefy.get(j);
                 mRenderPath.add(partPath.get(index));
-                test.add(partPath.get(index));
                 mProportionListRender.add(partProp.get(index));
             }
-            HaloLogger.logE(TAG,"screen start");
-            HaloLogger.logE(TAG,partPath.get(0).latitude+","+partPath.get(0).longitude);
-            HaloLogger.logE(TAG,partPath.get(partPath.size()-1).latitude+","+partPath.get(partPath.size()-1).longitude);
-            HaloLogger.logE(TAG,"screen end");
-            HaloLogger.logE(TAG,"cross start");
-            for(LatLng latlng : partPath){
-                HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
-            }
-            HaloLogger.logE(TAG,"cross end");
-            HaloLogger.logE(TAG,"cross start");
-            for(LatLng latlng : test){
-                HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
-            }
-            HaloLogger.logE(TAG,"cross end");
         }
     }
 
@@ -424,19 +400,19 @@ public class ProportionMappingEngine {
                     guildLine.add(0, ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
                     double dist;
                     if (j == i - 1) {
-                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, preLatLng));
+                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, mRenderPath.get(j)));
                     } else {
                         addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j + 1), mRenderPath.get(j)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         if(addUp > GUILD_LENGTH / 2){
-                            ARWayProjection.PointD prePD = guildLine.get(1);
+                            ARWayProjection.PointD prePD = j==i-1?ARWayProjection.toOpenGLLocation(curLatLng,mDefaultLevel):guildLine.get(1);
                             ARWayProjection.PointD nextPD = guildLine.remove(0);
-                            double scale = 1-((addUp-GUILD_LENGTH)/dist);
+                            double scale = 1-((addUp-GUILD_LENGTH/2)/dist);
                             double x = prePD.x+(nextPD.x-prePD.x)*scale;
                             double y = prePD.y+(nextPD.y-prePD.y)*scale;
                             ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);
-                            guildLine.add(makePD);
+                            guildLine.add(0,makePD);
                         }
                         break;
                     }
@@ -447,15 +423,15 @@ public class ProportionMappingEngine {
                     guildLine.add(ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
                     double dist;
                     if (j == i) {
-                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, nextLatLng));
+                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, mRenderPath.get(j)));
                     } else {
                         addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j), mRenderPath.get(j-1)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         if(addUp > GUILD_LENGTH / 2){
-                            ARWayProjection.PointD prePD = guildLine.get(guildLine.size()-2);
+                            ARWayProjection.PointD prePD = j==i?ARWayProjection.toOpenGLLocation(curLatLng,mDefaultLevel):guildLine.get(guildLine.size()-2);
                             ARWayProjection.PointD nextPD = guildLine.remove(guildLine.size()-1);
-                            double scale = 1-((addUp-GUILD_LENGTH)/dist);
+                            double scale = 1-((addUp-GUILD_LENGTH/2)/dist);
                             double x = prePD.x+(nextPD.x-prePD.x)*scale;
                             double y = prePD.y+(nextPD.y-prePD.y)*scale;
                             ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);

@@ -91,11 +91,11 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //Road Net
     private EnlargedCrossProcess mEnlargedCrossProcess = new EnlargedCrossProcess();
     private double PIXEL_2_LATLNG;
-    private int                 mPreStartBreak      = 0;
-    private int                 mPreEndBreak        = 0;
-    private int                 mPreStepIndex       = 0;
-    private List<List<Vector3>> mBranchPaths        = new ArrayList<>();
-    private List<Integer>       mBranchInPathIndexs = new ArrayList<>();
+    private int                       mPreStartBreak      = 0;
+    private int                       mPreEndBreak        = 0;
+    private int                       mPreStepIndex       = 0;
+    private List<List<List<Vector3>>> mBranchPaths        = new ArrayList<>();
+    private List<Integer>             mBranchInPathIndexs = new ArrayList<>();
 
     //proportion mapping
     private ProportionMappingEngine mProportionMappingEngine;
@@ -320,7 +320,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mainRoad.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
         }
         mRenderPaths.add(mainRoad);
-        mRenderPaths.addAll(mBranchPaths);
+        for(List<List<Vector3>> paths:mBranchPaths) {
+            mRenderPaths.addAll(paths);
+        }
         mNaviPathDataProvider.initPath(mRenderPaths);
 
         //显示第一根蚯蚓线
@@ -365,7 +367,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         mRenderPaths.clear();
         mRenderPaths.add(dynamicPath);
-        mRenderPaths.addAll(mBranchPaths);
+        for(List<List<Vector3>> paths:mBranchPaths) {
+            mRenderPaths.addAll(paths);
+        }
+        HaloLogger.logE("ylq", "loadNewRoad path size = " + mRenderPaths.size());
         mNaviPathDataProvider.updatePath(mRenderPaths);
 
         //4.更新蚯蚓线,因为主路被替换了所以需要刷新下
@@ -434,12 +439,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     }
 
     private void processGuildLine(int curIndexInPath) {
-//        List<LatLng> guildLine = mProportionMappingEngine.mappingGuide(curIndexInPath);
         List<ARWayProjection.PointD> guildLine = mProportionMappingEngine.mappingGuideV(curIndexInPath);
         if (guildLine != null) {
             List<Vector3> guildLineVector3 = new ArrayList<>();
             for (ARWayProjection.PointD pointD : guildLine) {
-                //ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
                 Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
                 guildLineVector3.add(v);
             }
@@ -577,6 +580,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 mPreStepIndex = stepIndex;
                 //2.将经纬度数据处理转换成Vector3数据,将主路拼接到原主路上,将其他link添加到路网中
                 //2.1处理岔路--抽析--转换--填充到集合中
+                List<List<Vector3>> branchPaths = new ArrayList<>();
                 for (int i = 0; i < crossLinks.size(); i++) {
                     List<LatLngOutSide> crossLink = crossLinks.get(i);
                     //抽析岔路
@@ -607,11 +611,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                         HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
                     }
                     HaloLogger.logE(TAG, "crossLink cross end");
+
                     //此links代表的是岔路
-                    mBranchPaths.add(crossLinkVector3);
-                    mBranchInPathIndexs.add(mStepPointIndexs.get(stepIndex));
-                    Log.e("ylq", "add index = " + mStepPointIndexs.get(stepIndex));
+                    branchPaths.add(crossLinkVector3);
                 }
+                mBranchPaths.add(branchPaths);
+                mBranchInPathIndexs.add(mStepPointIndexs.get(stepIndex));
                 /*HaloLogger.logE(TAG, "crossLink cross start");
                 for (LatLngOutSide latlng : link) {
                     HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
@@ -622,13 +627,13 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
                 }
                 HaloLogger.logE(TAG, "crossLink cross end");*/
-                //2.2处理新的中心点下表
+                //2.2处理新的中心点角标
                 PrintUtils.printList(crossPointIndexs, "test_center", "cross indexs");
                 int newCenterIndex = crossPointIndexs.remove(crossPointIndexs.size() - 1);
-                if(!crossPointIndexs.contains(newCenterIndex)){
-                    for(int i=0;i<crossPointIndexs.size();i++){
-                        if(crossPointIndexs.get(i)>newCenterIndex){
-                            crossPointIndexs.add(i,newCenterIndex);
+                if (!crossPointIndexs.contains(newCenterIndex)) {
+                    for (int i = 0; i < crossPointIndexs.size(); i++) {
+                        if (crossPointIndexs.get(i) > newCenterIndex) {
+                            crossPointIndexs.add(i, newCenterIndex);
                         }
                     }
                 }
