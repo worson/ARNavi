@@ -154,13 +154,7 @@ public class BaseObject3D extends Object3D {
         }
     }
 
-    @Override
-    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
-        super.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
-    }
-
-    @Override
-    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+    public void preRenderHandle(Camera camera){
         performFrameTasks(); //Handle the task queue
         if(mIsOrth) {
             double dist = Math.sqrt(Math.pow(camera.getPosition().x - getPosition().x, 2.0)
@@ -173,6 +167,15 @@ public class BaseObject3D extends Object3D {
             quaternion.multiply(-1);
             setOrientation(quaternion);
         }
+    }
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
+        super.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        preRenderHandle(camera);
         super.render(camera, vpMatrix, projMatrix, vMatrix, parentMatrix, sceneMaterial);
     }
 }

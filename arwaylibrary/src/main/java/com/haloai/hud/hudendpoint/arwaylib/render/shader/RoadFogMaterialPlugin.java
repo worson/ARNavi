@@ -195,7 +195,7 @@ public class RoadFogMaterialPlugin implements IMaterialPlugin {
                 coordFog.assign(new RFloat("1.0").subtract(distance(mvFogPosition.xyz(),new RVec4("vec3(0,0,0)"))));
                 fogFactor.assign(roadFog);
 
-                gColor.assignMultiply(fogFactor);//rgb().
+                gColor.rgb().assignMultiply(fogFactor);//rgb().
 
             }
             endif();
