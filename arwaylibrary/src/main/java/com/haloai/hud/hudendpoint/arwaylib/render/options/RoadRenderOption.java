@@ -42,7 +42,7 @@ public class RoadRenderOption {
         public int netRefLine    = Color.DKGRAY;
         public int refLine       = Color.BLACK;//Color.argb(0xff,0,160,233)
         public int naviLine      = Color.argb(0xff, 0, 174, 195);
-        public int netRoadBottom = Color.WHITE;
+        public int netRoadBottom = Color.GRAY;
         public int netRoad       = Color.BLACK;
         public int bottomRoad    = Color.GRAY;
         public int road          = Color.BLACK;

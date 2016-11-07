@@ -101,11 +101,33 @@ public class BaseObject3D extends Object3D {
     }
 
     @Override
-    public void addChild(final Object3D child) {
+    public boolean removeChild(final Object3D child) {
+        boolean result = mChildren.contains(mChildren);
         final AFrameTask task = new AFrameTask() {
             @Override
             protected void doTask() {
+                mChildren.remove(child);
+            }
+        };
+        internalOfferTask(task);
+        return result;
+    }
+
+    @Override
+    public void addChild(final Object3D child) {
+        final Object3D parent = this;
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                if(child.getParent() != null)
+                    child.getParent().removeChild(child);
                 mChildren.add(child);
+                // TODO: 2016/11/7 需要改成公有 
+//                child.setParent(parent);
+                if (mRenderChildrenAsBatch)
+                    child.setPartOfBatch(true);
+
+//                mChildren.add(child);
             }
         };
         internalOfferTask(task);

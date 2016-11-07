@@ -584,19 +584,20 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         synchronized (mLock){
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
-            RoadFogMaterialPlugin fogMaterialPlugin = null;
-            IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
-            if (IFogPlugin != null) {
-                fogMaterialPlugin =  (RoadFogMaterialPlugin)IFogPlugin;
-                if(mFogEnable){
-                    fogMaterialPlugin.setFogStartPosition(mFogStart);
-                    fogMaterialPlugin.setFogEndPosition(mFogEnd);
+            if (mMaterial != null) {
+                RoadFogMaterialPlugin fogMaterialPlugin = null;
+                IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
+                if (IFogPlugin != null) {
+                    fogMaterialPlugin =  (RoadFogMaterialPlugin)IFogPlugin;
+                    if(mFogEnable){
+                        fogMaterialPlugin.setFogStartPosition(mFogStart);
+                        fogMaterialPlugin.setFogEndPosition(mFogEnd);
+                    }
+                    fogMaterialPlugin.setIsFog(mFogEnable);
+                    fogMaterialPlugin.getVertexShaderFragment().applyParams();
+                    fogMaterialPlugin.getFragmentShaderFragment().applyParams();
                 }
-                fogMaterialPlugin.setIsFog(mFogEnable);
-                fogMaterialPlugin.getVertexShaderFragment().applyParams();
-                fogMaterialPlugin.getFragmentShaderFragment().applyParams();
             }
-
 
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);
