@@ -5,6 +5,7 @@
 
 CrossRoad::CrossRoad(void)
 {
+	m_IsReadDictionary = false;
 }
 
 
@@ -17,7 +18,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 							 const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
 							 HALocationCoordinate2D halGpsCenterPoint,
 							 cv::Size2i szCover,
-							 string strDictPath,
+							 string strDictPath,							 
 							 std::vector<std::vector<HALocationCoordinate2D> >& vecCrossGpsLinks,
 							 std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet,
 							 std::vector<int>& vecCrossPointIndex,
@@ -34,15 +35,20 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	int nRet = 0;
 
 	// ��ȡ�ֵ�����
-	HaloNav haloNav;
-	nRet = haloNav.readDictionary(strDictPath);
-	if (nRet<0)
+	//HaloNav haloNav;
+	if (!m_IsReadDictionary)
 	{
-		return -1;
+		nRet = m_haloNav.readDictionary(strDictPath);
+		if (nRet<0)
+		{
+			return -1;
+		}
+		m_IsReadDictionary = true;
 	}
+	
 
 	// ����ת������·��γ��ת����
-	HAMapPoint hamOffset = haloNav.getOffset();		// ƫ����
+	HAMapPoint hamOffset = m_haloNav.getOffset();		// ƫ����
 	vector<vector<HAMapPoint> > vecMainRoadPixelLinks;
 	vector<HAMapPoint> vecMainRoadPixelPt;
 	for (int i=0; i<nNumLink; i++)
@@ -71,7 +77,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	// ��ȡ·��link	
 	std::vector<LinkInfo> vecRoadNetLinkInfo;		
 	std::vector<std::vector<HAMapPoint> > vecRoadNetLink;
-	haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
+	m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
 
 	
 	// ��·���в�����·���ںϵ�ͼ����
@@ -89,7 +95,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	int nScrW = szCover.width;
 	int nScrH = szCover.height;
 	cv::Rect rtScreen(hamPixelCenter.x-nScrW/2, hamPixelCenter.y-nScrH/2,nScrW,nScrH);	
-	nRet = merMapdata.matchMainRoadCenterInNet4(vecMainRoadPixelPt,
+	nRet = merMapdata.matchMainRoadCenterInNet5(vecMainRoadPixelPt,
 												hamPixelCenter,
 												vecRoadNetLinkInfo,
 												vecRoadNetLink,

@@ -14,12 +14,14 @@
 #define NEAREST_POINT_DIS	30	// 临近点距离阈值
 #define ANGLE_ALLOWANCE	45			// 角度夹角余量（角度制），用于判断两角度是否接近
 #define VECTOR_NEAR_ANGLE	45		// 向量相近，角度余量
+#define VECTOR_PARALLEL_ANGLE	20		// 向量平行，角度余量
 
 #define IS_DRAW		0		// 是否绘图，1-是，0-否
 #define IS_DRAW1	0		// 是否绘图，1-是，0-否
 #define IS_DRAW2	1		// 是否绘图，1-是，0-否
 #define IS_SON_DRAW 0		// 是否显示图像，1-是，0-否
 #define IS_DRAW_NODE 0		// 是否绘制节点图像，1-是，0-否
+#define IS_DRAW_ROADNET 0		// 是否绘制路网图像，1-是，0-否
 
 // 定义link方向
 #define UNCERTAIN_DIRECTION 0	// 不确定
@@ -177,6 +179,19 @@ public:
 								std::vector<int>& vecCrossPointIndex,
 								std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
 
+	int matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoad,
+								HAMapPoint haMainRoadCenterPt,
+								const vector<LinkInfo>& vecRoadNetLinkInfos,
+								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+								cv::Rect rtScreen,
+								HAMapPoint& hamCenterInNet,
+								vector<LinkInfo>& vecMainRoadLinkInfosInNet,
+								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
+								std::vector<HAMapPoint>& vecMainRoadPtInNet,
+								int& nMatchCenterIndex,	// 中心点匹配点在vecMainRoadPtInNet的下标
+								std::vector<int>& vecCrossPointIndex,
+								std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
+
 	// 取中心点一定范围内的主路子集，并按主路顺序排列
 	int getSubMainRoadNearCenter(const vector<HAMapPoint>& vecMainRoad,												   
 								int nCenterSite,
@@ -291,8 +306,17 @@ public:
 					cv::Rect rtScreen,
 					vector<int>& vecRoadNetDirection2MainRoad);
 
+	// 过滤link
+	int formRoadNet2(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+					const vector<LinkInfo>& vecLinkInfos,
+					const vector<LinkEndPointNode> vecAllEndPtnode,							  
+					const vector<int>& vecMainRoadNodeId,
+					int nMatchCenterSite,		// 匹配点在vecMainRoadNodeId中的位置
+					cv::Rect rtScreen,
+					vector<int>& vecRoadNetDirection2MainRoad);
+
 	// 判断点是否在矩形范围内
-	bool IsRectInside(HAMapPoint hamPoint, cv::Rect rect);
+	bool isRectInside(HAMapPoint hamPoint, cv::Rect rect);
 
 	// 计算link内部点按序连成的折线与已知直线的交点
 	int getCrossPointLink2Line(const std::vector<HAMapPoint>& vecLinkPt,
@@ -387,6 +411,14 @@ public:
 							int nCurLinkId, int nCurNodeId, cv::Rect rtScreen,		
 							vector<int>& vecExtendLinksId, vector<int>& vecExtendNodesId);
 
+	// 延伸道路
+	int extendRoad(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+					const vector<LinkInfo>& vecRoadNetLinkInfo,
+					const vector<LinkEndPointNode> vecLinkEndPtnode,
+					const vector<int>& vecMainRoadLinkId, 
+					int nCurDirection,	int nCurLinkId, int nCurNodeId, cv::Rect rtScreen,
+					vector<int>& vecExtendLinksId, vector<int>& vecExtendNodesId);
+
 #ifdef _WINDOWS_VER_
 	void drawImage(cv::Mat& matNavi,HAMapPoint hptCenter, vector<HAMapPoint> hamPts, 
 		cv::Scalar scColor,int nLineWidth=2);
@@ -410,5 +442,4 @@ public:
 public:
     Point m_ptOffset;
 };
-
 #endif /* MergeMapData_hpp */
