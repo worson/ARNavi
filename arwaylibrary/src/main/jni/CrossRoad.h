@@ -5,6 +5,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "types.h"
 #include "LinkFileInfo.hpp"
+#include "NaviFile.h"
 
 using namespace std;
 using namespace cv;
@@ -35,11 +36,14 @@ public:
 					const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
 					HALocationCoordinate2D halGpsCenterPoint,
 					cv::Size2i szCover,
-					string strDictPath,
+					string strDictPath,					
 					std::vector<std::vector<HALocationCoordinate2D> >& vecCrossGpsLinks,
 					std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet,
 					std::vector<int>& vecCrossPointIndex,
 					int& nCenterIndex);
+
+	// ��ȡ�ֵ�����
+
 
 private:
 	/*
@@ -55,5 +59,9 @@ private:
 	int pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
 				HAMapPoint hamOffset,
 				std::vector<HALocationCoordinate2D>& vecGpsPoint);
+private:
+	bool m_IsReadDictionary;		// ����Ƿ��Ѷ������ֵ�
+	HaloNav m_haloNav;		// ��¼�����ֵ�ӳ��
+
 };
 

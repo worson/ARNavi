@@ -34,8 +34,8 @@ using namespace std;
 int searchHopPoint(cv::Mat image, int *x, int *y);
 
 static int g_nIndex = 0;
+CrossRoad crossRoad;
 JNIEXPORT jobjectArray
-
 JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetBranchRoads
         (JNIEnv *env, jobject javaSelf, jlong ecImage, jint centerPointIndex,
          jobjectArray mainRoadArr) {
@@ -255,7 +255,7 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     vector<HALocationCoordinate2D> _mainRoad;
     vector<int> _vecCrossPointIndex;
     int _centerPointInMainRoad;
-    CrossRoad crossRoad;
+    //CrossRoad crossRoad;
     int res = crossRoad.getCrossLinks(_links, _mainRoadLinkInfos, _centerPoint, _szCover,
                                       _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex,_centerPointInMainRoad);
 

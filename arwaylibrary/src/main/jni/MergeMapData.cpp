@@ -1687,7 +1687,7 @@ int MergeMapData::matchMainRoadCenterInNet3(const vector<HAMapPoint>& vecMainRoa
 		HAMapPoint hamEndPt = node.hamEndPoint;	
 
 		// 区域限制
-		if ((!IsRectInside(hamEndPt,rtScreen))&&((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
+		if ((!isRectInside(hamEndPt,rtScreen))&&((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
 			abs(hamEndPt.y-haMainRoadCenterPt.y)>CENTER_COVER)))
 		{
 			continue;
@@ -2176,7 +2176,7 @@ int MergeMapData::matchMainRoadCenterInNet3(const vector<HAMapPoint>& vecMainRoa
 		for (int j=0; j<nTempNum-1; j++)
 		{
 			HAMapPoint hamPt = vecTemp[j];			
-			if (IsRectInside(hamPt, rtScreen) && 
+			if (isRectInside(hamPt, rtScreen) && 
 				hamPt!=vecMatchPathPt[vecMatchPathPt.size()-1])
 			{
 				// 求岔路与主路交点在主路中的位置
@@ -2657,7 +2657,7 @@ int MergeMapData::matchMainRoadCenterInNet4(const vector<HAMapPoint>& vecMainRoa
 		HAMapPoint hamEndPt = node.hamEndPoint;	
 
 		// 区域限制
-		if ((!IsRectInside(hamEndPt,rtScreen))&&((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
+		if ((!isRectInside(hamEndPt,rtScreen))&&((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
 			abs(hamEndPt.y-haMainRoadCenterPt.y)>CENTER_COVER)))
 		{
 			continue;
@@ -3081,18 +3081,18 @@ int MergeMapData::matchMainRoadCenterInNet4(const vector<HAMapPoint>& vecMainRoa
 
 	// 由一个点构造路网	
 	vector<int> vecRoadNetDirection2MainRoad;
- 	nRet = formRoadNet(vecRoadNetLinks,
- 		vecLinkEndPtnode,
- 		/*vecMainRoadNodeId*/vecMatchPathNodeId,
- 		rtScreen,
- 		vecRoadNetDirection2MainRoad);
+ 	//nRet = formRoadNet(vecRoadNetLinks,
+ 	//	vecLinkEndPtnode,
+ 	//	/*vecMainRoadNodeId*/vecMatchPathNodeId,
+ 	//	rtScreen,
+ 	//	vecRoadNetDirection2MainRoad);
 
 	
-	/*nRet = formRoadNet1(vecRoadNetLinks,vecRoadNetLinkInfos,
+	nRet = formRoadNet1(vecRoadNetLinks,vecRoadNetLinkInfos,
 						vecLinkEndPtnode,
 						vecMatchPathNodeId,
 						rtScreen,
-						vecRoadNetDirection2MainRoad);*/
+						vecRoadNetDirection2MainRoad);
 	if (nRet < 0)
 	{
 	#ifdef _WINDOWS_VER_
@@ -3148,7 +3148,7 @@ int MergeMapData::matchMainRoadCenterInNet4(const vector<HAMapPoint>& vecMainRoa
 		for (int j=0; j<nTempNum-1; j++)
 		{
 			HAMapPoint hamPt = vecTemp[j];			
-			if (IsRectInside(hamPt, rtScreen) && 
+			if (isRectInside(hamPt, rtScreen) && 
 				hamPt!=vecMatchPathPt[vecMatchPathPt.size()-1])
 			{
 				// 求岔路与主路交点在主路中的位置
@@ -3344,27 +3344,1249 @@ int MergeMapData::matchMainRoadCenterInNet4(const vector<HAMapPoint>& vecMainRoa
 
 	return 0;
 }
-//typedef int T;
 
-/*
-// 判断元素是否属于集合
-template<typename T>
-bool MergeMapData::isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite)
+// 利用整个屏幕内的主路起点、中心点、终点进行匹配
+int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoad,
+											HAMapPoint haMainRoadCenterPt,
+											const vector<LinkInfo>& vecRoadNetLinkInfos,
+											const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+											cv::Rect rtScreen,
+											HAMapPoint& hamCenterInNet,
+											vector<LinkInfo>& vecMainRoadLinkInfosInNet,
+											std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
+											std::vector<HAMapPoint>& vecMainRoadPtInNet,
+											int& nMatchCenterIndex,	// 中心点匹配点在vecMainRoadPtInNet的下标
+											std::vector<int>& vecCrossPointIndex,
+											std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks)
 {
-	bool bRes = false;	
-	vector<T>::iterator iter = std::find_if(vecElement.begin(),vecElement.end(), element);	//返回的是一个迭代器指针
-	if (iter==vecElement.end())	// 不存在
+	// 参数自检
+	int nNumMainRoadPt = vecMainRoad.size();
+	int nNumLink = vecRoadNetLinks.size();
+	if (nNumMainRoadPt<=0 || nNumLink<=0 ||
+		nNumLink!=vecRoadNetLinkInfos.size())
 	{
-		return false;
-	}
-	else
-	{
-		nSite = std::distance(vecElement.begin(), iter);
-		return true;
+		// 打印log		
+		#ifdef _WINDOWS_VER_
+			printf("==============matchMainRoadCenterInNet3 - parameter Error!!==============\n");
+			m_strErrorLog = "matchMainRoadCenterInNet3 - parameter Error!!";
+		#else
+			LOGD("==============matchMainRoadCenterInNet3 - parameter Error!!==============\n");
+		#endif
+		return -1;
 	}
 
+	int nRet = 0;
+
+	// 求中心点位置
+	int nCenterSi = -1;
+	nRet = getPointSite(vecMainRoad, haMainRoadCenterPt, nCenterSi);
+	if (nRet<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - getPointSite Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - getPointSite Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - getPointSite Error!!==============\n");
+	#endif
+		return -1;
+	}
+		
+	// 获取屏幕边界上的主路起点、终点
+	HAMapPoint hamPrePt, hamNextPt;
+#ifdef _WINDOWS_VER_
+	nRet = getStartEndPoint(vecMainRoad, nCenterSi, rtScreen, hamPrePt, hamNextPt);
+	if (nRet<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - getStartEndPoint Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - getStartEndPoint Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - getStartEndPoint Error!!==============\n");
+	#endif
+		return -1;
+	}
+#else
+	hamPrePt = vecMainRoad[0];
+	hamNextPt = vecMainRoad[nNumMainRoadPt-1];
+#endif
+
+
+#if 0
+	// 求中心点前后各一个节点（与中心点的距离有要求，如大于10个像素），用于计算夹角
+	HAMapPoint hamPrePt, hamNextPt;
+	nRet = getNearestPoint(vecMainRoad,	nCenterSi, true, hamPrePt);
+	if (nRet<0)
+	{
+		return -1;
+	}
+	nRet = getNearestPoint(vecMainRoad,	nCenterSi, false, hamNextPt);
+	if (nRet<0)
+	{
+		return -1;
+	}
+
+	// 取中心点与前、后临近点连线上的所有点
+	vector<HAMapPoint> vecSubMainRoad;
+	vecSubMainRoad.push_back(hamPrePt);
+	nRet = getPointsBetweenTwoPoints(hamPrePt,haMainRoadCenterPt,vecSubMainRoad);
+	if (nRet<0)
+	{
+		return -1;
+	}
+	vecSubMainRoad.push_back(haMainRoadCenterPt);
+	int nCenterSiInSubMainRoad = vecSubMainRoad.size() - 1;		// 中心点在子路中的位置
+	nRet = getPointsBetweenTwoPoints(haMainRoadCenterPt,hamNextPt,vecSubMainRoad);
+	if (nRet<0)
+	{
+		return -1;
+	}
+	vecSubMainRoad.push_back(hamNextPt);
+
+	// 缩短子路，使得中心点两侧点数相等，保证两边比重一致
+	int nDel = vecSubMainRoad.size() - nCenterSiInSubMainRoad - 1;
+	vector<HAMapPoint> vecTemp;
+	if (nDel>nCenterSiInSubMainRoad)	// 中心点之后的点数多
+	{
+		vecTemp.insert(vecTemp.begin(),vecSubMainRoad.begin(),vecSubMainRoad.begin()+2*nCenterSiInSubMainRoad+1);
+	} 
+	else	// 中心点之前的点数多
+	{
+		vecTemp.insert(vecTemp.begin(),vecSubMainRoad.begin()+nCenterSiInSubMainRoad-nDel,vecSubMainRoad.end());
+	}
+	vecSubMainRoad.clear();
+	vecSubMainRoad = vecTemp;
+	vecTemp.clear();
+	nCenterSiInSubMainRoad = vecSubMainRoad.size()/2;
+#endif
+
+	// 求中心夹角
+	Vec2f vMainRoad1(hamPrePt.x-haMainRoadCenterPt.x, hamPrePt.y-haMainRoadCenterPt.y);		// 前一个点与中心点构成的向量
+	Vec2f vMainRoad2(hamNextPt.x-haMainRoadCenterPt.x, hamNextPt.y-haMainRoadCenterPt.y);	// 后一个点与中心点构成的向量	
+	float fMainAngle = getAngle(vMainRoad1, vMainRoad2);
+
+	// 构造link端点节点
+	vector<LinkEndPointNode> vecLinkEndPtnode;
+	nRet = formLinkEndPointNode(vecRoadNetLinks, vecRoadNetLinkInfos, vecLinkEndPtnode);
+	if (nRet<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - formLinkEndPointNode Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - formLinkEndPointNode Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - formLinkEndPointNode Error!!==============\n");
+	#endif
+		return -1;
+	}
+
+
+	// =================绘图==================
+#ifdef _WINDOWS_VER_
+#if IS_DRAW1	// 绘图
+	Mat matTemp1(m_matImage.rows,m_matImage.cols,CV_8UC3);
+	matTemp1.setTo(0);
+	int offset_x1 =0,offset_y1 = 0;
+	offset_x1 = haMainRoadCenterPt.x - matTemp1.cols/2;
+	offset_y1 = haMainRoadCenterPt.y - matTemp1.rows/2;
+	cv::Point ptTemp = cv::Point(haMainRoadCenterPt.x, haMainRoadCenterPt.y) - cv::Point(offset_x1,offset_y1);
+	cv::circle( matTemp1,ptTemp,2,cv::Scalar( 0, 255, 0),2,8);	
+	for (int i=0; i<vecLinkEndPtnode.size(); i++)
+	{
+		LinkEndPointNode node = vecLinkEndPtnode[i];
+		HAMapPoint hamEndPt = node.hamEndPoint;
+
+		// 区域限制
+		if ((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
+			abs(hamEndPt.y-haMainRoadCenterPt.y)>CENTER_COVER))
+		{
+			continue;
+		}
+
+		cv::Point ptTemp = cv::Point(hamEndPt.x, hamEndPt.y) - cv::Point(offset_x1,offset_y1);
+		cv::circle( matTemp1,ptTemp,2,cv::Scalar( 0, 0, 255 ),2,8);
+		for (int j=0; j<node.vecNeighborPoint.size(); j++)
+		{
+			vector<HAMapPoint> vecTemp;
+			vecTemp.push_back(hamEndPt);
+			vecTemp.push_back(node.vecNeighborPoint[j]);
+			drawImage(matTemp1,haMainRoadCenterPt,vecTemp,cv::Scalar(0,0,0));
+			cv::circle( matTemp1,Point2i(node.vecNeighborPoint[j].x,node.vecNeighborPoint[j].y),
+				1,cv::Scalar( 0, 255, 0),1,8);
+		}
+		imshow("matTemp1",matTemp1);
+		waitKey(0);		
+	}
+#endif
+#endif
+	// =====================================
+
+#ifdef _WINDOWS_VER_
+#if IS_DRAW || IS_DRAW2	// 绘图
+	Mat matTemp(m_matImage.rows,m_matImage.cols,CV_8UC3);
+	matTemp.setTo(0);
+	int offsetx =0,offsety = 0;
+	offsetx = haMainRoadCenterPt.x - matTemp.cols/2;
+	offsety = haMainRoadCenterPt.y - matTemp.rows/2;
+	cv::Point ptOffset(offsetx,offsety);
+	//m_ptOffset = ptOffset;		// 成员赋值
+	cv::Point ptTemp = cv::Point(haMainRoadCenterPt.x, haMainRoadCenterPt.y) - ptOffset;
+	cv::circle( matTemp,ptTemp,2,cv::Scalar( 0, 255, 0),2,8);	
+	drawImage(matTemp,haMainRoadCenterPt,/*vecSubMainRoad*/vecMainRoad,cv::Scalar(255,0,0));
+	vector<HAMapPoint> vecFirstHalfMainRoad, vecSecondHalfMainRoad;		// 记录前后半段主路
+	vecFirstHalfMainRoad.insert(vecFirstHalfMainRoad.begin(),vecMainRoad.begin(),vecMainRoad.begin()+nCenterSi+1);
+	vecSecondHalfMainRoad.insert(vecSecondHalfMainRoad.begin(),vecMainRoad.begin()+nCenterSi+1,vecMainRoad.end());
+	drawImage(matTemp,haMainRoadCenterPt,vecFirstHalfMainRoad,cv::Scalar(255,0,255),1);		// 前半段，紫色
+	drawImage(matTemp,haMainRoadCenterPt,vecSecondHalfMainRoad,cv::Scalar(0,255,255),1);	// 后半段，黄色
+#endif
+#if IS_DRAW2	// 绘图
+	for (int i=0; i<nNumLink; i++)
+	{
+		drawImage(matTemp,haMainRoadCenterPt,vecRoadNetLinks[i],cv::Scalar(0,0,255),1);
+	}
+	cv::Point ptPre = cv::Point(hamPrePt.x, hamPrePt.y) - ptOffset;
+	cv::Point ptNext = cv::Point(hamNextPt.x, hamNextPt.y) - ptOffset;
+	Scalar colorMainRoad(255,255,0);
+	//line(matTemp,ptTemp,ptPre,colorMainRoad,1);	
+	//line(matTemp,ptTemp,ptNext,colorMainRoad,1);	
+
+	// 绘制所有端点
+	for (int i=0; i<vecLinkEndPtnode.size(); i++)
+	{
+		HAMapPoint hamPtTemp = vecLinkEndPtnode[i].hamEndPoint;
+		cv::Point ptTemp = cv::Point(hamPtTemp.x,hamPtTemp.y) - ptOffset;
+		cv::circle( matTemp,ptTemp,2,cv::Scalar( 255, 255, 255),2,8);
+	}
+
+	#if IS_SON_DRAW
+		imshow("matTemp",matTemp);
+		cv::waitKey(0);
+	#endif
+#endif
+#endif
+
+
+	// 角度匹配
+	int nMatchSi = -1, nPreSonSi = -1, nNextSonSi = -1;		// 记录匹配位置
+	float fMinDelAngle = 360.f;		// 记录夹角之差的最小绝对值
+	int nEndPtNum = vecLinkEndPtnode.size();
+	LinkEndPointNode node;
+	double uMinError= -1.f;
+	HAMapPoint hamMatchPrePt, hamMatchNextPt;	// 匹配点
+	//vector<vector<int> > vecMatchPath;		// 记录匹配的路径
+	//vector<vector<int> > vecMatchPathNodeId;		// 记录匹配路径上的Node Id
+	vector<int> vecMatchPath;		// 记录匹配的路径
+	vector<int> vecMatchPathNodeId;		// 记录匹配路径上的Node Id
+	vector<int> vecOptionNodeId;		// 记录备选点集合
+	double uMinBorderDis = -1;	// 记录对应边界点间最小距离
+	double uMinCenterDis = -1;	// 记录匹配点到中心点的最小距离
+	double uMinPathDis = -1;
+	
+	for (int i=0; i<nEndPtNum; i++)
+	{
+		node = vecLinkEndPtnode[i];
+		int nNeighborNodeNum = node.vecNeighborNodeId.size();
+		if (nNeighborNodeNum<=2)		// 邻居点限制
+		{
+			continue;
+		}
+
+		HAMapPoint hamEndPt = node.hamEndPoint;	
+
+		// 区域限制
+		if ((!isRectInside(hamEndPt,rtScreen))&&((abs(hamEndPt.x-haMainRoadCenterPt.x)>CENTER_COVER || 
+			abs(hamEndPt.y-haMainRoadCenterPt.y)>CENTER_COVER)))
+		{
+			continue;
+		}
+
+#ifdef _WINDOWS_VER_
+#if IS_DRAW1	// 绘图
+		cv::Point ptTemp = cv::Point(hamEndPt.x, hamEndPt.y) - cv::Point(offset_x1,offset_y1);
+		cv::circle( matTemp1,ptTemp,2,cv::Scalar( 0, 255, 255 ),2,8);
+		for (int j=0; j<node.vecNeighborPoint.size(); j++)
+		{
+			vector<HAMapPoint> vecTemp;
+			vecTemp.push_back(hamEndPt);
+			vecTemp.push_back(node.vecNeighborPoint[j]);
+			drawImage(matTemp1,haMainRoadCenterPt,vecTemp,cv::Scalar(0,255,255));
+			cv::circle( matTemp1,Point2i(node.vecNeighborPoint[j].x,node.vecNeighborPoint[j].y),
+				1,cv::Scalar( 0, 255, 255),1,8);
+		}
+		imshow("matTemp1",matTemp1);
+		waitKey(0);
+#endif
+
+//#if IS_DRAW2	// 绘图
+//		cv::Point ptTemp = cv::Point(hamEndPt.x, hamEndPt.y) - ptOffset;
+//		cv::circle( matTemp,ptTemp,2,cv::Scalar( 0, 255, 255),2,8);
+//// 		imshow("matTemp",matTemp);
+//// 		waitKey(0);
+//#endif
+#endif
+		
+
+		// 延伸link直到超出屏幕边界
+		vector<HAMapPoint> vecBorderPt;
+		vector<int> vecBorderPtDirection;
+		vector<vector<int> > vecPathLinkId;
+		vector<vector<int> > vecPathNodeId;
+
+		/*nRet = extendLink(vecRoadNetLinks,vecLinkEndPtnode,	i, rtScreen, vecBorderPt, 
+							vecBorderPtDirection, vecPathLinkId, vecPathNodeId);*/
+		nRet = extendLink1(vecRoadNetLinks,vecLinkEndPtnode,	i, rtScreen, vecBorderPt, 
+ 			vecBorderPtDirection, vecPathLinkId, vecPathNodeId);
+		if (nRet<0 || vecBorderPt.size()<=0)
+		{
+			continue;
+		}
+		
+	#ifdef _WINDOWS_VER_
+		#if IS_DRAW	// 绘图
+			cv::Point ptTemp = cv::Point(hamEndPt.x, hamEndPt.y) - ptOffset;
+			cv::circle( matTemp,ptTemp,2,cv::Scalar( 0, 255, 255),2,8);
+
+			for (int j=0; j<vecBorderPt.size(); j++)
+			{
+				cv::Point ptBorder = cv::Point(vecBorderPt[j].x, vecBorderPt[j].y) - ptOffset;
+				Scalar color(0,255,0);
+				line(matTemp,ptTemp,ptBorder,color,1);	
+			}
+
+			imshow("matTemp",matTemp);
+			cv::waitKey(0);
+		#endif
+	#endif
+
+		// 求与主路中心点前后两向量最接近的两向量
+		int nBorderPtNum = vecBorderPt.size();
+		int nSi0=-1, nSi1=-1;
+		double uDis0 = -1, uDis1 = -1;
+		Vec2f v0, v1;
+		vector<int> vecStartOptionPtId, vecEndOptionPtId;		// 记录边界起点、终点的候选集
+		for (int j=0; j<2; j++)
+		{
+			Vec2f vMainRoad = vMainRoad1;	// 中心点之前的向量
+			if (j>0)
+			{				
+				vMainRoad = vMainRoad2;	// 中心点之后的向量
+			}
+
+			float fMinAngle = 360.f;
+			int nTempSi=0;
+			Vec2f vTemp;
+
+			for (int k=0; k<nBorderPtNum; k++)
+			{
+				if (j==0)
+				{
+					if (vecBorderPtDirection[k]==2)
+					{
+						continue;
+					}
+				}
+				else
+				{
+					if (vecBorderPtDirection[k]==3)
+					{
+						continue;
+					}
+				}
+				
+				//LinkEndPointNode nextNode = vecLinkEndPtnode[node.vecNeighborNodeId[k]];
+				//HAMapPoint hamPt = nextNode.hamEndPoint;
+				HAMapPoint hamPt = vecBorderPt[k];
+				Vec2f v(hamPt.x-hamEndPt.x,hamPt.y-hamEndPt.y);
+
+#if 0
+				// ===================方向限制==============
+				// 方向判断 int direction;//道路方向:0未调查,默认双向,1双向,2正方向(link的起点到终点),3反方向
+				int nLinkId = node.vecLinkId[k];
+				int nDirection = vecRoadNetLinkInfos[nLinkId].direction;
+				bool bIsEnd = (hamEndPt==(HAMapPoint)vecRoadNetLinks[nLinkId][0])?false:true;		// 标识端点是否属于link的终点
+				if (j==0)	// 标识端点应为link终点
+				{
+					if ((bIsEnd==true&&nDirection==3) || (bIsEnd==false&&nDirection==2))
+					{
+						continue;
+					}
+				} 
+				else		// 标识端点应为link起点
+				{
+					if ((bIsEnd==true&&nDirection==2) || (bIsEnd==false&&nDirection==3))
+					{
+						continue;
+					}
+				}
+				// =====================================
+#endif
+
+				float fAngle = getAngle(vMainRoad, v);				
+				if (fAngle<VECTOR_NEAR_ANGLE/*fMinAngle*/)
+				{
+					fMinAngle = fAngle;
+					nTempSi = k;
+					vTemp = v;
+
+					if (j==0)
+					{
+						vecStartOptionPtId.push_back(nTempSi);
+					} 
+					else
+					{
+						vecEndOptionPtId.push_back(nTempSi);
+					}
+				}				
+			}	// End k
+
+		}	// End j
+		/*if (nSi0<0 || nSi1<0 || nSi0==nSi1)
+		{
+			continue;
+		}*/
+		if (vecStartOptionPtId.size()<=0 || vecEndOptionPtId.size()<=0)
+		{
+			continue;
+		}
+
+		// 关于候选路径，求路径起点、终点离主路起点、终点距离最近的路径
+		double uMinOptionDis = 2*(rtScreen.width+rtScreen.height);				// 设定一个达不到的初值，便于循环比较
+		for (int j=0; j<vecStartOptionPtId.size(); j++)
+		{
+			HAMapPoint hamStartOptionPt = vecBorderPt[vecStartOptionPtId[j]];
+			Vec2f vStart(hamStartOptionPt.x-hamEndPt.x,hamStartOptionPt.y-hamEndPt.y);
+			for (int k=0; k<vecEndOptionPtId.size(); k++)
+			{
+				HAMapPoint hamEndOptionPt = vecBorderPt[vecEndOptionPtId[k]];
+				Vec2f vEnd(hamEndOptionPt.x-hamEndPt.x,hamEndOptionPt.y-hamEndPt.y);
+				float fAngle = getAngle(vStart,vEnd);
+				float fDelAngle = abs(fMainAngle-fAngle);
+				if (fDelAngle<ANGLE_ALLOWANCE)
+				{
+					// 求距离
+					float fStartDis = getDistancePoint2Point(hamStartOptionPt.x,hamStartOptionPt.y,hamPrePt.x,hamPrePt.y);
+					float fEndDis = getDistancePoint2Point(hamEndOptionPt.x,hamEndOptionPt.y,hamNextPt.x,hamNextPt.y);
+					float fDis = fStartDis + fEndDis;
+					
+					if (fDis<uMinOptionDis)
+					{
+						uMinOptionDis = fDis;
+						nSi0 = vecStartOptionPtId[j];
+						nSi1 = vecEndOptionPtId[k];
+						v0 = vStart;
+						v1 = vEnd;
+					}
+				}
+
+			}
+		}
+
+		// 保存每个节点的方向数据，绿-与主路同向，红-与主路反向
+#ifdef _WINDOWS_VER_
+#if 0//IS_DRAW2	// 绘图								
+		cv::Point ptV = Point(hamEndPt.x,hamEndPt.y) - ptOffset;
+		cv::Point ptTemp0 = Point(vecBorderPt[nSi0].x,vecBorderPt[nSi0].y) - ptOffset;		
+		cv::Point ptTemp1 = Point(vecBorderPt[nSi1].x,vecBorderPt[nSi1].y) - ptOffset;						
+		cv::circle( matTemp,ptV,1,cv::Scalar( 0, 255, 255),2,8);
+		cv::circle( matTemp,ptTemp0,1,cv::Scalar( 0, 255, 255),2,8);
+		cv::circle( matTemp,ptTemp1,1,cv::Scalar( 0, 255, 255),2,8);
+		Scalar color(255,255,255);
+		cv::line(matTemp,ptTemp0,ptV,color,1);	
+		cv::line(matTemp,ptV,ptTemp1,color,1);	
+#endif
+#endif
+
+#if 0	// 利用最佳匹配角
+		// 求夹角		
+		float fAngle = getAngle(v0,v1);
+		float fDelAngle = abs(fMainAngle-fAngle);
+		if (fDelAngle<fMinDelAngle)
+		{
+			fMinDelAngle = fDelAngle;
+			nMatchSi = i;
+			hamMatchPrePt = vecBorderPt[nSi0];
+			hamMatchNextPt = vecBorderPt[nSi1];
+
+			vecMatchPath.clear();
+			vecMatchPath.push_back(vecPathLinkId[nSi0]);
+			vecMatchPath.push_back(vecPathLinkId[nSi1]);
+
+			vecMatchPathNodeId.clear();
+			vecMatchPathNodeId.push_back(vecPathNodeId[nSi0]);
+			vecMatchPathNodeId.push_back(vecPathNodeId[nSi1]);
+		}
+#else	// 记录候选点，利用边界点间距离最短做判据
+		float fAngle = getAngle(v0,v1);
+		float fDelAngle = abs(fMainAngle-fAngle);
+		if (fDelAngle<ANGLE_ALLOWANCE)
+		{
+			vecOptionNodeId.push_back(i);			
+
+			// 匹配点与中心点距离
+			double uCenterDis = sqrt((haMainRoadCenterPt.x-hamEndPt.x)*(haMainRoadCenterPt.x-hamEndPt.x)+
+				(haMainRoadCenterPt.y-hamEndPt.y)*(haMainRoadCenterPt.y-hamEndPt.y));
+
+			double uPathDis0 = -1, uPathDis1 = -1, uPathDis = -1;
+			nRet = getDisBorder2MatchPt(vecRoadNetLinks, vecPathLinkId[nSi0], rtScreen,
+										vecBorderPt[nSi0], hamEndPt, uPathDis0);
+			if (nRet<0)
+			{
+				continue;
+			}
+			nRet = getDisBorder2MatchPt(vecRoadNetLinks, vecPathLinkId[nSi1], rtScreen,
+										vecBorderPt[nSi0], hamEndPt, uPathDis1);
+			if (nRet<0)
+			{
+				continue;
+			}
+			uPathDis = uPathDis0 + uPathDis1;
+
+
+			// 边界点间距离
+			double uDis = uDis0 + uDis1;
+			if (uMinBorderDis<0)
+			{
+				uMinBorderDis = uMinOptionDis/*uDis*/;
+				nMatchSi = i;
+
+				hamMatchPrePt = vecBorderPt[nSi0];
+				hamMatchNextPt = vecBorderPt[nSi1];
+								
+				vecMatchPath.clear();
+				vecMatchPath = vecPathLinkId[nSi0];
+				reverseOrder(vecMatchPath);		// 倒序重排，与主路方向一致				
+				vecMatchPath.insert(vecMatchPath.end(),vecPathLinkId[nSi1].begin(),vecPathLinkId[nSi1].end());
+
+				vecMatchPathNodeId.clear();
+				vecMatchPathNodeId = vecPathNodeId[nSi0];
+				reverseOrder(vecMatchPathNodeId);		// 倒序重排，与主路方向一致
+				vecMatchPathNodeId.erase(vecMatchPathNodeId.end()-1);
+				vecMatchPathNodeId.insert(vecMatchPathNodeId.end(),vecPathNodeId[nSi1].begin(),vecPathNodeId[nSi1].end());				
+
+				uMinCenterDis = uCenterDis;
+				uMinPathDis = uPathDis;
+			} 
+			else
+			{
+				if (/*uDis*/uMinOptionDis<uMinBorderDis)
+				{
+					uMinBorderDis = uMinOptionDis/*uDis*/;
+					nMatchSi = i;
+
+					hamMatchPrePt = vecBorderPt[nSi0];
+					hamMatchNextPt = vecBorderPt[nSi1];
+
+				
+					vecMatchPath.clear();
+					vecMatchPath = vecPathLinkId[nSi0];
+					reverseOrder(vecMatchPath);		// 倒序重排，与主路方向一致				
+					vecMatchPath.insert(vecMatchPath.end(),vecPathLinkId[nSi1].begin(),vecPathLinkId[nSi1].end());
+
+					vecMatchPathNodeId.clear();
+					vecMatchPathNodeId = vecPathNodeId[nSi0];
+					reverseOrder(vecMatchPathNodeId);		// 倒序重排，与主路方向一致
+					vecMatchPathNodeId.erase(vecMatchPathNodeId.end()-1);
+					vecMatchPathNodeId.insert(vecMatchPathNodeId.end(),vecPathNodeId[nSi1].begin(),vecPathNodeId[nSi1].end());	
+
+					uMinCenterDis = uCenterDis;
+					uMinPathDis = uPathDis;
+				}
+				else if (abs(/*uDis*/uMinOptionDis-uMinBorderDis)<1e-10)		// 相等时，基于路径长度
+				{
+					if (uPathDis<uMinPathDis)
+					{
+						uMinBorderDis = uMinOptionDis/*uDis*/;
+						nMatchSi = i;
+
+						hamMatchPrePt = vecBorderPt[nSi0];
+						hamMatchNextPt = vecBorderPt[nSi1];
+						
+
+						vecMatchPath.clear();
+						vecMatchPath = vecPathLinkId[nSi0];
+						reverseOrder(vecMatchPath);		// 倒序重排，与主路方向一致				
+						vecMatchPath.insert(vecMatchPath.end(),vecPathLinkId[nSi1].begin(),vecPathLinkId[nSi1].end());
+
+						vecMatchPathNodeId.clear();
+						vecMatchPathNodeId = vecPathNodeId[nSi0];
+						reverseOrder(vecMatchPathNodeId);		// 倒序重排，与主路方向一致
+						vecMatchPathNodeId.erase(vecMatchPathNodeId.end()-1);
+						vecMatchPathNodeId.insert(vecMatchPathNodeId.end(),vecPathNodeId[nSi1].begin(),vecPathNodeId[nSi1].end());	
+
+						uMinCenterDis = uCenterDis;
+						uMinPathDis = uPathDis;
+					}
+					else if (abs(uPathDis-uMinPathDis)<1e-10)		// 相等时，基于路径长度
+					{
+						if (uCenterDis<uMinCenterDis)
+						{
+							uMinBorderDis = uMinOptionDis/*uDis*/;
+							nMatchSi = i;
+
+							hamMatchPrePt = vecBorderPt[nSi0];
+							hamMatchNextPt = vecBorderPt[nSi1];
+
+
+							vecMatchPath.clear();
+							vecMatchPath = vecPathLinkId[nSi0];
+							reverseOrder(vecMatchPath);		// 倒序重排，与主路方向一致				
+							vecMatchPath.insert(vecMatchPath.end(),vecPathLinkId[nSi1].begin(),vecPathLinkId[nSi1].end());
+
+							vecMatchPathNodeId.clear();
+							vecMatchPathNodeId = vecPathNodeId[nSi0];
+							reverseOrder(vecMatchPathNodeId);		// 倒序重排，与主路方向一致
+							vecMatchPathNodeId.erase(vecMatchPathNodeId.end()-1);
+							vecMatchPathNodeId.insert(vecMatchPathNodeId.end(),vecPathNodeId[nSi1].begin(),vecPathNodeId[nSi1].end());	
+
+							uMinCenterDis = uCenterDis;
+							uMinPathDis = uPathDis;
+						}
+					}
+				}
+			}			
+		}
+
+#endif
+
+
+		// =================绘图==================
+#ifdef _WINDOWS_VER_
+#if IS_DRAW	// 绘图
+		//Mat matTemp(m_matImage.rows,m_matImage.cols,CV_8UC3);
+		//matTemp.setTo(0);
+		//int offset_x =0,offset_y = 0;
+		offsetx = haMainRoadCenterPt.x - matTemp.cols/2;
+		offsety = haMainRoadCenterPt.y - matTemp.rows/2;
+		cv::Point ptTemp = cv::Point(hamEndPt.x, hamEndPt.y) - cv::Point(offsetx,offsety);
+		cv::circle( matTemp,ptTemp,2,cv::Scalar( 0, 0, 255 ),2,8);
+		vector<HAMapPoint> vecTemp;
+		vecTemp.push_back(node.vecNeighborPoint[nSi0]);
+		vecTemp.push_back(hamEndPt);
+		vecTemp.push_back(node.vecNeighborPoint[nSi1]);
+		drawImage(matTemp,haMainRoadCenterPt,vecTemp,cv::Scalar(0,0,0));
+		cv::circle( matTemp,Point2i(node.vecNeighborPoint[nSi0].x,node.vecNeighborPoint[nSi0].y),
+			1,cv::Scalar( 0, 255, 0),1,8);
+		cv::circle( matTemp,Point2i(node.vecNeighborPoint[nSi1].x,node.vecNeighborPoint[nSi1].y),
+			1,cv::Scalar( 0, 255, 0),1,8);
+		imshow("matTemp",matTemp);
+		waitKey(0);
+#endif
+#endif
+		// =====================================
+#if 0
+		// 求距离
+		double uError = 0.f;
+		nRet = getMainSubLine2SubNetDis(vecSubMainRoad, 
+			nCenterSiInSubMainRoad,
+			node.vecNeighborPoint[nSi0],
+			hamEndPt,
+			node.vecNeighborPoint[nSi1],										
+			uError);
+		if (nRet<0)
+		{
+			continue;
+		}
+		if (uMinError<0)
+		{
+			uMinError = uError;
+			nMatchSi = i;
+		}
+		else
+		{
+			nMatchSi = (uError<uMinError)?i:nMatchSi;
+			uMinError = (uError<uMinError)?uError:uMinError;
+		}
+#endif
+	}		// End i
+
+	if (nMatchSi<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - no Match Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - no Match Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - no Match Error!!==============\n");
+	#endif
+		return -1;
+	}
+
+
+	// 输出
+	//nMatchSi = 29;
+	hamCenterInNet = vecLinkEndPtnode[nMatchSi].hamEndPoint;
+	
+
+	// 由一个点构造路网	
+	vector<int> vecRoadNetDirection2MainRoad;
+ 	//nRet = formRoadNet(vecRoadNetLinks,
+ 	//	vecLinkEndPtnode,
+ 	//	/*vecMainRoadNodeId*/vecMatchPathNodeId,
+ 	//	rtScreen,
+ 	//	vecRoadNetDirection2MainRoad);
+
+	int nMatchCenterSite = 0;
+	if(!isBelongToVector(vecMatchPathNodeId,nMatchSi,nMatchCenterSite))
+	{
+		return -1;
+	}
+	nRet = formRoadNet2(vecRoadNetLinks,vecRoadNetLinkInfos,
+						vecLinkEndPtnode,
+						vecMatchPathNodeId,
+						nMatchCenterSite,
+						rtScreen,
+						vecRoadNetDirection2MainRoad);
+	if (nRet < 0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - formRoadNet Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - formRoadNet Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - formRoadNet Error!!==============\n");
+	#endif
+		return -1;
+	}
+
+	// 过滤路网
+	
+ 	nRet = filterRoadNet(vecRoadNetLinks,
+ 						vecRoadNetDirection2MainRoad,
+ 						/*vecMainRoadLinkId*/vecMatchPath,
+ 						vecCrossGpsLinks);
+ 	if (nRet<0)
+ 	{
+ 	#ifdef _WINDOWS_VER_
+ 		printf("==============matchMainRoadCenterInNet3 - filterRoadNet Error!!==============\n");
+ 		m_strErrorLog = "matchMainRoadCenterInNet3 - filterRoadNet Error!!";
+ 	#else
+ 		LOGD("==============matchMainRoadCenterInNet3 - filterRoadNet Error!!==============\n");
+ 	#endif
+ 		return -1;
+ 	}
+
+	// 添加匹配的主路点，及与岔路交点在主路中的下标
+	vector<HAMapPoint> vecMatchPathPt;
+
+	vecMatchPathPt.push_back(hamMatchPrePt);		// 第一个点
+	for (int i=0; i<vecMatchPath.size(); i++)
+	{
+		int nLinkId = vecMatchPath[i];
+		if (nLinkId<0)
+		{
+			continue;
+		}
+
+		// link两个端点对应的node Id
+		int nPathStartNodeId = vecMatchPathNodeId[i];
+		int nPathEndNodeId = vecMatchPathNodeId[i+1];
+
+		vector<HAMapPoint> vecTemp = vecRoadNetLinks[nLinkId];
+		// 判断方向
+		if (vecTemp[0]==vecLinkEndPtnode[nPathEndNodeId].hamEndPoint)
+		{
+			reverseOrder(vecTemp);
+		}
+
+		int nTempNum = vecTemp.size();
+		for (int j=0; j<nTempNum-1; j++)
+		{
+			HAMapPoint hamPt = vecTemp[j];			
+			if (isRectInside(hamPt, rtScreen) && 
+				hamPt!=vecMatchPathPt[vecMatchPathPt.size()-1])
+			{
+				// 求岔路与主路交点在主路中的位置
+				if (j==0 && vecLinkEndPtnode[nPathStartNodeId].vecNeighborNodeId.size()>2)
+				{
+					vecCrossPointIndex.push_back(vecMatchPathPt.size());
+				}
+
+				vecMatchPathPt.push_back(hamPt);					
+			}
+		} // end j
+	}	// end i
+
+	vecMatchPathPt.push_back(hamMatchNextPt);	// 最后一个点
+
+
+	// 求匹配点在集合中的位置
+	nMatchCenterIndex = -1;
+	for (int i=0; i<vecMatchPathPt.size(); i++)
+	{
+		if (hamCenterInNet==vecMatchPathPt[i])
+		{
+			nMatchCenterIndex = i;
+			break;
+		}
+	}
+	if (nMatchCenterIndex<0)
+	{
+		return -1;
+	}
+
+	//vecCrossGpsLinks.insert(vecCrossGpsLinks.begin(),vecMatchPathPt);		// 添加，主路作为第0个
+	vecCrossGpsLinks.push_back(vecMatchPathPt);		// 添加，主路作为最后一个，方便平移
+
+	// 计算从匹配路径移至主路的最佳平移距离
+	vector<HAMapPoint> vecMainRoadVertex, vecMatchRoadVertex;
+	vecMainRoadVertex.push_back(hamPrePt);
+	vecMainRoadVertex.push_back(hamNextPt);
+	vecMatchRoadVertex.push_back(hamMatchPrePt);
+	vecMatchRoadVertex.push_back(hamMatchNextPt);
+	HAMapPoint hamOffset;
+	nRet = getOffset2MainRoad(vecMainRoadVertex, vecMatchRoadVertex, hamOffset);
+	if (nRet<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - getOffset2MainRoad Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - getOffset2MainRoad Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - getOffset2MainRoad Error!!==============\n");
+	#endif
+		return -1;
+	}
+
+	// 平移
+	nRet = translateRoadNet(vecCrossGpsLinks, hamOffset);
+	if (nRet<0)
+	{
+	#ifdef _WINDOWS_VER_
+		printf("==============matchMainRoadCenterInNet3 - translateRoadNet Error!!==============\n");
+		m_strErrorLog = "matchMainRoadCenterInNet3 - translateRoadNet Error!!";
+	#else
+		LOGD("==============matchMainRoadCenterInNet3 - translateRoadNet Error!!==============\n");
+	#endif
+		return -1;
+	}
+
+	// 获取平移后的主路匹配点
+	vecMainRoadPtInNet = vecCrossGpsLinks[vecCrossGpsLinks.size()-1];
+	vecCrossGpsLinks.erase(vecCrossGpsLinks.end()-1);		// 去掉最后一个vector元素，除去主路
+
+	hamCenterInNet = vecMainRoadPtInNet[nMatchCenterIndex];
+
+	// 画图
+#ifdef _WINDOWS_VER_
+#if IS_DRAW
+	//Mat matNavi(800,800,CV_8UC3);
+	//matNavi.setTo(0);
+	Mat matNavi = m_matImage;
+	drawImage(matNavi, haMainRoadCenterPt, vecMainRoad,Scalar(255,0,0));		// 原始主路	
+	for (int i=0; i<nNumLink; i++)
+	{
+		drawImage(matNavi,haMainRoadCenterPt, vecRoadNetLinks[i],Scalar(0,0,0));
+	}
+
+	// 匹配的主路
+#if 0
+	vector<HAMapPoint> vecNewMainRoad(nNumMainRoadPt);
+	int nDx = hamCenterInNet.x - haMainRoadCenterPt.x;
+	int nDy = hamCenterInNet.y - haMainRoadCenterPt.y;
+	for (int i=0; i<nNumMainRoadPt; i++)
+	{
+		vecNewMainRoad[i].x = vecMainRoad[i].x+nDx;
+		vecNewMainRoad[i].y = vecMainRoad[i].y+nDy;
+	}
+	drawImage(matNavi, haMainRoadCenterPt, vecNewMainRoad,Scalar(0,255,0));		// 新主路
+#else
+	int nSubMainRoadNum = vecSubMainRoad.size();
+	vector<HAMapPoint> vecNewMainRoad(nSubMainRoadNum);
+	int nDx = hamCenterInNet.x - haMainRoadCenterPt.x;
+	int nDy = hamCenterInNet.y - haMainRoadCenterPt.y;
+	for (int i=0; i<nSubMainRoadNum; i++)
+	{
+		vecNewMainRoad[i].x = vecSubMainRoad[i].x+nDx;
+		vecNewMainRoad[i].y = vecSubMainRoad[i].y+nDy;
+	}
+	drawImage(matNavi, haMainRoadCenterPt, vecNewMainRoad,Scalar(0,255,0));		// 新主路
+#endif
+
+
+	// 两个中心点
+	int offset_x =0,offset_y = 0;
+	offset_x = haMainRoadCenterPt.x - matNavi.cols/2;
+	offset_y = haMainRoadCenterPt.y - matNavi.rows/2;
+	cv::Point ptOld = cv::Point(haMainRoadCenterPt.x, haMainRoadCenterPt.y) - cv::Point(offset_x,offset_y);
+	cv::Point ptNew = cv::Point(hamCenterInNet.x, hamCenterInNet.y) - cv::Point(offset_x,offset_y);
+	cv::circle( matNavi,ptOld,2,cv::Scalar( 0, 0, 255 ),2,8);
+	cv::circle( matNavi,ptNew,2,cv::Scalar( 0, 0, 255 ),2,8);
+
+#if IS_SON_DRAW
+	imshow("matNavi",matNavi);
+	waitKey(0);
+#endif
+#endif
+
+#if IS_DRAW2	// 绘图
+	node = vecLinkEndPtnode[nMatchSi];
+	cv::Point ptV = Point(node.hamEndPoint.x,node.hamEndPoint.y) - ptOffset;
+	//cv::Point ptTemp0 = Point(node.vecNeighborPoint[nPreSonSi].x,node.vecNeighborPoint[nPreSonSi].y) - ptOffset;		
+	//cv::Point ptTemp1 = Point(node.vecNeighborPoint[nNextSonSi].x,node.vecNeighborPoint[nNextSonSi].y) - ptOffset;
+	cv::Point ptTemp0 = Point(hamMatchPrePt.x,hamMatchPrePt.y) - ptOffset;		
+	cv::Point ptTemp1 = Point(hamMatchNextPt.x,hamMatchNextPt.y) - ptOffset;
+	cv::circle( matTemp,ptV,1,cv::Scalar( 255, 0, 255),4,8);
+	cv::circle( matTemp,ptTemp0,1,cv::Scalar( 0, 255, 255),3,8);
+	cv::circle( matTemp,ptTemp1,1,cv::Scalar( 0, 255, 255),3,8);
+	Scalar color(100,100,0);
+	cv::line(matTemp,ptTemp0,ptV,color,1);	
+	cv::line(matTemp,ptV,ptTemp1,color,1);
+
+	// 绘制匹配路径
+	for (int i=0; i<vecMatchPath.size(); i++)
+	{
+		int nLinkId = vecMatchPath[i];
+		if (nLinkId>=0)
+		{
+			drawImage(matTemp, haMainRoadCenterPt, vecRoadNetLinks[nLinkId],cv::Scalar(255,255,0),2);
+		}		
+	}
+
+	/*for (int i=0; i<vecMatchPath.size(); i++)
+	{
+	vector<int> vecSinglePath = vecMatchPath[i];
+	for (int j=0; j<vecSinglePath.size(); j++)
+	{
+	int nLinkId = vecSinglePath[j];
+	if (nLinkId>=0)
+	{
+	drawImage(matTemp, haMainRoadCenterPt, vecRoadNetLinks[nLinkId],cv::Scalar(255,255,0),2);
+	}			
+	}		
+	}*/
+	
+	// 基于主路绘制路网
+	for (int i=0; i<nNumLink; i++)
+	{
+		if (vecRoadNetDirection2MainRoad[i]!=OPPOSITE_DIRECTION)
+		{
+			drawImage(matTemp, haMainRoadCenterPt, vecRoadNetLinks[i],cv::Scalar(0,255,0),1);
+		}
+	}
+
+	// 绘制主路与岔路的交点
+	for (int i=0; i<vecCrossPointIndex.size(); i++)
+	{
+		cv::Point ptTemp = Point(vecMatchPathPt[vecCrossPointIndex[i]].x,vecMatchPathPt[vecCrossPointIndex[i]].y) - ptOffset;		
+		cv::circle( matTemp,ptTemp,1,cv::Scalar( 0, 0, 255),5,8);
+	}
+
+	m_matImage = matTemp.clone();	
+
+	#if IS_SON_DRAW
+		cv::imshow("m_matImage",m_matImage);
+		cv::waitKey(0);
+	#endif
+
+	#if 0
+		// 保存
+		string strTemp = "D:\\Halo\\ArWay\\output\\direction\\";
+		strTemp += m_strImageName.substr(m_strImageName.find_last_of("\\")+1);
+		cv::imwrite(strTemp, matTemp);
+	#endif
+#endif
+#endif
+
+	return 0;
 }
-*/
+
+// 过滤link
+int MergeMapData::formRoadNet2(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+								const vector<LinkInfo>& vecLinkInfos,
+								const vector<LinkEndPointNode> vecAllEndPtnode,							  
+								const vector<int>& vecMainRoadNodeId,
+								int nMatchCenterSite,
+								cv::Rect rtScreen,
+								vector<int>& vecRoadNetDirection2MainRoad)
+{
+	// 参数自检
+	int nLinkNum = vecRoadNetLinks.size();
+	int nNodeNum = vecAllEndPtnode.size();
+	int nMainRoadNodeNum = vecMainRoadNodeId.size();
+	if (nLinkNum<=0 || nLinkNum!=vecLinkInfos.size() || nNodeNum<=0 ||
+		nMainRoadNodeNum<=0 || nMainRoadNodeNum>nNodeNum ||
+		nMatchCenterSite<0 || nMatchCenterSite>nMainRoadNodeNum-1)
+	{
+		return -1;
+	}
+
+	// 针对主路，基于角度，确定关键点
+	float fMainAngel = 0.f;
+	float fMainCosV = 2;
+	int nKeySi = 0;
+	for (int i=1; i<nMainRoadNodeNum-1; i++)
+	{		
+		HAMapPoint hamPre = vecAllEndPtnode[vecMainRoadNodeId[i-1]].hamEndPoint;
+		HAMapPoint hamCur = vecAllEndPtnode[vecMainRoadNodeId[i]].hamEndPoint;
+		HAMapPoint hamNext = vecAllEndPtnode[vecMainRoadNodeId[i+1]].hamEndPoint;
+		if (isRectInside(hamCur,rtScreen))
+		{
+			Vec2i v1 = Point(hamPre.x,hamPre.y) - Point(hamCur.x,hamCur.y);
+			Vec2i v2 = Point(hamNext.x,hamNext.y) - Point(hamCur.x,hamCur.y);
+			float fAngelTemp = 0.f;
+			float fCosVTemp = v1.dot(v2);
+			fCosVTemp = fCosVTemp/(getDistancePoint2Point(v1[0],v1[1],0,0)*getDistancePoint2Point(v2[0],v2[1],0,0));
+			if (abs(fCosVTemp)<fMainCosV)
+			{
+				fMainCosV = abs(fCosVTemp);
+				nKeySi = i;
+			}
+		}		
+	}
+
+	if (nKeySi!=0)
+	{
+		nMatchCenterSite = nKeySi;
+	}
+	
+
+	// 赋初值
+	vecRoadNetDirection2MainRoad = vector<int>(nLinkNum,OPPOSITE_DIRECTION);		// 需要保留的边，之后赋值为SAME_DIRECTION
+
+#ifdef _WINDOWS_VER_
+	#if IS_DRAW_ROADNET
+		// 基于主路绘制路网
+		Mat matTemp = m_matImage.clone();
+		cv::Point ptTemp = Point(vecAllEndPtnode[vecMainRoadNodeId[nMatchCenterSite]].hamEndPoint.x,
+			vecAllEndPtnode[vecMainRoadNodeId[nMatchCenterSite]].hamEndPoint.y)	- m_ptOffset;		
+		cv::circle( matTemp,ptTemp,1,cv::Scalar( 0, 0, 255),5,8);
+		for (int i=0; i<nLinkNum; i++)
+		{
+			if (vecRoadNetDirection2MainRoad[i]!=OPPOSITE_DIRECTION)
+			{
+				drawImage(matTemp, m_hamMainRoadCenter, vecRoadNetLinks[i],cv::Scalar(0,255,0),1);
+			}
+		}
+		cv::imshow("matTemp",matTemp);
+		cv::waitKey(0);
+
+	#endif
+#endif
+
+	int nRet = 0;
+
+	// 获取主路LinkId
+	vector<int> vecMainRoadLinkId;			
+	nRet = getPathLinkId(vecAllEndPtnode, vecMainRoadNodeId, vecMainRoadLinkId);
+	if (nRet<0)
+	{
+		return -1;
+	}
+
+	// 记录延伸的link、node Id
+	vector<int> vecExtendLinksId, vecExtendNodesId;
+
+	// 确定关键点有关的向量，用于取舍邻居
+	int nCenterNodeId = vecMainRoadNodeId[nMatchCenterSite];		// 中心点Node Id
+	LinkEndPointNode centerNode = vecAllEndPtnode[nCenterNodeId];	// 中心点对应的Node
+	Point ptCenter = Point(centerNode.hamEndPoint.x, centerNode.hamEndPoint.y);	
+	int nNeighborNum = centerNode.vecNeighborNodeId.size();
+	vector<Vec2i> vecVef(nNeighborNum);	// 记录方向向量
+	for (int i=0; i<nNeighborNum; i++)
+	{
+		int nNextLinkId = centerNode.vecLinkId[i];
+		int nNextNodeId = centerNode.vecNeighborNodeId[i];
+		Point ptNext = Point(centerNode.vecNeighborPoint[i].x, centerNode.vecNeighborPoint[i].y);
+		vecVef[i] = ptNext - ptCenter;
+
+		vecRoadNetDirection2MainRoad[nNextLinkId] = SAME_DIRECTION;		// 保留
+		
+		// 延伸
+		int nSi = 0;
+		if (!isBelongToVector(vecExtendLinksId,nNextLinkId,nSi) && !isBelongToVector(vecMainRoadLinkId,nNextLinkId,nSi))
+		{
+			// 延伸道路，nCurNodeId表示Link的尾巴Node
+			vecExtendLinksId.push_back(nNextLinkId);
+			vecExtendNodesId.push_back(nNextNodeId);
+			int nDirection = centerNode.vecDirection[i];
+			int nLinkId = centerNode.vecLinkId[i];
+			int nNodeId = centerNode.vecNeighborNodeId[i];
+			nRet = extendRoad(vecRoadNetLinks, vecLinkInfos, vecAllEndPtnode, vecMainRoadLinkId, 
+							nDirection,	nLinkId, nNodeId, rtScreen,	vecExtendLinksId, vecExtendNodesId);
+			if (nRet<0)
+			{
+				continue;
+			}
+		}
+		
+
+#ifdef _WINDOWS_VER_
+	#if IS_DRAW_ROADNET
+		// 基于主路绘制路网
+		drawImage(matTemp, m_hamMainRoadCenter, vecRoadNetLinks[nNextLinkId],cv::Scalar(0,255,0),1);
+		cv::imshow("matTemp",matTemp);
+		cv::waitKey(0);
+	#endif
+#endif
+	}
+	
+	float fDelAngel = VECTOR_PARALLEL_ANGLE;
+	fDelAngel = fDelAngel*CV_PI/180;
+	
+
+	// 处理关键点及前后邻居，关键点处，保留主路正、反延长线，邻居点删除主路平行线；若存在关键点到主路平行线的link，也删除
+
+
+
+	// 处理正常点，保留正方向
+	for (int i=0; i<nMainRoadNodeNum; i++)
+	{
+		int nCurMainNodeId = vecMainRoadNodeId[i];
+		LinkEndPointNode curMainNode = vecAllEndPtnode[nCurMainNodeId];	
+		int nNeighborNum = curMainNode.vecNeighborNodeId.size();
+		if (i!=nMatchCenterSite && i!=nMatchCenterSite-1 && i!=nMatchCenterSite+1)
+		{		
+			for (int j=0; j<nNeighborNum; j++)
+			{
+				if (curMainNode.vecDirection[j]!=OPPOSITE_DIRECTION)
+				{
+					int nLinkId = curMainNode.vecLinkId[j];
+					int nNodeId = curMainNode.vecNeighborNodeId[j];
+					vecRoadNetDirection2MainRoad[nLinkId] = SAME_DIRECTION;
+
+					// 延伸
+					int nSi = 0;
+					if (!isBelongToVector(vecExtendLinksId,nLinkId,nSi)&&!isBelongToVector(vecMainRoadLinkId,nLinkId,nSi))
+					{
+						// 延伸道路，nCurNodeId表示Link的尾巴Node
+						vecExtendLinksId.push_back(nLinkId);
+						vecExtendNodesId.push_back(nNodeId);
+						int nDirectionTemp = curMainNode.vecDirection[j];
+						int nLinkIdTemp = curMainNode.vecLinkId[j];
+						int nNodeIdTemp = curMainNode.vecNeighborNodeId[j];
+						nRet = extendRoad(vecRoadNetLinks, vecLinkInfos, vecAllEndPtnode, vecMainRoadLinkId, 
+							nDirectionTemp,	nLinkIdTemp, nNodeIdTemp, rtScreen,	vecExtendLinksId, vecExtendNodesId);
+						if (nRet<0)
+						{
+							continue;
+						}
+					}
+
+				#ifdef _WINDOWS_VER_
+					#if IS_DRAW_ROADNET
+						// 基于主路绘制路网
+						drawImage(matTemp, m_hamMainRoadCenter, vecRoadNetLinks[nLinkId],cv::Scalar(0,255,0),1);
+						cv::imshow("matTemp",matTemp);
+						cv::waitKey(0);
+					#endif
+				#endif
+				}
+			}
+		}
+
+		// 相邻点，另外处理
+		if (i==nMatchCenterSite-1 || i==nMatchCenterSite+1)
+		{
+			Point ptCurMainPt = Point(curMainNode.hamEndPoint.x, curMainNode.hamEndPoint.y);
+			for (int j=0; j<nNeighborNum; j++)
+			{				
+				if (curMainNode.vecDirection[j]!=OPPOSITE_DIRECTION)
+				{
+					int nNodeId = curMainNode.vecNeighborNodeId[j];
+					int nLinkId = curMainNode.vecLinkId[j];
+					int nSi = 0;
+					if (isBelongToVector(vecMainRoadNodeId,nNodeId,nSi))
+					{
+						vecRoadNetDirection2MainRoad[nLinkId] = SAME_DIRECTION;
+
+						// 延伸
+						int nSi = 0;
+						if (!isBelongToVector(vecExtendLinksId,nLinkId,nSi)&&!isBelongToVector(vecMainRoadLinkId,nLinkId,nSi))
+						{
+							// 延伸道路，nCurNodeId表示Link的尾巴Node
+							vecExtendLinksId.push_back(nLinkId);
+							vecExtendNodesId.push_back(nNodeId);
+							int nDirectionTemp = curMainNode.vecDirection[j];
+							int nLinkIdTemp = curMainNode.vecLinkId[j];
+							int nNodeIdTemp = curMainNode.vecNeighborNodeId[j];
+							nRet = extendRoad(vecRoadNetLinks, vecLinkInfos, vecAllEndPtnode, vecMainRoadLinkId, 
+								nDirectionTemp,	nLinkIdTemp, nNodeIdTemp, rtScreen,	vecExtendLinksId, vecExtendNodesId);
+							if (nRet<0)
+							{
+								continue;
+							}
+						}
+
+						continue;
+					}					
+
+					Point ptTemp = Point(curMainNode.vecNeighborPoint[j].x,curMainNode.vecNeighborPoint[j].y);
+					Vec2i vTemp = ptTemp - ptCurMainPt;
+					int nMinSi = -1;
+					float fCosV = -2;
+					for (int k=0; k<vecVef.size(); k++)
+					{
+						float fCosTemp = vTemp.dot(vecVef[k]);
+						fCosTemp = fCosTemp/(getDistancePoint2Point(vTemp[0],vTemp[1],0,0)*
+							getDistancePoint2Point(vecVef[k][0],vecVef[k][1],0,0));
+						if (abs(fCosTemp)>fCosV)
+						{
+							fCosV = abs(fCosTemp);
+							nMinSi = j;
+						}
+					}
+					if (fCosV<cos(fDelAngel))
+					{
+						vecRoadNetDirection2MainRoad[nLinkId] = SAME_DIRECTION;
+
+						// 延伸
+						int nSi = 0;
+						if (!isBelongToVector(vecExtendLinksId,nLinkId,nSi) && !isBelongToVector(vecMainRoadLinkId,nLinkId,nSi))
+						{
+							// 延伸道路，nCurNodeId表示Link的尾巴Node
+							vecExtendLinksId.push_back(nLinkId);
+							vecExtendNodesId.push_back(nNodeId);
+							int nDirectionTemp = curMainNode.vecDirection[j];
+							int nLinkIdTemp = curMainNode.vecLinkId[j];
+							int nNodeIdTemp = curMainNode.vecNeighborNodeId[j];
+							nRet = extendRoad(vecRoadNetLinks, vecLinkInfos, vecAllEndPtnode, vecMainRoadLinkId, 
+								nDirectionTemp,	nLinkIdTemp, nNodeIdTemp, rtScreen,	vecExtendLinksId, vecExtendNodesId);
+							if (nRet<0)
+							{
+								continue;
+							}
+						}
+
+					#ifdef _WINDOWS_VER_
+						#if IS_DRAW_ROADNET
+							// 基于主路绘制路网
+							drawImage(matTemp, m_hamMainRoadCenter, vecRoadNetLinks[nLinkId],cv::Scalar(0,255,0),1);
+							cv::imshow("matTemp",matTemp);
+							cv::waitKey(0);
+						#endif
+					#endif
+					}
+				}
+			}
+		}
+	}
+
+	// 延伸路加上方向
+	int nExtendNum = vecExtendLinksId.size();
+	for (int i=0; i<nExtendNum; i++)
+	{
+		int nExtendId = vecExtendLinksId[i];
+		vecRoadNetDirection2MainRoad[nExtendId] = SAME_DIRECTION;
+	}
+
+	// 去除主路关键点过渡到对向同名路的中间线段
+
+	return 0;
+}
+
+
+//// 判断元素是否属于集合
+//template<typename T>
+//bool MergeMapData::isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite)
+//{
+//	bool bRes = false;
+//	vector<T>::iterator iter = std::find(vecElement.begin(),vecElement.end(), element);	//返回的是一个迭代器指针
+//	if (iter==vecElement.end())	// 不存在
+//	{
+//		return false;
+//	}
+//	else
+//	{
+//		nSite = std::distance(vecElement.begin(), iter);
+//		return true;
+//	}
+//
+//}
 
 // vector倒序重排
 template<typename T>
@@ -3532,7 +4754,7 @@ int MergeMapData::formRoadNet(const std::vector<std::vector<HAMapPoint> >& vecRo
 		}
 
 		// 判断点是否在屏幕范围内
-		if (IsRectInside(curNode.hamEndPoint, rtScreen))
+		if (isRectInside(curNode.hamEndPoint, rtScreen))
 		{
 			vecLoopNodeId.push_back(nNodeId);
 		}		
@@ -3550,7 +4772,7 @@ int MergeMapData::formRoadNet(const std::vector<std::vector<HAMapPoint> >& vecRo
 		vecLoopNodeId.erase(vecLoopNodeId.end()-1);
 
 		// 判断点是否在屏幕范围内
-		if (!IsRectInside(curNode.hamEndPoint, rtScreen))
+		if (!isRectInside(curNode.hamEndPoint, rtScreen))
 		{
 			continue;
 		}
@@ -3604,14 +4826,21 @@ int MergeMapData::formRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecR
 	if (nNumLink<=0 || nNodeNum<=0 || nMainNodeNum<=0 || 
 		nNodeNum<nMainNodeNum || nNumLink!=vecLinkInfos.size())
 	{
-#ifdef _WINDOWS_VER_
+	#ifdef _WINDOWS_VER_
 		printf("==============formRoadNet1 - parameter Error!!==============\n");
-#else
+	#else
 		LOGD("==============formRoadNet1 - parameter Error!!==============\n");
-#endif
-
+	#endif
 		return -1;
 	}
+
+#ifdef _WINDOWS_VER_
+	for (int i=0; i<vecLinkInfos.size(); i++)
+	{
+		printf("vecLinkInfos：size = %d, i = %d, routeId = %.4f\n",vecLinkInfos.size(),i,vecLinkInfos[i].routeId);
+	}
+	
+#endif
 
 	int nRet = 0;
 
@@ -3699,7 +4928,6 @@ int MergeMapData::formRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecR
 	//	int nNodeId = vecMainRoadNodeId[i];
 	//	curNode = vecAllEndPtnode[nNodeId];
 	//	int nNeighborNum = curNode.vecNeighborNodeId.size();
-
 	//}
 
 	// 保留窗口内与主路同名且同路的路径，方向不管	
@@ -3708,6 +4936,11 @@ int MergeMapData::formRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecR
 	{
 		int nMainLinkId = vecMainRoadLinkId[i];
 		int nMainNodeId = vecMainRoadNodeId[i];
+
+		#ifdef _WINDOWS_VER_
+			printf("\n=============== i=%d, nMainLinkId=%d, nMainNodeId=%d ================\n",i,nMainLinkId,nMainNodeId);
+		#endif
+
 		// 延伸同名路
 		nRet = extendSameNameRoad(vecLinkInfos,	vecAllEndPtnode,vecMainRoadLinkId,
 							nMainLinkId, nMainNodeId, rtScreen, 
@@ -3749,14 +4982,108 @@ int MergeMapData::formRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecR
 	#ifdef _WINDOWS_VER_
 		#if IS_DRAW2			
 			drawImage(matTemp, m_hamMainRoadCenter, vecRoadNetLinks[nLinkId],cv::Scalar(0,255,0),1);
-			imshow("matTemp",matTemp);
-			waitKey(0);
+			/*imshow("matTemp",matTemp);
+			waitKey(0);*/
 		#endif
 	#endif
 
 	}
 
 	return 0;
+}
+
+// 延伸道路，nCurNodeId表示Link的尾巴Node
+int MergeMapData::extendRoad(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+							const vector<LinkInfo>& vecRoadNetLinkInfo,
+							const vector<LinkEndPointNode> vecLinkEndPtnode,
+							const vector<int>& vecMainRoadLinkId, 
+							int nCurDirection,	int nCurLinkId, int nCurNodeId, cv::Rect rtScreen,									 
+							vector<int>& vecExtendLinksId, vector<int>& vecExtendNodesId)
+{
+	// 参数自检
+	if (vecRoadNetLinkInfo.size()<0 || vecLinkEndPtnode.size()<0 ||
+		nCurLinkId<0 || nCurNodeId<0 || rtScreen.width<0 || rtScreen.height<0)
+	{
+		return -1;
+	}
+
+	// 延伸
+	LinkEndPointNode curNode = vecLinkEndPtnode[nCurNodeId];
+
+	// 判断当前点是否在窗口内
+	if (!isRectInside(curNode.hamEndPoint,rtScreen))		// 终止条件
+	{
+		return 0;
+	}
+	
+	vector<HAMapPoint> vecCurLink = vecRoadNetLinks[nCurLinkId];
+	Vec2i vCur = Point(vecCurLink[0].x,vecCurLink[0].y) - 
+				 Point(vecCurLink[vecCurLink.size()-1].x,vecCurLink[vecCurLink.size()-1].y);	// 方向向量
+
+
+	LinkInfo curlinkInfo = vecRoadNetLinkInfo[nCurLinkId];
+	//float fCurRouteId = curlinkInfo.routeId;
+	int nNeighborNum = curNode.vecNeighborNodeId.size();
+	bool bIsOn = false;		// 标识，表示是否继续往下延伸
+	int nNextLinkId = -1, nNextNodeId = -1, nNextDirection = -1;		// 记录下一个link和node的Id，以及方向
+	int nMaxSi = -1;
+	float fMaxCosV = -2; 
+	for (int i=0; i<nNeighborNum; i++)
+	{
+		nNextLinkId = curNode.vecLinkId[i];
+		LinkInfo nextlinkInfo = vecRoadNetLinkInfo[nNextLinkId];
+		nNextNodeId = curNode.vecNeighborNodeId[i];
+		LinkEndPointNode nextNode = vecLinkEndPtnode[nNextNodeId];
+
+		vector<HAMapPoint> vecNextLink = vecRoadNetLinks[nNextLinkId];
+		Vec2i vNext = Point(vecNextLink[0].x,vecNextLink[0].y) - 
+						Point(vecNextLink[vecNextLink.size()-1].x,vecNextLink[vecNextLink.size()-1].y);	// 方向向量
+
+		int nNextDirection = curNode.vecDirection[i];
+		//float fNextRouteId = nextlinkInfo.routeId;
+		int nSite = -1;
+		if ((!isBelongToVector(vecExtendLinksId,nNextLinkId,nSite)) &&
+			(!isBelongToVector(vecMainRoadLinkId,nNextLinkId,nSite)) &&			
+			(nNextDirection<=1 || nNextDirection==nCurDirection))
+		{
+			// 寻找同向且夹角最小的邻居
+			float fCosTemp = vNext.dot(vCur);
+			fCosTemp = fCosTemp/(getDistancePoint2Point(vCur[0],vCur[1],0,0)*getDistancePoint2Point(vNext[0],vNext[1],0,0));
+			if (abs(fCosTemp)>fMaxCosV)
+			{
+				fMaxCosV = abs(fCosTemp);
+				nMaxSi = i;
+			}
+		}
+	}
+
+	if (fMaxCosV>=cos(VECTOR_PARALLEL_ANGLE*CV_PI/180))
+	{
+		// 延伸
+		nNextLinkId = curNode.vecLinkId[nMaxSi];
+		nNextNodeId = curNode.vecNeighborNodeId[nMaxSi];
+		nNextDirection = curNode.vecDirection[nMaxSi];
+		vecExtendLinksId.push_back(nNextLinkId);
+		vecExtendNodesId.push_back(nNextNodeId);
+		bIsOn = true;		
+	}
+
+	// 递归
+	int nRet = -1;
+	if (bIsOn)
+	{
+		nRet = extendRoad(vecRoadNetLinks,vecRoadNetLinkInfo, vecLinkEndPtnode, 
+							vecMainRoadLinkId, nNextLinkId, nNextDirection,
+							nNextNodeId, rtScreen,	vecExtendLinksId, vecExtendNodesId);
+		if (nRet<0)
+		{
+			return -1;
+		}
+	}
+	else		// 终止条件
+	{
+		return 0;
+	}	
 }
 
 // 延伸同名路
@@ -3777,7 +5104,7 @@ int MergeMapData::extendSameNameRoad(const vector<LinkInfo>& vecRoadNetLinkInfo,
 	LinkEndPointNode curNode = vecLinkEndPtnode[nCurNodeId];
 
 	// 判断当前点是否在窗口内
-	if (!IsRectInside(curNode.hamEndPoint,rtScreen))		// 终止条件
+	if (!isRectInside(curNode.hamEndPoint,rtScreen))		// 终止条件
 	{
 		return 0;
 	}
@@ -3800,6 +5127,11 @@ int MergeMapData::extendSameNameRoad(const vector<LinkInfo>& vecRoadNetLinkInfo,
 			(!isBelongToVector(vecMainRoadLinkId,nNextLinkId,nSite)) &&
 			abs(fNextRouteId-fCurRouteId)<1e-6)		// 同名、同路
 		{
+		#ifdef _WINDOWS_VER_
+			printf("	nCurLinkId=%d, nCurNodeId=%d,fCurRouteId=%.4f;\n", nCurLinkId, nCurNodeId, fCurRouteId);
+			printf("		nNextLinkId=%d, nNextNodeId=%d, fNextRouteId=%.4f,\n", nNextLinkId, nNextNodeId, fNextRouteId);
+		#endif
+			
 			// 延伸
 			vecExtendLinksId.push_back(nNextLinkId);
 			vecExtendNodesId.push_back(nNextNodeId);
@@ -4000,7 +5332,7 @@ int MergeMapData::extendLink(const std::vector<std::vector<HAMapPoint> >& vecRoa
 					int nNeigborId = nodeTemp.vecNeighborNodeId[i];
 					LinkEndPointNode nextTempNode = vecLinkEndPtnode[nNodeIdTemp];
 					if (vecIsDo[nNeigborId]==0 && 
-						IsRectInside(nextTempNode.hamEndPoint,rtScreen) && 
+						isRectInside(nextTempNode.hamEndPoint,rtScreen) && 
 						(nextTempNode.vecDirection[i]<=1 || nextTempNode.vecDirection[i]==nNextDirection))
 					{
 						bIsOut = false;
@@ -4271,7 +5603,7 @@ int MergeMapData::getDisBorder2MatchPt(const std::vector<std::vector<HAMapPoint>
 	{
 		HAMapPoint hamCurPt = vecHamPt[i];
 		float fDisTemp = 0;
-		if (IsRectInside(hamCurPt,rtScreen))
+		if (isRectInside(hamCurPt,rtScreen))
 		{
 			fDisTemp = getDistancePoint2Point(hamPrePt.x,hamPrePt.y,hamCurPt.x,hamCurPt.y);
 			uDis += fDisTemp;			
@@ -4368,7 +5700,7 @@ int MergeMapData::traverseMap1(const std::vector<std::vector<HAMapPoint> >& vecR
 
 		// 判断是否是边界
 		HAMapPoint hamCurPoint = curNode.hamEndPoint;
-		if (!IsRectInside(hamCurPoint,rtScreen) && nCurLayer>0)
+		if (!isRectInside(hamCurPoint,rtScreen) && nCurLayer>0)
 		{
 			// 查找当前Link Id
 			int nPreNodeId = vecPathNodeId[nCurLayer-1];
@@ -4575,7 +5907,7 @@ int MergeMapData::traverseMap(const std::vector<std::vector<HAMapPoint> >& vecRo
 		HAMapPoint hamCurPoint = curNode.hamEndPoint;
 		// 		if (hamCurPoint.x<=nX1 || hamCurPoint.x>= nX2 ||
 		// 			hamCurPoint.y<=nY1 || hamCurPoint.y>=nY2)
-		if (!IsRectInside(hamCurPoint,rtScreen))
+		if (!isRectInside(hamCurPoint,rtScreen))
 		{
 			// 去掉为-1的linkId
 			vector<int> vecTempLinkId = vecPathLinkId;
@@ -4773,7 +6105,7 @@ int MergeMapData::popPath(const std::vector<std::vector<HAMapPoint> >& vecRoadNe
 			int nSi = 0;
 			if (/*vecIsNodeDo[nNeigborId]==0*/ !isBelongToVector(vecIsNodeDo[nNodeIdTemp], nodeTemp.vecLinkId[i], nSi) && 
 				!isBelongToVector(vecPathNodeId,nNeigborId,nSi) &&
-				IsRectInside(nextTempNode.hamEndPoint,rtScreen) && 
+				isRectInside(nextTempNode.hamEndPoint,rtScreen) && 
 				(nextTempNode.vecDirection[i]!=nNotEqualDirection))
 			{
 				bIsOut = false;
@@ -4828,7 +6160,7 @@ int MergeMapData::getCrossPointLink2Rect(const std::vector<HAMapPoint>& vecLinkP
 
 	// 寻找与矩形框相交的折线
 	HAMapPoint hamPrePt = vecLinkPt[0];
-	int nPreSign = (IsRectInside(hamPrePt,rt))?1:-1;		// 1 - 内部点，-1 - 外部
+	int nPreSign = (isRectInside(hamPrePt,rt))?1:-1;		// 1 - 内部点，-1 - 外部
 	int nCurSign = 1;
 	bool bFlag = false;		// 标识是否找到交点，false - 没找到，true - 找到
 	Line lin;		// 记录与矩形框相交的折线
@@ -4836,7 +6168,7 @@ int MergeMapData::getCrossPointLink2Rect(const std::vector<HAMapPoint>& vecLinkP
 	for (int i=1; i<nNumPt; i++)
 	{
 		hamCurPt = vecLinkPt[i];
-		nCurSign = (IsRectInside(hamCurPt, rt))?1:-1;
+		nCurSign = (isRectInside(hamCurPt, rt))?1:-1;
 
 		if (nCurSign*nPreSign<=0)	// 当前点与前一个点分属于矩形框内外部
 		{
@@ -5001,7 +6333,7 @@ int MergeMapData::getCrossPointLink2Line(const std::vector<HAMapPoint>& vecLinkP
 
 
 // 判断点是否在矩形范围内
-bool MergeMapData::IsRectInside(HAMapPoint hamPoint, cv::Rect rect)
+bool MergeMapData::isRectInside(HAMapPoint hamPoint, cv::Rect rect)
 {
 	int nX1 = rect.x, nX2 = nX1 + rect.width - 1;
 	int nY1 = rect.y, nY2 = nY1 + rect.height - 1;
@@ -5832,7 +7164,7 @@ void MergeMapData::drawNode(cv::Mat matImg, const vector<LinkEndPointNode> vecLi
 		Point2i ptCurPt = Point2i(hamPt.x,hamPt.y)-m_ptOffset;
 		hamPt.x = ptCurPt.x;
 		hamPt.y = ptCurPt.y;
-		if (!IsRectInside(hamPt,rt))
+		if (!isRectInside(hamPt,rt))
 		{
 			continue;
 		}	
