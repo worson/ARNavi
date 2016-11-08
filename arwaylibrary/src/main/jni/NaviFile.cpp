@@ -198,7 +198,7 @@ int HaloNav::findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo
 {
     if(!_pDict)
         return -1;
-    
+
     int offset_x = width/2;
     int offset_y = height/2;
     unsigned int min_x = (axs.x - offset_x)<0?0:axs.x - offset_x;
@@ -214,7 +214,6 @@ int HaloNav::findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo
     
     if(min_idx_y > _blocksHeight || max_idx_y > _blocksHeight)
         return -1;
-    
     for(int i=min_idx_x;i <= max_idx_x;i++)
     {
         for(int j = min_idx_y;j <= max_idx_y;j++)
@@ -243,16 +242,36 @@ int HaloNav::findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo
 
 				HAUINT64 axs_count = *(HAUINT64*)_pOffset;
 				_pOffset+=sizeof(HAUINT64);
-                
+
                 vecLinkInfos.push_back(info);
                 std::vector<HAMapPoint> ptLst;
+
+//#ifdef _WINDOWS_VER_
+//                printf("==============translateRoadNet - parameter Error!!==============\n");
+//#else
+//                LOGD("==============findLinks - for 4 1==============axs_count=%d\n",axs_count);
+//#endif
                 for(int a=0;a < axs_count;a ++)
-                {                    
+                {
+//#ifdef _WINDOWS_VER_
+//                    printf("==============translateRoadNet - parameter Error!!==============\n");
+//#else
+//                    LOGD("==============findLinks - for 4 1==============a=%d\n",a);
+//#endif
 					HAMapPoint hmp;
                     memcpy(&hmp,_pOffset,sizeof(HAMapPoint));
+//#ifdef _WINDOWS_VER_
+//                    printf("==============translateRoadNet - parameter Error!!==============\n");
+//#else
+//                    LOGD("==============findLinks - for 4 2==============\n");
+//#endif
                     _pOffset += sizeof(HAMapPoint);
                     ptLst.push_back(hmp);
-
+//#ifdef _WINDOWS_VER_
+//                    printf("==============translateRoadNet - parameter Error!!==============\n");
+//#else
+//                    LOGD("==============findLinks - for 4 3==============\n");
+//#endif
 					//printf("a=%d\n",a);
                 }
                 vecAxes.push_back(ptLst);

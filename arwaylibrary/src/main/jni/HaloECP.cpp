@@ -258,9 +258,10 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     vector<int> _vecCrossPointIndex;
     int _centerPointInMainRoad;
     //CrossRoad crossRoad;
+    LOGE_ANDROID("into crossRoad.getCrossLinks");
     int res = crossRoad.getCrossLinks(_links, _mainRoadLinkInfos, _centerPoint, _szCover,
                                       _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex,_centerPointInMainRoad);
-
+    LOGE_ANDROID("outto crossRoad.getCrossLinks");
     if(res == 0) {
         //使用_crossLinks初始化crossLinks数据
         for (int i = 0; i < _crossLinks.size(); i++) {

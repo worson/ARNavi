@@ -40,8 +40,10 @@
 
 #else
 	#include <android/log.h>
-	#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "Algorithm", __VA_ARGS__)
+	#define LOG_TAG_ERROR "Algorithm__"
+	#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG_ERROR, __VA_ARGS__))
 #endif
+
 
 
 using namespace std;

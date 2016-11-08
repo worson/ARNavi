@@ -13,6 +13,7 @@ import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
@@ -320,6 +321,37 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mainRoad.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
         }
         mRenderPaths.add(mainRoad);
+
+        // TODO: 2016/11/8 测试北京数据 start
+        mBranchPaths.clear();
+        List<List<Vector3>> branchPaths = new ArrayList<>();
+        String[] lines = ARWayConst.BRANCH_LINES_BJ.split("\n");
+        for(int i=0;i<lines.length;i++){
+            if(lines[i].contains("start")){
+                //get branch
+                List<LatLng> branch = new ArrayList<>();
+                for(int j=i+1;j<lines.length;j++){
+                    if(!lines[j].contains("end")) {
+                        branch.add(new LatLng(Double.parseDouble(lines[j].split(",")[0]),Double.parseDouble(lines[j].split(",")[1])));
+                    }else{
+                        i=j;
+                        break;
+                    }
+                }
+                //convert latlng to vector3
+                List<Vector3> branchV = new ArrayList<>();
+                for(LatLng latlng:branch){
+                    ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
+                    branchV.add(new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z));
+                }
+                //add to mBranchPaths
+                branchPaths.add(branchV);
+            }
+        }
+        mBranchPaths.add(branchPaths);
+        // TODO: 2016/11/8 测试北京数据 end
+
+
         for(List<List<Vector3>> paths:mBranchPaths) {
             mRenderPaths.addAll(paths);
         }
@@ -339,27 +371,31 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     @Override
     public void loadNewRoad(int startIndex, int endIndex) {
-        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,start time = "+System.currentTimeMillis());
-        Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
-        Log.e("ylq", "remove start");
-        //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
-        for (int i = mPreDynamicStartIndex; i < startIndex; i++) {
-            if (mBranchInPathIndexs.contains(i)) {
-                int index = mBranchInPathIndexs.indexOf(i);
-                int removeIndex = mBranchInPathIndexs.remove(index);
-                mBranchPaths.remove(index);
-                Log.e("ylq", "i=" + i);
-                Log.e("ylq", "index=" + index);
-                Log.e("ylq", "removeIndex=" + removeIndex);
-            }
-        }
-        Log.e("ylq", "remove end");
-        //2.拉取新的部分的路网数据
-        for (int i = startIndex; i < endIndex; i++) {
-            if (mStepPointIndexs.contains(i)) {
-                processSteps(mStepPointIndexs.indexOf(i));
-            }
-        }
+        // TODO: 2016/11/8 测试北京数据 start
+//        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,start time = "+System.currentTimeMillis());
+//        Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
+//        Log.e("ylq", "remove start");
+//        //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
+//        for (int i = mPreDynamicStartIndex; i < startIndex; i++) {
+//            if (mBranchInPathIndexs.contains(i)) {
+//                int index = mBranchInPathIndexs.indexOf(i);
+//                int removeIndex = mBranchInPathIndexs.remove(index);
+//                mBranchPaths.remove(index);
+//                Log.e("ylq", "i=" + i);
+//                Log.e("ylq", "index=" + index);
+//                Log.e("ylq", "removeIndex=" + removeIndex);
+//            }
+//        }
+//        Log.e("ylq", "remove end");
+//        //2.拉取新的部分的路网数据
+//        for (int i = startIndex; i < endIndex; i++) {
+//            if (mStepPointIndexs.contains(i)) {
+//                processSteps(mStepPointIndexs.indexOf(i));
+//            }
+//        }
+        // TODO: 2016/11/8 测试北京数据 end
+
+
         //3.拉取对应的主路数据
         List<Vector3> dynamicPath = new ArrayList<>();
         for (LatLng latlng : mProportionMappingEngine.mapping(startIndex, endIndex)) {
@@ -488,7 +524,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * 访问路网模块获取指定steps的路网数据
      */
     private void processSteps(int... stepIndexs) {
-        HaloLogger.logE(TAG, "process steps start");
+        HaloLogger.logE(TAG, "process steps start "+(count+1));
         Log.e("ylq", "add start");
         for (Integer stepIndex : stepIndexs) {
             if (mAlreadyLoadStep.contains(stepIndex)) {

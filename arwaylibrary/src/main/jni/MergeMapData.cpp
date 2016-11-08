@@ -3377,7 +3377,19 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 
 	int nRet = 0;
 
+#ifdef _WINDOWS_VER_
+	printf("==============matchMainRoadCenterInNet5 - enter!!==============\n");
+#else
+	LOGD("==============matchMainRoadCenterInNet5 - enter!!==============\n");
+#endif
+
 	// 求中心点位置
+#ifdef _WINDOWS_VER_
+	printf("==============matchMainRoadCenterInNet5 - getPointSite!!==============\n");
+#else
+	LOGD("==============matchMainRoadCenterInNet5 - getPointSite!!==============\n");
+#endif
+
 	int nCenterSi = -1;
 	nRet = getPointSite(vecMainRoad, haMainRoadCenterPt, nCenterSi);
 	if (nRet<0)
@@ -3465,6 +3477,11 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 	float fMainAngle = getAngle(vMainRoad1, vMainRoad2);
 
 	// 构造link端点节点
+#ifdef _WINDOWS_VER_
+	printf("==============matchMainRoadCenterInNet5 - formLinkEndPointNode!!==============\n");
+#else
+	LOGD("==============matchMainRoadCenterInNet5 - formLinkEndPointNode!!==============\n");
+#endif
 	vector<LinkEndPointNode> vecLinkEndPtnode;
 	nRet = formLinkEndPointNode(vecRoadNetLinks, vecRoadNetLinkInfos, vecLinkEndPtnode);
 	if (nRet<0)
@@ -3629,6 +3646,12 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 		vector<int> vecBorderPtDirection;
 		vector<vector<int> > vecPathLinkId;
 		vector<vector<int> > vecPathNodeId;
+
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - extendLink1!!==============\n");
+#else
+		LOGD("==============getCrossLinks - extendLink1!!==============\n");
+#endif
 
 		/*nRet = extendLink(vecRoadNetLinks,vecLinkEndPtnode,	i, rtScreen, vecBorderPt, 
 							vecBorderPtDirection, vecPathLinkId, vecPathNodeId);*/
@@ -4027,6 +4050,12 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 	{
 		return -1;
 	}
+
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - formRoadNet2!!==============\n");
+#else
+	LOGD("==============getCrossLinks - formRoadNet2!!==============\n");
+#endif
 	nRet = formRoadNet2(vecRoadNetLinks,vecRoadNetLinkInfos,
 						vecLinkEndPtnode,
 						vecMatchPathNodeId,
@@ -4045,7 +4074,11 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 	}
 
 	// 过滤路网
-	
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - filterRoadNet!!==============\n");
+#else
+	LOGD("==============getCrossLinks - filterRoadNet!!==============\n");
+#endif
  	nRet = filterRoadNet(vecRoadNetLinks,
  						vecRoadNetDirection2MainRoad,
  						/*vecMainRoadLinkId*/vecMatchPath,
@@ -4143,6 +4176,11 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 	}
 
 	// 平移
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - translateRoadNet!!==============\n");
+#else
+	LOGD("==============getCrossLinks - translateRoadNet!!==============\n");
+#endif
 	nRet = translateRoadNet(vecCrossGpsLinks, hamOffset);
 	if (nRet<0)
 	{
