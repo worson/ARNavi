@@ -146,9 +146,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         RajLog.setDebugEnabled(true);
         initRoadMaterial();
         initTextureMaterial();
-        initAllLayer();
 
+        initAllLayer();
+        initStaticLayer();
         initCarObject();
+    }
+
+    private void initStaticLayer() {
+//        renderFloor(-20,-20,20,20,1,0);
+//        commitRender();
     }
 
     public void reset() {
@@ -166,6 +172,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mIsFloorDirty     = true;
         mIsGuideLineDirty = true;
 
+        mCarObject = new BaseObject3D();
+        initCarObject();
+
+        mGridfloorLayer.setPosition(0,0,0);
         reloadAllLayer();
 
         commitRender();
@@ -310,6 +320,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return removeFloor(0);
     }
 
+    @Override
+    public void moveCenterFloor(float x, float y) {
+        mGridfloorLayer.setPosition(x,y,0);
+    }
+
     private int removeNaviPath(int index) {
         if(index<0||  mNaviRoadList.size()<= index){
             return -1;
@@ -377,12 +392,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return mOptions;
     }
 
-    @Override
     public void renderFloor(float left,float top,float right,float bottom,float spacing,float widthrate) {
 //        mFloorObjectLayerList.clear();
         TileFloor floor = createFloor(right-left,top-bottom,spacing,widthrate);
         if (floor != null) {
+            floor.setPosition(0,0,0);
             ObjectLayer objectLayer = new ObjectLayer(floor);
+            // TODO: 2016/11/7 以字坐标定位，需要还调用
             objectLayer.object.setPosition((right+left)/2,(top+bottom)/2,0);
             mFloorObjectLayerList.add(objectLayer);
             mIsFloorDirty = true;
@@ -457,7 +473,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return result;
     }
 
-    public BaseObject3D getCarObject() {
+    public Object3D getCarObject() {
+//        initCarObject();
         return mCarObject;
     }
 
@@ -487,7 +504,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolLayer.clearChildren();
         mNaviSymbolLayer.addChild(object);
 
-        mCarObject.clearChildren();
     }
 
     /**
@@ -712,7 +728,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
         if (mIsFloorDirty){
             mIsFloorDirty = false;
-            mGridfloorLayer.setPosition(0,0,0);
             mGridfloorLayer.clearChildren();
             if(mFloorObjectLayerList.size()>0){
                 for(ObjectLayer layer:mFloorObjectLayerList){
@@ -724,9 +739,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     private boolean initAllLayer(){
         boolean result = true;
-        mScene.clearChildren();
-
-        mArwayMap = new BaseObject3D();
         mGridfloorLayer = new BaseObject3D();
         mCrossRoadBottom = new BaseObject3D();
         mCrossRoad = new BaseObject3D();
@@ -741,11 +753,21 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
         /*mCrossRoadBottom.setRenderChildrenAsBatch(true);
         mCrossRoad.setRenderChildrenAsBatch(true);
-        mCrossRefLine.setRenderChildrenAsBatch(true);*/
+        mCrossRefLine.setRenderChildrenAsBatch(true);
+        mCrossRoadBottom.setMaterial(mCrossRoadBottomMaterial);
+        mCrossRoad.setMaterial(mCrossRoadTopMaterial);
+        mCrossRefLine.setMaterial(mCrossRefMaterial);*/
 
+        reloadAllLayer();
+        HaloLogger.logE(TAG,String.format("initAllLayer,Scene child =%s,mArwayMap child =%s",mScene.getNumChildren(),mArwayMap.getNumChildren()));
+        return result;
+    }
 
-        Object3D[] layers = new Object3D[]{mGridfloorLayer,mCrossRoadBottom,mCrossRoad,mCrossRefLine,
-                mNaviRoadBottom,mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
+    private void reloadAllLayer(){
+        mArwayMap = new BaseObject3D();
+        mScene.clearChildren();
+        Object3D[] layers = new Object3D[]{mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mCrossRoad,mCrossRefLine,
+                mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
                 mNaviGuideLineLayer,mNaviSymbolLayer,mCarObject};
         for(Object3D layer:layers){
             if (layer != null) {
@@ -753,13 +775,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             }
         }
         mScene.addChild(mArwayMap);
-        HaloLogger.logE(TAG,String.format("initAllLayer,Scene child =%s,mArwayMap child =%s",mScene.getNumChildren(),mArwayMap.getNumChildren()));
-        return result;
-    }
-
-    private void reloadAllLayer(){
-        mScene.clearChildren();
-        addObject(mArwayMap);
     }
 
     private void clearSceneObjects(){

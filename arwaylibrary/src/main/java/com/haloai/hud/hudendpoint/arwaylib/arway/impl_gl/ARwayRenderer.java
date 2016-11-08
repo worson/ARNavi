@@ -314,11 +314,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.reset();
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
-
-        if (mObject4Chase == null) {
-            mObject4Chase = mSceneUpdater.getCarObject();
-        }
-        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, OBJ_4_CHASE_Z);
+        
+        mObject4Chase = mSceneUpdater.getCarObject();
+        mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y,0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
         HaloLogger.logE("ylq__", "__" + mRenderPath.get(0));
@@ -374,14 +372,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void initNaviPath2Scene() {
         //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(), (float) mNaviPathDataProvider.getTopborder(), (float) mNaviPathDataProvider.getRightborder(), (float) mNaviPathDataProvider.getBottomborder(), 1, 0.f);
+//        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
+        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
         mSceneUpdater.commitRender();
     }
 
     private void addNaviPath2Scene() {
         //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(), (float) mNaviPathDataProvider.getTopborder(), (float) mNaviPathDataProvider.getRightborder(), (float) mNaviPathDataProvider.getBottomborder(), 1, 0.f);
+//        mSceneUpdater.moveCenterFloor((float) mRenderPath.get(0).x,(float) mRenderPath.get(0).y);
+//        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
+        mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
         mSceneUpdater.removeFloor();
         mSceneUpdater.removeNaviPath();
         mSceneUpdater.commitRender();
@@ -536,8 +537,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathUpdate() {
-        Vector3 curObjPos = new Vector3(0, 0, 0);
-        if (mIsMyInitScene) {
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onPathUpdate called");
+        Vector3 curObjPos = new Vector3(0,0,0);
+        if(mIsMyInitScene){
             curObjPos.setAll(mObject4Chase.getPosition());
         }
         //啊奇

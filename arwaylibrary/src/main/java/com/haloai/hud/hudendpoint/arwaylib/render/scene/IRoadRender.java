@@ -28,6 +28,7 @@ public interface IRoadRender {
     public int removeRoadNet();
 
     public void renderFloor(float left,float top,float right,float bottom,float spacing,float widthrate);
+    public void moveCenterFloor(float x,float y);
     public int removeFloor();
 
     /**
