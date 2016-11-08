@@ -300,15 +300,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         HaloLogger.logE(TAG, "mPathLatLng path end");
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
-        for (int i = 0; i < mPreDynamicEndIndex; i++) {
+        /*for (int i = 0; i < mPreDynamicEndIndex; i++) {
             if (mStepPointIndexs.contains(i)) {
                 HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
                 processSteps(mStepPointIndexs.indexOf(i));
             }
-        }
-        /*for (int i = 0; i < mStepPointIndexs.size(); i++) {
-            processSteps(i);
         }*/
+        for (int i = 0; i < mStepPointIndexs.size(); i++) {
+            processSteps(i);
+        }
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
         for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
             HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
@@ -339,6 +339,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     @Override
     public void loadNewRoad(int startIndex, int endIndex) {
+        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,start time = "+System.currentTimeMillis());
         Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
         Log.e("ylq", "remove start");
         //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
@@ -370,11 +371,14 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         for(List<List<Vector3>> paths:mBranchPaths) {
             mRenderPaths.addAll(paths);
         }
+        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,end time = "+System.currentTimeMillis());
         HaloLogger.logE("ylq", "loadNewRoad path size = " + mRenderPaths.size());
         mNaviPathDataProvider.updatePath(mRenderPaths);
 
+        HaloLogger.logE("dynamic","dynamic loadNewRoad guild line ,start time = "+System.currentTimeMillis());
         //4.更新蚯蚓线,因为主路被替换了所以需要刷新下
         processGuildLine(mStepPointIndexs.get(mCurStep));
+        HaloLogger.logE("dynamic","dynamic loadNewRoad guild line ,end time = "+System.currentTimeMillis());
 
         mPreDynamicEndIndex = endIndex;
         mPreDynamicStartIndex = startIndex;
@@ -478,6 +482,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         return mRoadNetDataProvider;
     }
 
+    int count = 0;
     /**
      * TODO:暂时不对路网数据进行处理
      * 访问路网模块获取指定steps的路网数据
@@ -533,7 +538,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 HaloLogger.logE(TAG, "szCover.width=" + szCover.width);
                 HaloLogger.logE(TAG, "max=" + (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG);
                 HaloLogger.logE(TAG, "offsetCover=" + offsetCover);
-                if (offsetCover >= szCover.width / 2) {
+                HaloLogger.logE(TAG, "pre center=" + preCenterLatLng.lat+"," + preCenterLatLng.lng);
+                HaloLogger.logE(TAG, "cur center=" + centerLatLng.lat+"," + centerLatLng.lng);
+                if (offsetCover < 0 || offsetCover >= szCover.width / 2) {
                     continue;
                 }
                 szCover.width -= 2 * offsetCover;
@@ -562,14 +569,30 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             centerPoint.lat = centerLatLng.lat;
             centerPoint.lng = centerLatLng.lng;
 
-            String filePath = "/sdcard/haloaimapdata_32.hmd";
-
             List<List<LatLngOutSide>> crossLinks = new ArrayList<>();
             List<LatLngOutSide> mainRoad = new ArrayList<>();
             List<Integer> crossPointIndexs = new ArrayList<>();
 
+
+            //TODO : data for daoge
+            HaloLogger.logE("daoge","data_start " + (++count));
+            HaloLogger.logE("daoge","\tmain_road_start");
+            for(LatLngOutSide latlng:links.get(0)){
+                HaloLogger.logE("daoge","\t\t"+latlng.lat+","+latlng.lng);
+            }
+            HaloLogger.logE("daoge","\tmain_road_end");
+            HaloLogger.logE("daoge","\tcenter_point_start");
+            HaloLogger.logE("daoge","\t\t"+centerPoint.lat+","+centerPoint.lng);
+            HaloLogger.logE("daoge","\tcenter_point_end");
+            HaloLogger.logE("daoge","\tszcover_start");
+            HaloLogger.logE("daoge","\t\t"+"width = "+szCover.width);
+            HaloLogger.logE("daoge","\t\t"+"height = "+szCover.height);
+            HaloLogger.logE("daoge","\tszcover_end");
+            HaloLogger.logE("daoge","data_end");
+
+
             HaloLogger.logE(TAG, "into jni");
-            int res = mEnlargedCrossProcess.updateCrossLinks(links, linkInfos, centerPoint, szCover, filePath, crossLinks, mainRoad, crossPointIndexs);
+            int res = mEnlargedCrossProcess.updateCrossLinks(links, linkInfos, centerPoint, szCover, crossLinks, mainRoad, crossPointIndexs);
             HaloLogger.logE(TAG, "outto jni");
             HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
 

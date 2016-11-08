@@ -18,6 +18,7 @@
 #include "algorithm.h"
 #include "types.h"
 #include "CrossRoad.h"
+#include "JniUtils.h"
 
 using namespace cv;
 using namespace std;
@@ -242,15 +243,16 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     vector <LinkInfo> _mainRoadLinkInfos;
     LinkInfo linkInfo;
     _mainRoadLinkInfos.push_back(linkInfo);
-    LOGE_ANDROID("_mainRoadLinkInfos.size = ",_mainRoadLinkInfos.size());
+    LOGE_ANDROID("_mainRoadLinkInfos.size = %d",_mainRoadLinkInfos.size());
     //113.936913,22.523966 软件基地4A
     HALocationCoordinate2D _centerPoint;
     _centerPoint.latitude = lat_value;
     _centerPoint.longitude = lng_value;
     LOGE_ANDROID("center point lat=%lf,lng=%lf",lat_value,lng_value);
     cv::Size2i _szCover(width_value, height_value);
-    //string _filePath = "../asserts/haloaimapdata_32.hmd";
-    string _filePath = "/sdcard/haloaimapdata_32.hmd";
+    //string _filePath = "/sdcard/haloaimapdata_32.hmd";
+    string _filePath = jstringToStr(env,strDictPath);
+    LOGE_ANDROID("file path = %s",_filePath.c_str());
     vector <vector<HALocationCoordinate2D> > _crossLinks;
     vector<HALocationCoordinate2D> _mainRoad;
     vector<int> _vecCrossPointIndex;
@@ -315,6 +317,35 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
         }
     }
     return res;
+}
+
+// jstring To String
+string jstringToStr(JNIEnv* env, jstring jstr)
+{
+    char* str = jstringToCharArr(env, jstr);
+    string value(str);
+    free(str);
+    return value;
+}
+
+// jstring To char*
+char* jstringToCharArr(JNIEnv* env, jstring jstr)
+{
+    char* rtn = NULL;
+    jclass clsstring = env->FindClass("java/lang/String");
+    jstring strencode = env->NewStringUTF("utf-8");
+    jmethodID mid = env->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
+    jbyteArray barr = (jbyteArray)env->CallObjectMethod(jstr, mid, strencode);
+    jsize alen = env->GetArrayLength(barr);
+    jbyte* ba = env->GetByteArrayElements(barr, JNI_FALSE);
+    if (alen > 0)
+    {
+        rtn = (char*)malloc(alen + 1);
+        memcpy(rtn, ba, alen);
+        rtn[alen] = 0;
+    }
+    env->ReleaseByteArrayElements(barr, ba, 0);
+    return rtn;
 }
 
 /**

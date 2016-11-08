@@ -98,7 +98,7 @@ HAMapPoint HaloNav::getOffset()
 }
 int HaloNav::writeBlock(std::vector<LinkInfo>& vecLinkInfos,std::vector< std::vector<HAMapPoint> >& vecAxes,int idx)
 {
-	cout << "writeBlock enter <<< links size:" << vecLinkInfos.size() << " block index:" << idx << ">>>";
+	cout << idx << ":" << vecLinkInfos.size() << ";";
     if(idx == 0)
     {
         *(unsigned int *)(_pDict +_headOffset ) = _indexOffset;
@@ -138,13 +138,12 @@ int HaloNav::writeBlock(std::vector<LinkInfo>& vecLinkInfos,std::vector< std::ve
             _pOffset += sizeof(HAMapPoint);
         }
     }
-	cout << "leave." << endl;
     return 0;
 }
 
 int HaloNav::writeDictionary(std::string& file)
 {
-	cout << "writeDictionary enter." << endl;
+	cout << endl << "writeDictionary enter." << endl;
     if(!_pDict)
         return -1;
     std::ofstream stream(file.c_str(), std::ios_base::binary);

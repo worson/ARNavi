@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayCurver;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -89,7 +90,9 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     @Override
     public void setGuildLine(List<Vector3> guildLine) {
         if(mNaviPathChangeNotifier!=null){
-            mNaviPathChangeNotifier.onGuideLineUpdate(guildLine);
+            List<Vector3> newGuildLine = new ArrayList<>();
+            ARWayCurver.makeCurvePlanB(guildLine, newGuildLine);
+            mNaviPathChangeNotifier.onGuideLineUpdate(newGuildLine);
         }
     }
 

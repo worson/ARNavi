@@ -27,12 +27,15 @@
 
 struct LinkInfo{
     long mapId;
-    float linkId;
+    HAUINT64 linkId;
+	//float linkId;
     int roadLevels[6]; //按顺序摆放道路等级，当值为0时结束，不超过6个
     int roadCharacters[6]; //按顺序摆放道路等级，当值为0时结束，不超过6个
-	float routeId; //当前Link所在的道路ID,全国唯一
+	HAUINT64 routeId; //当前Link所在的道路ID,全国唯一
+	//float routeId; //当前Link所在的道路ID,全国唯一
 	int direction;//道路方向:0未调查,默认双向,1双向,2正方向(link的起点到终点),3反方向
 	unsigned int routeNameHash;//道路名字的hash值
 };
+
 
 #endif /* LinkFileInfo_hpp */

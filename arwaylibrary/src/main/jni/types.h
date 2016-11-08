@@ -324,15 +324,15 @@ typedef struct _HAMapID
 
 const static int LEVEL_20_PIXEL_SIZE = 4096;
 //根据数据文件统计出来的常量，暂时固定
-static HAMapPoint LEFTBOTTOM_MAP_PT = HAMapPointMake(218849462, 114542844); //左下角起始位置的墨卡托坐标
-static HAMapPoint RIGHTUP_MAP_PT = HAMapPointMake(221645664,117320617); //右上角结束位置的墨卡托坐标
-static HALocationCoordinate2D LEFTBOTTOM_GPS_COOR = HALocationCoordinate2DMake(113.5, 22.0921);//左下角起始位置的GPS坐标
-static HALocationCoordinate2D RIGHTUP_GPS_COOR = HALocationCoordinate2DMake(117.25,25.5);//右上角的结束位置的GPS坐标
-static HAINT32 MAP_X_DIFF = RIGHTUP_MAP_PT.x - LEFTBOTTOM_MAP_PT.x;//横轴差
-static HAINT32 MAP_Y_DIFF = RIGHTUP_MAP_PT.y - LEFTBOTTOM_MAP_PT.y;//纵轴差
-static HAINT16 MAP_X_BLOCKS_COUNT = (MAP_X_DIFF / LEVEL_20_PIXEL_SIZE) + 1;//横轴Block个数
-static HAINT16 MAP_Y_BLOCKS_COUNT = (MAP_Y_DIFF / LEVEL_20_PIXEL_SIZE) + 1;//纵轴Block个数
-static HAINT32 MAP_X_OFFSET = LEFTBOTTOM_MAP_PT.x;
-static HAINT32 MAP_Y_OFFSET = LEFTBOTTOM_MAP_PT.y;
+extern HAMapPoint LEFTBOTTOM_MAP_PT; //左下角起始位置的墨卡托坐标
+extern HAMapPoint RIGHTUP_MAP_PT; //右上角结束位置的墨卡托坐标
+extern HALocationCoordinate2D LEFTBOTTOM_GPS_COOR;//左下角起始位置的GPS坐标
+extern HALocationCoordinate2D RIGHTUP_GPS_COOR;//右上角的结束位置的GPS坐标
+extern HAINT32 MAP_X_DIFF;//横轴差
+extern HAINT32 MAP_Y_DIFF;//纵轴差
+extern HAINT16 MAP_X_BLOCKS_COUNT;//横轴Block个数
+extern HAINT16 MAP_Y_BLOCKS_COUNT;//纵轴Block个数
+extern HAINT32 MAP_X_OFFSET;
+extern HAINT32 MAP_Y_OFFSET;
 
 #endif /* types_h */
