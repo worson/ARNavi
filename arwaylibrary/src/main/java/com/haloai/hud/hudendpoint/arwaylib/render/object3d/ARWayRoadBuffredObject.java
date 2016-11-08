@@ -299,6 +299,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         if (path == null || path.size() <=2) {
             return null;
         }
+        double totalDist = 0;
         double distStep = mStepLength;
         int lineCnt = 0;
         int cnt = path.size();
@@ -313,7 +314,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 v.x = c1.x + (c2.x - c1.x) * scale;
                 v.y = c1.y + (c2.y - c1.y) * scale;
                 v.z = 0;
-
+                totalDist += temp;
                 c1 = v;//移动计算点
                 i--;//两点的距离大于指定值时，需要保证计算最前方的点不动
                 lineCnt++;

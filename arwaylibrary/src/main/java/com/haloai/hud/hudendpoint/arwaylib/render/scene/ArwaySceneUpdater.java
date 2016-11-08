@@ -399,7 +399,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             floor.setPosition(0,0,0);
             ObjectLayer objectLayer = new ObjectLayer(floor);
             // TODO: 2016/11/7 以字坐标定位，需要还调用
-//            objectLayer.object.setPosition((right+left)/2,(top+bottom)/2,0);
+            objectLayer.object.setPosition((right+left)/2,(top+bottom)/2,0);
             mFloorObjectLayerList.add(objectLayer);
             mIsFloorDirty = true;
         }

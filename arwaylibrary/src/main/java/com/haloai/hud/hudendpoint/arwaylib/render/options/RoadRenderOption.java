@@ -25,7 +25,7 @@ public class RoadRenderOption {
 
     public void setLayersWidth(final float width){
         naviRoadWidth = width * 0.55f;
-        roadWidth = width * 1f;
+        roadWidth = width * 1.1f;
         netRoadWidth = width * 1f;
         guideLineWidth = width * 0.3f;
         refLineHeight = width * 1.485f;
