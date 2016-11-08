@@ -24,11 +24,21 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 							 std::vector<int>& vecCrossPointIndex,
 							 int& nCenterIndex)
 {
+#ifdef _WINDOWS_VER_
+	printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - enter!!==============\n");
+#endif
 	// �����Լ�
 	int nNumLink = vecMainRoadGpslinks.size();
 	if (nNumLink<=0 || nNumLink!=vecMainRoadGpsLinkInfos.size() ||
 		szCover.height<=0 || szCover.width<=0)
 	{
+		#ifdef _WINDOWS_VER_
+				printf("==============translateRoadNet - parameter Error!!==============\n");
+		#else
+				LOGD("==============getCrossLinks - parameter Error!!==============\n");
+		#endif
 		return -1;
 	}
 
@@ -38,12 +48,22 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	//HaloNav haloNav;
 	if (!m_IsReadDictionary)
 	{
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+		LOGD("==============!m_IsReadDictionary - enter!!==============\n");
+#endif
 		nRet = m_haloNav.readDictionary(strDictPath);
 		if (nRet<0)
 		{
 			return -1;
 		}
 		m_IsReadDictionary = true;
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+		LOGD("==============m_IsReadDictionary = true; - enter!!==============\n");
+#endif
 	}
 	
 
@@ -68,17 +88,33 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		vecMainRoadPixelLinks.push_back(vecTemp);
 	}
 
+#ifdef _WINDOWS_VER_
+	printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - HAMapPointForCoordinate end!!==============\n");
+#endif
+
 	// ���ĵ�
 	HAMapPoint hamPixelCenter = HAMapPointForCoordinate(halGpsCenterPoint);
 	hamPixelCenter.x -= hamOffset.x;
 	hamPixelCenter.y -= hamOffset.y;
-	
+
+#ifdef _WINDOWS_VER_
+	printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - hamPixelCenter end!!==============\n");
+#endif
 	
 	// ��ȡ·��link	
 	std::vector<LinkInfo> vecRoadNetLinkInfo;		
 	std::vector<std::vector<HAMapPoint> > vecRoadNetLink;
 	m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
 
+#ifdef _WINDOWS_VER_
+	printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - findLinks end!!==============\n");
+#endif
 	
 	// ��·���в�����·���ںϵ�ͼ����
 	MergeMapData merMapdata;
@@ -112,6 +148,11 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		return -1;
 	}
 
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - matchMainRoadCenterInNet5 end!!==============\n");
+#endif
 
 	// ����ת��������ת��γ��
 #if 0
@@ -161,6 +202,11 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	}
 #endif
 
+#ifdef _WINDOWS_VER_
+		printf("==============translateRoadNet - parameter Error!!==============\n");
+#else
+	LOGD("==============getCrossLinks - pixel2Gps end!!==============\n");
+#endif
 
 	return 0;
 }

@@ -22,11 +22,13 @@ import java.util.List;
  *         javah com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess
  */
 public class EnlargedCrossProcess {
-    static final String TAG           = "HaloAI_ECP_Lib_Caller";
-    private      Bitmap myCrossImage  = null;
-    private      Mat    matECImage    = new Mat();
-    private      Mat    myMatECImage  = new Mat();
-    private      Mat    bgrMatECImage = new Mat();
+    private static final String TAG                       = "HaloAI_ECP_Lib_Caller";
+    private static final String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_bj_noRDname.hmd";
+
+    private Bitmap myCrossImage  = null;
+    private Mat    matECImage    = new Mat();
+    private Mat    myMatECImage  = new Mat();
+    private Mat    bgrMatECImage = new Mat();
 
     public static class ECBranchLine {
 
@@ -92,19 +94,19 @@ public class EnlargedCrossProcess {
 
     /**
      * 调用JNI接口实现路网数据的获取
-     * @param links 机动点前后的主路(由N个link表示,对应linkInfo,但是目前该集合只有一个link,该link就是中心点前后的点的集合且保证头尾是边界点)
-     * @param linkInfos 目前为null
-     * @param centerPoint 机动点的经纬度
-     * @param szCover 400*400的矩形
-     * @param filePath 二进制文件的路径,目前写死成/sdcard/xxxx.hmd
-     * @param crossLinks [out]:路网数据中的岔路部分
-     * @param mainRoad [out]:路网中的主路部分
+     *
+     * @param links            机动点前后的主路(由N个link表示,对应linkInfo,但是目前该集合只有一个link,该link就是中心点前后的点的集合且保证头尾是边界点)
+     * @param linkInfos        目前为null
+     * @param centerPoint      机动点的经纬度
+     * @param szCover          400*400的矩形
+     * @param crossLinks       [out]:路网数据中的岔路部分
+     * @param mainRoad         [out]:路网中的主路部分
      * @param crossPointIndexs [out]:主路中与岔路相交部分的角标,最后一个点为路网中导航路的中心点角标
      * @return 0:正常,数据可用 其他:错误
      */
     public int updateCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,
-                                Size2iOutside szCover, String filePath, List<List<LatLngOutSide>> crossLinks,List<LatLngOutSide> mainRoad,List<Integer> crossPointIndexs){
-        return nativeGetCrossLinks(links,linkInfos,centerPoint,szCover,filePath,crossLinks,mainRoad,crossPointIndexs);
+                                Size2iOutside szCover, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad, List<Integer> crossPointIndexs) {
+        return nativeGetCrossLinks(links, linkInfos, centerPoint, szCover, ROAD_NET_SOURCE_FILE_PATH, crossLinks, mainRoad, crossPointIndexs);
     }
 
     public static class PointA {
@@ -137,15 +139,16 @@ public class EnlargedCrossProcess {
 
     /**
      * 通过传入一段导航路获取该中心点附近的路网数据信息
-     * @param links [in] 导航路切割成N个link(为了对应LinkInfo)
-     * @param linkInfos [in] 对应每个Link有一个对应的LinkInfo
+     *
+     * @param links       [in] 导航路切割成N个link(为了对应LinkInfo)
+     * @param linkInfos   [in] 对应每个Link有一个对应的LinkInfo
      * @param centerPoint [in] 中心点的经纬度
-     * @param szCover 覆盖区域的宽高
+     * @param szCover     覆盖区域的宽高
      * @param strDictPath 地图数据路径(目前写死在/sdcard/下)
-     * @param crossLinks [out] 中心点附近的路网信息
+     * @param crossLinks  [out] 中心点附近的路网信息
      * @return 1表示正常 0表示不正常
      */
     public native int nativeGetCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,
-                                           Size2iOutside szCover, String strDictPath, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
+                                          Size2iOutside szCover, String strDictPath, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
                                           List<Integer> crossPointIndexs);
 }

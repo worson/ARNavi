@@ -1,11 +1,14 @@
 #pragma once
 
 #include <vector>
+//#include "core.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "types.h"
 #include "LinkFileInfo.hpp"
 #include "NaviFile.h"
+
+
 
 using namespace std;
 using namespace cv;

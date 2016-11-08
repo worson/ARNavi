@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
@@ -34,9 +33,7 @@ import org.rajawali3d.animation.IAnimationListener;
 import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
-import org.rajawali3d.materials.Material;
 import org.rajawali3d.math.vector.Vector3;
-import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 import org.rajawali3d.view.TextureView;
 
@@ -55,7 +52,7 @@ import javax.microedition.khronos.opengles.GL10;
  * distance     : 用于表示openGl中的距离
  * length       : 用于表示物理世界的距离米
  */
-public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier,RenderParamsInterpolatorListener {
+public class ARwayRenderer extends Renderer implements IAnimationListener, IRenderStrategy.RenderParamsNotifier, INaviPathDataProvider.INaviPathDataChangeNotifer, IRoadNetDataProvider.IRoadNetDataNotifier, RenderParamsInterpolatorListener {
     //content
     private static final String TAG               = "com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl.ARwayRenderer";
     private static final double OBJ_4_CHASE_Z     = 0;
@@ -69,14 +66,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private              int    SCREEN_WIDTH      = 0;
     private              int    SCREEN_HEIGHT     = 0;
 
-    private TextureView mTextureView = null;
+    private TextureView         mTextureView = null;
     //list data
     private List<List<Vector3>> mRenderPaths = new ArrayList<>();
     private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
     private Object3D          mObject4Chase;
-    private Object3D          mCarObject;
     private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
 
     //about animation
@@ -128,8 +124,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void initScene() {
+        HaloLogger.logE("ylq__", "initScene");
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
-        getCurrentScene().setBackgroundColor(0,0,0,0);
+        getCurrentScene().setBackgroundColor(0, 0, 0, 0);
         setFrameRate(FRAME_RATE);
         initSceneUpdater();
         mIsInitScene = true;
@@ -228,15 +225,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
             //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
             //updateCamera(mObject4Chase);
-             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
-            mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
+            //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
+            mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
         }
-        mSceneUpdater.onRender(ellapsedRealtime,deltaTime);
+        mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
-
-        if (ARWayConst.ENABLE_PERFORM_TEST) {
+        mRenderTimeRecorder.recordeAndLog("onRenderFrame", "onRenderFrame");
+        /*if (ARWayConst.ENABLE_PERFORM_TEST) {
             mRenderTimeRecorder.recordeAndLog("onRenderFrame", "onRenderFrame");
-        }
+        }*/
     }
 
     @Override
@@ -310,15 +307,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         System.gc();
     }
 
-    public void initDefaultRenderParams(IRenderStrategy.RenderParams params){
+    public void initDefaultRenderParams(IRenderStrategy.RenderParams params) {
 
-        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(),params.glCameraAngle,params.glInScreenProportion,params.glScale);
+        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(), params.glCameraAngle, params.glInScreenProportion, params.glScale);
         mParamsRefresher.setRenderParamsInterpolatorListener(this);
     }
 
 
     private void myInitScene() {
-
+        HaloLogger.logE("ylq__", "myInitScene");
         clearScene();
         mSceneUpdater.reset();
         //啊奇
@@ -328,15 +325,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y,0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
-
-        mCarObject = new Sphere(0.05f, 20, 20);
-        Material cMaterial = new Material();
-        cMaterial.setColor(Color.argb(0, 76, 0, 0));//Color.argb(255,76,0,0)
-        mCarObject.setMaterial(cMaterial);
-        mCarObject.setPosition(mObject4Chase.getPosition());
-        //getCurrentScene().addChild(mCarObject);
-
-//        mSceneUpdater.setCarObject(mCarObject);
+        HaloLogger.logE("ylq__", "__" + mRenderPath.get(0));
+        HaloLogger.logE("ylq__", "__" + rotateZ);
 
         Camera camera = getCurrentCamera();
         camera.enableLookAt();
@@ -347,12 +337,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         Vector3 position = new Vector3();
         Vector3 lookAt = new Vector3();
-        CameraParam param = new CameraParam(mObject4Chase.getPosition(),mObject4Chase.getRotZ(),1.0,60,0);
-        ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param,position,lookAt);
+        CameraParam param = new CameraParam(mObject4Chase.getPosition(), mObject4Chase.getRotZ(), 1.0, 60, 0);
+        ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param, position, lookAt);
         getCurrentCamera().setPosition(position);
         getCurrentCamera().setLookAt(lookAt);
-
-
 
         /*
         updateCamera(mObject4Chase);
@@ -371,7 +359,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mCanMyInitScene = false;
     }
 
-    private void initRoadNet2Scene(){
+    private void initRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
         branchLinesList.addAll(mRenderPaths);
         mSceneUpdater.renderRoadNet(branchLinesList);
@@ -524,8 +512,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (mNaviPathDataProvider != null) {
             //啊奇
             IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
-            for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
-                if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
+            for (IRenderStrategy.DataLevel temple : IRenderStrategy.DataLevel.values()) {
+                if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()) {
                     level = temple;
                     break;
                 }
@@ -537,7 +525,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             }
             mRenderPaths = new ArrayList<>();
             List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
-            for(List<Vector3> path:renderPaths){
+            for (List<Vector3> path : renderPaths) {
                 List<Vector3> curvePath = new ArrayList<>();
                 ARWayCurver.makeCurvePlanB(path, curvePath);
                 mRenderPaths.add(curvePath);
@@ -563,15 +551,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         //啊奇
         IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
-        for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
-            if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()){
+        for (IRenderStrategy.DataLevel temple : IRenderStrategy.DataLevel.values()) {
+            if (temple.getLevel() == mParamsRefresher.getInitializtionLevel()) {
                 level = temple;
                 break;
             }
         }
         mRenderPaths = new ArrayList<>();
         List<List<Vector3>> renderPaths = mNaviPathDataProvider.getNaviPathByLevel(level, curObjPos.x, curObjPos.y);
-        for(List<Vector3> path:renderPaths){
+        for (List<Vector3> path : renderPaths) {
             List<Vector3> curvePath = new ArrayList<>();
             ARWayCurver.makeCurvePlanB(path, curvePath);
             mRenderPaths.add(curvePath);
@@ -595,7 +583,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onGuideLineUpdate(List<Vector3> guideLineUpdate) {
-        if(mIsMyInitScene) {
+        if (mIsMyInitScene) {
             mSceneUpdater.renderGuideLine(guideLineUpdate);
         }
     }
@@ -606,50 +594,50 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     @Override
-    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams,int animationType,double duration){
+    public void onRenderParamsUpdated(IRenderStrategy.RenderParams renderParams, int animationType, double duration) {
         //Log.e("ylq","onRenderParamsUpdated");
-        switch (animationType){
+        switch (animationType) {
             case IRenderStrategy.SCALE_TYPE:
-                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
                 break;
             case IRenderStrategy.ANGLE_TYPE:
-                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle, duration);
                 break;
             case IRenderStrategy.INSCREENPROPORTION_TYPE:
-                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion, duration);
                 break;
-            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.ANGLE_TYPE:
-                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
-                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
+            case IRenderStrategy.SCALE_TYPE | IRenderStrategy.ANGLE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle, duration);
                 break;
-            case IRenderStrategy.SCALE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
-                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
-                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+            case IRenderStrategy.SCALE_TYPE | IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion, duration);
                 break;
-            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE:
-                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
-                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+            case IRenderStrategy.ANGLE_TYPE | IRenderStrategy.INSCREENPROPORTION_TYPE:
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle, duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion, duration);
                 break;
-            case IRenderStrategy.ANGLE_TYPE|IRenderStrategy.INSCREENPROPORTION_TYPE|IRenderStrategy.SCALE_TYPE:
-                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(),renderParams.glScale,duration);
-                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle,duration);
-                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion,duration);
+            case IRenderStrategy.ANGLE_TYPE | IRenderStrategy.INSCREENPROPORTION_TYPE | IRenderStrategy.SCALE_TYPE:
+                mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
+                mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle, duration);
+                mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion, duration);
                 break;
             default:
                 //
-                Log.e("ylq","Worng AnimationType");
+                Log.e("ylq", "Worng AnimationType");
                 break;
         }
     }
 
     @Override
-    public void onRefreshDataLevel(int DataLevel,double roadWidth){
-        Log.e("ylq","onRefreshDataLevel:"+DataLevel);
+    public void onRefreshDataLevel(int DataLevel, double roadWidth) {
+        Log.e("ylq", "onRefreshDataLevel:" + DataLevel);
         //add
 
         IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
-        for (IRenderStrategy.DataLevel temple:IRenderStrategy.DataLevel.values()){
-            if (temple.getLevel() == DataLevel){
+        for (IRenderStrategy.DataLevel temple : IRenderStrategy.DataLevel.values()) {
+            if (temple.getLevel() == DataLevel) {
                 level = temple;
                 break;
             }
@@ -657,16 +645,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         clearLastAnim();
 
-        mParamsRefresher.cameraRefresh(getCurrentCamera(),mObject4Chase.getPosition(),mObject4Chase.getRotZ());
+        mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
 
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called,thread is = %s",Thread.currentThread().getId()));
-        mSceneUpdater.getRenderOptions().setLayersWidth((float)roadWidth);
-//        mSceneUpdater.renderFloor(-100,100,100,-100,1);
-        List<Vector3> naviPath =  mNaviPathDataProvider.getNaviPathByLevel(level,mObject4Chase.getX(),mObject4Chase.getY()).get(0);
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onRenderParamsUpdated called,thread is = %s", Thread.currentThread().getId()));
+        mSceneUpdater.getRenderOptions().setLayersWidth((float) roadWidth);
+        //        mSceneUpdater.renderFloor(-100,100,100,-100,1);
+        List<Vector3> naviPath = mNaviPathDataProvider.getNaviPathByLevel(level, mObject4Chase.getX(), mObject4Chase.getY()).get(0);
         mSceneUpdater.renderNaviPath(naviPath);
 
         mHandler.sendEmptyMessage(SCENE_HIDE_ANIMATION_ID);
     }
+
     int mRefreshDataCnt = 0;
 
 
@@ -695,32 +684,35 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         addRoadNet2Scene();
     }
 
-    /**********************************SceneUpdater*********************************************/
+    /**********************************
+     * SceneUpdater
+     *********************************************/
     public ArwaySceneUpdater getSceneUpdater() {
         return mSceneUpdater;
     }
 
-    private ObjectAnimator createViewAlphaAnimator(View view, float from, float to, long duration){
-        ObjectAnimator animator=  ObjectAnimator
+    private ObjectAnimator createViewAlphaAnimator(View view, float from, float to, long duration) {
+        ObjectAnimator animator = ObjectAnimator
                 .ofFloat(view, "Alpha", from, to);
         animator.setDuration(duration);
         return animator;
     }
-    private void restartAnimator(ObjectAnimator a){
-        if(a.isStarted()){
+
+    private void restartAnimator(ObjectAnimator a) {
+        if (a.isStarted()) {
             a.cancel();
         }
         a.start();
     }
 
     public static final int SCENE_HIDE_ANIMATION_ID = 0;
-    public static final int SCENE_RENDER_APLLY_ID = 1;
+    public static final int SCENE_RENDER_APLLY_ID   = 1;
 
     private Handler        mHandler      = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case SCENE_HIDE_ANIMATION_ID:
                     restartAnimator(mHideAnimator);
                     break;
@@ -734,11 +726,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private ObjectAnimator mHideAnimator = null;
     private ObjectAnimator mShowAnimator = null;
 
-    private void initSceneAnimator(){
+    private void initSceneAnimator() {
         int duration = 100;
         float invivable = 0.6f;
-        mShowAnimator = createViewAlphaAnimator(mTextureView,invivable,1,duration);
-        mHideAnimator = createViewAlphaAnimator(mTextureView,1,invivable,duration);
+        mShowAnimator = createViewAlphaAnimator(mTextureView, invivable, 1, duration);
+        mHideAnimator = createViewAlphaAnimator(mTextureView, 1, invivable, duration);
         mHideAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -749,7 +741,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             public void onAnimationEnd(Animator animation) {
                 mHandler.sendEmptyMessage(SCENE_RENDER_APLLY_ID);
                 restartAnimator(mShowAnimator);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onAnimationEnd called,thread is = %s",Thread.currentThread().getId()));
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("onAnimationEnd called,thread is = %s", Thread.currentThread().getId()));
             }
 
             @Override
