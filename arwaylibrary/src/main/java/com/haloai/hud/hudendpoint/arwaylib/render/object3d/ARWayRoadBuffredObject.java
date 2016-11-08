@@ -9,6 +9,7 @@ import com.haloai.hud.hudendpoint.arwaylib.render.vertices.TextureRoadGeometryPr
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.Geometry3D;
@@ -548,7 +549,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
-        this.render(camera, vpMatrix, projMatrix, vMatrix, null, sceneMaterial);
+        render(camera, vpMatrix, projMatrix, vMatrix, null, sceneMaterial);
     }
 
     private void attachRender(){
@@ -575,6 +576,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         material.setCurrentObject(this);*/
     }
 
+    TimeRecorder timeRecorder = new TimeRecorder();
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
         if(!mNeedRender){
             return;
@@ -585,10 +587,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         synchronized (mLock){
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
-            if (mMaterial != null) {
+            /*if ( mFogEnable && material != null) {
                 RoadFogMaterialPlugin fogMaterialPlugin = null;
                 IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
                 if (IFogPlugin != null) {
+                    timeRecorder.start();
                     fogMaterialPlugin =  (RoadFogMaterialPlugin)IFogPlugin;
                     if(mFogEnable){
                         fogMaterialPlugin.setFogStartPosition(mFogStart);
@@ -597,8 +600,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     fogMaterialPlugin.setIsFog(mFogEnable);
                     fogMaterialPlugin.getVertexShaderFragment().applyParams();
                     fogMaterialPlugin.getFragmentShaderFragment().applyParams();
+//                    timeRecorder.recordeAndLog("fogPlugin","fogPlugin");
+                }else {
+//                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"render plugin error !!!");
                 }
-            }
+            }*/
 
             // -- move view matrix transformation first
             boolean modelMatrixWasRecalculated = onRecalculateModelMatrix(parentMatrix);

@@ -9,7 +9,7 @@ public class RoadRenderOption {
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
 
-    public boolean isRoadFog = false;
+    public boolean isRoadFog = true;
     //render configuration
     public float mRoadLevel         = 20;
 
@@ -31,8 +31,8 @@ public class RoadRenderOption {
         refLineHeight = width * 1.485f;
         refLineWidth = width * 1.1f;
         refLineStepLength = width * 2.75f;
-        netRefLineHeight = width * 1.1f;
-        netRrefLineWidth = width * 1.1f;
+        netRefLineHeight = width * 0.77f;
+        netRrefLineWidth = width * 0.77f;
     }
 
     public LayersColor mColors = new LayersColor();

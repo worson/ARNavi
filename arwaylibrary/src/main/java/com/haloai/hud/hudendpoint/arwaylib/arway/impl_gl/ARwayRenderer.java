@@ -77,7 +77,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //rajawali about
     private Object3D          mObject4Chase;
     private Object3D          mCarObject;
-    private ArwaySceneUpdater mSceneUpdater = ArwaySceneUpdater.getInstance();
+    private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
@@ -131,6 +131,14 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
         getCurrentScene().setBackgroundColor(0,0,0,0);
         setFrameRate(FRAME_RATE);
+        initSceneUpdater();
+        mIsInitScene = true;
+        if (!mIsMyInitScene && mCanMyInitScene) {
+            myInitScene();
+        }
+    }
+
+    private void initSceneUpdater() {
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
@@ -138,11 +146,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.initScene();
         mSceneUpdater.setCamera(getCurrentCamera());
 
-        mIsInitScene = true;
-        if (!mIsMyInitScene && mCanMyInitScene) {
-            myInitScene();
-        }
+        mSceneUpdater.getRenderOptions().isRoadFog = false;
     }
+
 
     @Override
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
@@ -382,15 +388,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void initNaviPath2Scene() {
-        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderTrafficLight(mRenderPath.get(4));
 //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
         mSceneUpdater.commitRender();
     }
 
     private void addNaviPath2Scene() {
-        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
 //        mSceneUpdater.moveCenterFloor((float) mRenderPath.get(0).x,(float) mRenderPath.get(0).y);
 //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);

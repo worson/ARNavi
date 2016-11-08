@@ -23,6 +23,7 @@ import org.rajawali3d.loader.ALoader;
 import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.async.IAsyncLoaderCallback;
 import org.rajawali3d.materials.Material;
+import org.rajawali3d.materials.plugins.FogMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
@@ -91,12 +92,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private Material mNaviIconMaterial      = null;
     private List<Material> mMaterialList            = new ArrayList<>();
 
-    private static ArwaySceneUpdater mArwaySceneUpdater    = new ArwaySceneUpdater(null);
+    private Texture mCrossNetTexture = null;
+
+    private static ArwaySceneUpdater mArwaySceneUpdater    = null;//new ArwaySceneUpdater(null)
     private        TimeRecorder      mSceneUpdaterRecorder = new TimeRecorder();
 
-
-
-    private float mSceneAlpha = 1;
+    private boolean mMaskRenderGuideLine = false;
+    private boolean mMaskRenderFloor = false;
+    private boolean mMaskRenderNet = false;
 
     private class ObjectLayer {
 //        private Vector3 postion = new Vector3();
@@ -202,6 +205,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor,
                 R.drawable.arway_tex_car_1,R.drawable.road_circle_alpha_change,R.drawable.scene_traffic_light};
         List<Material> materialList = new LinkedList();
+        List<Texture> texturelList = new LinkedList();
         float colorInfluence = 1;
         float textureInfluence = 1;
         boolean useVertexColor = false;
@@ -221,6 +225,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             texture.setWrapType(ATexture.WrapType.REPEAT);
             texture.setMipmap(false);
             texture.setInfluence(textureInfluence);
+            texturelList.add(texture);
             try {
                 material.addTexture(texture);
             } catch (ATexture.TextureException e) {
@@ -234,6 +239,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mArrowMaterial = materialList.get(1);
         mArrowMaterial.getTextureList().get(0).setInfluence(1f);
 
+        mCrossNetTexture = texturelList.get(2);
         mCrossRoadBottomMaterial = materialList.get(2);
         mCrossRoadTopMaterial = mCrossRoadBottomMaterial;
 
@@ -256,15 +262,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolMaterial = new Material();
 
         RoadFogMaterialPlugin fogMaterialPlugin = new RoadFogMaterialPlugin();
-        mCrossRoadBottomMaterial.addPlugin(fogMaterialPlugin);
-        mCrossRoadTopMaterial.addPlugin(fogMaterialPlugin);
+        mCrossRoadBottomMaterial.addPlugin(new RoadFogMaterialPlugin());
+//        mCrossRoadTopMaterial.addPlugin(fogMaterialPlugin);
+        // TODO: 2016/11/8 不能共用一个plugin
+        mCrossRefMaterial.addPlugin(new RoadFogMaterialPlugin());
 
         TextureAlphaMaterialPlugin textureAlphaPlugin = new TextureAlphaMaterialPlugin();
-        mMainRoadMaterial.addPlugin(textureAlphaPlugin);
-        mRoadReflineMaterial.addPlugin(textureAlphaPlugin);
-        mArrowMaterial.addPlugin(textureAlphaPlugin);
-        mFloorMaterial.addPlugin(textureAlphaPlugin);
-        mCrossRefMaterial.addPlugin(textureAlphaPlugin);
+        mMainRoadMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+        mRoadReflineMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+        mArrowMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+        mFloorMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+//        mCrossRefMaterial.addPlugin(textureAlphaPlugin);
         {
             mMaterialList.add(mCrossRoadBottomMaterial);
             mMaterialList.add(mCrossRoadTopMaterial);
@@ -377,6 +385,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         road.setColor(mColors.netRoad);
         ARWayRoadBuffredObject refline = new ARWayRoadBuffredObject(mOptions.netRefLineHeight, mOptions.netRrefLineWidth, mOptions.refLineStepLength);
         refline.setColor(mColors.netRefLine);
+        refline.setTransparent(true);
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
         if(!ARWayConst.IS_USE_ROAD_TEXTURE){
             type = ARWayRoadBuffredObject.ShapeType.VERTICE_ROAD;
@@ -393,6 +402,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     public void renderFloor(float left,float top,float right,float bottom,float spacing,float widthrate) {
+        if(mMaskRenderFloor){
+            return;
+        }
 //        mFloorObjectLayerList.clear();
         TileFloor floor = createFloor(right-left,top-bottom,spacing,widthrate);
         if (floor != null) {
@@ -404,30 +416,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mIsFloorDirty = true;
         }
     }
-    private void testAddPlane( List<Vector3> path) {
-        int index = 3;
-        for (int i = 0; i < path.size(); i+=5) {
-            HaloLogger.logE("testAddPlane","testAddPlane");
-            index=i;
-            Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
-                    true,false,1,true);//,Color.BLACK
-//            plane.setDoubleSided(true);
-            plane.setTransparent(true);
-//            plane.setColor(Color.RED);
-            plane.setPosition(0,0,0.5);
-            // plane.setAlpha(0.1f);//不作用于顶点颜色
-            plane.setMaterial(mNaviIconMaterial);
-
-            BaseObject3D baseObject3D = new BaseObject3D();
-//            baseObject3D.setMaterial(m);
-            baseObject3D.setOrthographic(true,0.04f);
-            baseObject3D.addChild(plane);
-            baseObject3D.setPosition(path.get(index).x,path.get(index).y,0.0);
-
-            mScene.addChild(baseObject3D);
-        }
-
-    }
 
     /**
      * 渲染当前显示的道路
@@ -438,7 +426,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (path == null || path.size()<2) {
             return false;
         }
-//        testAddPlane(path);
+//        renderlTrafficLight(path);
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {
@@ -506,12 +494,30 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     }
 
+    public void renderTrafficLight(Vector3 position) {
+        mNaviSymbolLayer.setPosition(position);
+        if(mNaviSymbolLayer.getNumChildren()<=0){
+            mNaviSymbolLayer.setOrthographic(true,0.04f);
+            Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
+                    true,false,1,true);//,Color.BLACK
+//            plane.setDoubleSided(true);
+            plane.setTransparent(true);
+            plane.setPosition(0,0,0.5);
+            // plane.setAlpha(0.1f);//不作用于顶点颜色
+            plane.setMaterial(mNaviIconMaterial);
+
+            mNaviSymbolLayer.clearChildren();
+            mNaviSymbolLayer.addChild(plane);
+
+        }
+    }
+
     /**
      *
      * @param position
      * @param degree 以3点钟为0度，逆时针计算
      */
-    public void renderTrafficLight(Vector3 position,float degree){
+    private void renderModelTrafficLight(Vector3 position, float degree){
         final TimeRecorder recorder = new TimeRecorder();
         recorder.start();
 
@@ -570,7 +576,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public boolean renderGuideLine(List<Vector3> path) {
-        if (path == null || path.size()<2) {
+        if ( mMaskRenderGuideLine ||path == null || path.size()<2) {
             return false;
         }
         int pathSize = path.size();
@@ -615,11 +621,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public boolean renderRoadNet(List<List<Vector3>> cross) {
-        if (cross == null || cross.size()<1) {
+        if (mMaskRenderNet || cross == null || cross.size()<1) {
             return false;
         }
         boolean result = true;
-        // TODO: 2016/11/2
+        // TODO: 2016/11/2 动态加载不清除
 //        mCrossRoadList.clear();
         int crossSize = cross.size();
         Vector3 offset = new Vector3();
@@ -630,23 +636,43 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 offset.setAll(road.get(0));
                 RoadLayers roadLayers = createNetRoadLayer();
                 netList.add(roadLayers);
-                Vector3 fogStart = road.get(0);
-                Vector3 fogEng = road.get(road.size()-1);
-                if(true && i==0){
-                    fogStart = new Vector3(0,0,0);
-                    fogEng = new Vector3(0.01,0,0);
-                }
                 boolean isFog = mOptions.isRoadFog;
+
+                Material material = new Material();
+                try {
+                    material.addTexture(mCrossNetTexture);
+                } catch (ATexture.TextureException e) {
+                    e.printStackTrace();
+                }
+                RoadFogMaterialPlugin fogPlugin = new RoadFogMaterialPlugin();
                 if(isFog){
-                    roadLayers.road.setFogStart(fogStart);
+                    Vector3 fogStart = road.get(0);
+                    Vector3 fogEng = road.get(road.size()-1);
+                    /*if(true && i==0){
+                        fogStart = new Vector3(0,0,0);
+                        fogEng = new Vector3(0.01,0,0);
+                    }*/
+                    /*roadLayers.road.setFogStart(fogStart);
                     roadLayers.road.setFogEnd(fogEng);
                     roadLayers.bottom.setFogStart(fogStart);
                     roadLayers.bottom.setFogEnd(fogEng);
                     roadLayers.refLine.setFogStart(fogStart);
-                    roadLayers.refLine.setFogEnd(fogEng);
+                    roadLayers.refLine.setFogEnd(fogEng);*/
+
+                    fogPlugin.setFogStartPosition(fogStart);
+                    fogPlugin.setFogEndPosition(fogEng);
                 }
-                roadLayers.road.setFogEnable(isFog);
+                fogPlugin.setIsFog(isFog);
+                material.addPlugin(fogPlugin);
+
+                /*roadLayers.road.setFogEnable(isFog);
                 roadLayers.bottom.setFogEnable(isFog);
+                roadLayers.refLine.setFogEnable(isFog);*/
+
+                roadLayers.road.setMaterial(material);
+                roadLayers.bottom.setMaterial(material);
+                roadLayers.refLine.setMaterial(material);
+
                 roadLayers.road.updateBufferedRoad(road,offset);
                 roadLayers.bottom.updateBufferedRoad(road,offset);
                 roadLayers.refLine.updateReferenceLine(road, offset);
@@ -664,7 +690,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
 
     public void setAlpha(float alpha) {
-        mSceneAlpha = alpha;
         for (Material m :mMaterialList){
             if (m != null) {
                 m.setColorInfluence(alpha);
@@ -716,9 +741,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 mCrossRefLine.setPosition(offset);
                 for ( List<RoadLayers> roadNet:mCrossRoadList) {
                     for(RoadLayers roadLayers:roadNet) {
-                        roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
+                        /*roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
                         roadLayers.road.setMaterial(mCrossRoadTopMaterial);
-                        roadLayers.refLine.setMaterial(mCrossRefMaterial);
+                        roadLayers.refLine.setMaterial(mCrossRefMaterial);*/
                         mCrossRoadBottom.addChild(roadLayers.bottom);
                         mCrossRoad.addChild(roadLayers.road);
                         mCrossRefLine.addChild(roadLayers.refLine);
