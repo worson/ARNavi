@@ -40,10 +40,13 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     protected static final boolean IS_CLEAR_BUFFER    = false;
     private static final int CIRCLE_SEGMENT = 32;
 
+
     //Road
     private float mRefLineHeight = 0.5f;
     private float mRefLineWidth = 0.5f;
     private float mStepLength = 3f;
+    private boolean mIsSkip = true;
+
     private float            mRoadWidth     = 0.7f;
     private int mRoadColor = Color.WHITE;
     private ShapeType mShapeType = ShapeType.VERTICE_ROAD;
@@ -65,23 +68,26 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mShapeType = type;
     }
 
-    public ARWayRoadBuffredObject(float height, float width, float stepLength){
+   /* public ARWayRoadBuffredObject(float height, float width, float stepLength){
         this(height,width,stepLength,Color.RED);
-    }
+    }*/
     /**
      * 绘制参考线，指定矩形的长和宽
      */
-    public ARWayRoadBuffredObject(float height, float width, float stepLength,int color) {
-        this(width,color);
+    public ARWayRoadBuffredObject(float height, float width, float stepLength,boolean skip) {
+        this(width,Color.RED);
         mShapeType = ShapeType.REFERENCE_LINE;
         mRefLineHeight = height;
         mRefLineWidth = width;
         mStepLength = stepLength;
+        mIsSkip = skip;
     }
+/*
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
         this(height,width,5,color);
     }
+*/
 
     public ARWayRoadBuffredObject(float width) {
         this(width,Color.RED);
@@ -297,7 +303,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @return
      */
     private GeometryData generateRectangleVerties(List<Vector3> path,final Vector3 offset, float height, float width, int color) {
-        if (path == null || path.size() <=2) {
+        if (path == null || path.size() <2) {
             return null;
         }
         double totalDist = 0;
@@ -307,10 +313,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
         Vector3 c1 = path.get(0);
         Vector3 v = new Vector3();
-        for (int i = 0; i < cnt - 1; i++) {
+        for (int i = 0; i < cnt-1; i++) {
             Vector3 c2 = path.get(i + 1);
             double temp = MathUtils.calculateDistance(c1.x, c1.y, c2.x, c2.y);
-            if (temp >= distStep) {
+            if (temp >= distStep || i==cnt-1) {
                 double scale = distStep / temp;
                 v.x = c1.x + (c2.x - c1.x) * scale;
                 v.y = c1.y + (c2.y - c1.y) * scale;
@@ -321,7 +327,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 lineCnt++;
                 distStep = mStepLength;
             } else if (temp < distStep) {
-//                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                if(mIsSkip){
+                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                }
                 c1 = path.get(i+1);
             }
         }
@@ -360,10 +368,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         float direction = 0;
         c1 = path.get(0);
         int rectCnt = 0;
-        for (int i = 0; i < cnt - 1; i++) {
+        for (int i = 0; i < cnt-1; i++) {
             Vector3 c2 = path.get(i + 1);
             double temp = MathUtils.calculateDistance(c1.x, c1.y, c2.x, c2.y);
-            if (temp >= distStep) {
+            if (temp >= distStep || i==cnt-1) {
                 double scale = distStep / temp;
                 v.x = c1.x + (c2.x - c1.x) * scale;
                 v.y = c1.y + (c2.y - c1.y) * scale;
@@ -449,7 +457,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 rectCnt++;
 
             } else if (temp < distStep) {
-//                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                if(mIsSkip){
+                    distStep -= temp;//两点的距离小于指定值，减去之前的距离
+                }
                 c1 = path.get(i+1);
             }
         }
