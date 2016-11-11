@@ -312,6 +312,12 @@ public class ARWayController {
         public static NaviInfoBean setNaviText(String naviText) {
             return mNaviInfoBean.setNaviText(naviText);
         }
+        public static NaviInfoBean setLimitSpeed(int limitSpeed) {
+            return mNaviInfoBean.setLimitSpeed(limitSpeed);
+        }
+        public static NaviInfoBean setSpeed(int speed) {
+            return mNaviInfoBean.setSpeed(speed);
+        }
 
         public static void reset() {
             mNaviInfoBean.reset();

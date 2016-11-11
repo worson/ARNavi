@@ -122,8 +122,7 @@ public class BaseObject3D extends Object3D {
                 if(child.getParent() != null)
                     child.getParent().removeChild(child);
                 mChildren.add(child);
-                // TODO: 2016/11/7 需要改成公有
-//                child.setParent(parent);
+                child.setParent(parent);
                 if (mRenderChildrenAsBatch)
                     child.setPartOfBatch(true);
 //                mChildren.add(child);

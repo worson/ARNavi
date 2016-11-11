@@ -26,6 +26,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.AMapNaviView;
 import com.amap.api.navi.AMapNaviViewOptions;
+import com.amap.api.navi.model.AMapLaneInfo;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
@@ -43,6 +44,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObjectFactory;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IDriveStateLister;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.FlatNaviInfoPanel;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
@@ -74,6 +76,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private static final String  TAG                 = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
     public final static  boolean IS_DEBUG_MODE       = false;
+    public final static  boolean IS_VIEW_DEBUG_MODE  = true;
     private static final boolean AMAP_OPTIONS_LOGOUT = true;
     private static final boolean IS_SCREEN_SHOOT     = true;
 
@@ -106,10 +109,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     protected ViewGroup     mLayout;
     protected TextureView   mRenderSurface;
     protected ARwayRenderer mRenderer;
-    private boolean mCameraChangeFinish = false;
 
     //bean
     private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
+//    private static FlatNaviInfoPanel mNaviInfoBean = FlatNaviInfoPanel.getInstance();
     private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
     private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
 
@@ -132,7 +135,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     //draw object
     private DrawScene            mDrawScene            = (DrawScene) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.GL_SCENE);
     private GlDrawCompass        mGlDrawCompass        = (GlDrawCompass) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.COMPASS);
-    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
+//    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
+    private FlatNaviInfoPanel       mGlDrawNaviInfo       = FlatNaviInfoPanel.getInstance();
     private GlDrawSpeedDial      mGlDrawSpeedDial      = (GlDrawSpeedDial) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.SPEED);
     private GlDrawRetainDistance mGlDrawRetainDistance = (GlDrawRetainDistance) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.RETAIN_DISTANCE);
 
@@ -160,10 +164,11 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mContext = getActivity();
+        initPrepare();
         // Inflate the layout for this fragment
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
-        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.arway_opengl_layout);
+        View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.flat_arway_opengl_layout);
         ImageView maskView = (ImageView)mLayout.findViewById(R.id.arway_mask_imageview);
 //        maskView.setBackgroundResource(R.drawable.arway_mask1);
 
@@ -210,8 +215,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         hideARWay();
         mDrawScene.animShowHide(false);
 
+        mGlDrawNaviInfo.init(getActivity());
+
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onCreateView");
         return mLayout;
+    }
+
+    private void initPrepare() {
+        if(IS_VIEW_DEBUG_MODE){
+            mGlDrawNaviInfo.viewDebug = IS_VIEW_DEBUG_MODE;
+        }
     }
 
     //must call after mRenderer is init
@@ -341,6 +354,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mRenderer.onResume();
         if (ARWayConst.IS_AMAP_VIEW) {
             mAmapNaviView.onResume();
+        }
+        if(IS_VIEW_DEBUG_MODE){
+            mGlDrawNaviInfo.doDraw();
         }
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onResume");
     }
@@ -1139,11 +1155,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 .setPathRetainDistance(info.getPathRetainDistance())
                 .setPathRetainTime(info.getPathRetainTime())
                 .setNaviIcon(info.getIconType())
-                .setStepRetainDistance(info.getCurStepRetainDistance());
+                .setStepRetainDistance(info.getCurStepRetainDistance())
+                .setLimitSpeed(info.getLimitSpeed());
     }
 
     public void onSpeedUpgraded(float speed) {
         ARWayController.SpeedBeanUpdater.setSpeed((int) speed);
+        ARWayController.NaviInfoBeanUpdate.setSpeed((int)speed);
         updateSpeedDialDisplay();
     }
 
@@ -1200,7 +1218,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (ARWayConst.ENABLE_LOG_OUT && ARWayConst.ENABLE_FAST_LOG) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onCameraChange called");
         }
-        mCameraChangeFinish = false;
     }
 
     @Override
@@ -1243,6 +1260,16 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         int totalDistance = naviBean.getPathTotalDistance();
         int distance = naviBean.getPathRetainDistance();
         return totalDistance >= distance && (totalDistance - distance) > ARWayConst.NAVI_CAR_START_DISTANCE;
+    }
+
+    @Override
+    public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
+        mGlDrawNaviInfo.showLaneInfo(laneInfos,laneBackgroundInfo,laneRecommendedInfo);
+    }
+
+    @Override
+    public void hideLaneInfo() {
+        mGlDrawNaviInfo.hideLaneInfo();
     }
 
     void updateNaviInfoDisplay() {

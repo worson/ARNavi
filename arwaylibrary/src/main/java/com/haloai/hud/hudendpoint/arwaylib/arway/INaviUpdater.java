@@ -3,6 +3,7 @@ package com.haloai.hud.hudendpoint.arwaylib.arway;
 import android.graphics.Bitmap;
 
 import com.amap.api.navi.AMapNavi;
+import com.amap.api.navi.model.AMapLaneInfo;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.NaviInfo;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
@@ -27,4 +28,7 @@ public interface INaviUpdater {
     void updatePath(AMapNavi aMapNavi);
     void updateNaviInfo(NaviInfo info);
     void onSpeedUpgraded(float speed);
+
+    public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo);
+    public void hideLaneInfo();
 }

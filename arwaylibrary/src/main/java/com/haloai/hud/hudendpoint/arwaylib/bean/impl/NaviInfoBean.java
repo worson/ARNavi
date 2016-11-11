@@ -20,6 +20,7 @@ public class NaviInfoBean extends SuperBean {
     private String mCurrentRoadName  = "";
     private String mNextRoadName     = "";
     private int mSpeed;
+    private int mLimitSpeed;
 
     //道路向导信息
     private int mStepRetainDistance;//获取路线剩余时间 min
@@ -59,8 +60,9 @@ public class NaviInfoBean extends SuperBean {
         return mStepRetainDistance;
     }
 
-    public void setStepRetainDistance(int stepRetainDistance) {
+    public NaviInfoBean setStepRetainDistance(int stepRetainDistance) {
         mStepRetainDistance = stepRetainDistance;
+        return this;
     }
 
     public NaviInfoBean setNaviText(String beginNaviText) {
@@ -112,12 +114,22 @@ public class NaviInfoBean extends SuperBean {
         return mCrossBitmap;
     }
 
+    public int getLimitSpeed() {
+        return mLimitSpeed;
+    }
+
+    public NaviInfoBean setLimitSpeed(int limitSpeed) {
+        mLimitSpeed = limitSpeed;
+        return this;
+    }
+
     public int getSpeed() {
         return mSpeed;
     }
 
-    public void setSpeed(int speed) {
+    public NaviInfoBean setSpeed(int speed) {
         mSpeed = speed;
+        return this;
     }
 
     public NaviInfoBean setCrossBitmap(Bitmap crossBitmap) {

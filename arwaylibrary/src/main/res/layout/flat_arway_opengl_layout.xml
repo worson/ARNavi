@@ -1,0 +1,223 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="@color/arway_background"
+                android:orientation="horizontal">
+
+    <FrameLayout
+        android:id="@+id/opengl_viewgroup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/arway_background">
+
+        <ImageView
+            android:id="@+id/arway_mask_imageview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/arway_background">
+        </ImageView>
+    </FrameLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/next_road_viewgroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="@dimen/flat_arway_left_margin"
+        android:layout_marginTop="19dp"
+        android:background="@color/arway_background"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/next_road_direction_imageview"
+            android:layout_width="40dp"
+            android:layout_height="44dp"
+            android:layout_centerVertical="true"
+            android:background="@color/arway_background"/>
+
+        <TextView
+            android:id="@+id/next_road_distance_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="14dp"
+            android:layout_toRightOf="@+id/next_road_direction_imageview"
+            android:background="@color/arway_background"
+            android:maxLines="1"
+            android:padding="0dp"
+            android:textStyle="bold"
+            android:text="500米"
+            android:textColor="#ffffff"
+            android:textSize="22sp"/>
+
+        <TextView
+            android:id="@+id/road_name_prefix_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/next_road_distance_textview"
+            android:layout_alignBottom="@+id/next_road_direction_imageview"
+            android:background="@color/arway_background"
+            android:maxLines="1"
+            android:text="进入"
+            android:textStyle="bold"
+            android:textColor="#228898"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/next_road_name_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_alignBottom="@+id/road_name_prefix_textview"
+            android:layout_toRightOf="@+id/road_name_prefix_textview"
+            android:background="@color/arway_background"
+            android:maxLines="1"
+            android:padding="0dp"
+            android:text="海天一路"
+            android:textStyle="bold"
+            android:textColor="#ffffff"
+            android:textSize="14sp"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/prefix_distance_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/flat_arway_left_margin"
+        android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+        android:background="@color/arway_background"
+        android:text="17公里"
+        android:textStyle="bold"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="15sp"/>
+
+    <TextView
+        android:id="@+id/prefix_time_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+        android:layout_marginLeft="7dp"
+        android:layout_marginRight="2dp"
+        android:layout_toRightOf="@+id/prefix_distance_textview"
+        android:background="@color/arway_background"
+        android:text="32分钟"
+        android:textStyle="bold"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="15sp"/>
+
+    <RelativeLayout
+        android:id="@+id/lane_info_viewgroup"
+        android:layout_width="100dp"
+        android:layout_height="20dp"
+        android:layout_centerHorizontal="true">
+        <com.amap.api.navi.view.DriveWayView
+            android:id="@+id/lane_info_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/speed_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:layout_toLeftOf="@+id/speed_limit_viewgroup"
+        android:layout_marginTop="40dp"
+        android:background="@android:color/transparent"
+        android:text="60"
+        android:textColor="#27a8c2"
+        android:textSize="36sp"/>
+
+    <RelativeLayout
+        android:id="@+id/speed_limit_viewgroup"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="55dp"
+        android:background="@drawable/speed_limit_bg">
+        <TextView
+            android:id="@+id/speed_limit_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            android:text="120"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:textSize="11sp"/>
+
+    </RelativeLayout>
+
+
+
+    <RelativeLayout
+        android:id="@+id/digital_speed_viewgroup"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+        android:layout_marginRight="@dimen/flat_arway_right_margin">
+
+        <ImageView
+            android:id="@+id/hour_ten_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="5dp"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/speed_number_0"/>
+
+        <ImageView
+            android:id="@+id/hour_one_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignTop="@+id/hour_ten_imageview"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toRightOf="@+id/hour_ten_imageview"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/speed_number_0"/>
+
+        <ImageView
+            android:id="@+id/time_num_sapa"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignTop="@+id/hour_one_imageview"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toRightOf="@+id/hour_one_imageview"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/time_saparete"/>
+
+        <ImageView
+            android:id="@+id/minute_ten_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignBottom="@+id/time_num_sapa"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toEndOf="@+id/time_num_sapa"
+            android:background="@color/arway_background"
+            android:src="@drawable/speed_number_0"/>
+
+        <ImageView
+            android:id="@+id/minute_one_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignBottom="@+id/time_num_sapa"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toEndOf="@+id/minute_ten_imageview"
+            android:background="@color/arway_background"
+            android:src="@drawable/speed_number_0"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

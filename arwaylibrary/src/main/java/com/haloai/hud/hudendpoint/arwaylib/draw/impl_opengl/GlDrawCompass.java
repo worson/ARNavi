@@ -159,6 +159,9 @@ public class GlDrawCompass extends DrawViewObject implements IDriveStateLister {
 
 
     public void changeDriveState(DriveState state,int duration) {
+        if (mComPassViewGroup == null) {
+            return;
+        }
         if (mViewParent != null) {
             VIEW_PARRENT_WIDTH = mViewParent.getMeasuredWidth();
             VIEW_PARRENT_HEIGHT = mViewParent.getMeasuredHeight();
