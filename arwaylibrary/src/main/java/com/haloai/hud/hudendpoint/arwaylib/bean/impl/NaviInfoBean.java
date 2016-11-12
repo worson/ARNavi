@@ -21,6 +21,7 @@ public class NaviInfoBean extends SuperBean {
     private String mNextRoadName     = "";
     private int mSpeed;
     private int mLimitSpeed;
+    private int mServiceAreaDistance;
 
     //道路向导信息
     private int mStepRetainDistance;//获取路线剩余时间 min
@@ -107,6 +108,15 @@ public class NaviInfoBean extends SuperBean {
 
     public NaviInfoBean setNaviIconBitmap(Bitmap naviIconBitmap) {
         mNaviIconBitmap = naviIconBitmap;
+        return this;
+    }
+
+    public int getServiceAreaDistance() {
+        return mServiceAreaDistance;
+    }
+
+    public NaviInfoBean setServiceAreaDistance(int serviceAreaDistance) {
+        mServiceAreaDistance = serviceAreaDistance;
         return this;
     }
 

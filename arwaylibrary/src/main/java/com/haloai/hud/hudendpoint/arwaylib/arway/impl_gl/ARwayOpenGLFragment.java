@@ -1156,7 +1156,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 .setPathRetainTime(info.getPathRetainTime())
                 .setNaviIcon(info.getIconType())
                 .setStepRetainDistance(info.getCurStepRetainDistance())
-                .setLimitSpeed(info.getLimitSpeed());
+                .setLimitSpeed(info.getLimitSpeed())
+                .setServiceAreaDistance(info.getServiceAreaDistance());
+
     }
 
     public void onSpeedUpgraded(float speed) {
