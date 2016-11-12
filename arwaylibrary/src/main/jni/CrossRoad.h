@@ -8,8 +8,6 @@
 #include "LinkFileInfo.hpp"
 #include "NaviFile.h"
 
-
-
 using namespace std;
 using namespace cv;
 
@@ -20,20 +18,20 @@ public:
 	~CrossRoad(void);
 
 	/*
-	ï¿½ï¿½ï¿½Ü£ï¿½
-		ï¿½ï¿½È¡Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		[in]const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadlinks - ï¿½ï¿½Â·linkï¿½ï¿½(ï¿½ßµÂµï¿½Í¼ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½
-		[in]const vector<vector<LinkInfo>>& vecMainRoadLinkInfos - ï¿½ï¿½Â·linkInfoï¿½ï¿½		
-		[in]HALocationCoordinate2D halCenterPoint - ï¿½ï¿½Â·ï¿½ï¿½ï¿½Äµã¾­Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		[in]cv::Size2i szCover - ï¿½ï¿½ï¿½È¡Â·ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ³ß´ç·¶Î§
-		[in]string strDictPath - ï¿½Öµï¿½Â·ï¿½ï¿½
-		[out]vector<vector<HALocationCoordinate2D> >& vecCrossGpsLinks - Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
-		[out]std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet - Â·ï¿½ï¿½ï¿½ï¿½Æ¥ï¿½ï¿½ï¿½ï¿½ï¿½Â·
-		[out]std::vector<int>& vecCrossPointIndex - ï¿½ï¿½Â·ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ðµï¿½ï¿½Â±ï¿½
-		[out]int& nCenterIndex - Æ¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ðµï¿½Î»ï¿½ï¿½
-	ï¿½ï¿½ï¿½Ø£ï¿½
-		0 - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ì³£
+	¹¦ÄÜ£º
+		»ñÈ¡Â·ÍøÊý¾Ý
+	²ÎÊý£º
+		[in]const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadlinks - Ö÷Â·link¼¯(¸ßµÂµØÍ¼¾­Î³¶ÈÊý¾Ý£©
+		[in]const vector<vector<LinkInfo>>& vecMainRoadLinkInfos - Ö÷Â·linkInfo¼¯		
+		[in]HALocationCoordinate2D halCenterPoint - Ö÷Â·ÖÐÐÄµã¾­Î³¶È×ø±ê
+		[in]cv::Size2i szCover - Ðè»ñÈ¡Â·ÍøÊý¾ÝµÄ³ß´ç·¶Î§
+		[in]string strDictPath - ×ÖµäÂ·¾¶
+		[out]vector<vector<HALocationCoordinate2D> >& vecCrossGpsLinks - Â·ÍøÊý¾Ý£¬Ö÷Â·³ýÍâ
+		[out]std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet - Â·ÍøÖÐÆ¥ÅäµÄÖ÷Â·
+		[out]std::vector<int>& vecCrossPointIndex - Ö÷Â·Óë²íÂ·½»µãÔÚÖ÷Â·ÖÐµÄÏÂ±ê
+		[out]int& nCenterIndex - Æ¥ÅäµãÔÚÖ÷Â·ÖÐµÄÎ»ÖÃ
+	·µ»Ø£º
+		0 - Õý³££¬ÆäËû - Òì³£
 	*/
 	int getCrossLinks(const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadGpslinks,
 					const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
@@ -45,26 +43,31 @@ public:
 					std::vector<int>& vecCrossPointIndex,
 					int& nCenterIndex);
 
-	// ï¿½ï¿½È¡ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½
+	// ¶ÁÈ¡×ÖµäÊý¾Ý
 
 
 private:
 	/*
-	ï¿½ï¿½ï¿½Ü£ï¿½
-		ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªgpsï¿½ï¿½ï¿½ï¿½
-	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		[in]const std::vector<HAMapPoint> vecPixelPoint - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã¼¯
-		[in]HAMapPoint hamOffset - Æ«ï¿½ï¿½ï¿½ï¿½		
-		[out]std::vector<HALocationCoordinate2D>& vecGpsPoint - ×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-	ï¿½ï¿½ï¿½Ø£ï¿½
-		0 - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ - ï¿½ì³£
+	¹¦ÄÜ£º
+		ÏñËØ×ø±ê×ªgps×ø±ê
+	²ÎÊý£º
+		[in]const std::vector<HAMapPoint> vecPixelPoint - ÏñËØ×ø±êµã¼¯
+		[in]HAMapPoint hamOffset - Æ«ÒÆÁ¿		
+		[out]std::vector<HALocationCoordinate2D>& vecGpsPoint - ×ª»»ºó×ø±ê
+	·µ»Ø£º
+		0 - Õý³££¬ÆäËû - Òì³£
 	*/
 	int pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
 				HAMapPoint hamOffset,
 				std::vector<HALocationCoordinate2D>& vecGpsPoint);
 private:
-	bool m_IsReadDictionary;		// ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ñ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½
-	HaloNav m_haloNav;		// ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Ó³ï¿½ï¿½
+	bool m_IsReadDictionary;		// ±ê¼ÇÊÇ·ñÒÑ¶ÁÊý×Ö×Öµä
+	HaloNav m_haloNav;		// ¼ÇÂ¼Êý×Ö×ÖµäÓ³Éä
+
+public:
+#ifdef _WINDOWS_VER_
+	Mat m_matImage;
+#endif
 
 };
 

@@ -18,15 +18,6 @@
 #define BLOCK_WIDTH 4096
 #define MAX_LEVEL 18
 
-#ifdef _WINDOWS_VER_
-
-#else
-#include <android/log.h>
-#define LOGD2(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "Algorithm", __VA_ARGS__))
-#define LOG_TAG_ERROR "Algorithm__"
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG_ERROR, __VA_ARGS__))
-#endif
-
 //struct LinkInfo{
 //    int a;
 //    int b;

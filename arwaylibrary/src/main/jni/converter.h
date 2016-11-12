@@ -109,10 +109,13 @@ HA_INLINE HALocationCoordinate2D HAMapIdToGps(string strMapID)
 //计算二次网格的起始坐标，参数是数字形式的网格ID
 HA_INLINE HALocationCoordinate2D HAMapIdToGps(long lMapID)
 {
-    char chTemp[100];
-    sprintf(chTemp,"%ld",lMapID);
-    string strMapID = chTemp;
-    return HAMapIdToGps(strMapID);
+    /*string strMapID = std::to_string(lMapID);
+    return HAMapIdToGps(strMapID);*/
+
+	char chTemp[100];
+	sprintf(chTemp,"%ld",lMapID);
+	string strMapID = chTemp;
+	return HAMapIdToGps(strMapID);
 }
 
 HA_INLINE HAINT32 getBlockIdxForMapPoint(HAMapPoint mapPt)

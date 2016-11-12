@@ -13,7 +13,6 @@ import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
@@ -322,34 +321,34 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         mRenderPaths.add(mainRoad);
 
-        // TODO: 2016/11/8 测试北京数据 start
-        mBranchPaths.clear();
-        List<List<Vector3>> branchPaths = new ArrayList<>();
-        String[] lines = ARWayConst.BRANCH_LINES_BJ.split("\n");
-        for(int i=0;i<lines.length;i++){
-            if(lines[i].contains("start")){
-                //get branch
-                List<LatLng> branch = new ArrayList<>();
-                for(int j=i+1;j<lines.length;j++){
-                    if(!lines[j].contains("end")) {
-                        branch.add(new LatLng(Double.parseDouble(lines[j].split(",")[0]),Double.parseDouble(lines[j].split(",")[1])));
-                    }else{
-                        i=j;
-                        break;
-                    }
-                }
-                //convert latlng to vector3
-                List<Vector3> branchV = new ArrayList<>();
-                for(LatLng latlng:branch){
-                    ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
-                    branchV.add(new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z));
-                }
-                //add to mBranchPaths
-                branchPaths.add(branchV);
-            }
-        }
-        mBranchPaths.add(branchPaths);
-        // TODO: 2016/11/8 测试北京数据 end
+//        // TODO: 2016/11/8 测试北京数据 start
+//        mBranchPaths.clear();
+//        List<List<Vector3>> branchPaths = new ArrayList<>();
+//        String[] lines = ARWayConst.BRANCH_LINES_BJ.split("\n");
+//        for(int i=0;i<lines.length;i++){
+//            if(lines[i].contains("start")){
+//                //get branch
+//                List<LatLng> branch = new ArrayList<>();
+//                for(int j=i+1;j<lines.length;j++){
+//                    if(!lines[j].contains("end")) {
+//                        branch.add(new LatLng(Double.parseDouble(lines[j].split(",")[0]),Double.parseDouble(lines[j].split(",")[1])));
+//                    }else{
+//                        i=j;
+//                        break;
+//                    }
+//                }
+//                //convert latlng to vector3
+//                List<Vector3> branchV = new ArrayList<>();
+//                for(LatLng latlng:branch){
+//                    ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
+//                    branchV.add(new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z));
+//                }
+//                //add to mBranchPaths
+//                branchPaths.add(branchV);
+//            }
+//        }
+//        mBranchPaths.add(branchPaths);
+//        // TODO: 2016/11/8 测试北京数据 end
 
 
         for(List<List<Vector3>> paths:mBranchPaths) {
@@ -372,27 +371,27 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     @Override
     public void loadNewRoad(int startIndex, int endIndex) {
         // TODO: 2016/11/8 测试北京数据 start
-//        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,start time = "+System.currentTimeMillis());
-//        Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
-//        Log.e("ylq", "remove start");
-//        //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
-//        for (int i = mPreDynamicStartIndex; i < startIndex; i++) {
-//            if (mBranchInPathIndexs.contains(i)) {
-//                int index = mBranchInPathIndexs.indexOf(i);
-//                int removeIndex = mBranchInPathIndexs.remove(index);
-//                mBranchPaths.remove(index);
-//                Log.e("ylq", "i=" + i);
-//                Log.e("ylq", "index=" + index);
-//                Log.e("ylq", "removeIndex=" + removeIndex);
-//            }
-//        }
-//        Log.e("ylq", "remove end");
-//        //2.拉取新的部分的路网数据
-//        for (int i = startIndex; i < endIndex; i++) {
-//            if (mStepPointIndexs.contains(i)) {
-//                processSteps(mStepPointIndexs.indexOf(i));
-//            }
-//        }
+        HaloLogger.logE("dynamic","dynamic loadNewRoad roadNet ,start time = "+System.currentTimeMillis());
+        Log.e("ylq", "startIndex:" + startIndex + " endIndex" + endIndex);
+        Log.e("ylq", "remove start");
+        //1.删除掉mBranchPaths以及mBranchInPathIndexs中已经不在start和end之间的部分
+        for (int i = mPreDynamicStartIndex; i < startIndex; i++) {
+            if (mBranchInPathIndexs.contains(i)) {
+                int index = mBranchInPathIndexs.indexOf(i);
+                int removeIndex = mBranchInPathIndexs.remove(index);
+                mBranchPaths.remove(index);
+                Log.e("ylq", "i=" + i);
+                Log.e("ylq", "index=" + index);
+                Log.e("ylq", "removeIndex=" + removeIndex);
+            }
+        }
+        Log.e("ylq", "remove end");
+        //2.拉取新的部分的路网数据
+        for (int i = startIndex; i < endIndex; i++) {
+            if (mStepPointIndexs.contains(i)) {
+                processSteps(mStepPointIndexs.indexOf(i));
+            }
+        }
         // TODO: 2016/11/8 测试北京数据 end
 
 
@@ -576,6 +575,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 HaloLogger.logE(TAG, "offsetCover=" + offsetCover);
                 HaloLogger.logE(TAG, "pre center=" + preCenterLatLng.lat+"," + preCenterLatLng.lng);
                 HaloLogger.logE(TAG, "cur center=" + centerLatLng.lat+"," + centerLatLng.lng);
+                //TODO : 为什么会有明明很远的两个点,但是却判断到了相交导致offsetCover算出来是个负数的情况??????
                 if (offsetCover < 0 || offsetCover >= szCover.width / 2) {
                     continue;
                 }
@@ -584,13 +584,21 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
                 breakStart = se[0];
                 breakEnd = se[1];
-            }
 
-            /*HaloLogger.logE(TAG, "cover cross start");
-            for (LatLng latlng : point8) {
-                HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
             }
-            HaloLogger.logE(TAG, "cover cross end");*/
+            HaloLogger.logE("cover", "szCover : "+szCover.width+","+szCover.height);
+            HaloLogger.logE("cover", "breakStart : "+breakStart);
+            HaloLogger.logE("cover", "breakEnd : "+breakEnd);
+            HaloLogger.logE("cover", "cover cross start");
+            for (LatLng latlng : point8) {
+                HaloLogger.logE("cover", latlng.latitude + "," + latlng.longitude);
+            }
+            HaloLogger.logE("cover", "cover cross end");
+            HaloLogger.logE("cover", "main cross start");
+            for (LatLngOutSide latlng : link) {
+                HaloLogger.logE("cover", latlng.lat + "," + latlng.lng);
+            }
+            HaloLogger.logE("cover", "main cross end");
 
             HaloLogger.logE(TAG, "width=" + szCover.width + ",height=" + szCover.height);
             if (breakEnd == 0) {
@@ -611,20 +619,17 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
 
             //TODO : data for daoge
-            HaloLogger.logE("daoge","data_start " + (++count));
-            HaloLogger.logE("daoge","\tmain_road_start");
+            StringBuilder sb = new StringBuilder();
+            sb.append((++count)+" ");
+            sb.append(centerPoint.lat+" ");
+            sb.append(centerPoint.lng+" ");
+            sb.append(szCover.width+" ");
+            sb.append(szCover.height+" ");
             for(LatLngOutSide latlng:links.get(0)){
-                HaloLogger.logE("daoge","\t\t"+latlng.lat+","+latlng.lng);
+                sb.append(latlng.lat+" ");
+                sb.append(latlng.lng+" ");
             }
-            HaloLogger.logE("daoge","\tmain_road_end");
-            HaloLogger.logE("daoge","\tcenter_point_start");
-            HaloLogger.logE("daoge","\t\t"+centerPoint.lat+","+centerPoint.lng);
-            HaloLogger.logE("daoge","\tcenter_point_end");
-            HaloLogger.logE("daoge","\tszcover_start");
-            HaloLogger.logE("daoge","\t\t"+"width = "+szCover.width);
-            HaloLogger.logE("daoge","\t\t"+"height = "+szCover.height);
-            HaloLogger.logE("daoge","\tszcover_end");
-            HaloLogger.logE("daoge","data_end");
+            HaloLogger.logE("daoge",sb.toString().trim());
 
 
             HaloLogger.logE(TAG, "into jni");
@@ -632,6 +637,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             HaloLogger.logE(TAG, "outto jni");
             HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
 
+            if(res==0) {
+                HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
+                for(List<LatLngOutSide> cross:crossLinks){
+                    HaloLogger.logE("daoge", "\t"+cross);
+                }
+            }
             if (res == 0 && crossLinks.size() > 0) {
                 HaloLogger.logE(TAG, "jni get road net success,crossLinks size=" + crossLinks.size() + ",mainRoad size=" + mainRoad.size());
                 mPreStartBreak = breakStart;
@@ -736,7 +747,6 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         point8[0] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng - latlng_height / 2);
         point8[1] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
         point8[2] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
-
         point8[3] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
         point8[4] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
         point8[5] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng + latlng_height / 2);

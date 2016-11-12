@@ -179,6 +179,7 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
          jobject latlng, jobject szCover, jstring strDictPath, jobject crossLinks,
         jobject mainRoad,jobject crossPointIndexs){
     LOGE_ANDROID("nativeGetCrossLinks start");
+    LOGE_ANDROID("long size = %d",sizeof(long));
     //about ArrayList
     jclass cls_ArrayList = env->FindClass("java/util/ArrayList");
     if (cls_ArrayList == NULL) {
@@ -263,6 +264,7 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
                                       _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex,_centerPointInMainRoad);
     LOGE_ANDROID("outto crossRoad.getCrossLinks");
     if(res == 0) {
+        LOGE_ANDROID("res=%d,crossLinks.size=%d",res,_crossLinks.size());
         //使用_crossLinks初始化crossLinks数据
         for (int i = 0; i < _crossLinks.size(); i++) {
             vector <HALocationCoordinate2D> *crossLinkPot = &(_crossLinks[i]);
