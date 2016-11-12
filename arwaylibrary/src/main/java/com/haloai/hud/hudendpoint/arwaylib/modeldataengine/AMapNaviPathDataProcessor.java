@@ -13,7 +13,6 @@ import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
-import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
@@ -576,6 +575,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 HaloLogger.logE(TAG, "offsetCover=" + offsetCover);
                 HaloLogger.logE(TAG, "pre center=" + preCenterLatLng.lat+"," + preCenterLatLng.lng);
                 HaloLogger.logE(TAG, "cur center=" + centerLatLng.lat+"," + centerLatLng.lng);
+                //TODO : 为什么会有明明很远的两个点,但是却判断到了相交导致offsetCover算出来是个负数的情况??????
                 if (offsetCover < 0 || offsetCover >= szCover.width / 2) {
                     continue;
                 }
@@ -584,13 +584,21 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
                 breakStart = se[0];
                 breakEnd = se[1];
-            }
 
-            /*HaloLogger.logE(TAG, "cover cross start");
-            for (LatLng latlng : point8) {
-                HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
             }
-            HaloLogger.logE(TAG, "cover cross end");*/
+            HaloLogger.logE("cover", "szCover : "+szCover.width+","+szCover.height);
+            HaloLogger.logE("cover", "breakStart : "+breakStart);
+            HaloLogger.logE("cover", "breakEnd : "+breakEnd);
+            HaloLogger.logE("cover", "cover cross start");
+            for (LatLng latlng : point8) {
+                HaloLogger.logE("cover", latlng.latitude + "," + latlng.longitude);
+            }
+            HaloLogger.logE("cover", "cover cross end");
+            HaloLogger.logE("cover", "main cross start");
+            for (LatLngOutSide latlng : link) {
+                HaloLogger.logE("cover", latlng.lat + "," + latlng.lng);
+            }
+            HaloLogger.logE("cover", "main cross end");
 
             HaloLogger.logE(TAG, "width=" + szCover.width + ",height=" + szCover.height);
             if (breakEnd == 0) {
@@ -611,20 +619,17 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
 
             //TODO : data for daoge
-            HaloLogger.logE("daoge","data_start " + (++count));
-            HaloLogger.logE("daoge","\tmain_road_start");
+            StringBuilder sb = new StringBuilder();
+            sb.append((++count)+" ");
+            sb.append(centerPoint.lat+" ");
+            sb.append(centerPoint.lng+" ");
+            sb.append(szCover.width+" ");
+            sb.append(szCover.height+" ");
             for(LatLngOutSide latlng:links.get(0)){
-                HaloLogger.logE("daoge","\t\t"+latlng.lat+","+latlng.lng);
+                sb.append(latlng.lat+" ");
+                sb.append(latlng.lng+" ");
             }
-            HaloLogger.logE("daoge","\tmain_road_end");
-            HaloLogger.logE("daoge","\tcenter_point_start");
-            HaloLogger.logE("daoge","\t\t"+centerPoint.lat+","+centerPoint.lng);
-            HaloLogger.logE("daoge","\tcenter_point_end");
-            HaloLogger.logE("daoge","\tszcover_start");
-            HaloLogger.logE("daoge","\t\t"+"width = "+szCover.width);
-            HaloLogger.logE("daoge","\t\t"+"height = "+szCover.height);
-            HaloLogger.logE("daoge","\tszcover_end");
-            HaloLogger.logE("daoge","data_end");
+            HaloLogger.logE("daoge",sb.toString().trim());
 
 
             HaloLogger.logE(TAG, "into jni");
@@ -632,6 +637,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             HaloLogger.logE(TAG, "outto jni");
             HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
 
+            if(res==0) {
+                HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
+                for(List<LatLngOutSide> cross:crossLinks){
+                    HaloLogger.logE("daoge", "\t"+cross);
+                }
+            }
             if (res == 0 && crossLinks.size() > 0) {
                 HaloLogger.logE(TAG, "jni get road net success,crossLinks size=" + crossLinks.size() + ",mainRoad size=" + mainRoad.size());
                 mPreStartBreak = breakStart;
@@ -736,7 +747,6 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         point8[0] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng - latlng_height / 2);
         point8[1] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
         point8[2] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng - latlng_height / 2);
-
         point8[3] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
         point8[4] = new LatLng(centerLatLng.lat + latlng_width / 2, centerLatLng.lng + latlng_height / 2);
         point8[5] = new LatLng(centerLatLng.lat - latlng_width / 2, centerLatLng.lng + latlng_height / 2);

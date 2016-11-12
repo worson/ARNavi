@@ -31,7 +31,7 @@ using namespace std;
 
 HaloNav::HaloNav()
 {
-    memcpy(_version,HALO_VER,8) ;
+    memcpy(_version,HALO_VER, sizeof(HALO_VER)) ;
     _totalBlocksNum = 0;
     //_offset_x = 0;
     //_offset_y = 0;
@@ -199,21 +199,45 @@ int HaloNav::findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo
     if(!_pDict)
         return -1;
 
+	// 判断输入点是否在范围内
+	//int nX1 = _mptOffset.x, nX2 = nX1 + _blocksWidth*BLOCK_WIDTH;
+	//int nY1 = _mptOffset.y, nY2 = nY1 + _blocksHeight*BLOCK_HEIGH;
+	int nX1 = 0, nX2 = nX1 + _blocksWidth*BLOCK_WIDTH;
+	int nY1 = 0, nY2 = nY1 + _blocksHeight*BLOCK_HEIGH;
+
+	if (axs.x<nX1 || axs.x>=nX2 || 
+		axs.y<nY1 || axs.y>=nY2)
+	{
+		return -1;
+	}
+
+    
     int offset_x = width/2;
     int offset_y = height/2;
-    unsigned int min_x = (axs.x - offset_x)<0?0:axs.x - offset_x;
+
+    /*unsigned int min_x = (axs.x - offset_x)<0?0:axs.x - offset_x;
     unsigned int max_x = (axs.x + offset_x) >_blocksWidth*BLOCK_WIDTH?_blocksWidth*BLOCK_WIDTH:axs.x + offset_x;
     unsigned int min_y = (axs.y - offset_y)<0?0:axs.y - offset_y;
     unsigned int max_y = (axs.y + offset_y) > _blocksHeight*BLOCK_HEIGH?_blocksHeight*BLOCK_HEIGH:axs.y + offset_y;
-    unsigned int min_idx_x = min_y/BLOCK_HEIGH;
+    unsigned int min_idx_x = min_y/BLOCK_HEIGH; 
     unsigned int max_idx_x = max_y/BLOCK_HEIGH;
     unsigned int min_idx_y = min_x/BLOCK_WIDTH;
-    unsigned int max_idx_y = max_x/BLOCK_WIDTH;
+    unsigned int max_idx_y = max_x/BLOCK_WIDTH;*/
+
+	int min_x = (axs.x - offset_x)<0?0:axs.x - offset_x;
+	int max_x = (axs.x + offset_x) >_blocksWidth*BLOCK_WIDTH?_blocksWidth*BLOCK_WIDTH:axs.x + offset_x;
+	int min_y = (axs.y - offset_y)<0?0:axs.y - offset_y;
+	int max_y = (axs.y + offset_y) > _blocksHeight*BLOCK_HEIGH?_blocksHeight*BLOCK_HEIGH:axs.y + offset_y;
+	int min_idx_x = min_y/BLOCK_HEIGH; 
+	int max_idx_x = max_y/BLOCK_HEIGH;
+	int min_idx_y = min_x/BLOCK_WIDTH;
+	int max_idx_y = max_x/BLOCK_WIDTH;
     if(min_idx_x > _blocksWidth || max_idx_x > _blocksWidth)
         return -1;
     
     if(min_idx_y > _blocksHeight || max_idx_y > _blocksHeight)
         return -1;
+    
     for(int i=min_idx_x;i <= max_idx_x;i++)
     {
         for(int j = min_idx_y;j <= max_idx_y;j++)
@@ -242,36 +266,16 @@ int HaloNav::findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo
 
 				HAUINT64 axs_count = *(HAUINT64*)_pOffset;
 				_pOffset+=sizeof(HAUINT64);
-
+                
                 vecLinkInfos.push_back(info);
                 std::vector<HAMapPoint> ptLst;
-
-//#ifdef _WINDOWS_VER_
-//                printf("==============translateRoadNet - parameter Error!!==============\n");
-//#else
-//                LOGD("==============findLinks - for 4 1==============axs_count=%d\n",axs_count);
-//#endif
                 for(int a=0;a < axs_count;a ++)
-                {
-//#ifdef _WINDOWS_VER_
-//                    printf("==============translateRoadNet - parameter Error!!==============\n");
-//#else
-//                    LOGD("==============findLinks - for 4 1==============a=%d\n",a);
-//#endif
+                {                    
 					HAMapPoint hmp;
                     memcpy(&hmp,_pOffset,sizeof(HAMapPoint));
-//#ifdef _WINDOWS_VER_
-//                    printf("==============translateRoadNet - parameter Error!!==============\n");
-//#else
-//                    LOGD("==============findLinks - for 4 2==============\n");
-//#endif
                     _pOffset += sizeof(HAMapPoint);
                     ptLst.push_back(hmp);
-//#ifdef _WINDOWS_VER_
-//                    printf("==============translateRoadNet - parameter Error!!==============\n");
-//#else
-//                    LOGD("==============findLinks - for 4 3==============\n");
-//#endif
+
 					//printf("a=%d\n",a);
                 }
                 vecAxes.push_back(ptLst);

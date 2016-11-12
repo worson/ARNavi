@@ -13,7 +13,7 @@ CrossRoad::~CrossRoad(void)
 {
 }
 
-// ï¿½ï¿½È¡Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// »ñÈ¡Â·ÍøÊý¾Ý
 int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadGpslinks,
 							 const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
 							 HALocationCoordinate2D halGpsCenterPoint,
@@ -25,50 +25,60 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 							 int& nCenterIndex)
 {
 #ifdef _WINDOWS_VER_
-	printf("==============translateRoadNet - parameter Error!!==============\n");
+	printf("===========getCrossLinks - enter!!=========\n");
 #else
-	LOGD("==============getCrossLinks - enter!!==============\n");
+	LOGD("===========getCrossLinks - enter!!=========\n");	
 #endif
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½
+	// ²ÎÊý×Ô¼ì
 	int nNumLink = vecMainRoadGpslinks.size();
 	if (nNumLink<=0 || nNumLink!=vecMainRoadGpsLinkInfos.size() ||
 		szCover.height<=0 || szCover.width<=0)
 	{
-		#ifdef _WINDOWS_VER_
-				printf("==============translateRoadNet - parameter Error!!==============\n");
-		#else
-				LOGD("==============getCrossLinks - parameter Error!!==============\n");
-		#endif
 		return -1;
 	}
 
+#if IS_PRINT_LOG
+	#ifdef _WINDOWS_VER_
+		printf("getCrossLinks - vecMainRoadGpslinks: \n");
+		printf("	vecMainRoadGpslinks.size=%d\n", vecMainRoadGpslinks[0].size());		
+		for (int i=0; i<vecMainRoadGpslinks[0].size(); i++)
+		{
+			printf("%lf, %lf;  ", vecMainRoadGpslinks[0][i].latitude, vecMainRoadGpslinks[0][i].longitude);		
+		}
+		printf("\n	szCover.w = %d, szCover.h = %d\n", szCover.width, szCover.height);	
+		printf("halGpsCenterPoint.latitude=%lf, halGpsCenterPoint.longitude=%lf\n",halGpsCenterPoint.latitude, halGpsCenterPoint.longitude);
+	#else
+		LOGD("getCrossLinks - vecMainRoadGpslinks: \n");
+		LOGD("	vecMainRoadGpslinks.size=%d\n", vecMainRoadGpslinks[0].size());		
+		for (int i=0; i<vecMainRoadGpslinks[0].size(); i++)
+		{
+			LOGD("%lf, %lf;  ", vecMainRoadGpslinks[0][i].latitude, vecMainRoadGpslinks[0][i].longitude);		
+		}
+		LOGD("\n	szCover.w = %d, szCover.h = %d\n", szCover.width, szCover.height);	
+		LOGD("halGpsCenterPoint.latitude=%lf, halGpsCenterPoint.longitude=%lf\n",halGpsCenterPoint.latitude, halGpsCenterPoint.longitude);		
+	#endif
+#endif
+
 	int nRet = 0;
 
-	// ï¿½ï¿½È¡ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½
-	//HaloNav haloNav;
+	// ¶ÁÈ¡×ÖµäÊý¾Ý
 	if (!m_IsReadDictionary)
 	{
-#ifdef _WINDOWS_VER_
-		printf("==============translateRoadNet - parameter Error!!==============\n");
-#else
-		LOGD("==============!m_IsReadDictionary - enter!!==============\n");
-#endif
 		nRet = m_haloNav.readDictionary(strDictPath);
 		if (nRet<0)
 		{
 			return -1;
 		}
 		m_IsReadDictionary = true;
-#ifdef _WINDOWS_VER_
-		printf("==============translateRoadNet - parameter Error!!==============\n");
-#else
-		LOGD("==============m_IsReadDictionary = true; - enter!!==============\n");
-#endif
 	}
 	
-
-	// ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Î³ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
-	HAMapPoint hamOffset = m_haloNav.getOffset();		// Æ«ï¿½ï¿½ï¿½ï¿½
+#ifdef _WINDOWS_VER_
+	printf("===========getCrossLinks - readDictionary end!!=========\n");
+#else
+	LOGD("===========getCrossLinks - readDictionary end!!=========\n");
+#endif
+	// ×ø±ê×ª»»£¬Ö÷Â·¾­Î³¶È×ªÏñËØ
+	HAMapPoint hamOffset = m_haloNav.getOffset();		// Æ«ÒÆÁ¿
 	vector<vector<HAMapPoint> > vecMainRoadPixelLinks;
 	vector<HAMapPoint> vecMainRoadPixelPt;
 	for (int i=0; i<nNumLink; i++)
@@ -80,7 +90,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		for (int j=0; j<nNumPt; j++)
 		{			
 			hamPixelXY = HAMapPointForCoordinate(vecLink[j]);
-			hamPixelXY.x -= hamOffset.x;		// ï¿½ï¿½È¥Æ«ï¿½ï¿½ï¿½ï¿½
+			hamPixelXY.x -= hamOffset.x;		// ¼õÈ¥Æ«ÒÆÁ¿
 			hamPixelXY.y -= hamOffset.y;
 			vecTemp.push_back(hamPixelXY);
 			vecMainRoadPixelPt.push_back(hamPixelXY);
@@ -88,35 +98,40 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		vecMainRoadPixelLinks.push_back(vecTemp);
 	}
 
-#ifdef _WINDOWS_VER_
-	printf("==============translateRoadNet - parameter Error!!==============\n");
-#else
-	LOGD("==============getCrossLinks - HAMapPointForCoordinate end!!==============\n");
-#endif
-
-	// ï¿½ï¿½ï¿½Äµï¿½
+	// ÖÐÐÄµã
 	HAMapPoint hamPixelCenter = HAMapPointForCoordinate(halGpsCenterPoint);
 	hamPixelCenter.x -= hamOffset.x;
 	hamPixelCenter.y -= hamOffset.y;
-
-#ifdef _WINDOWS_VER_
-	printf("==============translateRoadNet - parameter Error!!==============\n");
+#ifdef _WINDOWS_VER_	
+	printf("===========getCrossLinks - HAMapPointForCoordinate end!!=========\n");	
 #else
-	LOGD("==============getCrossLinks - hamPixelCenter end!!==============\n");
+	LOGD("===========getCrossLinks - HAMapPointForCoordinate end!!=========\n");	
 #endif
 	
-	// ï¿½ï¿½È¡Â·ï¿½ï¿½link	
+	// »ñÈ¡Â·Íølink	
 	std::vector<LinkInfo> vecRoadNetLinkInfo;		
 	std::vector<std::vector<HAMapPoint> > vecRoadNetLink;
-	m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
+	nRet = m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
+	if (nRet<0)
+	{
+		return -1;
+	}
+
+#if IS_PRINT_LOG
+	#ifdef _WINDOWS_VER_
+		printf("	vecRoadNetLink.size=%d\n", vecRoadNetLink.size());		
+	#else
+		LOGD("	vecRoadNetLink.size=%d\n", vecRoadNetLink.size());	
+	#endif
+#endif
 
 #ifdef _WINDOWS_VER_
-	printf("==============translateRoadNet - parameter Error!!==============\n");
+	printf("===========getCrossLinks - findLinks end!!=========\n");
 #else
-	LOGD("==============getCrossLinks - findLinks end!!==============\n");
+	LOGD("===========getCrossLinks - findLinks end!!=========\n");
 #endif
 	
-	// ï¿½ï¿½Â·ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ÚºÏµï¿½Í¼ï¿½ï¿½ï¿½ï¿½
+	// ÔÚÂ·ÍøÖÐ²éÕÒÖ÷Â·£¬ÈÚºÏµØÍ¼Êý¾Ý
 	MergeMapData merMapdata;
 #ifdef _WINDOWS_VER_
 	merMapdata.m_matImage.create(szCover.height,szCover.width,CV_8UC3);
@@ -145,16 +160,28 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 												vecCrossPixelLinks);
 	if (nRet<0)
 	{
+		#ifdef _WINDOWS_VER_
+			m_matImage = merMapdata.m_matImage.clone();
+		#endif
 		return -1;
 	}
 
-#ifdef _WINDOWS_VER_
-		printf("==============translateRoadNet - parameter Error!!==============\n");
-#else
-	LOGD("==============getCrossLinks - matchMainRoadCenterInNet5 end!!==============\n");
+#if IS_PRINT_LOG
+	#ifdef _WINDOWS_VER_
+		printf("	getCrossLinks - vecCrossPixelLinks\n");	
+		printf("	getCrossLinks: vecCrossPixelLinks.size=%d\n", vecCrossPixelLinks.size());		
+	#else
+		LOGD("	getCrossLinks - vecCrossPixelLinks\n");	
+		LOGD("	getCrossLinks: vecCrossPixelLinks.size=%d\n", vecCrossPixelLinks.size());		
+	#endif
 #endif
 
-	// ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½Î³ï¿½ï¿½
+#ifdef _WINDOWS_VER_
+	printf("===========getCrossLinks - matchMainRoadCenterInNet5 end!!=========\n");
+#else
+	LOGD("===========getCrossLinks - matchMainRoadCenterInNet5 end!!=========\n");
+#endif
+	// ×ø±ê×ª»»£¬ÏñËØ×ª¾­Î³¶È
 #if 0
 	int nNumRoadNetLink = vecRoadNetLink.size();
 	vecCrossGpsLinks.clear();
@@ -177,7 +204,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		vecCrossGpsLinks.push_back(vecGpsTemp);
 	}
 #else
-	// ï¿½ï¿½Â·×ªï¿½ï¿½
+	// ²íÂ·×ª»»
 	int nCrossLinkNum = vecCrossPixelLinks.size();
 	vecCrossGpsLinks.clear();
 	for (int i=0; i<nCrossLinkNum; i++)
@@ -194,7 +221,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		vecCrossGpsLinks.push_back(vecGpsTemp);
 	}
 
-	// ï¿½ï¿½Â·×ªï¿½ï¿½
+	// Ö÷Â·×ª»»
 	nRet = pixel2Gps(vecMainRoadPixelInNet,	hamOffset, vecMainRoadGpsInNet);
 	if (nRet < 0)
 	{
@@ -202,12 +229,24 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	}
 #endif
 
-#ifdef _WINDOWS_VER_
-		printf("==============translateRoadNet - parameter Error!!==============\n");
-#else
-	LOGD("==============getCrossLinks - pixel2Gps end!!==============\n");
+#if IS_PRINT_LOG
+	#ifdef _WINDOWS_VER_
+		printf("	getCrossLinks: vecCrossGpsLinks.size=%d, vecMainRoadGpsInNet.size=%d\n",
+			vecCrossGpsLinks.size(), vecMainRoadGpsInNet.size());		
+	#else
+		LOGD("	getCrossLinks: vecCrossGpsLinks.size=%d, vecMainRoadGpsInNet.size=%d\n",
+			vecCrossGpsLinks.size(), vecMainRoadGpsInNet.size());	
+	#endif
 #endif
 
+#ifdef _WINDOWS_VER_
+	m_matImage = merMapdata.m_matImage.clone();
+	printf("===========getCrossLinks - leave!!=========\n");
+	printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+#else
+	LOGD("===========getCrossLinks - leave!!=========\n\n");
+	LOGD("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+#endif
 	return 0;
 }
 
@@ -216,7 +255,7 @@ int CrossRoad::pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
 						 HAMapPoint hamOffset,
 						 std::vector<HALocationCoordinate2D>& vecGpsPoint)
 {
-	// ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½
+	// ²ÎÊý×Ô¼ì
 	int nNumPt = vecPixelPoint.size();
 	if (nNumPt<=0)
 	{

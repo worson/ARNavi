@@ -15,6 +15,10 @@
 #define ANGLE_ALLOWANCE	45			// 角度夹角余量（角度制），用于判断两角度是否接近
 #define VECTOR_NEAR_ANGLE	45		// 向量相近，角度余量
 #define VECTOR_PARALLEL_ANGLE	20		// 向量平行，角度余量
+#define EXTEND_ROAD_ANGLE	25		// 角度阈值，用于拓展link
+#define KEYPOINT_COSV_TH		0.75	// 寻找主路关键点，余弦阈值	
+
+#define CROSSROAD_LENGTH	200		// 岔路长度
 
 #define IS_DRAW		0		// 是否绘图，1-是，0-否
 #define IS_DRAW1	0		// 是否绘图，1-是，0-否
@@ -22,12 +26,14 @@
 #define IS_SON_DRAW 0		// 是否显示图像，1-是，0-否
 #define IS_DRAW_NODE 0		// 是否绘制节点图像，1-是，0-否
 #define IS_DRAW_ROADNET 0		// 是否绘制路网图像，1-是，0-否
+#define IS_PRINT_LOG	0	// 是否打印log
 
 // 定义link方向
 #define UNCERTAIN_DIRECTION 0	// 不确定
 #define DOUBLE_DIRECTION	1	// 双向
 #define SAME_DIRECTION	2	// 同向
 #define OPPOSITE_DIRECTION 3	//反向
+
 
 
 #include <vector>
@@ -37,13 +43,12 @@
 #include "opencv2/core/core.hpp"
 
 #ifdef _WINDOWS_VER_
-
+	#define LOGD(...) ((void)printf(__VA_ARGS__))
 #else
 	#include <android/log.h>
-	#define LOG_TAG_ERROR "Algorithm__"
-	#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG_ERROR, __VA_ARGS__))
+	//#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "Algorithm", __VA_ARGS__)
+	#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "Algorithm", __VA_ARGS__))
 #endif
-
 
 
 using namespace std;
@@ -191,8 +196,21 @@ public:
 								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
 								std::vector<HAMapPoint>& vecMainRoadPtInNet,
 								int& nMatchCenterIndex,	// 中心点匹配点在vecMainRoadPtInNet的下标
-								std::vector<int>& vecCrossPointIndex,
-								std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
+								std::vector<int>& vecCrossPointIndex,		// 岔路与主路交点在主路中的下标
+								std::vector<std::vector<HAMapPoint> >& vecCrossPathPt);
+
+	int matchMainRoadCenterInNet6(const vector<HAMapPoint>& vecMainRoad,
+								HAMapPoint haMainRoadCenterPt,
+								const vector<LinkInfo>& vecRoadNetLinkInfos,
+								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+								cv::Rect rtScreen,
+								HAMapPoint& hamCenterInNet,
+								vector<LinkInfo>& vecMainRoadLinkInfosInNet,
+								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
+								std::vector<HAMapPoint>& vecMainRoadPtInNet,
+								int& nMatchCenterIndex,	// 中心点匹配点在vecMainRoadPtInNet的下标
+								std::vector<int>& vecCrossPointIndex,		// 岔路与主路交点在主路中的下标
+								std::vector<std::vector<HAMapPoint> >& vecCrossPathPt);
 
 	// 取中心点一定范围内的主路子集，并按主路顺序排列
 	int getSubMainRoadNearCenter(const vector<HAMapPoint>& vecMainRoad,												   
@@ -317,6 +335,16 @@ public:
 					cv::Rect rtScreen,
 					vector<int>& vecRoadNetDirection2MainRoad);
 
+	int formRoadNet3(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+					const vector<LinkInfo>& vecLinkInfos,
+					const vector<LinkEndPointNode> vecAllEndPtnode,							  
+					const vector<int>& vecMainRoadNodeId,
+					int nMatchCenterSite,		// 匹配点在vecMainRoadNodeId中的位置
+					cv::Rect rtScreen,
+					vector<int>& vecRoadNetDirection2MainRoad,
+					vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
+					vector<vector<int> >& vecCrossPathNodeId);
+
 	// 判断点是否在矩形范围内
 	bool isRectInside(HAMapPoint hamPoint, cv::Rect rect);
 
@@ -333,6 +361,14 @@ public:
 					const vector<int>& vecRoadNetDirection2MainRoad,
 					const vector<int>& vecMainRoadLinkId,
 					std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
+
+	// 过滤路网，不包括主路
+	int filterRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+						const vector<LinkEndPointNode> vecAllEndPtnode,
+						const vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
+						const vector<vector<int> >& vecCrossPathNodeId,
+						cv::Rect rtScreen,
+						std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
 
 	// 计算从匹配路径移至主路的最佳平移距离(包括正负)
 	int getOffset2MainRoad(const vector<HAMapPoint>& vecMainRoadVertex,
@@ -369,8 +405,8 @@ public:
 	bool isBelongToVector(const vector<int> &vecInts, int nElement, int& nSite);
 
 	// 判断元素是否属于集合
-	template<typename T>
-	bool isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite);
+	//template<typename T>
+	//bool isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite);
 
 	// 路径回溯
 	int popPath(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLink,
@@ -419,7 +455,8 @@ public:
 					const vector<LinkEndPointNode> vecLinkEndPtnode,
 					const vector<int>& vecMainRoadLinkId, 
 					int nCurDirection,	int nCurLinkId, int nCurNodeId, cv::Rect rtScreen,
-					vector<int>& vecExtendLinksId, vector<int>& vecExtendNodesId);
+					vector<int>& vecExtendLinksId, vector<int>& vecExtendNodesId,
+					vector<int>& vecExtendLinkDirection);
 
 #ifdef _WINDOWS_VER_
 	void drawImage(cv::Mat& matNavi,HAMapPoint hptCenter, vector<HAMapPoint> hamPts, 

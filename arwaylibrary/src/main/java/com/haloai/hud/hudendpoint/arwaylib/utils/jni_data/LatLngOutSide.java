@@ -15,4 +15,9 @@ public class LatLngOutSide {
     }
     public double lat;
     public double lng;
+
+    @Override
+    public String toString() {
+        return lat+","+lng;
+    }
 }
