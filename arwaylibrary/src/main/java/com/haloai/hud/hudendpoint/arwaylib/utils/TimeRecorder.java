@@ -52,7 +52,7 @@ public class TimeRecorder {
     }
 
     public String getLog(String name){
-        return String.format(" %s: interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,interval,getAverageInterval(),frame,getAverageFrame());
+        return String.format(" %s: cnt = %s , interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,cnt,interval,getAverageInterval(),frame,getAverageFrame());
     }
     public void recordeAndLog(String tag,String name){
         recorde();

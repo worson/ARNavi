@@ -72,8 +72,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
-    private Object3D mObject4Chase;
-    private ArwaySceneUpdater mSceneUpdater = ArwaySceneUpdater.getInstance();
+    private Object3D          mObject4Chase;
+    private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
@@ -105,6 +105,33 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private IRoadNetDataProvider         mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
 
+    private ObjectAnimator mHideAnimator = null;
+    private ObjectAnimator mShowAnimator = null;
+
+    public static final int SCENE_HIDE_ANIMATION_ID = 0;
+    public static final int SCENE_RENDER_APLLY_ID   = 1;
+
+    public static final int RENDR_ROAD_NET_ID   = 2;
+
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case SCENE_HIDE_ANIMATION_ID:
+                    restartAnimator(mHideAnimator);
+                    break;
+                case SCENE_RENDER_APLLY_ID:
+                    mSceneUpdater.commitRender();
+                    break;
+                case RENDR_ROAD_NET_ID:
+                    break;
+                default:
+            }
+        }
+    };
+
+
     public ARwayRenderer(Context context) {
         super(context);
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -124,10 +151,40 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void initScene() {
-        HaloLogger.logE("ylq__", "initScene");
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called!");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called! ,thread id = "+Thread.currentThread().getId());
         getCurrentScene().setBackgroundColor(0, 0, 0, 0);
         setFrameRate(FRAME_RATE);
+        initHandler();
+        initSceneUpdater();
+        mIsInitScene = true;
+        if (!mIsMyInitScene && mCanMyInitScene) {
+            myInitScene();
+        }
+    }
+
+    private void initHandler() {
+        /*mHandler =  new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case SCENE_HIDE_ANIMATION_ID:
+                        restartAnimator(mHideAnimator);
+                        break;
+                    case SCENE_RENDER_APLLY_ID:
+                        mSceneUpdater.commitRender();
+                        break;
+                    case RENDR_ROAD_NET_ID:
+                        addNaviPath2Scene();
+                        addRoadNet2Scene();
+                        break;
+                    default:
+                }
+            }
+        };*/
+    }
+
+    private void initSceneUpdater() {
         mSceneUpdater = ArwaySceneUpdater.getInstance();
         mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
@@ -135,11 +192,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.initScene();
         mSceneUpdater.setCamera(getCurrentCamera());
 
-        mIsInitScene = true;
-        if (!mIsMyInitScene && mCanMyInitScene) {
-            myInitScene();
-        }
     }
+
 
     @Override
     public void onRenderSurfaceSizeChanged(GL10 gl, int width, int height) {
@@ -224,7 +278,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
-
         if (ARWayConst.ENABLE_PERFORM_TEST) {
             mRenderTimeRecorder.recordeAndLog("onRenderFrame", "onRenderFrame");
         }
@@ -355,7 +408,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void initRoadNet2Scene() {
         List<List<Vector3>> branchLinesList = new ArrayList<>();
-        branchLinesList.addAll(mRenderPaths);
+        branchLinesList.addAll(mRenderPaths);//mRenderPaths.subList(1,mRenderPaths.size())
         mSceneUpdater.renderRoadNet(branchLinesList);
         mSceneUpdater.commitRender();
     }
@@ -370,15 +423,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void initNaviPath2Scene() {
-        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.renderTrafficLight(mRenderPath.get(4));
 //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
         mSceneUpdater.commitRender();
     }
 
     private void addNaviPath2Scene() {
-        //mSceneUpdater.renderTrafficLight(mRenderPath.get(4),0);
+        //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
 //        mSceneUpdater.moveCenterFloor((float) mRenderPath.get(0).x,(float) mRenderPath.get(0).y);
 //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
@@ -697,28 +751,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         a.start();
     }
-
-    public static final int SCENE_HIDE_ANIMATION_ID = 0;
-    public static final int SCENE_RENDER_APLLY_ID   = 1;
-
-    private Handler        mHandler      = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case SCENE_HIDE_ANIMATION_ID:
-                    restartAnimator(mHideAnimator);
-                    break;
-                case SCENE_RENDER_APLLY_ID:
-                    mSceneUpdater.commitRender();
-                    break;
-                default:
-            }
-        }
-    };
-    private ObjectAnimator mHideAnimator = null;
-    private ObjectAnimator mShowAnimator = null;
-
     private void initSceneAnimator() {
         int duration = 100;
         float invivable = 0.6f;

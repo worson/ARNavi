@@ -19,7 +19,7 @@ public class TextureAlphaMaterialPlugin implements IMaterialPlugin {
 
     @Override
     public Material.PluginInsertLocation getInsertLocation() {
-        return Material.PluginInsertLocation.PRE_LIGHTING;
+        return Material.PluginInsertLocation.PRE_ALPHA;
     }
 
     @Override
