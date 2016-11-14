@@ -176,7 +176,7 @@ JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nati
  */
 JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetCrossLinks
         (JNIEnv *env, jobject javaThis, jobject links, jobject linkInfos,
-         jobject latlng, jobject szCover, jstring strDictPath, jobject crossLinks,
+         jobject latlng, jobject szCover, jstring strDictPath, jint crossRoadLen, jobject crossLinks,
         jobject mainRoad,jobject crossPointIndexs){
     LOGE_ANDROID("nativeGetCrossLinks start");
     LOGE_ANDROID("long size = %d",sizeof(long));
@@ -254,6 +254,7 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     //string _filePath = "/sdcard/haloaimapdata_32.hmd";
     string _filePath = jstringToStr(env,strDictPath);
     LOGE_ANDROID("file path = %s",_filePath.c_str());
+    int _crossRoadLen = crossRoadLen;
     vector <vector<HALocationCoordinate2D> > _crossLinks;
     vector<HALocationCoordinate2D> _mainRoad;
     vector<int> _vecCrossPointIndex;
@@ -261,7 +262,8 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     //CrossRoad crossRoad;
     LOGE_ANDROID("into crossRoad.getCrossLinks");
     int res = crossRoad.getCrossLinks(_links, _mainRoadLinkInfos, _centerPoint, _szCover,
-                                      _filePath, _crossLinks, _mainRoad,_vecCrossPointIndex,_centerPointInMainRoad);
+                                      _filePath, _crossRoadLen, _crossLinks, _mainRoad,
+                                      _vecCrossPointIndex,_centerPointInMainRoad);
     LOGE_ANDROID("outto crossRoad.getCrossLinks");
     if(res == 0) {
         LOGE_ANDROID("res=%d,crossLinks.size=%d",res,_crossLinks.size());

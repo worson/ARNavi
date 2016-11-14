@@ -92,6 +92,12 @@ bool HaloNav::initNaviStorage(int blocksWidth,int blocksHeight,int offset_x,int 
     return true;
 }
 
+// 获取宽、高方向上block的个数
+void HaloNav::getBlocksSize(int& nBlocksW, int& nBlocksH)
+{
+	nBlocksW = _blocksWidth;
+	nBlocksH = _blocksHeight;
+}
 HAMapPoint HaloNav::getOffset()
 {
     return _mptOffset;

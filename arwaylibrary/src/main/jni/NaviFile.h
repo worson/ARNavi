@@ -41,6 +41,7 @@ public:
     int readDictionary(std::string& file);
     int findLinks(HAMapPoint& axs,int width,int height,std::vector<LinkInfo>& vecLinkInfos,std::vector< std::vector<HAMapPoint> >& vecAxes);
     HAMapPoint getOffset();
+	void getBlocksSize(int& nBlocksW, int& nBlocksH);		// 获取宽、高方向上block的个数
 private:
     unsigned char  _version[8];
     unsigned int   _totalBlocksNum;
