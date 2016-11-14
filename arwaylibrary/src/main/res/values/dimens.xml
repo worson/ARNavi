@@ -25,4 +25,13 @@
     <dimen name="digital_speed_width">11dp</dimen>
     <dimen name="digital_speed_height">17dp</dimen>
 
+    <dimen name="digital_time_width">12dp</dimen>
+    <dimen name="digital_time_height">15dp</dimen>
+    <dimen name="digital_time_margin_start">1dp</dimen>
+
+    <dimen name="flat_arway_left_margin">10dp</dimen>
+    <dimen name="flat_arway_bottom_margin">2dp</dimen>
+    <dimen name="flat_arway_right_margin">2dp</dimen>
+    <dimen name="flat_arway_up_margin">2dp</dimen>
+
 </resources>

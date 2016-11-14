@@ -300,15 +300,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         HaloLogger.logE(TAG, "mPathLatLng path end");
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
-        /*for (int i = 0; i < mPreDynamicEndIndex; i++) {
+        for (int i = 0; i < mPreDynamicEndIndex; i++) {
             if (mStepPointIndexs.contains(i)) {
                 HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
                 processSteps(mStepPointIndexs.indexOf(i));
             }
-        }*/
-        for (int i = 0; i < mStepPointIndexs.size(); i++) {
-            processSteps(i);
         }
+//        for (int i = 0; i < mStepPointIndexs.size(); i++) {
+//            processSteps(i);
+//        }
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
         for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
             HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);

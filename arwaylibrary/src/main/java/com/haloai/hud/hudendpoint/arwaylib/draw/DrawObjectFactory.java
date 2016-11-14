@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.FlatNaviInfoPanel;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
@@ -49,7 +50,7 @@ public class DrawObjectFactory {
         ViewGroup mLayout = (ViewGroup) inflater.inflate(layoutid, container, true);
 
         DrawScene drawScene = (DrawScene)getGlDrawObject(DrawType.GL_SCENE);
-//        drawScene.setView(context,mLayout);
+        drawScene.setView(context,mLayout);
 
         ViewGroup glSurfaceViewgroup = (ViewGroup)mLayout.findViewById(R.id.opengl_viewgroup);
         drawView = drawScene.getViewInstance(context);
@@ -65,18 +66,18 @@ public class DrawObjectFactory {
         }
 
         GlDrawCompass glDrawCompass = GlDrawCompass.getInstance();
-        glDrawCompass.setView(context,mLayout);
+        glDrawCompass.setView(context,null);
 
 
         GlDrawSpeedDial glDrawSpeedDial = GlDrawSpeedDial.getInstance();
-        glDrawSpeedDial.setView(context,mLayout);
+        glDrawSpeedDial.setView(context,null);
 
 
 
         GlDrawRetainDistance glDrawRetainDistance = GlDrawRetainDistance.getInstance();
-        glDrawRetainDistance.setView(context,mLayout);
+        glDrawRetainDistance.setView(context,null);
 
-        GlDrawNaviInfo.getInstance().setView(context,mLayout);
+        FlatNaviInfoPanel.getInstance().setView(context,mLayout);
 
         return mLayout;
     }
