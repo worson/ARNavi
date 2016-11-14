@@ -3,6 +3,29 @@
 #include "NaviFile.h"
 #include "MergeMapData.hpp"
 
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <dirent.h>
+#include <vector> 
+
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+using namespace std;
+
+#ifdef _WINDOWS_VER_
+	#define DIR_TYPE 0x4000
+	#define FILE_TYPE 0x8000
+	#define FILE_MODE 0x81B6
+#else
+	#define DIR_TYPE 0x0004
+	#define FILE_TYPE 0x0008
+	#define FILE_MODE 0x81B0
+#endif
+
 CrossRoad::CrossRoad(void)
 {
 	m_IsReadDictionary = false;
@@ -18,7 +41,8 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 							 const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
 							 HALocationCoordinate2D halGpsCenterPoint,
 							 cv::Size2i szCover,
-							 string strDictPath,							 
+							 string strDictPath,
+							 int nCrossRoadLen,
 							 std::vector<std::vector<HALocationCoordinate2D> >& vecCrossGpsLinks,
 							 std::vector<HALocationCoordinate2D>& vecMainRoadGpsInNet,
 							 std::vector<int>& vecCrossPointIndex,
@@ -59,12 +83,27 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	#endif
 #endif
 
-	int nRet = 0;
+	int nRet = 0;	
 
 	// 读取字典数据
 	if (!m_IsReadDictionary)
-	{
-		nRet = m_haloNav.readDictionary(strDictPath);
+	{		
+		// 在指定路径中获取符合后缀要求的所有文件
+		std::string strSuffix = ".hmd";
+		std::vector<std::string> vecFileNames;
+		nRet = getSuffixFiles(strDictPath, strSuffix, vecFileNames);
+		if (nRet<0)
+		{
+			return -1;
+		}
+		// 确定字典文件
+		std::string strDictFileName;
+		if (!getDictFileName(halGpsCenterPoint,	vecFileNames, strDictFileName))
+		{
+			return -1;
+		}		
+
+		nRet = m_haloNav.readDictionary(strDictFileName);
 		if (nRet<0)
 		{
 			return -1;
@@ -151,6 +190,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 												vecRoadNetLinkInfo,
 												vecRoadNetLink,
 												rtScreen,
+												nCrossRoadLen,
 												hamCenterInNet,
 												vecMainRoadLinkInfosInNet,
 												vecMainRoadLinksInNet,
@@ -274,4 +314,108 @@ int CrossRoad::pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
 	}
 
 	return 0;
+}
+
+// 在指定文件夹中获取符合后缀要求的文件
+int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std::vector<std::string>& vecFileNames)
+{
+	// 当输入的路径包括文件名时，如：..\\..\\xx.hmd，去除文件名，获取路径
+	struct stat st;	
+	stat(strFolder.c_str(), &st);     //返回 文件, windows - 33206, android - 33200
+
+	LOGD("getSuffixFiles st.st_mode=%d\n",st.st_mode);
+	
+	
+
+
+	if (st.st_mode==FILE_MODE)
+	{
+ 		vecFileNames.push_back(strFolder);
+ 		return 0;
+		/*int nSi = -1;
+		#ifdef _WINDOWS_VER_
+			nSi = strFolder.find_last_of("\\");
+		#else
+			nSi = strFolder.find_last_of("/");
+		#endif
+		
+		strFolder = strFolder.substr(0,nSi);*/
+	} 
+	
+	LOGD("getSuffixFiles strFolder=%s\n",strFolder.c_str());
+
+	
+	DIR * pDir = NULL;
+	struct dirent *ent = NULL;
+	pDir = opendir(strFolder.c_str());
+	if (NULL == pDir)
+	{
+		LOGD("getSuffixFiles opendir==Null\n");
+		return -1;
+	}
+	while (NULL != (ent = readdir (pDir)))
+	{		
+		if ((ent->d_type==FILE_TYPE) && strstr(ent->d_name, strSuffix.c_str()) != NULL) 
+		{
+			string str = strFolder + "\\" + ent->d_name;		// 连接路径和文件名
+			vecFileNames.push_back(str);
+		}		
+	}
+	closedir (pDir);
+	
+	if (vecFileNames.size()>0)
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+// 获取GPS点对应的字典文件名
+bool CrossRoad::getDictFileName(HALocationCoordinate2D halGpsCenterPoint,
+					const std::vector<std::string>& vecFileNames,
+					std::string& strDictFileName)
+{
+	// 参数自检
+	int nNum = vecFileNames.size();
+	if (nNum<=0)
+	{
+		return false;
+	}
+
+	int nRet = -1;
+	bool bIsGot = false;		// 标识是否找到字典文件
+	HaloNav haloNav;
+	MergeMapData mergeData;
+	for (int i=0; i<nNum; i++)
+	{	
+		// 读字典
+		string strFname = vecFileNames[i];
+		nRet = haloNav.readDictionary(strFname);
+		if (nRet<0)
+		{
+			continue;
+		}
+		
+		// 获取偏移量和宽、高方向的block数量
+		HAMapPoint hamOffset = haloNav.getOffset();		// 偏移量
+		int nWBlockNum = 0, nHBlockNum = 0;
+		haloNav.getBlocksSize(nWBlockNum, nHBlockNum);
+
+		// 坐标转换，经纬度转像素
+		HAMapPoint hamPixelXY = HAMapPointForCoordinate(halGpsCenterPoint);
+
+		// 判断坐标是否位于矩形框内
+		cv::Rect rt(hamOffset.x, hamOffset.y, nWBlockNum*BLOCK_WIDTH, nHBlockNum*BLOCK_HEIGH);
+		if (mergeData.isRectInside(hamPixelXY,rt))
+		{
+			strDictFileName = vecFileNames[i];
+			bIsGot = true;
+			break;
+		}		
+	}
+
+	return bIsGot;
 }

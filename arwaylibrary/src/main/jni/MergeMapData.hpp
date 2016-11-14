@@ -52,12 +52,12 @@
 
 
 using namespace std;
-using namespace cv;
+//using namespace cv;
 
 // 定义直线类型，a*x + b*y + c = 0
 struct Line  
 {  
-	Point2d pt1,pt2;  
+	cv::Point2d pt1,pt2;  
 	double a,b,c;  
 };  
 
@@ -111,13 +111,13 @@ public:
 	返回：
 		0 - 正常，其他 - 异常
 	*/
-	int getBreakPoint(const vector<Point2i>& vecPointSet, 
-					  Point2i haCenterPt,
-					  vector<Point2i>& vecBreakPoint, 
+	int getBreakPoint(const vector<cv::Point2i>& vecPointSet, 
+					  cv::Point2i haCenterPt,
+					  vector<cv::Point2i>& vecBreakPoint, 
 					  vector<int>& vecBreakPointID,
 					  vector<cv::Vec4f>& vecLines,
 					  cv::Vec4f& vefPreCenterLine,
-					  Point2i& ptPreCenter);
+					  cv::Point2i& ptPreCenter);
 
 	/*
 	功能：
@@ -191,6 +191,7 @@ public:
 								const vector<LinkInfo>& vecRoadNetLinkInfos,
 								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
 								cv::Rect rtScreen,
+								int nCrossRoadLen,
 								HAMapPoint& hamCenterInNet,
 								vector<LinkInfo>& vecMainRoadLinkInfosInNet,
 								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
@@ -204,6 +205,7 @@ public:
 								const vector<LinkInfo>& vecRoadNetLinkInfos,
 								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
 								cv::Rect rtScreen,
+								int nCrossRoadLen,
 								HAMapPoint& hamCenterInNet,
 								vector<LinkInfo>& vecMainRoadLinkInfosInNet,
 								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
@@ -215,7 +217,7 @@ public:
 	// 取中心点一定范围内的主路子集，并按主路顺序排列
 	int getSubMainRoadNearCenter(const vector<HAMapPoint>& vecMainRoad,												   
 								int nCenterSite,
-								Size2i szOffset,
+								cv::Size2i szOffset,
 								vector<HAMapPoint>& vecSubMainRoad);
 
 	// 将主路与路网另一子路的接近程度，用距离和表示
@@ -234,10 +236,10 @@ public:
 	void getLinePara(Line *l);
 
 	// 获取两直线交点
-	Point2d getCrossPoint(Line *l1,Line *l2); 
+	cv::Point2d getCrossPoint(Line *l1,Line *l2); 
 
 	// 计算点到直线的距离
-	double getDistancePoint2Line(Point2i pt, Line lin);
+	double getDistancePoint2Line(cv::Point2i pt, Line lin);
 
 	// 计算两点距离
 	template<typename T>
@@ -270,7 +272,7 @@ public:
 						HAMapPoint& hamNearestPt);
 
 	// 求两向量夹角
-	float getAngle(Vec2f v1, Vec2f v2);
+	float getAngle(cv::Vec2f v1, cv::Vec2f v2);
 
 	//// 求均值和方差
 	//int getStatistic(const vector<double>& vecDisSet, double& uMean, double& uStd);
@@ -345,6 +347,16 @@ public:
 					vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
 					vector<vector<int> >& vecCrossPathNodeId);
 
+	int formRoadNet4(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+					const vector<LinkInfo>& vecLinkInfos,
+					const vector<LinkEndPointNode> vecAllEndPtnode,							  
+					const vector<int>& vecMainRoadNodeId,
+					int nMatchCenterSite,		// 匹配点在vecMainRoadNodeId中的位置
+					cv::Rect rtScreen,
+					vector<int>& vecRoadNetDirection2MainRoad,
+					vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
+					vector<vector<int> >& vecCrossPathNodeId);
+
 	// 判断点是否在矩形范围内
 	bool isRectInside(HAMapPoint hamPoint, cv::Rect rect);
 
@@ -365,6 +377,7 @@ public:
 	// 过滤路网，不包括主路
 	int filterRoadNet1(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
 						const vector<LinkEndPointNode> vecAllEndPtnode,
+						int nCrossRoadLen,		// 岔路长度
 						const vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
 						const vector<vector<int> >& vecCrossPathNodeId,
 						cv::Rect rtScreen,
@@ -472,13 +485,13 @@ public:
 public:
 	#ifdef _WINDOWS_VER_
 		HAMapPoint m_hamMainRoadCenter;
-		Mat m_matImage;
+		cv::Mat m_matImage;
 		string m_strImageName;
 		
 		string m_strErrorLog;
 	#endif
     
 public:
-    Point m_ptOffset;
+    cv::Point m_ptOffset;
 };
 #endif /* MergeMapData_hpp */

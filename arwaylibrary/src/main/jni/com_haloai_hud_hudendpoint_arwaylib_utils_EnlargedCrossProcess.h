@@ -7,6 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_CROSS_ROAD_LEN
+#define com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_CROSS_ROAD_LEN 300L
 /*
  * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
  * Method:    nativeGetBranchRoads
@@ -26,10 +28,10 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
 /*
  * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
  * Method:    nativeGetCrossLinks
- * Signature: (Ljava/util/List;Ljava/util/List;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/LatLngOutSide;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/Size2iOutside;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Ljava/util/List;)I
+ * Signature: (Ljava/util/List;Ljava/util/List;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/LatLngOutSide;Lcom/haloai/hud/hudendpoint/arwaylib/utils/jni_data/Size2iOutside;Ljava/lang/String;ILjava/util/List;Ljava/util/List;Ljava/util/List;)I
  */
 JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetCrossLinks
-  (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jstring, jobject, jobject, jobject);
+  (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jstring, jint, jobject, jobject, jobject);
 
 #ifdef __cplusplus
 }

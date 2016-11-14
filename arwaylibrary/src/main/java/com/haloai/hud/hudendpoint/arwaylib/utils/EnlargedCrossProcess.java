@@ -24,6 +24,7 @@ import java.util.List;
 public class EnlargedCrossProcess {
     private static final String TAG                       = "HaloAI_ECP_Lib_Caller";
     private static final String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_gd_noRDname.hmd";
+    private static final int CROSS_ROAD_LEN               = 300;
 
     private Bitmap myCrossImage  = null;
     private Mat    matECImage    = new Mat();
@@ -105,8 +106,9 @@ public class EnlargedCrossProcess {
      * @return 0:正常,数据可用 其他:错误
      */
     public int updateCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,
-                                Size2iOutside szCover, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad, List<Integer> crossPointIndexs) {
-        return nativeGetCrossLinks(links, linkInfos, centerPoint, szCover, ROAD_NET_SOURCE_FILE_PATH, crossLinks, mainRoad, crossPointIndexs);
+                                Size2iOutside szCover, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
+                                List<Integer> crossPointIndexs) {
+        return nativeGetCrossLinks(links, linkInfos, centerPoint, szCover, ROAD_NET_SOURCE_FILE_PATH, CROSS_ROAD_LEN, crossLinks, mainRoad, crossPointIndexs);
     }
 
     public static class PointA {
@@ -145,10 +147,10 @@ public class EnlargedCrossProcess {
      * @param centerPoint [in] 中心点的经纬度
      * @param szCover     覆盖区域的宽高
      * @param strDictPath 地图数据路径(目前写死在/sdcard/下)
-     * @param crossLinks  [out] 中心点附近的路网信息
-     * @return 1表示正常 0表示不正常
+     * @param crossRoadLen
+     *@param crossLinks  [out] 中心点附近的路网信息  @return 1表示正常 0表示不正常
      */
     public native int nativeGetCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,
-                                          Size2iOutside szCover, String strDictPath, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
+                                          Size2iOutside szCover, String strDictPath, int crossRoadLen, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
                                           List<Integer> crossPointIndexs);
 }
