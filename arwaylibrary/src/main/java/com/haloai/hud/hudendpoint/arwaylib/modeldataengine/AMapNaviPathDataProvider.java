@@ -97,6 +97,13 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
+    public void setTrafficLight(List<Vector3> lights) {
+        if (mNaviPathChangeNotifier != null) {
+            mNaviPathChangeNotifier.onTrafficLight(lights);
+        }
+    }
+
+    @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
 
         double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 10;

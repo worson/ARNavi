@@ -425,7 +425,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void initNaviPath2Scene() {
         //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         mSceneUpdater.renderNaviPath(mRenderPath);
-        mSceneUpdater.renderTrafficLight(mRenderPath.get(4));
 //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(),(float)mNaviPathDataProvider.getTopborder(),(float)mNaviPathDataProvider.getRightborder(),(float)mNaviPathDataProvider.getBottomborder(),1,0.f);
         mSceneUpdater.commitRender();
@@ -638,6 +637,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void onRoadNetDataChange() {
 
+    }
+
+    @Override
+    public void onTrafficLight(List<Vector3> lights) {
+        if (mIsMyInitScene) {
+            mSceneUpdater.renderTrafficLight(lights);
+        }
     }
 
     @Override

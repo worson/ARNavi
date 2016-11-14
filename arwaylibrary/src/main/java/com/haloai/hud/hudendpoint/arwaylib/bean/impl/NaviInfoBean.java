@@ -47,6 +47,10 @@ public class NaviInfoBean extends SuperBean {
         mPathRetainDistance = 0;
         mPathRetainTime = 0;
         mStepRetainDistance=0;
+        mNextRoadName = "";
+        mSpeed=0;
+        mLimitSpeed=0;
+        mServiceAreaDistance=0;
     }
 
     public int getPathTotalDistance() {

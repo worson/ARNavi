@@ -188,7 +188,7 @@
 
         <ImageView
             android:id="@+id/time_num_sapa"
-            android:layout_width="@dimen/digital_time_width"
+            android:layout_width="6dp"
             android:layout_height="@dimen/digital_time_height"
             android:layout_alignTop="@+id/hour_one_imageview"
             android:layout_marginLeft="@dimen/digital_time_margin_start"

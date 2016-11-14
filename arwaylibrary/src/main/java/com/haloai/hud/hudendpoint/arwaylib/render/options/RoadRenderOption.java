@@ -8,6 +8,7 @@ import android.graphics.Color;
 public class RoadRenderOption {
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
+    public static final float TRAFFIC_DEVIATION_DISTANCE = 0.5F;
 
     public boolean isRoadFog = true;
     public float fogDistance = 3;
@@ -40,7 +41,7 @@ public class RoadRenderOption {
     public LayersColor mColors = new LayersColor();
 
     public class LayersColor {
-        public int guideLine     = Color.GREEN;
+        public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);;
         public int netRefLine    = Color.DKGRAY;
         public int refLine       = Color.BLACK;//Color.argb(0xff,0,160,233)
         public int naviLine      = Color.argb(0xff, 0x30, 0xb4, 0xcc);//Color.argb(0xff, 0, 174, 195);

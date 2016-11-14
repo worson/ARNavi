@@ -51,6 +51,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
 //    private TextView  mNaviStatusTextView = null;
 
     private TextView mNaviSpeedextView;
+    private ViewGroup mLimitSpeedextViewGroup;
     private TextView mLimitSpeedextView;
     private TextView mRetainTimeTextView;
     private TextView mRetainDistanceTextView;
@@ -118,9 +119,15 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             mNaviSpeedextView.setText(""+mNaviInfoBean.getSpeed()%300);
         }
         if (mLimitSpeedextView != null) {
-            String limitText = ""+mNaviInfoBean.getLimitSpeed();
+            if(mNaviInfoBean.getLimitSpeed()>0){
+                String limitText = ""+mNaviInfoBean.getLimitSpeed();
 //            refitText(mLimitSpeedextView,limitText,mLimitSpeedextView.getWidth());
-            mLimitSpeedextView.setText(limitText);
+                mLimitSpeedextViewGroup.setVisibility(View.VISIBLE);
+                mLimitSpeedextView.setText(limitText);
+            }else {
+                mLimitSpeedextViewGroup.setVisibility(View.INVISIBLE);
+            }
+
         }
     }
 
@@ -272,11 +279,13 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             String roadName = mNaviInfoBean.getNextRoadName();
             if (roadName != null && roadName.trim() !="" ) {//&& roadName.trim() !="无名路"
                 String text = roadName;
+                mRoadNamePrefixTextView.setText("进入");
                 mRoadNameTextView.setText(text);
             }else {
                 mRoadNameTextView.setText("");
+                mRoadNamePrefixTextView.setText("");
             }
-            mRoadNamePrefixTextView.setText("进入");
+
         }
     }
 
@@ -295,7 +304,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             }
         }
         if (mRetainDistanceTextView != null) {
-            int remainDistance = mNaviInfoBean.getPathTotalDistance();
+            int remainDistance = mNaviInfoBean.getPathRetainDistance();
             String text = null;
             if(remainDistance>1000){
                 text = ((remainDistance/100))*1.0/10+ "公里";
@@ -309,13 +318,13 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        if (mDriveWayView == null) {
+        /*if (mDriveWayView == null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }
+        }*/
     }
 
     public void hideLaneInfo() {
@@ -340,6 +349,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             mRoadNameTextView = (TextView) view.findViewById(R.id.next_road_name_textview);
 
             mNaviSpeedextView = (TextView) view.findViewById(R.id.speed_textview);
+            mLimitSpeedextViewGroup = (ViewGroup) view.findViewById(R.id.speed_limit_viewgroup);
             mLimitSpeedextView = (TextView) view.findViewById(R.id.speed_limit_textview);
 
             mRetainTimeTextView = (TextView)view.findViewById(R.id.prefix_time_textview);
@@ -353,21 +363,6 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
 
             mLaneInfoViewgroup = (RelativeLayout)view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView)view.findViewById(R.id.lane_info_view);
-
-            /*if (mDriveWayView == null) {
-                mDriveWayView = new DriveWayView(context);
-                mDriveWayView.getLayoutParams();
-                mLaneInfoViewgroup.addView(mDriveWayView);
-            }*/
-
-            /*mNaviIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_textview);
-            mRoadNameIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_road_textview);
-            mRoadDirectionIndicateTextView = (TextView) view.findViewById(R.id.navi_indicate_direction_textview);
-            mNaviStatusTextView = (TextView) view.findViewById(R.id.navi_status_textiview);
-            mNaviStatusTextView.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-            if (mNaviStatusTextView != null) {
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG," navi info ,setView ok");
-            }*/
 
         }
         if(!viewDebug){
@@ -388,6 +383,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
         if (mRoadNameTextView != null) {
             mRoadNameTextView.setText("");
         }
+        if (mLimitSpeedextViewGroup == null) {
+            mLimitSpeedextViewGroup.setVisibility(View.INVISIBLE);
+        }
         if (mNaviSpeedextView != null) {
             mNaviSpeedextView.setText("");
         }
@@ -399,6 +397,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
         }
         if (mRetainDistanceTextView != null) {
             mRetainDistanceTextView.setText("");
+        }
+        if (mDriveWayView != null) {
+            mDriveWayView.setVisibility(View.INVISIBLE);
         }
     }
 

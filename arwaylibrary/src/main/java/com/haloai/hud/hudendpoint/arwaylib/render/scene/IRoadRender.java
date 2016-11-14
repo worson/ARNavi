@@ -31,6 +31,8 @@ public interface IRoadRender {
     public void moveCenterFloor(float x,float y);
     public int removeFloor();
 
+    public void renderTrafficLight(List<Vector3> lights);
+
     /**
      * 提交渲染任务
      */

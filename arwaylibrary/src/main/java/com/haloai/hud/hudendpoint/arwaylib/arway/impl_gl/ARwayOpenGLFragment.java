@@ -76,7 +76,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private static final String  TAG                 = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
     public final static  boolean IS_DEBUG_MODE       = false;
-    public final static  boolean IS_VIEW_DEBUG_MODE  = true;
+    public final static  boolean IS_VIEW_DEBUG_MODE  = false;
     private static final boolean AMAP_OPTIONS_LOGOUT = true;
     private static final boolean IS_SCREEN_SHOOT     = true;
 
@@ -170,7 +170,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.flat_arway_opengl_layout);
         ImageView maskView = (ImageView)mLayout.findViewById(R.id.arway_mask_imageview);
-//        maskView.setBackgroundResource(R.drawable.arway_mask1);
+        maskView.setBackgroundResource(R.drawable.arway_mask);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
             ViewGroup vg = (ViewGroup)mainARWayView.getParent();

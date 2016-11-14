@@ -24,7 +24,6 @@ import org.rajawali3d.loader.ALoader;
 import org.rajawali3d.loader.LoaderOBJ;
 import org.rajawali3d.loader.async.IAsyncLoaderCallback;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.plugins.FogMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
@@ -64,6 +63,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private List<List<RoadLayers>>  mCrossRoadList        = new ArrayList();
     private List<RoadLayers>  mNaviRoadList         = new ArrayList();
     private List<ObjectLayer> mFloorObjectLayerList = new ArrayList<>();
+
+    private List<Object3D> mTrafficLightObjects = new ArrayList<>();
 
     private boolean mIsNaviRoadDirty  = true;
     private boolean mIsCrossRoadDirty = true;
@@ -474,7 +475,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (mNaviPathMask ||  path == null || path.size()<2) {
             return false;
         }
-//        renderlTrafficLight(path);
+//        renderTrafficLight(path);
         boolean result = true;
         final Vector3 offset = new Vector3(path.get(0));
         if (IS_DEBUG_MODE) {
@@ -541,23 +542,48 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolLayer.addChild(object);
 
     }
-
-    public void renderTrafficLight(Vector3 position) {
-        mNaviSymbolLayer.setPosition(position);
-        if(mNaviSymbolLayer.getNumChildren()<=0){
-            mNaviSymbolLayer.setOrthographic(true,0.04f);
-            Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
-                    true,false,1,true);//,Color.BLACK
+    private Object3D createTrafficLight(){
+        Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
+                true,false,1,true);//,Color.BLACK
 //            plane.setDoubleSided(true);
-            plane.setTransparent(true);
-            plane.setPosition(0,0,0.5);
-            // plane.setAlpha(0.1f);//不作用于顶点颜色
-            plane.setMaterial(mNaviIconMaterial);
+        plane.setTransparent(true);
+        plane.setPosition(0,0,0.5);
+        // plane.setAlpha(0.1f);//不作用于顶点颜色
+        plane.setMaterial(mNaviIconMaterial);
 
-            mNaviSymbolLayer.clearChildren();
-            mNaviSymbolLayer.addChild(plane);
+        BaseObject3D baseObject3D = new BaseObject3D();
+        baseObject3D.setOrthographic(true,0.04f);
+        baseObject3D.addChild(plane);
 
+
+        return baseObject3D;
+    }
+
+    public void renderTrafficLight(List<Vector3> lights) {
+        if (lights == null || lights.size()<=0) {
+            return;
         }
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderTrafficLight");
+        mNaviSymbolLayer.setPosition(0,0,0);
+        mNaviSymbolLayer.clearChildren();
+        Object3D object3D = null;
+        int cnt = lights.size();
+        for (int i = 0; i < cnt; i++) {
+            Vector3 position = lights.get(i);
+            object3D = createTrafficLight();
+            mTrafficLightObjects.add(object3D);
+
+            /*if(mTrafficLightObjects.size()>i){
+                object3D = mTrafficLightObjects.get(i);
+            }else {
+                object3D = createTrafficLight();
+                mTrafficLightObjects.add(object3D);
+            }*/
+
+            object3D.setPosition(position);//高度与红绿红的大小有关
+            mNaviSymbolLayer.addChild(object3D);
+        }
+
     }
 
     /**
@@ -672,6 +698,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (cross == null || cross.size()<1) {
             return false;
         }
+        String tag = "renderRoadNet";
         boolean result = true;
         // TODO: 2016/11/2 动态加载不清除
 //        mCrossRoadList.clear();
@@ -701,6 +728,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                     RoadFogMaterialPlugin fogPlugin = new RoadFogMaterialPlugin();
                     fogEng = Vector3.subtractAndCreate(road.get(road.size()-1),offset);
                     float distStep = mOptions.fogDistance;
+                    float totalDist = 0;
+                    boolean found = false;
                     Vector3 c1 = road.get(road.size()-1);
                     float rate = (mOptions.fogRate>=0 && mOptions.fogRate<1)?mOptions.fogRate:0;
                     Vector3 v = new Vector3(road.get((int)(road.size()*rate)));
@@ -712,13 +741,22 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                             v.x = c1.x + (c2.x - c1.x) * scale;
                             v.y = c1.y + (c2.y - c1.y) * scale;
                             v.z = 0;
+                            totalDist+= distStep;
+                            found = true;
                             break;
                         } else if (temp < distStep) {
                             distStep -= temp;
                             c1 = road.get(j-1);
+                            totalDist+=temp;
+//                            HaloLogger.logE(tag,"road net temp Dist "+temp);
                         }
                     }
+                    if (!found){
+                        v = new Vector3(road.get(0));
+                    }
+                    HaloLogger.logE(tag,"road net totalDist "+totalDist);
                     fogStart = Vector3.subtractAndCreate(v,offset);
+//                    fogStart = Vector3.subtractAndCreate(road.get(0),offset);
                     /*fogStart.setAll(road.get(0));
                     fogEng.setAll(road.get(road.size()-1));*/
                     /*if(true && i==0){
