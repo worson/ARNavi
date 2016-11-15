@@ -46,7 +46,8 @@ public:
 						std::vector<int>& vecCrossPointIndex,
 						int& nCenterIndex);
 
-	// 读取字典数据
+	// 清空历史岔路起点
+	void clearHistoryCrossPoint();
 
 
 private:
@@ -90,9 +91,12 @@ private:
 						const std::vector<std::string>& vecFileNames,
 						std::string& strDictFileName);
 
+	
+
 private:
 	bool m_IsReadDictionary;		// 标记是否已读数字字典
 	HaloNav m_haloNav;		// 记录数字字典映射
+	vector<HAMapPoint> m_vecHistoryCrossPt;		// 记录历史岔路起点
 
 public:
 #ifdef _WINDOWS_VER_

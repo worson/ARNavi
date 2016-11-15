@@ -189,16 +189,17 @@ public:
 	int matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoad,
 								HAMapPoint haMainRoadCenterPt,
 								const vector<LinkInfo>& vecRoadNetLinkInfos,
-								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+								const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,								
 								cv::Rect rtScreen,
-								int nCrossRoadLen,
+								int nCrossRoadLen,											
 								HAMapPoint& hamCenterInNet,
 								vector<LinkInfo>& vecMainRoadLinkInfosInNet,
 								std::vector<std::vector<HAMapPoint> >& vecMainRoadLinksInNet,
 								std::vector<HAMapPoint>& vecMainRoadPtInNet,
 								int& nMatchCenterIndex,	// 中心点匹配点在vecMainRoadPtInNet的下标
-								std::vector<int>& vecCrossPointIndex,		// 岔路与主路交点在主路中的下标
-								std::vector<std::vector<HAMapPoint> >& vecCrossPathPt);
+								std::vector<int>& vecCrossPointIndex,
+								std::vector<std::vector<HAMapPoint> >& vecCrossPathPt,
+								vector<HAMapPoint>& vecHistoryCrossPt);		// 历史岔路起点[in/out]
 
 	int matchMainRoadCenterInNet6(const vector<HAMapPoint>& vecMainRoad,
 								HAMapPoint haMainRoadCenterPt,
@@ -357,6 +358,19 @@ public:
 					vector<vector<int> >& vecCrossPathLinkID,		// 与主路相交的每条岔路的link Id
 					vector<vector<int> >& vecCrossPathNodeId);
 
+	// 过滤link，删除历史上已出现的岔路，并更新历史岔路起点
+	int formRoadNet5(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
+					const vector<LinkInfo>& vecLinkInfos,
+					const vector<LinkEndPointNode> vecAllEndPtnode,							  
+					const vector<int>& vecMainRoadNodeId,
+					int nMatchCenterSite,
+					cv::Rect rtMainRoadScreen,		// 主路窗口
+					cv::Rect rtCrossRoadScreen,		// 岔路窗口
+					vector<int>& vecRoadNetDirection2MainRoad,
+					vector<vector<int> >& vecCrossPathLinkID,
+					vector<vector<int> >& vecCrossPathNodeId,
+					vector<HAMapPoint>& vecHistoryCrossPt);		// 历史岔路起点[in/out]
+
 	// 判断点是否在矩形范围内
 	bool isRectInside(HAMapPoint hamPoint, cv::Rect rect);
 
@@ -367,7 +381,7 @@ public:
 	// 计算link内部点按序连成的折线与矩形框边界的交点
 	int getCrossPointLink2Rect(const std::vector<HAMapPoint>& vecLinkPt,
 								cv::Rect rt, HAMapPoint& hamCrossPt);
-
+		
 	// 过滤路网
 	int filterRoadNet(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLinks,
 					const vector<int>& vecRoadNetDirection2MainRoad,
@@ -383,6 +397,7 @@ public:
 						cv::Rect rtScreen,
 						std::vector<std::vector<HAMapPoint> >& vecCrossGpsLinks);
 
+	
 	// 计算从匹配路径移至主路的最佳平移距离(包括正负)
 	int getOffset2MainRoad(const vector<HAMapPoint>& vecMainRoadVertex,
 						const vector<HAMapPoint>& vecMatchRoadVertex,
@@ -417,7 +432,9 @@ public:
 	// 判断元素是否在vector中，true 在，false - 不在
 	bool isBelongToVector(const vector<int> &vecInts, int nElement, int& nSite);
 
-	// 判断元素是否属于集合
+	// 判断点是否属于集合
+	bool isHamapPtBelongToSet(vector<HAMapPoint>& vecHamPt, HAMapPoint hamPt, int& nSite);
+
 	//template<typename T>
 	//bool isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite);
 

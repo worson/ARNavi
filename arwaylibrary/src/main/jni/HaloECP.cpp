@@ -324,6 +324,11 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
     return res;
 }
 
+JNIEXPORT void JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeClearRoadNetStatus
+(JNIEnv *, jobject){
+    crossRoad.clearHistoryCrossPoint();
+}
+
 // jstring To String
 string jstringToStr(JNIEnv* env, jstring jstr)
 {

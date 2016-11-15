@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 #undef com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_CROSS_ROAD_LEN
-#define com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_CROSS_ROAD_LEN 300L
+#define com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_CROSS_ROAD_LEN 2000L
 /*
  * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
  * Method:    nativeGetBranchRoads
@@ -32,6 +32,14 @@ JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCr
  */
 JNIEXPORT jint JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeGetCrossLinks
   (JNIEnv *, jobject, jobject, jobject, jobject, jobject, jstring, jint, jobject, jobject, jobject);
+
+/*
+ * Class:     com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess
+ * Method:    nativeClearRoadNetStatus
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_haloai_hud_hudendpoint_arwaylib_utils_EnlargedCrossProcess_nativeClearRoadNetStatus
+  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }
