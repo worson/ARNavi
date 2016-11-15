@@ -151,6 +151,8 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	std::vector<LinkInfo> vecRoadNetLinkInfo;		
 	std::vector<std::vector<HAMapPoint> > vecRoadNetLink;
 	nRet = m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
+// 	nRet = m_haloNav.findLinks(hamPixelCenter,szCover.width+2*nCrossRoadLen,szCover.height+2*nCrossRoadLen,
+// 		vecRoadNetLinkInfo,vecRoadNetLink);
 	if (nRet<0)
 	{
 		return -1;
@@ -174,6 +176,9 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	MergeMapData merMapdata;
 #ifdef _WINDOWS_VER_
 	merMapdata.m_matImage.create(szCover.height,szCover.width,CV_8UC3);
+	int nOffsetx = hamPixelCenter.x - szCover.width/2;
+	int nOffsety = hamPixelCenter.y - szCover.height/2;	
+	merMapdata.m_ptOffset = cv::Point(nOffsetx, nOffsety);
 #endif
 
 	HAMapPoint hamCenterInNet;
@@ -185,6 +190,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	int nScrW = szCover.width;
 	int nScrH = szCover.height;
 	cv::Rect rtScreen(hamPixelCenter.x-nScrW/2, hamPixelCenter.y-nScrH/2,nScrW,nScrH);	
+	std::vector<HAMapPoint>* pVecHistoryCrossPt = &m_vecHistoryCrossPt;
 	nRet = merMapdata.matchMainRoadCenterInNet5(vecMainRoadPixelPt,
 												hamPixelCenter,
 												vecRoadNetLinkInfo,
@@ -197,7 +203,8 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 												vecMainRoadPixelInNet,
 												nCenterIndex,
 												vecCrossPointIndex,
-												vecCrossPixelLinks);
+												vecCrossPixelLinks,
+												*pVecHistoryCrossPt);
 	if (nRet<0)
 	{
 		#ifdef _WINDOWS_VER_
@@ -418,4 +425,10 @@ bool CrossRoad::getDictFileName(HALocationCoordinate2D halGpsCenterPoint,
 	}
 
 	return bIsGot;
+}
+
+// 清空历史岔路起点
+void CrossRoad::clearHistoryCrossPoint()
+{
+	m_vecHistoryCrossPt.clear();
 }

@@ -297,7 +297,7 @@ public class ProportionMappingEngine {
      * @return
      */
     public List<LatLng> mapping(int start,int end){
-        double startProp = mProportionListOri.get(start);
+        double startProp = mProportionListOri.get(start>=mProportionListOri.size()-1?mProportionListOri.size()-2:start);
         double endProp = mProportionListOri.get(end>=mProportionListOri.size()?mProportionListOri.size()-1:end);
         for(int i=0;i<mProportionListRender.size()-1;i++){
             double prop = mProportionListRender.get(i);

@@ -23,8 +23,8 @@ import java.util.List;
  */
 public class EnlargedCrossProcess {
     private static final String TAG                       = "HaloAI_ECP_Lib_Caller";
-    private static String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_gd_noRDname.hmd";
-    private static final int CROSS_ROAD_LEN               = 300;
+    private static  String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_bj_noRDname.hmd";
+    private static  int CROSS_ROAD_LEN               = 2000;
 
     private Bitmap myCrossImage  = null;
     private Mat    matECImage    = new Mat();
@@ -115,6 +115,13 @@ public class EnlargedCrossProcess {
         return nativeGetCrossLinks(links, linkInfos, centerPoint, szCover, ROAD_NET_SOURCE_FILE_PATH, CROSS_ROAD_LEN, crossLinks, mainRoad, crossPointIndexs);
     }
 
+    /**
+     * 每次导航前调用该接口去清空JNI部分的路网数据缓存
+     */
+    public void clearJNIStatus(){
+        nativeClearRoadNetStatus();
+    }
+
     public static class PointA {
         public int x;
         public int y;
@@ -157,4 +164,5 @@ public class EnlargedCrossProcess {
     public native int nativeGetCrossLinks(List<List<LatLngOutSide>> links, List<LinkInfoOutside> linkInfos, LatLngOutSide centerPoint,
                                           Size2iOutside szCover, String strDictPath, int crossRoadLen, List<List<LatLngOutSide>> crossLinks, List<LatLngOutSide> mainRoad,
                                           List<Integer> crossPointIndexs);
+    public native void nativeClearRoadNetStatus();
 }

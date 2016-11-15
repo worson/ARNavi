@@ -140,6 +140,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mRoadNetDataProvider.reset();
         mNaviPathDataProvider.reset();
         mLastLink=0;
+        mEnlargedCrossProcess.clearJNIStatus();
     }
 
     @Override
@@ -728,6 +729,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
 
             if(res==0) {
+                HaloLogger.logE("daoge", "mainRoad point size = "+mainRoad.size());
+                HaloLogger.logE("daoge", "\t"+mainRoad);
                 HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
                 for(List<LatLngOutSide> cross:crossLinks){
                     HaloLogger.logE("daoge", "\t"+cross);
