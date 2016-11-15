@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class EnlargedCrossProcess {
     private static final String TAG                       = "HaloAI_ECP_Lib_Caller";
-    private static final String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_gd_noRDname.hmd";
+    private static String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_gd_noRDname.hmd";
     private static final int CROSS_ROAD_LEN               = 300;
 
     private Bitmap myCrossImage  = null;
@@ -53,6 +53,10 @@ public class EnlargedCrossProcess {
         public List<Point> getLinePoints() {
             return linePoints;
         }
+    }
+
+    public static void setRoadNetSourceFilePath(String roadNetSourceFilePath) {
+        ROAD_NET_SOURCE_FILE_PATH = roadNetSourceFilePath;
     }
 
     public List<ECBranchLine> recognizeBranchInECImage(Bitmap amapECImage, int centerPointIndex, String[] mainRoadArray) {

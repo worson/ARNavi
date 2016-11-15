@@ -56,6 +56,7 @@ import com.haloai.hud.hudendpoint.arwaylib.render.strategy.RenderStrategyFactory
 import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
@@ -631,6 +632,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (ARWayConst.ENABLE_TEST_LOG) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onARWayStart called ");
         }
+        mCurrentRenderStrategy.reset();
+        mRenderer.initDefaultRenderParams(mCurrentRenderStrategy.getCurrentRenderParams());
         resetData();
         onNavingStartView();
         //        resetNaviStatus();
@@ -695,10 +698,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
         ARWayController.CommonBeanUpdater.setNavingStart(false);
 
-        onNavingEndView();
-        if (mRenderer != null) {
-            mRenderer.arriveDestination();
-        }
+//        onNavingEndView();
+//        if (mRenderer != null) {
+//            mRenderer.arriveDestination();
+//        }
     }
 
     /**
@@ -930,7 +933,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (matchPath) {
             onGpsStatusChanged(true);
         }
-        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY) {
+        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY && mRenderer.getCurPos()!=null) {
             //mRenderer.updateLocation(location, mCurIndexInPath);
             mNaviPathDataProcessor.setLocation(location, mRenderer.getCurPos(), mRenderer.getCurDegrees());
         }
@@ -1319,6 +1322,13 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     /**
+     *
+     * @param show
+     */
+    public void showHideBlockView(boolean show){
+        mGlDrawNaviInfo.showHideForMask(show);
+    }
+    /**
      * 配合主工程是否显示表盘
      *
      * @param show
@@ -1395,6 +1405,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         }else{
             mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_18);
         }
+    }
+    public void setArwayAlpha(float alpha){
+        if (mDrawScene != null) {
+            mDrawScene.setAlpha(alpha);
+        }
+    }
+    public void setRoadNetSourceFilePath(String roadNetSourceFilePath) {
+        EnlargedCrossProcess.setRoadNetSourceFilePath(roadNetSourceFilePath);
     }
 
 }

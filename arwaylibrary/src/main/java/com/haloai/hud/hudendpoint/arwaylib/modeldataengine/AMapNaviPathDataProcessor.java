@@ -14,6 +14,7 @@ import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
@@ -365,11 +366,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //显示第一根蚯蚓线
         processGuildLine(mStepPointIndexs.get(0));
 
+        mRenderStrategy.updateAnimation(IRenderStrategy.AnimationType.NAVI_START);
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "initPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
         //processSteps(0,1,2)
         //mRoadNetChangeNotifier.onRoadNetDataChange();
-
+        // TODO: 15/11/2016 调用画不场景
+        if(mPathLatLng.size()-1 <= mPreDynamicEndIndex){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"");
+            mNaviPathDataProvider.setEndPath();
+        }
         mIsPathInited = true;
         return 1;
     }
@@ -423,6 +429,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mPreDynamicEndIndex = endIndex;
         mPreDynamicStartIndex = startIndex;
+
+        if(mPathLatLng.size()-1 <= endIndex){
+            mNaviPathDataProvider.setEndPath();
+        }
     }
 
     @Override

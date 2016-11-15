@@ -31,4 +31,9 @@ public class MockTestRenderStrategy extends RenderStrategy {
     public void setLevelInnerScale(double scale) {
 
     }
+
+    @Override
+    public void updateAnimation(AnimationType type) {
+
+    }
 }

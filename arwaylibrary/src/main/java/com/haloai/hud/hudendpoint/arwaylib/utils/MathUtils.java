@@ -290,6 +290,68 @@ public class MathUtils {
         return Bitmap.createBitmap(crossImage, 0, 0, crossImage.getWidth(), crossImage.getHeight(), matrix, true);
     }
 
+//    public static Vector3 longerPoint(Vector3 result , Vector3 start , Vector3 end, float dist){
+//        double distance=Vector3.distanceTo(start,end);
+//        result.x = start.x + (end.x - start.x) * dist / distance;
+//        result.y = start.y + (end.y - start.y) * dist / distance;
+//        return result;
+//    }
+
+    public static Vector3 longerPoint(Vector3 result , Vector3 start , double orientation, double dist){
+        double k = Math.tan(orientation);
+        double b = start.y-k*start.x;
+        double angle = orientation;
+        double deltaX = Math.cos(angle)*dist;
+
+        result.x = start.x+deltaX;
+        result.y = result.x*k+b;
+        return result;
+    }
+    /**
+     *
+     * @param result
+     * @param start
+     * @param end
+     * @param dist
+     * @return
+     */
+    public static Vector3 longerPoint(Vector3 result , Vector3 start , Vector3 end, double dist){
+
+        //y=kx+b
+        // TODO: 15/11/2016 处理异常
+        double k = (end.y-start.y)/(end.x-start.x);
+        double b = start.y-k*start.x;
+
+        double angle = Math.atan2((end.y-start.y),(end.x-start.x));
+        double deltaX = Math.cos(angle)*dist;
+
+        result.x = start.x+deltaX;
+        result.y = result.x*k+b;
+
+//        double distance=Vector3.distanceTo(start,end);
+//        result.x = start.x + (end.x - start.x) * dist / distance;
+//        result.y = start.y + (end.y - start.y) * dist / distance;
+
+        return result;
+    }
+
+    public static Vector3 crossLlongerPoint(Vector3 result ,Vector3 start ,Vector3 end,float dist){
+        longerPoint(result,start,end,dist);
+        PointD p = new PointD(result.x,result.y);
+        rotateAround(start.x,start.y,p.x,p.y,p,-Math.toRadians(90));
+        result.setAll(p.x,p.y,0);
+        return result;
+    }
+
+    public static void rotateAround(double refX, double refY, double x, double y, Vector3 result, double degrees) {
+        double rX = x - refX;
+        double rY = y - refY;
+        double c = Math.cos(degrees);
+        double s = Math.sin(degrees);
+        result.x = (rX * c - rY * s) + refX;
+        result.y = (rX * s + rY * c) + refY;
+    }
+
     /**
      * @param refX
      * @param refY

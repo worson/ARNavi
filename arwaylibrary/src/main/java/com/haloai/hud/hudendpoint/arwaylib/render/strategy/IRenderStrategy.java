@@ -26,6 +26,9 @@ public interface IRenderStrategy {
             return this.nCode;
         }
     }
+    enum AnimationType{
+        NAVI_START,
+    }
 
     int SCALE_TYPE = 1 << 0;
     int ANGLE_TYPE = 1 << 1;
@@ -35,6 +38,7 @@ public interface IRenderStrategy {
     class HaloRoadClass extends RoadClass { }//道路等级参数，重用高德的道路等级划分
     int getRoadClass(int _roadClassSDK);//将SDK的道路等级转换成我们自定义的道路等级
     void updateCurrentRoadInfo(int roadClass, int mpDistance);//更新当前进入的道路等级和距离下一个机动点的距离
+    void updateAnimation(AnimationType type);
 
     //渲染策略输出
     class RenderParams {
@@ -54,8 +58,10 @@ public interface IRenderStrategy {
 
     interface RenderParamsNotifier {
         void onRenderParamsUpdated(RenderParams renderParams,int animationType,double duration);
+        void onAnimationUpdated(AnimationType type);
     }
     void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier);
 
+    void reset();
 
 }

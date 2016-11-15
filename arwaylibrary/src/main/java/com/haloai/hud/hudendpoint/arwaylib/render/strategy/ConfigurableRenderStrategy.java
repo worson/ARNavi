@@ -22,4 +22,9 @@ public class ConfigurableRenderStrategy extends  RenderStrategy{
     public RenderParams getCurrentRenderParams() {
         return null;
     }
+
+    @Override
+    public void updateAnimation(AnimationType type) {
+
+    }
 }

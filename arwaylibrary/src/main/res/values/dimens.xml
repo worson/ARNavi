@@ -34,4 +34,7 @@
     <dimen name="flat_arway_right_margin">2dp</dimen>
     <dimen name="flat_arway_up_margin">2dp</dimen>
 
+    <dimen name="flat_speed_circle_width">255dp</dimen>
+    <dimen name="flat_speed_circle_height">130dp</dimen>
+
 </resources>

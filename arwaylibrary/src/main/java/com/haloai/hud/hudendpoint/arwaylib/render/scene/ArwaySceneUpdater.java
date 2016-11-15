@@ -28,6 +28,7 @@ import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
+import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.scene.Scene;
 import org.rajawali3d.util.RajLog;
 
@@ -59,13 +60,16 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private BaseObject3D mNaviGuideLineLayer = null;
     private BaseObject3D mNaviSymbolLayer    = null;
     private BaseObject3D mCarObject          = null;
+    private BaseObject3D mStarEndLayer        = null;
 
     private List<List<RoadLayers>>  mCrossRoadList        = new ArrayList();
     private List<RoadLayers>  mNaviRoadList         = new ArrayList();
+    private List<RoadLayers>  mEndNaviRoadList         = new ArrayList();
     private List<ObjectLayer> mFloorObjectLayerList = new ArrayList<>();
 
     private List<Object3D> mTrafficLightObjects = new ArrayList<>();
 
+    private boolean mIsNaviTailRoadDirty = true;
     private boolean mIsNaviRoadDirty  = true;
     private boolean mIsCrossRoadDirty = true;
     private boolean mIsFloorDirty     = true;
@@ -216,6 +220,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mFloorObjectLayerList.clear();
 
         mNaviGuideLineLayer.clearChildren();
+        mStarEndLayer.clearChildren();
 
         mIndicationLine = null;
         mIndicationArrow = null;
@@ -321,6 +326,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mRoadReflineMaterial.addPlugin(new TextureAlphaMaterialPlugin());
         mArrowMaterial.addPlugin(new TextureAlphaMaterialPlugin());
         mFloorMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+        mFloorMaterial.setColorInfluence(0.7f);
         mCrossRefMaterial.addPlugin(new TextureAlphaMaterialPlugin());
         {
             mMaterialList.add(mCrossRoadBottomMaterial);
@@ -466,28 +472,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
     }
 
-    /**
-     * 渲染当前显示的道路
-     * @param path
-     * @return
-     */
-    public boolean renderNaviPath(List<Vector3> path) {
-        if (mNaviPathMask ||  path == null || path.size()<2) {
-            return false;
-        }
-//        renderTrafficLight(path);
-        boolean result = true;
-        final Vector3 offset = new Vector3(path.get(0));
-        if (IS_DEBUG_MODE) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
-        }
-        if (mSceneUpdaterRecorder != null) {
-            mSceneUpdaterRecorder.start();
-        }
-        RoadLayers roadLayers = createNaviRoadLayer();
+    private RoadLayers rRenderNaviPath(RoadLayers roadLayers,List<Vector3> path){
         // TODO: 2016/11/2
+        final Vector3 offset = new Vector3(path.get(0));
 //        mNaviRoadList.clear();
-        mNaviRoadList.add(roadLayers);
         roadLayers.bottom.setFogEnable(false);
         roadLayers.road.setFogEnable(false);
 
@@ -496,19 +484,45 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         roadLayers.refLine.setPosition(offset);
         roadLayers.navi.setPosition(offset);
 
-        result &= roadLayers.bottom.updateBufferedRoad(path, offset);
-        result &= roadLayers.road.updateBufferedRoad(path, offset);
-        result &= roadLayers.navi.updateBufferedRoad(path, offset);
-        result &= roadLayers.refLine.updateReferenceLine(path, offset);
+        roadLayers.bottom.updateBufferedRoad(path, offset);
+        roadLayers.road.updateBufferedRoad(path, offset);
+        roadLayers.navi.updateBufferedRoad(path, offset);
+        roadLayers.refLine.updateReferenceLine(path, offset);
+        return roadLayers;
+    }
+    /**
+     * 渲染当前显示的道路
+     * @param path
+     * @return
+     */
+    public boolean renderNaviPath(List<Vector3> path) {
+        return renderNaviPath(path,mOptions.refLineStepLength);
+    }
 
+    public boolean renderNaviPath(List<Vector3> path,float stepLength) {
+        if (mNaviPathMask ||  path == null || path.size()<2) {
+            return false;
+        }
+//        renderTrafficLight(path);
+        boolean result = true;
+
+        if (IS_DEBUG_MODE) {
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
+        }
+        if (mSceneUpdaterRecorder != null) {
+            mSceneUpdaterRecorder.start();
+        }
+        RoadLayers roadLayers = createNaviRoadLayer();
+        roadLayers.refLine.setStepLength(stepLength);
+        mNaviRoadList.add(rRenderNaviPath(roadLayers,path));
         mIsNaviRoadDirty = true;
 
         if (mSceneUpdaterRecorder != null) {
             mSceneUpdaterRecorder.recordeAndLog("performance","renderNaviPath");
         }
-
         return result;
     }
+
 
     public Object3D getCarObject() {
 //        initCarObject();
@@ -542,6 +556,27 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolLayer.addChild(object);
 
     }
+
+    private Object3D createPlane(float width,float height,boolean orth,Material material){
+        Plane plane = new Plane(width,height,10,10, Vector3.Axis.Z,
+                true,false,1,true);//,Color.BLACK
+//            plane.setDoubleSided(true);
+        plane.setTransparent(true);
+        plane.setPosition(0,0,height/2);
+        // plane.setAlpha(0.1f);//不作用于顶点颜色
+        plane.setMaterial(material);
+        if(!orth){
+            return plane;
+        }
+
+        BaseObject3D baseObject3D = new BaseObject3D();
+        baseObject3D.setOrthographic(true,0.04f);
+        baseObject3D.addChild(plane);
+
+
+        return baseObject3D;
+    }
+
     private Object3D createTrafficLight(){
         Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
                 true,false,1,true);//,Color.BLACK
@@ -559,6 +594,119 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return baseObject3D;
     }
 
+    @Override
+    public void renderStartScene(List<Vector3> path) {
+
+    }
+
+    private List<Vector3> findStepPoint(Vector3 start , double angle, float distStep,float length){
+        Vector3 v = new Vector3();
+        List<Vector3> list = new ArrayList<>();
+        boolean over = true;
+        list.add(start);
+        double totalLength = distStep;
+        while (over){
+            if (totalLength <= length) {
+                MathUtils.longerPoint(v,start,angle,totalLength);
+                totalLength+=distStep;
+                list.add(new Vector3(v));
+            } else {
+                over = false;
+            }
+        }
+        return list;
+    }
+
+    private List<Vector3> findStepPoint(Vector3 start , Vector3 end, float distStep,float length){
+        Vector3 v = new Vector3();
+        List<Vector3> list = new ArrayList<>();
+        boolean over = true;
+        list.add(start);
+        double totalLength = distStep;
+        double temp = MathUtils.calculateDistance(start.x, start.y, end.x, end.y);
+        while (over){
+            if (totalLength <= length) {
+                double scale = totalLength / temp;
+                v.x = start.x + (end.x - start.x) * scale;
+                v.y = start.y + (end.y - start.y) * scale;
+                v.z = 0;
+                totalLength+=distStep;
+                list.add(new Vector3(v));
+            } else {
+                over = false;
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public void renderEndScene(List<Vector3> path){
+        Vector3 start =  new Vector3(path.get(path.size()-2));
+        Vector3 end =  new Vector3(path.get(path.size()-1));
+        double angle = Math.atan2((end.y-start.y),(end.x-start.x));
+        float roadWidth = mOptions.netRoadWidth*2;
+        float floorDis = 0.8f;
+        float lineDis = floorDis+2.5f;
+        Vector3 position = new Vector3();
+        Vector3 poiPos = new Vector3();
+
+        MathUtils.longerPoint(position,start,end,floorDis);
+
+        List<Vector3> floorPoss = findStepPoint(end,angle,roadWidth/4,floorDis);
+        List<Vector3> extendRoad = findStepPoint(end,angle,lineDis/2,lineDis);
+
+        List<Vector3> lines = floorPoss;
+        Vector3 line0 = new Vector3(lines.get(lines.size()-2));
+        Vector3 line1 = new Vector3(lines.get(lines.size()-1));
+
+        MathUtils.crossLlongerPoint(poiPos,line1,line0,RoadRenderOption.ROAD_DEVIATION_DISTANCE);
+
+        float direction = (float) Math.atan2(end.y-start.y,end.x-start.x);
+
+        Material material = new Material();
+        Texture texture = new Texture(ATexture.TextureType.DIFFUSE,"end_scene_texture",R.drawable.arway_destination_floor);
+        material.setColorInfluence(0);
+        try {
+            material.addTexture(texture);
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+
+        for (Vector3 pos:floorPoss) {
+            Plane plane = new Plane(roadWidth,roadWidth/4,10,10, Vector3.Axis.Z,
+                    true,false,1,true);//,Color.BLACK
+            plane.setDoubleSided(true);
+            plane.setTransparent(true);
+            plane.setMaterial(material);
+            plane.setPosition(pos);
+            plane.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
+            plane.setDepthMaskEnabled(false);
+            plane.setDepthTestEnabled(false);
+            mStarEndLayer.addChild(plane);
+        }
+
+        Material poiMat = new Material();
+        Texture poTtexture = new Texture(ATexture.TextureType.DIFFUSE,"poTtexture",R.drawable.arway_destination_poi);
+        poiMat.setColorInfluence(0);
+        try {
+            poiMat.addTexture(poTtexture);
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+        Object3D endPoi =  createPlane(1,1,true,poiMat);
+        endPoi.setPosition(poiPos);
+        mStarEndLayer.addChild(endPoi);
+
+        mEndNaviRoadList.clear();
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"renderEndScene road "+extendRoad);
+        RoadLayers roadLayers = createNaviRoadLayer();
+        roadLayers.refLine.setStepLength(5);
+        rRenderNaviPath(roadLayers,extendRoad);
+        mEndNaviRoadList.add(roadLayers);
+        mIsNaviRoadDirty = true;
+        mIsNaviTailRoadDirty = true;
+
+    }
     public void renderTrafficLight(List<Vector3> lights) {
         if (lights == null || lights.size()<=0) {
             return;
@@ -568,6 +716,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviSymbolLayer.clearChildren();
         Object3D object3D = null;
         int cnt = lights.size();
+        // TODO: 15/11/2016 清除动作
+        mTrafficLightObjects.clear();
         for (int i = 0; i < cnt; i++) {
             Vector3 position = lights.get(i);
             object3D = createTrafficLight();
@@ -893,22 +1043,25 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mNaviRoad.clearChildren();
             mNaviRoadTop.clearChildren();
             mNaviRoadRefLine.clearChildren();
-            if(mNaviRoadList.size()>0){
+
+//            if(mIsNaviTailRoadDirty){
+//                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"commitRender add road tail");
+//                mIsNaviTailRoadDirty = false;
+//                for (RoadLayers layer:mEndNaviRoadList) {
+//                    mNaviRoadList.add(0,layer);
+//                }
+//            }
+            if(mNaviRoadList.size()>0 || mEndNaviRoadList.size()>0){
                 mNaviRoadBottom.setPosition(0,0,0);
                 mNaviRoad.setPosition(0,0,0);
                 mNaviRoadTop.setPosition(0,0,0);
                 mNaviRoadRefLine.setPosition(0,0,0);
 
                 for(RoadLayers roadLayers:mNaviRoadList) {
-                    roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
-                    roadLayers.navi.setMaterial(mMainRoadMaterial);
-                    roadLayers.road.setMaterial(mCrossRoadTopMaterial);
-                    roadLayers.refLine.setMaterial(mRoadReflineMaterial);
-
-                    mNaviRoadBottom.addChild(roadLayers.bottom);
-                    mNaviRoad.addChild(roadLayers.navi);
-                    mNaviRoadTop.addChild(roadLayers.road);
-                    mNaviRoadRefLine.addChild(roadLayers.refLine);
+                    commitNaviPath(roadLayers);
+                }
+                for(RoadLayers roadLayers:mEndNaviRoadList) {
+                    commitNaviPath(roadLayers);
                 }
             }
         }
@@ -945,6 +1098,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
     }
 
+    private void commitNaviPath(RoadLayers roadLayers){
+        roadLayers.bottom.setMaterial(mCrossRoadBottomMaterial);
+        roadLayers.navi.setMaterial(mMainRoadMaterial);
+        roadLayers.road.setMaterial(mCrossRoadTopMaterial);
+        roadLayers.refLine.setMaterial(mRoadReflineMaterial);
+
+        mNaviRoadBottom.addChild(roadLayers.bottom);
+        mNaviRoad.addChild(roadLayers.navi);
+        mNaviRoadTop.addChild(roadLayers.road);
+        mNaviRoadRefLine.addChild(roadLayers.refLine);
+    }
+
     private boolean initAllLayer(){
         boolean result = true;
         mGridfloorLayer = new BaseObject3D();
@@ -958,6 +1123,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviGuideLineLayer = new BaseObject3D();
         mNaviSymbolLayer = new BaseObject3D();
         mCarObject = new BaseObject3D();
+        mStarEndLayer = new BaseObject3D();
+
 
         /*mCrossRoadBottom.setRenderChildrenAsBatch(true);
         mCrossRoad.setRenderChildrenAsBatch(true);
@@ -974,9 +1141,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private void reloadAllLayer(){
         mArwayMap = new BaseObject3D();
         mScene.clearChildren();
-        Object3D[] layers = new Object3D[]{mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mCrossRoad,mCrossRefLine,
-                mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
-                mNaviGuideLineLayer,mNaviSymbolLayer,mCarObject};
+        Object3D[] layers = new Object3D[]{
+                mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mCrossRoad,
+                mCrossRefLine, mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
+                mNaviGuideLineLayer,mNaviSymbolLayer,
+                mStarEndLayer,mCarObject,};
         for(Object3D layer:layers){
             if (layer != null) {
                 mArwayMap.addChild(layer);

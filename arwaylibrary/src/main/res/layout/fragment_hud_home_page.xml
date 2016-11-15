@@ -1,13 +1,90 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.haloai.hud.hudendpoint.arwaylib.draw.fragment.HudHomePageFragment">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/black"
+                tools:context="com.haloai.hud.hudendpoint.arwaylib.draw.fragment.HudHomePageFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"/>
+    <RelativeLayout
+        android:id="@+id/navi_panel_viewgroup"
+        android:layout_width="@dimen/flat_speed_circle_width"
+        android:layout_height="@dimen/flat_speed_circle_height"
+        android:layout_centerInParent="true">
 
-</FrameLayout>
+        <com.haloai.hud.hudendpoint.arwaylib.draw.view.NavingPanelView
+            android:id="@+id/navi_panel_view"
+            android:layout_width="@dimen/flat_speed_circle_width"
+            android:layout_height="@dimen/flat_speed_circle_height"
+            android:background="@color/arway_background"
+            custom:custom_height="@dimen/flat_speed_circle_width"
+            custom:custom_width="@dimen/flat_speed_circle_height">
+        </com.haloai.hud.hudendpoint.arwaylib.draw.view.NavingPanelView>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/digital_speed_viewgroup"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+        android:layout_marginRight="@dimen/flat_arway_right_margin">
+
+        <ImageView
+            android:id="@+id/hour_ten_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="5dp"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/smooth_number_0"/>
+
+        <ImageView
+            android:id="@+id/hour_one_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignTop="@+id/hour_ten_imageview"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toRightOf="@+id/hour_ten_imageview"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/smooth_number_0"/>
+
+        <ImageView
+            android:id="@+id/time_num_sapa"
+            android:layout_width="6dp"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignTop="@+id/hour_one_imageview"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toRightOf="@+id/hour_one_imageview"
+            android:background="@color/arway_background"
+            android:scaleType="fitXY"
+            android:src="@drawable/time_saparete"/>
+
+        <ImageView
+            android:id="@+id/minute_ten_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignBottom="@+id/time_num_sapa"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toEndOf="@+id/time_num_sapa"
+            android:background="@color/arway_background"
+            android:src="@drawable/smooth_number_0"/>
+
+        <ImageView
+            android:id="@+id/minute_one_imageview"
+            android:layout_width="@dimen/digital_time_width"
+            android:layout_height="@dimen/digital_time_height"
+            android:layout_alignBottom="@+id/time_num_sapa"
+            android:layout_marginLeft="@dimen/digital_time_margin_start"
+            android:layout_toEndOf="@+id/minute_ten_imageview"
+            android:background="@color/arway_background"
+            android:src="@drawable/smooth_number_0"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>

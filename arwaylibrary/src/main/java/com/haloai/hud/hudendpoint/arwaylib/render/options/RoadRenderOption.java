@@ -8,7 +8,8 @@ import android.graphics.Color;
 public class RoadRenderOption {
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
-    public static final float TRAFFIC_DEVIATION_DISTANCE = 0.5F;
+    public static final float TRAFFIC_DEVIATION_DISTANCE = 0.65F;
+    public static final float ROAD_DEVIATION_DISTANCE = 0.75F;
 
     public boolean isRoadFog = true;
     public float fogDistance = 3;

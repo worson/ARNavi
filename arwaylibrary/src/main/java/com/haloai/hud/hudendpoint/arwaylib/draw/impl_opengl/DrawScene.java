@@ -49,6 +49,12 @@ public class DrawScene extends DrawObject implements IViewOperation{
 
     }
 
+    public void setAlpha(float alpha){
+        if (mTextureView != null) {
+            mTextureView.setAlpha(alpha);
+        }
+    }
+
     @Override
     public void resetView() {
 

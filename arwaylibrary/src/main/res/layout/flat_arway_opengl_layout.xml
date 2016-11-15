@@ -173,7 +173,7 @@
             android:layout_marginTop="5dp"
             android:background="@color/arway_background"
             android:scaleType="fitXY"
-            android:src="@drawable/speed_number_0"/>
+            android:src="@drawable/smooth_number_0"/>
 
         <ImageView
             android:id="@+id/hour_one_imageview"
@@ -184,7 +184,7 @@
             android:layout_toRightOf="@+id/hour_ten_imageview"
             android:background="@color/arway_background"
             android:scaleType="fitXY"
-            android:src="@drawable/speed_number_0"/>
+            android:src="@drawable/smooth_number_0"/>
 
         <ImageView
             android:id="@+id/time_num_sapa"
@@ -205,7 +205,7 @@
             android:layout_marginLeft="@dimen/digital_time_margin_start"
             android:layout_toEndOf="@+id/time_num_sapa"
             android:background="@color/arway_background"
-            android:src="@drawable/speed_number_0"/>
+            android:src="@drawable/smooth_number_0"/>
 
         <ImageView
             android:id="@+id/minute_one_imageview"
@@ -215,7 +215,7 @@
             android:layout_marginLeft="@dimen/digital_time_margin_start"
             android:layout_toEndOf="@+id/minute_ten_imageview"
             android:background="@color/arway_background"
-            android:src="@drawable/speed_number_0"/>
+            android:src="@drawable/smooth_number_0"/>
 
     </RelativeLayout>
 

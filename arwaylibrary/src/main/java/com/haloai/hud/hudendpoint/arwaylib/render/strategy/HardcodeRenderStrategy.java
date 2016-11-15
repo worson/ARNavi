@@ -86,9 +86,10 @@ public class HardcodeRenderStrategy extends RenderStrategy {
     }
 
 
-
-
-
+    @Override
+    public void updateAnimation(AnimationType type) {
+        renderParamsNotifier.onAnimationUpdated(type);
+    }
 
     @Override
     public RenderParams getCurrentRenderParams() {
