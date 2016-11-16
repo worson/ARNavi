@@ -37,12 +37,16 @@ public class RenderParamsInterpolator {
     private double mgoalScale;
     private double step_Scale = 0.0;
 
+    private double currentOffset;
+    private double mgoalOffset;
+    private double step_Offset = 0.0;
+
 
     public void setRenderParamsInterpolatorListener(RenderParamsInterpolatorListener listener){
         this.mListener = listener;
     }
 
-    public void initDefaultRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale){
+    public void initDefaultRenderParmars(int dateLevel,double angel,double inScreenProportion,double scale,double offset){
         currentLevel = dateLevel;
         currentAngel = angel;
         currentInScreenProportion = inScreenProportion;
@@ -52,8 +56,14 @@ public class RenderParamsInterpolator {
         mgoalAngel = angel;
         mgoalScale = scale;
         mgoalInScreenProportion = inScreenProportion;
+        mgoalOffset = offset;
 
         Log.e("ylq","initDefault");
+    }
+
+    public void doOffsetAnimation(double goaloffset,double duration){
+        mgoalOffset = goaloffset;
+        step_Offset = (mgoalOffset - currentOffset )/(FPS*duration);
     }
 
 
@@ -79,6 +89,19 @@ public class RenderParamsInterpolator {
         currentAngel += step_Angel;
         currentInScreenProportion += step_InScreenProportion;
         currentScale += step_Scale;
+        currentOffset += step_Offset;
+
+        if (step_Offset >= 0){
+            if (currentOffset >= mgoalOffset){
+                currentOffset = mgoalOffset;
+                step_Offset = 0;
+            }
+        }else {
+            if (currentOffset <= mgoalOffset){
+                currentOffset = mgoalOffset;
+                step_Offset = 0;
+            }
+        }
 
         if (step_Angel >= 0){
             if (currentAngel >= mgoalAngel){
@@ -139,7 +162,7 @@ public class RenderParamsInterpolator {
 
         Vector3 position = new Vector3();
         Vector3 lookAt = new Vector3();
-        CameraParam param = new CameraParam(location,rotZ,currentScale,currentAngel,currentInScreenProportion);
+        CameraParam param = new CameraParam(location,rotZ,currentScale,currentAngel,currentInScreenProportion,currentOffset);
         ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param,position,lookAt);
         currentCamera.setPosition(position);
         currentCamera.setLookAt(lookAt);

@@ -11,7 +11,7 @@ public class MockTestRenderStrategy extends RenderStrategy {
     }
 
     @Override
-    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance,int pathDistance) {
 
     }
 

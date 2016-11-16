@@ -15,6 +15,7 @@ public abstract class RenderStrategy implements IRenderStrategy {
     protected double currentGLCameraAngle = 0.0;
     protected double currentGLScale = 4.0;
     protected double currentGLInScreenProportion = 0.0;
+    protected double offset = 0.0;
 
     @Override
     public void setRenderParamsNotifier(RenderParamsNotifier renderParamsNotifier) {
@@ -23,7 +24,7 @@ public abstract class RenderStrategy implements IRenderStrategy {
 
     public RenderParams getDefaultRenderParams() {
         //return the default params
-        return new RenderParams(currentDataLevel, currentGLCameraAngle,currentGLScale,currentGLInScreenProportion);
+        return new RenderParams(currentDataLevel, currentGLCameraAngle,currentGLScale,currentGLInScreenProportion,offset);
     }
 
     @Override
@@ -31,6 +32,7 @@ public abstract class RenderStrategy implements IRenderStrategy {
         currentGLCameraAngle = 10F;
         currentGLScale = 1.5;
         currentGLInScreenProportion = 0.6;
+        offset=0;
         if(ARWayConst.IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"RenderStrategy reset ");
         }

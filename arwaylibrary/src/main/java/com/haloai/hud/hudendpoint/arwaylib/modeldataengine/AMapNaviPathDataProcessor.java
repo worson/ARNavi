@@ -469,7 +469,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             int distanceOfMP = naviInfo.getCurStepRetainDistance();
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
                     .getLinks().get(naviInfo.getCurLink());
-            mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP);
+            mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP,naviInfo.getPathRetainDistance());
             /*//2.dynamic load with current path retain distance
             HaloLogger.logE(TAG,"mLeftMeterLength - naviInfo.getPathRetainDistance() = "+(mLeftMeterLength - naviInfo.getPathRetainDistance()));
             HaloLogger.logE(TAG,"NEED_LOAD_METER = "+NEED_LOAD_METER);

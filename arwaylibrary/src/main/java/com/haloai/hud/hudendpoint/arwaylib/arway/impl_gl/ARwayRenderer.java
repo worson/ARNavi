@@ -364,7 +364,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     public void initDefaultRenderParams(IRenderStrategy.RenderParams params) {
 
-        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(), params.glCameraAngle, params.glInScreenProportion, params.glScale);
+        mParamsRefresher.initDefaultRenderParmars(params.dataLevel.getLevel(), params.glCameraAngle, params.glInScreenProportion, params.glScale,params.offset);
         mParamsRefresher.setRenderParamsInterpolatorListener(this);
     }
 
@@ -392,7 +392,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
         Vector3 position = new Vector3();
         Vector3 lookAt = new Vector3();
-        CameraParam param = new CameraParam(mObject4Chase.getPosition(), mObject4Chase.getRotZ(), 1.0, 60, 0);
+        CameraParam param = new CameraParam(mObject4Chase.getPosition(), mObject4Chase.getRotZ(), 1.0, 60, 0,0);
         ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param, position, lookAt);
         getCurrentCamera().setPosition(position);
         getCurrentCamera().setLookAt(lookAt);
@@ -446,6 +446,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void initStartScene(List<Vector3> path) {
         if(path.size()>=2){
+            final int rotationTime = 2;
+            final int transTime = 2;
+
             Vector3 tmpStart =  new Vector3(path.get(0));
             final Vector3 end =  new Vector3(path.get(1));
             final Vector3 start= new Vector3();
@@ -454,36 +457,64 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             List<Vector3> lines = new ArrayList<>();
             lines.add(start);
             lines.add(end);
+
             mSceneUpdater.renderNaviPath(lines,10);
-//            commitRender();
+
+            mObject4Chase.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
+
             if( false && ARWayConst.IS_DEBUG_MODE) {
                 Sphere sphere = new Sphere(0.5f, 20, 20);
                 sphere.setMaterial(new Material());
                 getCurrentScene().addChild(sphere);
                 sphere.setPosition(end);
             }
-            mObject4Chase.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
 
-            //2D转3D动画
-//            小车平移动画
-//            mObject4Chase.setPosition(start);
             mIsReadyForUpdate = false;
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mIsReadyForUpdate = true;
                 }
-            },3000);
-            double time = 2;
-            mParamsRefresher.doAngelAnimation(60,time);
-            mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,time);
-            mParamsRefresher.doInScreenProportion(0.4f,time);
+            },(rotationTime+transTime)*1000);
+
+//            commitRender();
+
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    mParamsRefresher.doAngelAnimation(60,rotationTime);
+                    mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,rotationTime);
+                    mParamsRefresher.doInScreenProportion(0.4f,rotationTime);
+                    mParamsRefresher.doOffsetAnimation(0.5f,rotationTime);
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
 //                    createTranslateAnim(start,end,1500,mObject4Chase).play();
+                        }
+                    },1500);
+
+//                    Animation anim = new Animation() {
+//                        @Override
+//                        protected void applyTransformation() {
+//                            ARWayCameraCaculatorY.setmCarOffset(0.8*getInterpolatedTime());
+//                        }
+//                    };
+//                    anim.setDurationMilliseconds(rotationTime*1000);
+//                    anim.setInterpolator(new LinearInterpolator());
+//                    anim.setRepeatMode(Animation.RepeatMode.NONE);
+//                    getCurrentScene().registerAnimation(anim);
+//                    anim.play();
+
                 }
-            },1500);
+            },(transTime)*1000);
+
+
+
+            //2D转3D动画
+//            小车平移动画
+//            mObject4Chase.setPosition(start);
+
+
 
         }
     }
@@ -724,7 +755,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if(!mIsReadyForUpdate){
             return;
         }
-        switch (animationType) {
+        if((animationType & IRenderStrategy.SCALE_TYPE) == IRenderStrategy.SCALE_TYPE){
+            mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
+        }
+        if((animationType & IRenderStrategy.ANGLE_TYPE) == IRenderStrategy.ANGLE_TYPE){
+            mParamsRefresher.doAngelAnimation(renderParams.glCameraAngle, duration);
+        }
+        if((animationType & IRenderStrategy.INSCREENPROPORTION_TYPE) == IRenderStrategy.INSCREENPROPORTION_TYPE){
+            mParamsRefresher.doInScreenProportion(renderParams.glInScreenProportion, duration);
+        }
+        if((animationType & IRenderStrategy.OFFSET_TYPE) == IRenderStrategy.OFFSET_TYPE){
+            mParamsRefresher.doOffsetAnimation(renderParams.offset, duration);
+        }
+        /*switch (animationType) {
             case IRenderStrategy.SCALE_TYPE:
                 mParamsRefresher.doScaleAnimation(renderParams.dataLevel.getLevel(), renderParams.glScale, duration);
                 break;
@@ -755,7 +798,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 //
                 Log.e("ylq", "Worng AnimationType");
                 break;
-        }
+        }*/
     }
 
     @Override
