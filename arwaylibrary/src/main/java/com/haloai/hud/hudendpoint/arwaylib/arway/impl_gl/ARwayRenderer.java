@@ -135,7 +135,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 case RENDR_ROAD_NET_ID:
                     break;
                 case ANIMATION_NAVI_START_ID:
-                    mNaviAnimationNotifer.onNaviStartAnimation(1*1000);
+                    mNaviAnimationNotifer.onNaviStartAnimation(1*500);
                     break;
                 default:
                     break;
@@ -453,12 +453,37 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.commitRender();
     }
 
+    public void naviStartAnimation(){
+        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation initStartScene ");
+
+        final int rotationTime = 2;
+        final int transTime = 1;
+
+        mIsReadyForUpdate = false;
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mIsReadyForUpdate = true;
+            }
+        },(rotationTime+transTime)*1000);
+        //先加载动画
+        mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
+
+        //摄像头旋转动画
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mParamsRefresher.doAngelAnimation(50,rotationTime);
+                mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,rotationTime);
+                mParamsRefresher.doInScreenProportion(0.4f,rotationTime);
+                mParamsRefresher.doOffsetAnimation(0.5f,rotationTime);
+
+            }
+        },(transTime)*1000);
+    }
     private void initStartScene(List<Vector3> path) {
         if(path.size()>=2){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation initStartScene ");
 
-            final int rotationTime = 2;
-            final int transTime = 2;
 
             Vector3 tmpStart =  new Vector3(path.get(0));
             final Vector3 end =  new Vector3(path.get(1));
@@ -471,28 +496,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
             mObject4Chase.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
 
-            mIsReadyForUpdate = false;
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mIsReadyForUpdate = true;
-                }
-            },(rotationTime+transTime)*1000);
-            //先加载动画
-            mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
-            
-            //摄像头旋转动画
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mParamsRefresher.doAngelAnimation(50,rotationTime);
-                    mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,rotationTime);
-                    mParamsRefresher.doInScreenProportion(0.4f,rotationTime);
-                    mParamsRefresher.doOffsetAnimation(0.5f,rotationTime);
-
-                }
-            },(transTime)*1000);
-
             mSceneUpdater.renderNaviPath(lines,10);
             if( false && ARWayConst.IS_DEBUG_MODE) {
                 Sphere sphere = new Sphere(0.5f, 20, 20);
@@ -500,6 +503,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 getCurrentScene().addChild(sphere);
                 sphere.setPosition(end);
             }
+
         }
     }
 

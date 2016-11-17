@@ -19,6 +19,7 @@ import org.rajawali3d.view.TextureView;
 public class DrawScene extends DrawObject implements IViewOperation{
 
     private static DrawScene       mDrawScene       = new DrawScene();
+    private float mLastArwayAlpha = 1;
 
     public DrawScene() {
     }
@@ -36,7 +37,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
             mTextureView.setBackgroundColor(Color.TRANSPARENT);
-            mTextureView.setAlpha(1f);
+            mTextureView.setAlpha(mLastArwayAlpha);
         }
         return mTextureView;
     }
@@ -50,8 +51,9 @@ public class DrawScene extends DrawObject implements IViewOperation{
     }
 
     public void setAlpha(float alpha){
+        mLastArwayAlpha=alpha;
         if (mTextureView != null) {
-            mTextureView.setAlpha(alpha);
+            mTextureView.setAlpha(mLastArwayAlpha);
         }
     }
 
@@ -73,10 +75,10 @@ public class DrawScene extends DrawObject implements IViewOperation{
                     if(!v.isShown()){
                         v.setVisibility(View.VISIBLE);
                     }
-                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,mLastArwayAlpha);
                     animator.setDuration(duration);
                 }else {
-                    animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", mLastArwayAlpha,0);
                     animator.setDuration(duration-100);
 //                    v.setVisibility(View.INVISIBLE);
                 }

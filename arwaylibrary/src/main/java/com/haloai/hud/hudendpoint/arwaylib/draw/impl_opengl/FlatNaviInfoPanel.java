@@ -1,6 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -432,11 +433,15 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mRoadMaskViewLeft = (ImageView) view.findViewById(R.id.road_mask_left);
             mRoadMaskViewRight = (ImageView) view.findViewById(R.id.road_mask_right);
 
-            mRoadMaskViewLeft.setBackgroundColor(Color.BLACK);
-            mRoadMaskViewRight.setBackgroundColor(Color.BLACK);
+            int maskColor = Color.TRANSPARENT;
+            mRoadMaskViewLeft.setBackgroundColor(maskColor);
+            mRoadMaskViewRight.setBackgroundColor(maskColor);
 
             mRoadMaskViewLeft.setScaleX(3.0f/3);
             mRoadMaskViewRight.setScaleX(3.0f/3);
+
+            mRoadMaskViewLeft.setVisibility(View.INVISIBLE);
+            mRoadMaskViewRight.setVisibility(View.INVISIBLE);
 
             initCompassSensor(context);
             prepareSpeedPanelAnim();
@@ -472,6 +477,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void hideSpeedPanelAnim(long duration) {
+//        prepareSpeedPanelAnim();
         for (ObjectAnimator a: mSpeedPanelHideAnimators){
             if(a.isStarted()){
                 a.cancel();
@@ -489,9 +495,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void hideNaviInfoPanel(){
-        if (mNaviInfoPanelViewgroup != null) {
+//        if (mNaviInfoPanelViewgroup != null) {
             mNaviInfoPanelViewgroup.setAlpha(0);
-        }
+//        }
     }
 
     public void showNaviInfoPanel(long duration){

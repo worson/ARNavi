@@ -20,6 +20,27 @@
     </FrameLayout>
 
     <RelativeLayout
+        android:id="@+id/road_mask_viewgroup"
+        android:layout_width="64dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/road_mask_left"
+            android:layout_width="12dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:background="@android:color/background_dark"/>
+        <ImageView
+            android:id="@+id/road_mask_right"
+            android:layout_width="12dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@android:color/background_dark"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/navi_panel_viewgroup"
         android:layout_width="@dimen/flat_speed_circle_width"
         android:layout_height="@dimen/flat_speed_circle_height"
@@ -212,31 +233,6 @@
 
         </RelativeLayout>
     </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/road_mask_viewgroup"
-        android:layout_width="60dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_height="match_parent">
-        <ImageView
-            android:id="@+id/road_mask_left"
-            android:layout_width="10dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:background="@android:color/background_dark"/>
-        <ImageView
-            android:id="@+id/road_mask_right"
-            android:layout_width="10dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentRight="true"
-            android:background="@android:color/background_dark"/>
-
-    </RelativeLayout>
-
-
-
-
 
 
     <RelativeLayout

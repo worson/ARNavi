@@ -21,7 +21,7 @@ public class HardcodeRenderStrategy extends RenderStrategy {
             //Placeholder
             return;
         }
-        if(pathDistance<100){
+        if(pathDistance<50){
             currentGLCameraAngle = 10F;
             currentGLScale = 1.5;
             currentGLInScreenProportion = 0.6;

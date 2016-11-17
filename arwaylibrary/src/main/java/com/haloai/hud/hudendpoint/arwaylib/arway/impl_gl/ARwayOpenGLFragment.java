@@ -128,6 +128,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private static final int                     DEFAULT_GPS_NUMBER       = 10;
     private int mGpsWorkCnt;
     private boolean mGpsWork = true;
+    private boolean mIsNeedNaviStartAnimation = false;
+    private boolean mIsOnNaviStartAnimation = false;
 
     public ARwayOpenGLFragment() {
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "fragment 正在初始化");
@@ -409,6 +411,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         if (!hidden) {
             showHideSpeedPanel(true);
+            mIsOnNaviStartAnimation = true;
+            rOnNaviStartAnimation();
+
         }
         if (ARWayConst.IS_AMAP_VIEW) {
             removeAMapNaviView();
@@ -508,25 +513,36 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
 
+    private void rOnNaviStartAnimation(){
+        final long duration = 1000;
+        if (mIsNeedNaviStartAnimation&&mIsOnNaviStartAnimation){
+            mIsNeedNaviStartAnimation = false;
+            mIsOnNaviStartAnimation = false;
+
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation called ");
+            mLayout.invalidate();
+            //复位显示速度表盘、隐藏信息面板、隐藏arway
+            mGlDrawNaviInfo.hideNaviInfoPanel();
+            mGlDrawNaviInfo.showSpeedPanel();
+            mDrawScene.showHide(false);
+            //隐藏速度表盘
+            mGlDrawNaviInfo.hideSpeedPanelAnim(duration);
+            //显示信息面板动画、显示arway
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mDrawScene.animShowHide(true,duration);
+                    mGlDrawNaviInfo.showNaviInfoPanel(2*duration);
+                    mGlDrawNaviInfo.roadFlipAnimation(duration);
+                }
+            },duration/2);
+        }
+    }
+
     @Override
     public void onNaviStartAnimation(final long duration) {
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation called ");
-
-        //复位显示速度表盘、隐藏信息面板、隐藏arway
-        mGlDrawNaviInfo.hideNaviInfoPanel();
-        mGlDrawNaviInfo.showSpeedPanel();
-        mDrawScene.showHide(false);
-        //隐藏速度表盘
-        mGlDrawNaviInfo.hideSpeedPanelAnim(duration);
-        //显示信息面板动画、显示arway
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mDrawScene.animShowHide(true,200);
-                mGlDrawNaviInfo.showNaviInfoPanel(duration);
-                mGlDrawNaviInfo.roadFlipAnimation(duration);
-            }
-        },1000);
+        mIsNeedNaviStartAnimation = true;
+        rOnNaviStartAnimation();
     }
 
     /***
@@ -702,11 +718,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mGlDrawNaviInfo.hideNaviInfoPanel();
         mGlDrawNaviInfo.showSpeedPanel();
         mDrawScene.animShowHide(false,100);
+        mLayout.invalidate();
 
-//        ARWayController.NaviInfoBeanUpdate.reset();
-//        ARWayController.RouteBeanUpdater.reset();
-//        ARWayController.CommonBeanUpdater.reset();
-//        ARWayController.SpeedBeanUpdater.reset();
+        ARWayController.NaviInfoBeanUpdate.reset();
+        ARWayController.RouteBeanUpdater.reset();
+        ARWayController.CommonBeanUpdater.reset();
+        ARWayController.SpeedBeanUpdater.reset();
 
         resetNaviStatus();
 
@@ -725,13 +742,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
         ARWayController.CommonBeanUpdater.setNavingStart(false);
-        if (mRenderer != null) {
-            mRenderer.onNaviStop();
-        }
-//        onNavingEndView();
-//        if (mRenderer != null) {
-//            mRenderer.arriveDestination();
-//        }
     }
 
     /**
@@ -1102,6 +1112,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     }
                     //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
                     mNaviPathDataProcessor.setPath(mAMapNavi,naviPath);
+                    mRenderer.naviStartAnimation();
                     if (ARWayConst.ENABLE_PERFORM_TEST) {
                         mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
                     }
