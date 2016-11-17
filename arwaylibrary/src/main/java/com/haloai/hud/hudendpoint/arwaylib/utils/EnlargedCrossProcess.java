@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class EnlargedCrossProcess {
     private static final String TAG                       = "HaloAI_ECP_Lib_Caller";
-    private static final String ROAD_NET_SOURCE_FILE_PATH = "/sdcard/haloaimapdata_bj_noRDname.hmd";
+    private static final String ROAD_NET_SOURCE_FILE_PATH = /*"/sdcard/haloaimapdata_bj_noRDname.hmd"*/"/sdcard";
     private static final int CROSS_ROAD_LEN               = 2000;
 
     private Bitmap myCrossImage  = null;

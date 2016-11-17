@@ -36,4 +36,18 @@ public class FileUtils {
         out.flush();
         out.close();
     }
+
+    /**
+     * 写文本到文件中
+     * @param str
+     * @param fileDir
+     * @param filename
+     */
+    public static void write(String str,String fileDir,String filename){
+        try {
+            write(str.getBytes(),fileDir,filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

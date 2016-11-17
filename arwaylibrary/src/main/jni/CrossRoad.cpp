@@ -94,18 +94,38 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		nRet = getSuffixFiles(strDictPath, strSuffix, vecFileNames);
 		if (nRet<0)
 		{
+		#if IS_PRINT_LOG
+			LOGD("getCrossLinks - getSuffixFiles = -1\n");			
+		#endif
 			return -1;
 		}
+	#if IS_PRINT_LOG
+		LOGD("getCrossLinks - getSuffixFiles: \n");
+		for (int i=0; i<vecFileNames.size(); i++)
+		{
+			LOGD("	vecFileNames[%d] - %s\n",i,vecFileNames[i].c_str());
+		}
+	#endif
+
 		// 确定字典文件
 		std::string strDictFileName;
 		if (!getDictFileName(halGpsCenterPoint,	vecFileNames, strDictFileName))
 		{
+		#if IS_PRINT_LOG
+			LOGD("getCrossLinks - getDictFileName = -1\n");			
+		#endif
 			return -1;
 		}		
+	#if IS_PRINT_LOG
+		LOGD("getCrossLinks - getDictFileName: strDictFileName = %s\n", strDictFileName.c_str());			
+	#endif
 
 		nRet = m_haloNav.readDictionary(strDictFileName);
 		if (nRet<0)
 		{
+		#if IS_PRINT_LOG
+			LOGD("getCrossLinks - readDictionary = -1\n");			
+		#endif
 			return -1;
 		}
 		m_IsReadDictionary = true;
@@ -331,9 +351,6 @@ int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std:
 	stat(strFolder.c_str(), &st);     //返回 文件, windows - 33206, android - 33200
 
 	LOGD("getSuffixFiles st.st_mode=%d\n",st.st_mode);
-	
-	
-
 
 	if (st.st_mode==FILE_MODE)
 	{
@@ -364,7 +381,12 @@ int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std:
 	{		
 		if ((ent->d_type==FILE_TYPE) && strstr(ent->d_name, strSuffix.c_str()) != NULL) 
 		{
-			string str = strFolder + "\\" + ent->d_name;		// 连接路径和文件名
+			string str;
+		#ifdef _WINDOWS_VER_
+			str = strFolder + "\\" + ent->d_name;		// 连接路径和文件名
+		#else
+			str = strFolder + "//" + ent->d_name;		// 连接路径和文件名
+		#endif			
 			vecFileNames.push_back(str);
 		}		
 	}
@@ -432,3 +454,5 @@ void CrossRoad::clearHistoryCrossPoint()
 {
 	m_vecHistoryCrossPt.clear();
 }
+
+// 控制打印log
