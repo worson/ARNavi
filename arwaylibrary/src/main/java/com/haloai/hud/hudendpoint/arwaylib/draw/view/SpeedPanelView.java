@@ -14,11 +14,14 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 
-public class NavingPanelView extends View {
+
+public class SpeedPanelView extends View {
+    public static final String TAG = SpeedPanelView.class.getSimpleName();
     private double mOutsideCircleRadius = 0;
     private int    WIDTH                = 0;
     private int    HEIGHT               = 0;
@@ -32,22 +35,24 @@ public class NavingPanelView extends View {
     private Path   mPath                = new Path();
     private RectF  mSpeedRectF          = null;
 
-    public NavingPanelView(Context context, AttributeSet attrs) {
+    public SpeedPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
         final TypedArray a = context.obtainStyledAttributes(
                 attrs, R.styleable.CustomView, 0, 0);
         int width,height;
-        width = (int)a.getDimension(R.styleable.CustomView_custom_height,240);
-        height = (int)a.getDimension(R.styleable.CustomView_custom_height,240);
+        width = (int)a.getDimension(R.styleable.CustomView_custom_width,150);
+        height = (int)a.getDimension(R.styleable.CustomView_custom_height,100);
+        Log.e(TAG,"width="+width);
+        Log.e(TAG,"height="+height);
         a.recycle();
         init(context,width,height);
     }
 
-    public NavingPanelView(Context context) {
+    public SpeedPanelView(Context context) {
         super(context);
     }
 
-    public NavingPanelView(Context context, int width, int height) {
+    public SpeedPanelView(Context context, int width, int height) {
         super(context);
         init(context,width,height);
 
@@ -58,14 +63,14 @@ public class NavingPanelView extends View {
         HEIGHT = height;
 
         //生成速度为0的底图
-        mEmptySpeedBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.speed_circle_empty);
+        mEmptySpeedBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.speed_panel_empty);
         Bitmap target = Bitmap.createBitmap(width, height, mEmptySpeedBitmap.getConfig());
         Canvas temp_canvas = new Canvas(target);
         temp_canvas.drawBitmap(mEmptySpeedBitmap, null, new Rect(0, 0, target.getWidth(), target.getHeight()), null);
         mEmptySpeedBitmap = target;
 
         //生成最大速度的底图
-        mFullSpeedPreBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.speed_circle_full);
+        mFullSpeedPreBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.speed_panel_full);
         target = Bitmap.createBitmap(width, height, mFullSpeedPreBitmap.getConfig());
         temp_canvas = new Canvas(target);
         temp_canvas.drawBitmap(mFullSpeedPreBitmap, null, new Rect(0, 0, target.getWidth(), target.getHeight()), null);
@@ -90,7 +95,7 @@ public class NavingPanelView extends View {
         canvas.drawBitmap(mEmptySpeedBitmap, 0, 0, null);
 
         //根据当前速度对最大速度图进行裁剪
-        cutSpeedFullBitmap();
+        cutSpeedFullBitmapNice();
 
         //将裁剪后得到的图片绘制到画布上
         canvas.drawBitmap(mFullSpeedClipBitmap, 0, 0, null);
@@ -162,6 +167,75 @@ public class NavingPanelView extends View {
             mPath.lineTo(linetoX, linetoY);
         }
 
+        mPath.close();
+        //根据path对画布进行裁剪,此处采用的模式是相交,也就是保留画布上的path围起来的部分,其他部分裁剪掉
+        mTempCanvas.clipPath(mPath, Region.Op.INTERSECT);
+        //将最大速度底图绘制到被裁剪了的画布上
+        mTempCanvas.drawBitmap(mFullSpeedPreBitmap, 0, 0, null);
+    }
+
+    private void cutSpeedFullBitmapNice() {
+        //创建新画布(不能复用该画布,否则无法达到连续裁剪形成的动态效果)
+        mTempCanvas = new Canvas(mFullSpeedClipBitmap);
+        //清空画布
+        mTempCanvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
+        //创建用于裁剪的path(最终就是将画布中path围成的部分裁剪出来)
+        mPath = new Path();
+        //移动到中点
+        mPath.moveTo(WIDTH / 2, HEIGHT / 2);
+
+
+
+        //clip contants
+        double offsetStart = 0.058;
+        double offsetEnd = 0.070;
+        double LEFT_START = 0.4 - offsetStart;
+        double LEFT_END = 0.1 + offsetEnd;
+        double RIGHT_START = 0.6 + offsetStart;
+        double RIGHT_END = 0.9 - offsetEnd;
+
+        //left
+        double fromPercent = LEFT_START;
+        float linetoX;
+        float linetoY;
+        double toPercent1 = fromPercent - (mSpeed / SPEED_MAX) * (LEFT_START-LEFT_END);
+
+        linetoX = (float) (mSpeedRectF.right / 2 + mOutsideCircleRadius * Math.sin(Math.PI * 2 * toPercent1));
+        linetoY = (float) (mSpeedRectF.bottom / 2 - mOutsideCircleRadius * Math.cos(Math.PI * 2 * toPercent1));
+        mPath.lineTo(linetoX, linetoY);
+        if (toPercent1 < 0.125f) {
+            mPath.lineTo(mSpeedRectF.right, 0);
+        }
+        if (toPercent1 < 0.375f) {
+            mPath.lineTo(mSpeedRectF.right, mSpeedRectF.bottom);
+        }
+        linetoX = (float) (mSpeedRectF.right / 2 + mOutsideCircleRadius * Math.sin(Math.PI * 2 * fromPercent));
+        linetoY = (float) (mSpeedRectF.bottom / 2 - mOutsideCircleRadius * Math.cos(Math.PI * 2 * fromPercent));
+        mPath.lineTo(linetoX, linetoY);
+
+
+
+        //right
+        fromPercent = RIGHT_START;
+        linetoX = (float) (mSpeedRectF.right / 2 + mOutsideCircleRadius * Math.sin(Math.PI * 2 * fromPercent));
+        linetoY = (float) (mSpeedRectF.bottom / 2 - mOutsideCircleRadius * Math.cos(Math.PI * 2 * fromPercent));
+        mPath.lineTo(linetoX, linetoY);
+
+        toPercent1 = fromPercent + (mSpeed / SPEED_MAX) * (RIGHT_END-RIGHT_START);
+        if (toPercent1 > 0.625f) {
+            mPath.lineTo(0, mSpeedRectF.bottom);
+        }
+        if (toPercent1 > 0.875f) {
+            mPath.lineTo(0, 0);
+        }
+        linetoX = (float) (mSpeedRectF.right / 2 + mOutsideCircleRadius * Math.sin(Math.PI * 2 * toPercent1));
+        linetoY = (float) (mSpeedRectF.bottom / 2 - mOutsideCircleRadius * Math.cos(Math.PI * 2 * toPercent1));
+        mPath.lineTo(linetoX, linetoY);
+
+//        Paint p = new Paint();
+//        p.setColor(Color.RED);
+//        p.setStrokeWidth(2);
+//        mTempCanvas.drawPath(mPath,p);
         mPath.close();
         //根据path对画布进行裁剪,此处采用的模式是相交,也就是保留画布上的path围起来的部分,其他部分裁剪掉
         mTempCanvas.clipPath(mPath, Region.Op.INTERSECT);

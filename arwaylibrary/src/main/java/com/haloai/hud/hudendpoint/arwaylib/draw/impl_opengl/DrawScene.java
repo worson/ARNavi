@@ -59,7 +59,11 @@ public class DrawScene extends DrawObject implements IViewOperation{
     public void resetView() {
 
     }
+
     public void animShowHide(boolean show) {
+        animShowHide(show,1000);
+    }
+    public void animShowHide(boolean show,long duration) {
         View[] views = new View[]{mTextureView};//
         ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
@@ -70,16 +74,16 @@ public class DrawScene extends DrawObject implements IViewOperation{
                         v.setVisibility(View.VISIBLE);
                     }
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
-                    animator.setDuration(1000);
+                    animator.setDuration(duration);
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
-                    animator.setDuration(1000-100);
+                    animator.setDuration(duration-100);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setRepeatCount(0);
-//                    animator.start();
+                    animator.start();
                 }
             }
         }
@@ -91,9 +95,10 @@ public class DrawScene extends DrawObject implements IViewOperation{
             View v = views[i];
             if (v != null) {
                 if (show){
+//                    v.setAlpha(1);
                     v.setVisibility(View.VISIBLE);
-
                 }else {
+//                    v.setAlpha(0);
                     v.setVisibility(View.INVISIBLE);
                 }
 

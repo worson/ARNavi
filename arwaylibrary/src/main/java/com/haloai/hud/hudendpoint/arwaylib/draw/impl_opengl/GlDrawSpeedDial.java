@@ -72,7 +72,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
             mSpeedValueView.setText(speed+"");
         }*/
         if(mSpeedNumHun==null || mSpeedNumTen==null ||mSpeedNumOne==null){
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updateSpeed view is null");
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"updatePanelSpeed view is null");
             return;
         }
         mSpeedNumHun.setVisibility(View.INVISIBLE);

@@ -73,7 +73,7 @@ public class SuperArwaySceneUpdater {
         return result;
     }
 
-    public void clearAll(){
+    public void clearScene(){
         if (mScene == null) {
             mScene.clearChildren();
         }

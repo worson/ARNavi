@@ -11,15 +11,55 @@
         android:layout_width="@dimen/flat_speed_circle_width"
         android:layout_height="@dimen/flat_speed_circle_height"
         android:layout_centerInParent="true">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true">
+            <com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedPanelView
+                android:id="@+id/navi_panel_view"
+                android:layout_width="@dimen/flat_speed_circle_width"
+                android:layout_height="@dimen/flat_speed_circle_height"
+                android:background="@color/arway_background"
+                custom:custom_width="@dimen/flat_speed_circle_width"
+                custom:custom_height="@dimen/flat_speed_circle_height">
+            </com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedPanelView>
 
-        <com.haloai.hud.hudendpoint.arwaylib.draw.view.NavingPanelView
-            android:id="@+id/navi_panel_view"
-            android:layout_width="@dimen/flat_speed_circle_width"
-            android:layout_height="@dimen/flat_speed_circle_height"
-            android:background="@color/arway_background"
-            custom:custom_height="@dimen/flat_speed_circle_width"
-            custom:custom_width="@dimen/flat_speed_circle_height">
-        </com.haloai.hud.hudendpoint.arwaylib.draw.view.NavingPanelView>
+            <TextView
+                android:id="@+id/speed_panel_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="@android:color/white"
+                android:text="120"
+                android:textStyle="bold"
+                android:textSize="40sp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/compass_viewgroup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true">
+            <ImageView
+                android:id="@+id/compass_direction_imageview"
+                android:layout_width="14dp"
+                android:layout_height="11dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/arway_camera_arrow"/>
+            <TextView
+                android:id="@+id/compass_textview"
+                android:layout_width="wrap_content"
+                android:text="西北"
+                android:layout_below="@+id/compass_direction_imageview"
+                android:layout_centerHorizontal="true"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                android:layout_height="wrap_content"/>
+        </RelativeLayout>
+
     </RelativeLayout>
 
     <RelativeLayout

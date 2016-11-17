@@ -12,12 +12,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.NaviAnimationNotifer;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.INaviPathDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
-import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
@@ -25,7 +25,6 @@ import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayCurver;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
-import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -63,13 +62,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private static final double OBJ_4_CHASE_Z     = 0;
     private static final int    FRAME_RATE        = ARWayConst.FRAME_RATE;
     //private static final double ROAD_WIDTH        = ARWayProjection.ROAD_WIDTH/*Math.tan(Math.toRadians(22.5))*2*400/280 * 0.5*/ /*ARWayConst.ROAD_WIDTH*/;
-    private static final double CAMERA_OFFSET_X   = 0;
-    private static final double CAMERA_OFFSET_Y   = 0;
-    private static final double CAMERA_OFFSET_Z   = /*4*/0.6/*1*/;
-    private static final double CAMERA_CUT_OFFSET = /*0*/0.6/*1*/;
-    private static final double LOOK_AT_DIST      = /*0*/1.3;
-    private              int    SCREEN_WIDTH      = 0;
-    private              int    SCREEN_HEIGHT     = 0;
+    private static final double CAMERA_OFFSET_X      = 0;
+    private static final double CAMERA_OFFSET_Y      = 0;
+    private static final double CAMERA_OFFSET_Z      = /*4*/0.6/*1*/;
+    private static final double CAMERA_CUT_OFFSET    = /*0*/0.6/*1*/;
+    private static final double LOOK_AT_DIST         = /*0*/1.3;
+    private              int    SCREEN_WIDTH         = 0;
+    private              int    SCREEN_HEIGHT        = 0;
 
     private TextureView         mTextureView = null;
     //list data
@@ -112,13 +111,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private IRoadNetDataProvider         mRoadNetDataProvider;
     private IRenderStrategy.RenderParams mRenderParams;
 
+    private NaviAnimationNotifer mNaviAnimationNotifer;
+
     private ObjectAnimator mHideAnimator = null;
     private ObjectAnimator mShowAnimator = null;
 
     public static final int SCENE_HIDE_ANIMATION_ID = 0;
     public static final int SCENE_RENDER_APLLY_ID   = 1;
-
     public static final int RENDR_ROAD_NET_ID   = 2;
+    private static final int ANIMATION_NAVI_START_ID = 3;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -133,7 +134,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     break;
                 case RENDR_ROAD_NET_ID:
                     break;
+                case ANIMATION_NAVI_START_ID:
+                    mNaviAnimationNotifer.onNaviStartAnimation(1*1000);
+                    break;
                 default:
+                    break;
             }
         }
     };
@@ -346,6 +351,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
      */
     public void arriveDestination() {
         clearAllData();
+        if (mSceneUpdater != null) {
+            mSceneUpdater.clearScene();
+            mSceneUpdater.reset();
+        }
         System.gc();
     }
 
@@ -446,6 +455,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void initStartScene(List<Vector3> path) {
         if(path.size()>=2){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation initStartScene ");
+
             final int rotationTime = 2;
             final int transTime = 2;
 
@@ -458,16 +469,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             lines.add(start);
             lines.add(end);
 
-            mSceneUpdater.renderNaviPath(lines,10);
-
             mObject4Chase.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
-
-            if( false && ARWayConst.IS_DEBUG_MODE) {
-                Sphere sphere = new Sphere(0.5f, 20, 20);
-                sphere.setMaterial(new Material());
-                getCurrentScene().addChild(sphere);
-                sphere.setPosition(end);
-            }
 
             mIsReadyForUpdate = false;
             mHandler.postDelayed(new Runnable() {
@@ -476,46 +478,28 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     mIsReadyForUpdate = true;
                 }
             },(rotationTime+transTime)*1000);
-
-//            commitRender();
-
+            //先加载动画
+            mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
+            
+            //摄像头旋转动画
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mParamsRefresher.doAngelAnimation(60,rotationTime);
+                    mParamsRefresher.doAngelAnimation(50,rotationTime);
                     mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,rotationTime);
                     mParamsRefresher.doInScreenProportion(0.4f,rotationTime);
                     mParamsRefresher.doOffsetAnimation(0.5f,rotationTime);
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-//                    createTranslateAnim(start,end,1500,mObject4Chase).play();
-                        }
-                    },1500);
-
-//                    Animation anim = new Animation() {
-//                        @Override
-//                        protected void applyTransformation() {
-//                            ARWayCameraCaculatorY.setmCarOffset(0.8*getInterpolatedTime());
-//                        }
-//                    };
-//                    anim.setDurationMilliseconds(rotationTime*1000);
-//                    anim.setInterpolator(new LinearInterpolator());
-//                    anim.setRepeatMode(Animation.RepeatMode.NONE);
-//                    getCurrentScene().registerAnimation(anim);
-//                    anim.play();
 
                 }
             },(transTime)*1000);
 
-
-
-            //2D转3D动画
-//            小车平移动画
-//            mObject4Chase.setPosition(start);
-
-
-
+            mSceneUpdater.renderNaviPath(lines,10);
+            if( false && ARWayConst.IS_DEBUG_MODE) {
+                Sphere sphere = new Sphere(0.5f, 20, 20);
+                sphere.setMaterial(new Material());
+                getCurrentScene().addChild(sphere);
+                sphere.setPosition(end);
+            }
         }
     }
 
@@ -834,6 +818,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     int mRefreshDataCnt = 0;
 
+    public void setNaviAnimationNotifer(NaviAnimationNotifer naviAnimationNotifer) {
+        mNaviAnimationNotifer = naviAnimationNotifer;
+    }
 
     public void setNaviPathDataProvider(INaviPathDataProvider naviPathDataProvider) {
         this.mNaviPathDataProvider = naviPathDataProvider;

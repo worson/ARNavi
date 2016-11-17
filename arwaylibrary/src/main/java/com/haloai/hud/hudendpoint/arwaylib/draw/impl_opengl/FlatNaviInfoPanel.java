@@ -1,15 +1,23 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
+import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.nfc.Tag;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Handler;
+import android.os.Message;
 import android.text.format.Time;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,24 +31,43 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.NaviInfoBean;
 import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedPanelView;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.utils.HaloLogger;
 
-import org.rajawali3d.materials.textures.Texture;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by wangshengxing on 16/7/15.
  */
-public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
+public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,SensorEventListener{
     private static final boolean GPS_DEBUG_MODE = true;
+    private static final int SHOW_NAVI_INFO_ID  = 1;
 
     private static FlatNaviInfoPanel mGlDrawNaviInfo = new FlatNaviInfoPanel();
+
+    private float                mTargetDirection         = 0;
+    private List<ObjectAnimator> mSpeedPanelHideAnimators = new ArrayList<>();
 
     //bean
     private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
     private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
     private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
 
+    private        ViewGroup               mRoadMaskViewgroup = null;
+    private        ImageView               mRoadMaskViewLeft  = null;
+    private        ImageView               mRoadMaskViewRight = null;
+    private ObjectAnimator                 mRoadMaskAnimator  = null;
+
+    private ViewGroup      mNaviInfoPanelViewgroup;
+    private ViewGroup      mNaviPanelViewgroup;
+    private ViewGroup      mCompassViewgroup;
+    private TextView       mDirectionTextview;
+    private TextView       mSpeedTextview;
+    private SpeedPanelView mSpeedPanelTextview;
+    private ImageView      mDirectionImageview;
     //view
     private ImageView mRoadDirectionImageView = null;
     private TextView  mRoadDistanceTextView   = null;
@@ -86,6 +113,19 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
 
     private Context mContext;
 
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+
+            switch (msg.what){
+                case SHOW_NAVI_INFO_ID:
+                    showNaviInfoPanel(1000);
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
     @Override
     public void init(Context context) {
         super.init(context);
@@ -130,6 +170,17 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             }
 
         }
+        updatePanelSpeed(mNaviInfoBean.getSpeed());
+    }
+
+    private void updatePanelSpeed(int speed) {
+        if (mSpeedPanelTextview != null) {
+            mSpeedPanelTextview.setSpeed(speed);
+        }
+        if (mSpeedTextview != null) {
+            mSpeedTextview.setText("" + speed);
+        }
+
     }
 
     private void refitText(TextView textView, String text, int textWidth) {
@@ -344,6 +395,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
     @Override
     public void setView(Context context, View view) {
         if (view != null) {
+            View mMainLayout = view;
+            mNaviInfoPanelViewgroup = (ViewGroup) view.findViewById(R.id.navi_info_panel_viewgroup);
+
             mRoadDirectionImageView = (ImageView) view.findViewById(R.id.next_road_direction_imageview);
             mRoadDistanceTextView = (TextView) view.findViewById(R.id.next_road_distance_textview);
             mRoadNamePrefixTextView = (TextView) view.findViewById(R.id.road_name_prefix_textview);
@@ -365,13 +419,119 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
 
+            mNaviPanelViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.navi_panel_viewgroup);
+            mCompassViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.compass_viewgroup);
+            mDirectionImageview = (ImageView) mMainLayout.findViewById(R.id.compass_direction_imageview);
+            mDirectionImageview.setAlpha(0.5f);
+            mSpeedPanelTextview = (SpeedPanelView) mMainLayout.findViewById(R.id.navi_panel_view);
+            mDirectionTextview = (TextView) mMainLayout.findViewById(R.id.compass_textview);
+            mSpeedTextview = (TextView) mMainLayout.findViewById(R.id.speed_panel_textview);
+
+            //道路渐变
+            mRoadMaskViewgroup = (ViewGroup) view.findViewById(R.id.road_mask_viewgroup);
+            mRoadMaskViewLeft = (ImageView) view.findViewById(R.id.road_mask_left);
+            mRoadMaskViewRight = (ImageView) view.findViewById(R.id.road_mask_right);
+
+            mRoadMaskViewLeft.setBackgroundColor(Color.BLACK);
+            mRoadMaskViewRight.setBackgroundColor(Color.BLACK);
+
+            mRoadMaskViewLeft.setScaleX(3.0f/3);
+            mRoadMaskViewRight.setScaleX(3.0f/3);
+
+            initCompassSensor(context);
+            prepareSpeedPanelAnim();
+
+
+
+
         }
         if (!viewDebug) {
-            dafaultViewInit();
+            defaultViewInit();
         }
     }
 
-    private void dafaultViewInit() {
+    public void prepareSpeedPanelAnim() {
+        mSpeedPanelHideAnimators.clear();
+
+        ObjectAnimator anim;
+        anim = ObjectAnimator.ofFloat(mNaviPanelViewgroup, "ScaleX",1,0.1f);
+        anim.setInterpolator(new LinearInterpolator());
+        mSpeedPanelHideAnimators.add(anim);
+
+        anim = ObjectAnimator.ofFloat(mNaviPanelViewgroup, "ScaleY",1,0.1f);
+        anim.setInterpolator(new LinearInterpolator());
+        mSpeedPanelHideAnimators.add(anim);
+
+        anim = ObjectAnimator.ofFloat(mNaviPanelViewgroup, "alpha",1,0.1f);
+        anim.setInterpolator(new LinearInterpolator());
+        mSpeedPanelHideAnimators.add(anim);
+
+        anim = ObjectAnimator.ofFloat(mCompassViewgroup, "alpha",1,0.1f);
+        anim.setInterpolator(new LinearInterpolator());
+        mSpeedPanelHideAnimators.add(anim);
+    }
+
+    public void hideSpeedPanelAnim(long duration) {
+        for (ObjectAnimator a: mSpeedPanelHideAnimators){
+            if(a.isStarted()){
+                a.cancel();
+            }
+            a.setDuration(duration);
+            a.start();
+        }
+    }
+
+    public void showSpeedPanel(){
+        mNaviPanelViewgroup.setScaleX(1);
+        mNaviPanelViewgroup.setScaleY(1);
+        mNaviPanelViewgroup.setAlpha(1);
+        mCompassViewgroup.setAlpha(1);
+    }
+
+    public void hideNaviInfoPanel(){
+        if (mNaviInfoPanelViewgroup != null) {
+            mNaviInfoPanelViewgroup.setAlpha(0);
+        }
+    }
+
+    public void showNaviInfoPanel(long duration){
+        if (mNaviInfoPanelViewgroup != null) {
+            ObjectAnimator anim =  ObjectAnimator.ofFloat(mNaviInfoPanelViewgroup,"Alpha",0,1);
+            anim.setInterpolator(new LinearInterpolator());
+            anim.setDuration(duration);
+            anim.start();
+        }
+    }
+
+
+    public void updatePanelDirection() {
+        float direction = normalizeDegree(mTargetDirection * -1.0f);
+        String text = "";
+        if (direction > 22.5f && direction < 157.5f) {
+            // east
+            text = "东";
+
+        } else if (direction > 202.5f && direction < 337.5f) {
+            // west
+            text = "西";
+        }
+
+        if (direction > 112.5f && direction < 247.5f) {
+            // south
+            text = "南";
+        } else if (direction < 67.5 || direction > 292.5f) {
+            // north
+            text = "北";
+        }
+        // TODO: 16/11/2016 判断方向
+        text = "北";
+        if (mDirectionTextview != null) {
+            mDirectionTextview.setText(text);
+        }
+    }
+
+
+    private void defaultViewInit() {
         if (mRoadDirectionImageView != null) {
             mRoadDirectionImageView.setImageBitmap(null);
         }
@@ -402,6 +562,8 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
         if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
         }
+        updateSpeedInfo();
+//        hideNaviInfoPanel();
     }
 
     public void showHideForMask(boolean isShow) {
@@ -417,8 +579,72 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation {
 
     }
 
+    private void initCompassSensor(Context context) {
+        // 传感器管理器
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        // 注册传感器(Sensor.TYPE_ORIENTATION(方向传感器);SENSOR_DELAY_FASTEST(0毫秒延迟);
+        // SENSOR_DELAY_GAME(20,000毫秒延迟)、SENSOR_DELAY_UI(60,000毫秒延迟))
+        // 如果不采用SENSOR_DELAY_FASTEST的话,在0度和360左右之间做动画会有反向转一大圈的感觉
+        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_UI);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            float direction = event.values[0] * -1.0f;
+//            Log.e("compass", "direction is " + direction);
+            mTargetDirection = normalizeDegree(direction);
+            updatePanelDirection();
+        }
+    }
+
+    public void roadFlipAnimation(long duration){
+        if (mRoadMaskViewgroup != null) {
+            // TODO: 16/11/2016 移动的位置不能保证每次都一样
+            float dist = DisplayUtil.dip2px(mContext,-200f);
+            if (mRoadMaskAnimator == null) {
+                mRoadMaskAnimator = ObjectAnimator.ofFloat(mRoadMaskViewgroup, "TranslationY",mRoadMaskViewgroup.getTranslationY(), mRoadMaskViewgroup.getTranslationY()+ dist);
+                mRoadMaskAnimator.setInterpolator(new LinearInterpolator());
+            }else {
+                mRoadMaskViewgroup.setTranslationY(-dist);
+            }
+            if(mRoadMaskAnimator.isStarted()) {
+                mRoadMaskAnimator.cancel();
+            }
+            mRoadMaskAnimator.setDuration(duration);
+            mRoadMaskAnimator.start();
+        }
+    }
+
+    public void onNaviStartAnimation(long duration) {
+
+        //复位显示速度表盘、隐藏信息面板
+//        showSpeedPanel();
+//        hideNaviInfoPanel();
+//
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        },duration);
+//        //隐藏速度表盘、显示信息面板动画
+//        hideSpeedPanelAnim(duration);
+//        showNaviInfoPanel(duration);
+//        mHandler.sendEmptyMessage(SHOW_NAVI_INFO_ID);
+    }
+
+    private float normalizeDegree(float degree) {
+        return (degree + 720) % 360;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
     @Override
     public void resetView() {
-        dafaultViewInit();
+        defaultViewInit();
     }
 }

@@ -645,7 +645,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         Vector3 end =  new Vector3(path.get(path.size()-1));
         double angle = Math.atan2((end.y-start.y),(end.x-start.x));
         float roadWidth = mOptions.netRoadWidth*2;
-        float floorDis = 0.8f;
+        float floorDis = 0.3f;
         float lineDis = floorDis+2.5f;
         Vector3 position = new Vector3();
         Vector3 poiPos = new Vector3();

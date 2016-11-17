@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.ARwayAnimationPresenter;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.FlatNaviInfoPanel;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
@@ -78,6 +79,8 @@ public class DrawObjectFactory {
         glDrawRetainDistance.setView(context,null);
 
         FlatNaviInfoPanel.getInstance().setView(context,mLayout);
+
+        ARwayAnimationPresenter.getInstance().setView(context,mLayout);
 
         return mLayout;
     }
