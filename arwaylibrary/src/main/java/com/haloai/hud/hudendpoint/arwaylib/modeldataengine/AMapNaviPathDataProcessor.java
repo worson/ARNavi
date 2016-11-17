@@ -27,7 +27,6 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LinkInfoOutside;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.Size2iOutside;
 import com.haloai.hud.utils.HaloLogger;
 
-import org.rajawali3d.cameras.NewChaseCamera;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
@@ -557,8 +556,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
 
     }
-    private Vector3 parseLanlng(double lan,double lng){
-        ARWayProjection.PointD pd =ARWayProjection.toOpenGLLocation(new LatLng(lan,lng),DEFAULT_LEVEL);
+    private Vector3 parseLanlng(double lat,double lng){
+        ARWayProjection.PointD pd =ARWayProjection.toOpenGLLocation(new LatLngOutSide(lat,lng),DEFAULT_LEVEL);
         Vector3 position = new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z);
         return position;
     }

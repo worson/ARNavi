@@ -347,7 +347,7 @@ public class ProportionMappingEngine {
      * @param end   原始路径的终点
      * @return
      */
-    public List<LatLng> mapping(int start,int end){
+    public List<LatLngOutSide> mapping(int start,int end){
         double startProp = mProportionListOri.get(start>=mProportionListOri.size()-1?mProportionListOri.size()-2:start);
         double endProp = mProportionListOri.get(end>=mProportionListOri.size()?mProportionListOri.size()-1:end);
         for(int i=0;i<mProportionListRender.size()-1;i++){

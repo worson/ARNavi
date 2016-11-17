@@ -55,10 +55,6 @@ public class EnlargedCrossProcess {
         }
     }
 
-    public static void setRoadNetSourceFilePath(String roadNetSourceFilePath) {
-        ROAD_NET_SOURCE_FILE_PATH = roadNetSourceFilePath;
-    }
-
     public List<ECBranchLine> recognizeBranchInECImage(Bitmap amapECImage, int centerPointIndex, String[] mainRoadArray) {
 
         Utils.bitmapToMat(amapECImage, matECImage, true);
