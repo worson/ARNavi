@@ -6,6 +6,8 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 
+import com.haloai.hud.utils.HaloLogger;
+
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 
@@ -680,7 +682,71 @@ public class MathUtils {
         }
         return angle;
     }
+    public static int translateLine(double x1, double y1, double x2, double y2, Vector3 lineStart, Vector3 lineEnd, double dist ){
+        double distance = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        if(distance==0){
+            return -1;
+        }
+        double degree = -Math.PI / 2;
+        double radius = Math.abs(dist);
+        if(dist>0){
+            degree = Math.PI / 2;
+        }
 
+        lineStart.x = x1 + (x2 - x1) * radius / distance;
+        lineStart.y = y1 + (y2 - y1) * radius / distance;
+
+        lineEnd.x = x2 + (x1 - x2) * radius / distance;
+        lineEnd.y = y2 + (y1 - y2) * radius / distance;
+
+        rotateAround(x1, y1, lineStart.x, lineStart.y, lineStart, -degree);
+        rotateAround(x2, y2, lineEnd.x, lineEnd.y, lineEnd, +degree);
+
+        return 0;
+    }
+    /**
+     *
+     * @param path
+     * @param result
+     * @param dist 正数为右边扩展、负数左边扩展
+     * @return 0：正常返回 -1：异常
+     */
+    public static int translatePath(List<Vector3> path,List<Vector3> result,double dist){
+        if (path == null || path.size()>1) {
+            return -1;
+        }
+        int cnt = path.size();
+        Vector3 r0 = new Vector3();
+        Vector3 r1 = new Vector3();
+        Vector3 r2 = new Vector3();
+        Vector3 r3 = new Vector3();
+        Vector3 v = new Vector3();
+        int inter = 0;
+        for (int i = 0; i < cnt-1; i++) {
+            Vector3 p0 = path.get(i);
+            Vector3 p1 = path.get(i+1);
+            if(i==0 || i== (cnt-2)){
+                translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
+                if(i==0){
+                    v = r0;
+                }else {
+                    v = r1;
+                }
+                inter = 1;
+            }else {
+                Vector3 p2 = path.get(i+1);
+                translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
+                translateLine(p1.x,p1.y,p2.x,p2.y,r2,r3,dist);
+                inter = getIntersection(r0,r1,r2,r3,v);
+            }
+            if (inter != 0) {
+                result.add(new Vector3(v));
+            }else {
+                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"translateLine no intersection ");
+            }
+        }
+        return 0;
+    }
     /**
      * 使用了double型不会造成误差
      * @param line1Start

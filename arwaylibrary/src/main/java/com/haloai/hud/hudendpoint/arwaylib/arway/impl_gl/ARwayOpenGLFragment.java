@@ -691,6 +691,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mCurPoint = 0;
         mCurIndexInPath = 0;
         mNaviIcon = 0;
+
+        mIsNeedNaviStartAnimation = false;
+        mIsOnNaviStartAnimation = false;
     }
 
     /**
@@ -719,6 +722,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mGlDrawNaviInfo.showSpeedPanel();
         mDrawScene.animShowHide(false,100);
         mLayout.invalidate();
+
+        resetData();
 
         ARWayController.NaviInfoBeanUpdate.reset();
         ARWayController.RouteBeanUpdater.reset();

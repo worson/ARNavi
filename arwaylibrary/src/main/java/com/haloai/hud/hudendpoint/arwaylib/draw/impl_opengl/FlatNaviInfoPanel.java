@@ -1,7 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -80,7 +79,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     private TextView  mNaviSpeedextView;
     private ViewGroup mLimitSpeedextViewGroup;
-    private TextView  mLimitSpeedextView;
+    private ViewGroup mServiceAreaViewGroup;
+    private TextView  mServiceAreatextView;
+    private TextView  mLimitSpeedtextView;
     private TextView  mRetainTimeTextView;
     private TextView  mRetainDistanceTextView;
     private TextView  mRoadNamePrefixTextView;
@@ -154,24 +155,40 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         updateNaviIndicate();
         updateNaviStatus();
         updateSpeedInfo();
+        updateServiceIndication();
     }
 
     private void updateSpeedInfo() {
         if (mNaviSpeedextView != null) {
             mNaviSpeedextView.setText("" + mNaviInfoBean.getSpeed() % 300);
         }
-        if (mLimitSpeedextView != null) {
+        if (mLimitSpeedtextView != null) {
             if (mNaviInfoBean.getLimitSpeed() > 0) {
                 String limitText = "" + mNaviInfoBean.getLimitSpeed();
-//            refitText(mLimitSpeedextView,limitText,mLimitSpeedextView.getWidth());
+//            refitText(mLimitSpeedtextView,limitText,mLimitSpeedtextView.getWidth());
                 mLimitSpeedextViewGroup.setVisibility(View.VISIBLE);
-                mLimitSpeedextView.setText(limitText);
+                mLimitSpeedtextView.setText(limitText);
             } else {
                 mLimitSpeedextViewGroup.setVisibility(View.INVISIBLE);
             }
 
         }
         updatePanelSpeed(mNaviInfoBean.getSpeed());
+    }
+
+    private void updateServiceIndication() {
+        if (mServiceAreaViewGroup != null) {
+            int dist = mNaviInfoBean.getServiceAreaDistance();
+            if (dist > 0) {
+                String text = dist+"米";
+                mServiceAreatextView.setVisibility(View.VISIBLE);
+                mServiceAreatextView.setText(text);
+            } else {
+                mServiceAreaViewGroup.setVisibility(View.INVISIBLE);
+            }
+
+        }
+
     }
 
     private void updatePanelSpeed(int speed) {
@@ -183,6 +200,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         }
 
     }
+
 
     private void refitText(TextView textView, String text, int textWidth) {
         if (textView == null) {
@@ -332,7 +350,11 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             String roadName = mNaviInfoBean.getNextRoadName();
             if (roadName != null && roadName.trim() != "") {//&& roadName.trim() !="无名路"
                 String text = roadName;
-                mRoadNamePrefixTextView.setText("进入");
+                if (text.contains("目的地")){
+                    mRoadNamePrefixTextView.setText("到达");
+                }else {
+                    mRoadNamePrefixTextView.setText("进入");
+                }
                 mRoadNameTextView.setText(text);
             } else {
                 mRoadNameTextView.setText("");
@@ -343,12 +365,14 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     private void updateNextRoadDistance() {
+        int dist = 0;
         if (mRoadDistanceTextView != null) {
 //            int remainDistance = mNaviInfoBean.getPathRetainTime();
             int remainDistance = mNaviInfoBean.getStepRetainDistance();
             String text = null;
             if (remainDistance > 1000) {
-                text = ((remainDistance / 100)) * 1.0 / 10 + "公里";
+                dist = (int)(((remainDistance / 100)) * 1.0 / 10);
+                text = dist + "公里";
             } else if (remainDistance >= 0) {
                 text = ((remainDistance)) + "米";
             }
@@ -360,7 +384,8 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             int remainDistance = mNaviInfoBean.getPathRetainDistance();
             String text = null;
             if (remainDistance > 1000) {
-                text = ((remainDistance / 100)) * 1.0 / 10 + "公里";
+                dist = (int)(((remainDistance / 100)) * 1.0 / 10);
+                text = dist + "公里";
             } else if (remainDistance >= 0) {
                 text = ((remainDistance)) + "米";
             }
@@ -406,10 +431,15 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
             mNaviSpeedextView = (TextView) view.findViewById(R.id.speed_textview);
             mLimitSpeedextViewGroup = (ViewGroup) view.findViewById(R.id.speed_limit_viewgroup);
-            mLimitSpeedextView = (TextView) view.findViewById(R.id.speed_limit_textview);
+            mLimitSpeedtextView = (TextView) view.findViewById(R.id.speed_limit_textview);
+
+            mServiceAreaViewGroup = (ViewGroup) view.findViewById(R.id.service_area_near_viewgroup);
+            mServiceAreatextView = (TextView) view.findViewById(R.id.service_area_near_textview);
 
             mRetainTimeTextView = (TextView) view.findViewById(R.id.prefix_time_textview);
             mRetainDistanceTextView = (TextView) view.findViewById(R.id.prefix_distance_textview);
+
+
 
             mSystemTimeHourTenImageview = (ImageView) view.findViewById(R.id.hour_ten_imageview);
             mSystemTimeHourOneImageview = (ImageView) view.findViewById(R.id.hour_one_imageview);
@@ -556,8 +586,8 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         if (mNaviSpeedextView != null) {
             mNaviSpeedextView.setText("");
         }
-        if (mLimitSpeedextView != null) {
-            mLimitSpeedextView.setText("");
+        if (mLimitSpeedtextView != null) {
+            mLimitSpeedtextView.setText("");
         }
         if (mRetainTimeTextView != null) {
             mRetainTimeTextView.setText("");
@@ -568,6 +598,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
         }
+        doDraw();
         updateSpeedInfo();
 //        hideNaviInfoPanel();
     }

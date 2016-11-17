@@ -454,7 +454,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     public void naviStartAnimation(){
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"onNaviStartAnimation initStartScene ");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviStartAnimation initStartScene ");
 
         final int rotationTime = 2;
         final int transTime = 1;
@@ -476,7 +476,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 mParamsRefresher.doAngelAnimation(50,rotationTime);
                 mParamsRefresher.doScaleAnimation(mParamsRefresher.getInitializtionLevel(),3.9f,rotationTime);
                 mParamsRefresher.doInScreenProportion(0.4f,rotationTime);
-                mParamsRefresher.doOffsetAnimation(0.5f,rotationTime);
+                mParamsRefresher.doOffsetAnimation(0.7f,rotationTime);
 
             }
         },(transTime)*1000);
