@@ -6,6 +6,7 @@ import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
+import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
@@ -26,19 +27,19 @@ public class ProportionMappingEngine {
     private static final String TAG = "ProportionMappingEngine";
     private static final double X   = 0.00000000001D;
 
-    private List<LatLng> mOriPath;//原始的路径
-    private List<LatLng> mRenderPath;//实际渲染路径
-    private List<Double> mProportionListOri;//原始路径的中的比例关系
-    private List<Double> mProportionListRender;//实际渲染路径中的比例关系
-    private double       mTolerance;
-    private int          mDefaultLevel;
+    private List<LatLngOutSide> mOriPath;//原始的路径
+    private List<LatLngOutSide> mRenderPath;//实际渲染路径
+    private List<Double>        mProportionListOri;//原始路径的中的比例关系
+    private List<Double>        mProportionListRender;//实际渲染路径中的比例关系
+    private double              mTolerance;
+    private int                 mDefaultLevel;
 
     /**
      * 构造函数需要传入初始的路径,并进行一些初始化的操作
      *
      * @param _oriPath
      */
-    public ProportionMappingEngine(List<LatLng> _oriPath) {
+    public ProportionMappingEngine(List<LatLngOutSide> _oriPath) {
         mOriPath = new ArrayList<>(_oriPath);
         mRenderPath = new ArrayList<>(_oriPath);
         mProportionListOri = new ArrayList<>();
@@ -46,7 +47,9 @@ public class ProportionMappingEngine {
         lengths.add(0D);
         double totalLength = 0;
         for (int i = 1; i < mOriPath.size(); i++) {
-            totalLength += AMapUtils.calculateLineDistance(mOriPath.get(i - 1), mOriPath.get(i));
+            totalLength += AMapUtils.calculateLineDistance(
+                    new LatLng(mOriPath.get(i - 1).lat,mOriPath.get(i - 1).lng),
+                    new LatLng(mOriPath.get(i).lat,mOriPath.get(i).lng));
             lengths.add(totalLength);
         }
         for (int i = 0; i < lengths.size(); i++) {
@@ -70,20 +73,20 @@ public class ProportionMappingEngine {
         List<Integer> keepIndexs = new ArrayList<>(keepPointIndexs);
         keepIndexs.add(0, 0);
         //Douglas.rarefyGetPointFs(pointIndexsToKeep, returnPath, originalPath, RAREFY_PIXEL_COUNT / ARWayProjection.K);
-        List<LatLng> renderPath = new ArrayList<>(mRenderPath);
+        List<LatLngOutSide> renderPath = new ArrayList<>(mRenderPath);
         List<Double> proportionListRender = new ArrayList<>(mProportionListRender);
         mRenderPath = new ArrayList<>();
         mProportionListRender = new ArrayList<>();
 
         /*HaloLogger.logE(TAG,"cross start");
-        for(LatLng latlng : renderPath){
-            HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+        for(LatLngOutSide LatLngOutSide : renderPath){
+            HaloLogger.logE(TAG, LatLngOutSide.latitude+","+LatLngOutSide.longitude);
         }
         HaloLogger.logE(TAG,"cross end");
         List<Integer> keepInRarefy = new ArrayList<>();
         List<PointF> vertices = new ArrayList<>();
-        for(LatLng latlng:renderPath){
-            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, defaultLevel);
+        for(LatLngOutSide LatLngOutSide:renderPath){
+            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(LatLngOutSide, defaultLevel);
             vertices.add(new PointF((float)pd.x,(float)pd.y));
         }
         Douglas.rarefyGetIndexs(keepInRarefy,vertices,tolerance);
@@ -92,15 +95,15 @@ public class ProportionMappingEngine {
             mProportionListRender.add(proportionListRender.get(keepInRarefy.get(i)));
         }
         HaloLogger.logE(TAG,"cross start");
-        for(LatLng latlng : mRenderPath){
-            HaloLogger.logE(TAG, latlng.latitude+","+latlng.longitude);
+        for(LatLngOutSide LatLngOutSide : mRenderPath){
+            HaloLogger.logE(TAG, LatLngOutSide.latitude+","+LatLngOutSide.longitude);
         }
         HaloLogger.logE(TAG,"cross end");*/
 
         for (int i = 0; i < keepIndexs.size() - 1; i++) {
             int start = keepIndexs.get(i);
             int end = keepIndexs.get(i + 1) + 1;
-            List<LatLng> partPath = renderPath.subList(start, end);
+            List<LatLngOutSide> partPath = renderPath.subList(start, end);
             List<Double> partProp = proportionListRender.subList(start, end);
             List<Integer> keepInRarefy = new ArrayList<>();
             rarefy(tolerance, defaultLevel, partPath, keepInRarefy);
@@ -116,10 +119,10 @@ public class ProportionMappingEngine {
         }
     }
 
-    private void rarefy(double tolerance, int defaultLevel, List<LatLng> partPath, List<Integer> keepInRarefy) {
+    private void rarefy(double tolerance, int defaultLevel, List<LatLngOutSide> partPath, List<Integer> keepInRarefy) {
         List<PointF> vertices = new ArrayList<>();
-        for (LatLng latlng : partPath) {
-            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, defaultLevel);
+        for (LatLngOutSide LatLngOutSide : partPath) {
+            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(LatLngOutSide, defaultLevel);
             vertices.add(new PointF((float) pd.x, (float) pd.y));
         }
         Douglas.rarefyGetIndexs(keepInRarefy, vertices, tolerance);
@@ -133,17 +136,22 @@ public class ProportionMappingEngine {
      * @param end               结束替换点在原始路径中的位置
      * @param crossPointIndexs_ 需要在抽析中被保留的点
      */
-    public void mapping(List<LatLng> subPath, int start, int end, List<Integer> crossPointIndexs_) {
+    public void mapping(List<LatLngOutSide> subPath, int start, int end, List<Integer> crossPointIndexs_) {
         //首先对subPath进行抽析处理
+        HaloLogger.logE(TAG,"cross start");
+        for(LatLngOutSide latlng:subPath){
+            HaloLogger.logE(TAG,latlng.lat+","+latlng.lng);
+        }
+        HaloLogger.logE(TAG,"cross end");
         List<Integer> crossPointIndexs = new ArrayList<>(crossPointIndexs_);
         crossPointIndexs.add(0, 0);
         crossPointIndexs.add(subPath.size() - 1);
-        List<LatLng> temp = new ArrayList<>(subPath);
+        List<LatLngOutSide> temp = new ArrayList<>(subPath);
         subPath = new ArrayList<>();
         for (int i = 0; i < crossPointIndexs.size() - 1; i++) {
             int _start = crossPointIndexs.get(i);
             int _end = crossPointIndexs.get(i + 1) + 1;
-            List<LatLng> partPath = temp.subList(_start, _end);
+            List<LatLngOutSide> partPath = temp.subList(_start, _end);
             List<Integer> keepInRarefy = new ArrayList<>();
             rarefy(mTolerance, mDefaultLevel, partPath, keepInRarefy);
             if (i == 0) {
@@ -154,35 +162,66 @@ public class ProportionMappingEngine {
                 subPath.add(partPath.get(index));
             }
         }
+        HaloLogger.logE(TAG,"cross start");
+        for(LatLngOutSide latlng:subPath){
+            HaloLogger.logE(TAG,latlng.lat+","+latlng.lng);
+        }
+        HaloLogger.logE(TAG,"cross end");
 
+        HaloLogger.logE("tt__tt","被替换的主路部分 cross start");
+        for(LatLngOutSide latlng:mOriPath.subList(start,end)){
+            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+        }
+        HaloLogger.logE("tt__tt","被替换的主路部分 cross end");
+//        HaloLogger.logE("tt__tt","cross start");
+//        for(LatLngOutSide latlng:mRenderPath){
+//            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+//        }
+//        HaloLogger.logE("tt__tt","cross end");
         double startProp = mProportionListOri.get(start);
         double endProp = mProportionListOri.get(end);
         for (int i = 0; i < mProportionListRender.size(); i++) {
             double prop = mProportionListRender.get(i);
             if (Math.abs(prop - startProp) <= X || prop > startProp) {
-                int replaceStart = i == 0 ? 0 : i - 1;
+                int replaceStart = i == 0 ? 0 : /*Math.abs(prop - startProp) <= X ? i : */i-1;
                 for (int j = i; j < mProportionListRender.size(); j++) {
                     prop = mProportionListRender.get(j);
                     if (Math.abs(prop - endProp) <= X || prop > endProp) {
                         int replaceEnd = j;
-                        List<LatLng> headRenderPath = mRenderPath.subList(0, replaceStart + 1);
-                        List<LatLng> tailRenderPath = mRenderPath.subList(replaceEnd, mRenderPath.size());
+                        HaloLogger.logE("tt__tt","替换的主路 cross start");
+                        for(LatLngOutSide latlng:subPath){
+                            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+                        }
+                        HaloLogger.logE("tt__tt","替换的主路 cross end");
+                        HaloLogger.logE("tt__tt","替换后的主路 path start");
+                        for(LatLngOutSide latlng:mRenderPath.subList(replaceStart,replaceEnd+1)){
+                            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+                        }
+                        HaloLogger.logE("tt__tt","替换后的主路 path end");
+                        List<LatLngOutSide> headRenderPath = mRenderPath.subList(0, replaceStart + 1);
+                        List<LatLngOutSide> tailRenderPath = mRenderPath.subList(replaceEnd, mRenderPath.size());
                         List<Double> headProportion = mProportionListRender.subList(0, replaceStart + 1);
                         List<Double> tailProportion = mProportionListRender.subList(replaceEnd, mProportionListRender.size());
                         double replacedStartProportion = mProportionListRender.get(replaceStart);
                         double replacedEndProportion = mProportionListRender.get(replaceEnd);
                         double replacedTotalProportion = replacedEndProportion - replacedStartProportion;
-                        LatLng replaceStartLatLng = mRenderPath.get(replaceStart);
-                        LatLng replaceEndLatLng = mRenderPath.get(replaceEnd);
+                        LatLngOutSide replaceStartLatLngOutSide = mRenderPath.get(replaceStart);
+                        LatLngOutSide replaceEndLatLngOutSide = mRenderPath.get(replaceEnd);
                         List<Double> middleProportion = new ArrayList<>();
                         List<Double> lengths = new ArrayList<>();
                         double totalLength = 0;
-                        totalLength += AMapUtils.calculateLineDistance(replaceStartLatLng, subPath.get(0));
+                        totalLength += AMapUtils.calculateLineDistance(
+                                new LatLng(replaceStartLatLngOutSide.lat,replaceStartLatLngOutSide.lng),
+                                new LatLng(subPath.get(0).lat,subPath.get(0).lng));
                         lengths.add(totalLength);
                         for (int k = 1; k < subPath.size(); k++) {
-                            lengths.add(totalLength += AMapUtils.calculateLineDistance(subPath.get(k - 1), subPath.get(k)));
+                            lengths.add(totalLength += AMapUtils.calculateLineDistance(
+                                    new LatLng(subPath.get(k - 1).lat,subPath.get(k-1).lng),
+                                    new LatLng(subPath.get(k).lat,subPath.get(k).lng)));
                         }
-                        totalLength += AMapUtils.calculateLineDistance(subPath.get(subPath.size() - 1), replaceEndLatLng);
+                        totalLength += AMapUtils.calculateLineDistance(
+                                new LatLng(subPath.get(subPath.size() - 1).lat,subPath.get(subPath.size() - 1).lng),
+                                new LatLng(replaceEndLatLngOutSide.lat,replaceEndLatLngOutSide.lng));
                         for (int k = 0; k < lengths.size(); k++) {
                             middleProportion.add(replacedStartProportion + lengths.get(k) / totalLength * replacedTotalProportion);
                         }
@@ -210,6 +249,11 @@ public class ProportionMappingEngine {
                 break;
             }
         }
+//        HaloLogger.logE("tt__tt","screen start");
+//        for(LatLngOutSide latlng:mRenderPath){
+//            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+//        }
+//        HaloLogger.logE("tt__tt","screen end");
     }
 
     /**
@@ -217,97 +261,104 @@ public class ProportionMappingEngine {
      *
      * @return
      */
-    public List<LatLng> getRenderPath() {
+    public List<LatLngOutSide> getRenderPath() {
         return mRenderPath;
     }
 
-    public List<LatLng> getRenderPath(int start, int end) {
-        return mRenderPath.subList(start, end);
-    }
-
     /**
-     * @param latlng
+     * @param LatLngOutSide
      * @param curIndex
      * @return
      */
-    public LatLng mapping(LatLng latlng, int curIndex) {
+    public LatLngOutSide mapping(LatLngOutSide LatLngOutSide, int curIndex) {
         if (curIndex >= mProportionListOri.size() - 1) {
-            return latlng;
+            return LatLngOutSide;
         }
         double startProp = mProportionListOri.get(curIndex);
         double endProp = mProportionListOri.get(curIndex + 1);
-        LatLng startLatLng = mOriPath.get(curIndex);
-        LatLng endLatLng = mOriPath.get(curIndex + 1);
+        LatLngOutSide startLatLngOutSide = mOriPath.get(curIndex);
+        LatLngOutSide endLatLngOutSide = mOriPath.get(curIndex + 1);
         double curProp = startProp + (endProp - startProp) *
-                (AMapUtils.calculateLineDistance(startLatLng, latlng) / AMapUtils.calculateLineDistance(startLatLng, endLatLng));
+                (AMapUtils.calculateLineDistance(
+                        new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
+                        new LatLng(LatLngOutSide.lat,LatLngOutSide.lng)) /
+                        AMapUtils.calculateLineDistance(
+                                new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
+                                new LatLng(endLatLngOutSide.lat,endLatLngOutSide.lng)));
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
-            LatLng nextLatLng = mRenderPath.get(i);
+            LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
             if (nextProp >= curProp) {
                 if (nextProp == curProp) {
-                    return nextLatLng;
+                    return nextLatLngOutSide;
                 } else {
                     double preProp = mProportionListRender.get(i - 1);
-                    LatLng preLatLng = mRenderPath.get(i - 1);
-                    double lat = preLatLng.latitude + (nextLatLng.latitude - preLatLng.latitude) * ((curProp - preProp) / (nextProp - preProp));
-                    double lng = preLatLng.longitude + (nextLatLng.longitude - preLatLng.longitude) * ((curProp - preProp) / (nextProp - preProp));
-                    return new LatLng(lat, lng);
+                    LatLngOutSide preLatLngOutSide = mRenderPath.get(i - 1);
+                    double lat = preLatLngOutSide.lat + (nextLatLngOutSide.lat - preLatLngOutSide.lat) * ((curProp - preProp) / (nextProp - preProp));
+                    double lng = preLatLngOutSide.lng + (nextLatLngOutSide.lng - preLatLngOutSide.lng) * ((curProp - preProp) / (nextProp - preProp));
+                    return new LatLngOutSide(lat, lng);
                 }
             }
         }
-        return latlng;
+        return LatLngOutSide;
     }
 
-    public ARWayProjection.PointD mappingV(LatLng latlng, int curIndex) {
+    public ARWayProjection.PointD mappingV(LatLngOutSide LatLngOutSide, int curIndex) {
         if (curIndex >= mProportionListOri.size() - 1) {
-            return ARWayProjection.toOpenGLLocation(latlng, mDefaultLevel);
+            return ARWayProjection.toOpenGLLocation(LatLngOutSide, mDefaultLevel);
         }
         double startProp = mProportionListOri.get(curIndex);
         double endProp = mProportionListOri.get(curIndex + 1);
-        LatLng startLatLng = mOriPath.get(curIndex);
-        LatLng endLatLng = mOriPath.get(curIndex + 1);
+        LatLngOutSide startLatLngOutSide = mOriPath.get(curIndex);
+        LatLngOutSide endLatLngOutSide = mOriPath.get(curIndex + 1);
         double curProp = startProp + (endProp - startProp) *
-                (AMapUtils.calculateLineDistance(startLatLng, latlng) / AMapUtils.calculateLineDistance(startLatLng, endLatLng));
+                (AMapUtils.calculateLineDistance(
+                        new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
+                        new LatLng(LatLngOutSide.lat,LatLngOutSide.lng)) /
+                        AMapUtils.calculateLineDistance(
+                                new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
+                                new LatLng(endLatLngOutSide.lat,endLatLngOutSide.lng)));
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
-            LatLng nextLatLng = mRenderPath.get(i);
+            LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
             if (nextProp >= curProp) {
                 if (nextProp == curProp) {
-                    return ARWayProjection.toOpenGLLocation(nextLatLng, mDefaultLevel);
+                    return ARWayProjection.toOpenGLLocation(nextLatLngOutSide, mDefaultLevel);
                 } else {
                     double preProp = mProportionListRender.get(i - 1);
-                    LatLng preLatLng = mRenderPath.get(i - 1);
-                    //double lat = preLatLng.latitude+(nextLatLng.latitude-preLatLng.latitude)*((curProp-preProp)/(nextProp-preProp));
-                    //double lng = preLatLng.longitude+(nextLatLng.longitude-preLatLng.longitude)*((curProp-preProp)/(nextProp-preProp));
-                    ARWayProjection.PointD prePD = ARWayProjection.toOpenGLLocation(preLatLng, mDefaultLevel);
-                    ARWayProjection.PointD nextPD = ARWayProjection.toOpenGLLocation(nextLatLng, mDefaultLevel);
+                    LatLngOutSide preLatLngOutSide = mRenderPath.get(i - 1);
+                    //double lat = preLatLngOutSide.latitude+(nextLatLngOutSide.latitude-preLatLngOutSide.latitude)*((curProp-preProp)/(nextProp-preProp));
+                    //double lng = preLatLngOutSide.longitude+(nextLatLngOutSide.longitude-preLatLngOutSide.longitude)*((curProp-preProp)/(nextProp-preProp));
+                    ARWayProjection.PointD prePD = ARWayProjection.toOpenGLLocation(preLatLngOutSide, mDefaultLevel);
+                    ARWayProjection.PointD nextPD = ARWayProjection.toOpenGLLocation(nextLatLngOutSide, mDefaultLevel);
                     double x = prePD.x + (nextPD.x - prePD.x) * ((curProp - preProp) / (nextProp - preProp));
                     double y = prePD.y + (nextPD.y - prePD.y) * ((curProp - preProp) / (nextProp - preProp));
                     return new ARWayProjection.PointD(x, y);
                 }
             }
         }
-        return ARWayProjection.toOpenGLLocation(latlng, mDefaultLevel);
+        return ARWayProjection.toOpenGLLocation(LatLngOutSide, mDefaultLevel);
     }
 
     /**
      * 根据在原始路径中的起始点和结束点,返回一段渲染路径
+     *
      * @param start 原始路径的起点
-     * @param end 原始路径的终点
+     * @param end   原始路径的终点
      * @return
      */
-    public List<LatLng> mapping(int start,int end){
+    public List<LatLngOutSide> mapping(int start,int end){
         double startProp = mProportionListOri.get(start>=mProportionListOri.size()-1?mProportionListOri.size()-2:start);
         double endProp = mProportionListOri.get(end>=mProportionListOri.size()?mProportionListOri.size()-1:end);
         for(int i=0;i<mProportionListRender.size()-1;i++){
             double prop = mProportionListRender.get(i);
-            if(prop>=startProp){
-                int startRender = prop==startProp?i:i==0?0:i-1;
-                for(int j=i;j<mProportionListRender.size();j++){
+            if (prop >= startProp) {
+                int startRender = prop == startProp ? i : i == 0 ? 0 : i - 1;
+                for (int j = i; j < mProportionListRender.size(); j++) {
                     prop = mProportionListRender.get(j);
-                    if(prop>=endProp){
+                    if (prop >= endProp) {
                         int endRender = j;
-                        return mRenderPath.subList(startRender,endRender+1);
+                        return mRenderPath.subList(startRender, endRender + 1);
                     }
                 }
                 break;
@@ -323,30 +374,34 @@ public class ProportionMappingEngine {
      * @param curIndexInPath
      * @return null表示没有蚯蚓线需要显示
      */
-    public List<LatLng> mappingGuide(int curIndexInPath) {
+    public List<LatLngOutSide> mappingGuide(int curIndexInPath) {
         double GUILD_LENGTH = 80;
         if (curIndexInPath >= mProportionListOri.size() - 1) {
             return null;
         }
         double prop = mProportionListOri.get(curIndexInPath);
-        List<LatLng> guildLine = new ArrayList<>();
+        List<LatLngOutSide> guildLine = new ArrayList<>();
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
             if (nextProp >= prop) {
-                LatLng nextLatLng = mRenderPath.get(i);
+                LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
                 double preProp = mProportionListRender.get(i - 1);
-                LatLng preLatLng = mRenderPath.get(i - 1);
-                double lat = preLatLng.latitude + (nextLatLng.latitude - preLatLng.latitude) * ((prop - preProp) / (nextProp - preProp));
-                double lng = preLatLng.longitude + (nextLatLng.longitude - preLatLng.longitude) * ((prop - preProp) / (nextProp - preProp));
-                LatLng curLatLng = new LatLng(lat, lng);
+                LatLngOutSide preLatLngOutSide = mRenderPath.get(i - 1);
+                double lat = preLatLngOutSide.lat + (nextLatLngOutSide.lat - preLatLngOutSide.lat) * ((prop - preProp) / (nextProp - preProp));
+                double lng = preLatLngOutSide.lng + (nextLatLngOutSide.lng - preLatLngOutSide.lng) * ((prop - preProp) / (nextProp - preProp));
+                LatLngOutSide curLatLngOutSide = new LatLngOutSide(lat, lng);
                 //left
                 double addUp = 0;
                 for (int j = i - 1; j >= 0; j--) {
                     guildLine.add(0, mRenderPath.get(j));
                     if (j == i - 1) {
-                        addUp += AMapUtils.calculateLineDistance(curLatLng, preLatLng);
+                        addUp += AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
+                                new LatLng(preLatLngOutSide.lat,preLatLngOutSide.lng));
                     } else {
-                        addUp += AMapUtils.calculateLineDistance(mRenderPath.get(j + 1), mRenderPath.get(j));
+                        addUp += AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j + 1).lat,mRenderPath.get(j + 1).lng),
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         break;
@@ -357,9 +412,13 @@ public class ProportionMappingEngine {
                 for (int j = i; j < mRenderPath.size(); j++) {
                     guildLine.add(mRenderPath.get(j));
                     if (j == i) {
-                        addUp += AMapUtils.calculateLineDistance(curLatLng, nextLatLng);
+                        addUp += AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
+                                new LatLng(nextLatLngOutSide.lat,nextLatLngOutSide.lng));
                     } else {
-                        addUp += AMapUtils.calculateLineDistance(mRenderPath.get(j), mRenderPath.get(j-1));
+                        addUp += AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng),
+                                new LatLng(mRenderPath.get(j - 1).lat,mRenderPath.get(j-1).lng));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         break;
@@ -388,31 +447,35 @@ public class ProportionMappingEngine {
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
             if (nextProp >= prop) {
-                LatLng nextLatLng = mRenderPath.get(i);
+                LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
                 double preProp = mProportionListRender.get(i - 1);
-                LatLng preLatLng = mRenderPath.get(i - 1);
-                double lat = preLatLng.latitude + (nextLatLng.latitude - preLatLng.latitude) * ((prop - preProp) / (nextProp - preProp));
-                double lng = preLatLng.longitude + (nextLatLng.longitude - preLatLng.longitude) * ((prop - preProp) / (nextProp - preProp));
-                LatLng curLatLng = new LatLng(lat, lng);
+                LatLngOutSide preLatLngOutSide = mRenderPath.get(i - 1);
+                double lat = preLatLngOutSide.lat + (nextLatLngOutSide.lat - preLatLngOutSide.lat) * ((prop - preProp) / (nextProp - preProp));
+                double lng = preLatLngOutSide.lng + (nextLatLngOutSide.lng - preLatLngOutSide.lng) * ((prop - preProp) / (nextProp - preProp));
+                LatLngOutSide curLatLngOutSide = new LatLngOutSide(lat, lng);
                 //left
                 double addUp = 0;
                 for (int j = i - 1; j >= 0; j--) {
-                    guildLine.add(0, ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
+                    guildLine.add(0, ARWayProjection.toOpenGLLocation(mRenderPath.get(j), mDefaultLevel));
                     double dist;
                     if (j == i - 1) {
-                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, mRenderPath.get(j)));
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
                     } else {
-                        addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j + 1), mRenderPath.get(j)));
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j+1).lat,mRenderPath.get(j+1).lng),
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
-                        if(addUp > GUILD_LENGTH / 2){
-                            ARWayProjection.PointD prePD = j==i-1?ARWayProjection.toOpenGLLocation(curLatLng,mDefaultLevel):guildLine.get(1);
+                        if (addUp > GUILD_LENGTH / 2) {
+                            ARWayProjection.PointD prePD = j == i - 1 ? ARWayProjection.toOpenGLLocation(curLatLngOutSide, mDefaultLevel) : guildLine.get(1);
                             ARWayProjection.PointD nextPD = guildLine.remove(0);
-                            double scale = 1-((addUp-GUILD_LENGTH/2)/dist);
-                            double x = prePD.x+(nextPD.x-prePD.x)*scale;
-                            double y = prePD.y+(nextPD.y-prePD.y)*scale;
-                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);
-                            guildLine.add(0,makePD);
+                            double scale = 1 - ((addUp - GUILD_LENGTH / 2) / dist);
+                            double x = prePD.x + (nextPD.x - prePD.x) * scale;
+                            double y = prePD.y + (nextPD.y - prePD.y) * scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x, y);
+                            guildLine.add(0, makePD);
                         }
                         break;
                     }
@@ -420,21 +483,25 @@ public class ProportionMappingEngine {
                 //right
                 addUp = 0;
                 for (int j = i; j < mRenderPath.size(); j++) {
-                    guildLine.add(ARWayProjection.toOpenGLLocation(mRenderPath.get(j),mDefaultLevel));
+                    guildLine.add(ARWayProjection.toOpenGLLocation(mRenderPath.get(j), mDefaultLevel));
                     double dist;
                     if (j == i) {
-                        addUp += (dist = AMapUtils.calculateLineDistance(curLatLng, mRenderPath.get(j)));
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
                     } else {
-                        addUp += (dist = AMapUtils.calculateLineDistance(mRenderPath.get(j), mRenderPath.get(j-1)));
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng),
+                                new LatLng(mRenderPath.get(j-1).lat,mRenderPath.get(j-1).lng)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
-                        if(addUp > GUILD_LENGTH / 2){
-                            ARWayProjection.PointD prePD = j==i?ARWayProjection.toOpenGLLocation(curLatLng,mDefaultLevel):guildLine.get(guildLine.size()-2);
-                            ARWayProjection.PointD nextPD = guildLine.remove(guildLine.size()-1);
-                            double scale = 1-((addUp-GUILD_LENGTH/2)/dist);
-                            double x = prePD.x+(nextPD.x-prePD.x)*scale;
-                            double y = prePD.y+(nextPD.y-prePD.y)*scale;
-                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x,y);
+                        if (addUp > GUILD_LENGTH / 2) {
+                            ARWayProjection.PointD prePD = j == i ? ARWayProjection.toOpenGLLocation(curLatLngOutSide, mDefaultLevel) : guildLine.get(guildLine.size() - 2);
+                            ARWayProjection.PointD nextPD = guildLine.remove(guildLine.size() - 1);
+                            double scale = 1 - ((addUp - GUILD_LENGTH / 2) / dist);
+                            double x = prePD.x + (nextPD.x - prePD.x) * scale;
+                            double y = prePD.y + (nextPD.y - prePD.y) * scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x, y);
                             guildLine.add(makePD);
                         }
                         break;
@@ -450,6 +517,7 @@ public class ProportionMappingEngine {
      * TODO : 是否需要这一步??
      * 将一个旧的中心点指向到替换后的部分主路的新中心点上
      * 在调用蚯蚓线的映射函数时需要使用到该部分对应关系
+     *
      * @param oldCenterIndexInPath
      * @param newCenterIndexInPart
      */

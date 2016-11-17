@@ -1,6 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
-import com.amap.api.maps.model.LatLng;
+import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface IDynamicLoader {
 
-    int updateOriginPath(List<LatLng> path, int dataLevel);
+    int updateOriginPath(List<LatLngOutSide> path, int dataLevel);
 
 
     void updateCurPoint(int realPointIndex);

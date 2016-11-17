@@ -2,7 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
 
 import android.graphics.Point;
 
-import com.amap.api.maps.model.LatLng;
+import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 
 /**
  * Created by ylq on 16/9/26.
@@ -46,34 +46,34 @@ public class ARWayProjection {
     }
 
     //经纬度坐标转opengl坐标
-    public static PointD toOpenGLLocation(LatLng coordinate){
+    public static PointD toOpenGLLocation(LatLngOutSide coordinate){
         Point mktPoint = pixelPointFromCoordinate(coordinate,20.0);
         PointD mapPoint = new PointD((mktPoint.x/K),(mktPoint.y/K));
         return mapPoint;
     }
 
     //经纬度坐标转opengl坐标
-    public static PointD toOpenGLLocation(LatLng coordinate,double level){
+    public static PointD toOpenGLLocation(LatLngOutSide coordinate,double level){
         Point mktPoint = pixelPointFromCoordinate(coordinate,level);
         PointD mapPoint = new PointD((mktPoint.x/K),(mktPoint.y/K));
         return mapPoint;
     }
 
     //经纬度转屏幕坐标
-    public static Point toScreenLocation(LatLng coordinate){
+    public static Point toScreenLocation(LatLngOutSide coordinate){
         return pixelPointFromCoordinate(coordinate,20);
     }
 
     //经纬度转屏幕坐标
-    public static Point toScreenLocation(LatLng coordinate,double level){
+    public static Point toScreenLocation(LatLngOutSide coordinate,double level){
         return pixelPointFromCoordinate(coordinate,level);
     }
 
-    private static Point pixelPointFromCoordinate(LatLng coordinate,double level){
-        double dblMercatorLat = Math.log(Math.tan((90 + coordinate.latitude) * 0.0087266462599716478846184538424431))/0.017453292519943295769236907684886;
+    private static Point pixelPointFromCoordinate(LatLngOutSide coordinate,double level){
+        double dblMercatorLat = Math.log(Math.tan((90 + coordinate.lat) * 0.0087266462599716478846184538424431))/0.017453292519943295769236907684886;
         Point pixelPoint = new Point();
         double res = 20.0 -level;
-        pixelPoint.x = (int)((coordinate.longitude + 180.0) / 360.0 * 268435456 / Math.pow(2.0,res));
+        pixelPoint.x = (int)((coordinate.lng + 180.0) / 360.0 * 268435456 / Math.pow(2.0,res));
         pixelPoint.y = (int)((180.0 - dblMercatorLat) / 360.0 * 268435456 / Math.pow(2.0,res));
         return pixelPoint;
     }

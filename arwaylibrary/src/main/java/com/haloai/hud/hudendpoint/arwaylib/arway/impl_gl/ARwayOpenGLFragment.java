@@ -57,7 +57,6 @@ import com.haloai.hud.hudendpoint.arwaylib.render.strategy.RenderStrategyFactory
 import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
-import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
@@ -1439,8 +1438,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public double changeCameraLookDistBy(double changeValue) {
         return mRenderer.changeCameraLookDistBy(changeValue);
     }
-
-
+    
     public void changeStrategy(boolean bol){
         if(bol){
             mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_20);
@@ -1448,13 +1446,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_18);
         }
     }
+
     public void setArwayAlpha(float alpha){
         if (mDrawScene != null) {
             mDrawScene.setAlpha(alpha);
         }
     }
-    public void setRoadNetSourceFilePath(String roadNetSourceFilePath) {
-        EnlargedCrossProcess.setRoadNetSourceFilePath(roadNetSourceFilePath);
-    }
-
 }

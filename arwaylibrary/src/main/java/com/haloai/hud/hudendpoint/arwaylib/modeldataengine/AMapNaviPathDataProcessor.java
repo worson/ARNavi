@@ -18,6 +18,7 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
+import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PrintUtils;
@@ -26,7 +27,6 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LinkInfoOutside;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.Size2iOutside;
 import com.haloai.hud.utils.HaloLogger;
 
-import org.rajawali3d.cameras.NewChaseCamera;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     //middle data
     private AMapNavi            mAMapNavi;
-    private List<LatLng>        mPathLatLng;
+    private List<LatLngOutSide>        mPathLatLng;
     private List<Vector3>       mPathVector3;
     private List<Vector3>       mDouglasPath;
     private List<List<Vector3>> mRenderPaths;
@@ -102,6 +102,14 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private List<List<List<Vector3>>> mBranchPaths        = new ArrayList<>();
     private List<Integer>             mBranchInPathIndexs = new ArrayList<>();
 
+    //test
+    String _fileDir = "/sdcard/daoge_log/";
+    String _filename = "";
+    StringBuilder sb_helong = null;
+    StringBuilder sb_daoge = new StringBuilder();
+    String fileDir = "/sdcard/daoge_log/";
+    String filename = "";
+
     //proportion mapping
     private ProportionMappingEngine mProportionMappingEngine;
 
@@ -141,6 +149,14 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mNaviPathDataProvider.reset();
         mLastLink=0;
         mEnlargedCrossProcess.clearJNIStatus();
+
+        count = 0;
+        _fileDir = "/sdcard/daoge_log/";
+        _filename = "";
+        sb_helong = null;
+        fileDir = "/sdcard/daoge_log/";
+        filename = "";
+        sb_daoge = null;
     }
 
     @Override
@@ -159,7 +175,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mAMapNavi = amapNavi;
 
         List<Vector3> path_vector3 = new ArrayList<>();
-        List<LatLng> path_latlng = new ArrayList<>();
+        List<LatLngOutSide> path_latlng = new ArrayList<>();
         List<Integer> step_lengths = new ArrayList<>();
         List<Integer> stepPointIndexs = new ArrayList<>();
         for (AMapNaviStep step : aMapNaviPath.getSteps()) {
@@ -167,7 +183,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 step_lengths.add(step.getCoords().size());
                 for (int i = 0; i < step.getCoords().size(); i++) {
                     NaviLatLng coord = step.getCoords().get(i);
-                    LatLng latLng = new LatLng(coord.getLatitude(), coord.getLongitude());
+                    LatLngOutSide latLng = new LatLngOutSide(coord.getLatitude(), coord.getLongitude());
                     path_latlng.add(latLng);
                     ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latLng, DEFAULT_LEVEL);
                     path_vector3.add(new Vector3(pd.x, -pd.y, DEFAULT_OPENGL_Z));
@@ -219,8 +235,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         //求20级下像素与经纬度的对应关系一个像素对应多少经纬度单位
         double latlng_dist = MathUtils.calculateDistance(
-                path_latlng.get(0).latitude, path_latlng.get(0).longitude,
-                path_latlng.get(1).latitude, path_latlng.get(1).longitude);
+                path_latlng.get(0).lat, path_latlng.get(0).lng,
+                path_latlng.get(1).lat, path_latlng.get(1).lng);
         Point _p0 = ARWayProjection.toScreenLocation(path_latlng.get(0));
         Point _p1 = ARWayProjection.toScreenLocation(path_latlng.get(1));
         double pixel_dist = MathUtils.calculateDistance(_p0.x, _p0.y, _p1.x, _p1.y);
@@ -300,31 +316,46 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mProportionMappingEngine = new ProportionMappingEngine(mPathLatLng);
         mProportionMappingEngine.rarefyDouglas(mStepPointIndexs, RAREFY_PIXEL_COUNT / ARWayProjection.K, DEFAULT_LEVEL);
 
+        _fileDir = "/sdcard/daoge_log/";
+        long log_time = System.currentTimeMillis();
+        _filename = "log_helong_"+log_time+".txt";
+        sb_helong = new StringBuilder();
+        fileDir = "/sdcard/daoge_log/";
+        filename = "log_daoge_"+log_time+".txt";
+        sb_daoge = new StringBuilder();
         //动态加载 0--endIndex
         HaloLogger.logE(TAG, "mPathLatLng path start");
-        for (LatLng latlng : mPathLatLng) {
-            HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
+        sb_helong.append("mPathLatLng path start"+"\n");
+        for (LatLngOutSide latlng : mPathLatLng) {
+            HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+            sb_helong.append(latlng.lat + "," + latlng.lng+"\n");
         }
         HaloLogger.logE(TAG, "mPathLatLng path end");
+        sb_helong.append("mPathLatLng path end"+"\n");
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
-        for (int i = 0; i < mPreDynamicEndIndex; i++) {
-            if (mStepPointIndexs.contains(i)) {
-                HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
-                processSteps(mStepPointIndexs.indexOf(i));
-            }
+        //        for (int i = 0; i < mPreDynamicEndIndex; i++) {
+        //            if (mStepPointIndexs.contains(i)) {
+        //                HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
+        //                processSteps(mStepPointIndexs.indexOf(i));
+        //            }
+        //        }
+        for (int i = 0; i < mStepPointIndexs.size(); i++) {
+            processSteps(i);
         }
-//        for (int i = 0; i < mStepPointIndexs.size(); i++) {
-//            processSteps(i);
-//        }
+        FileUtils.write(sb_daoge.toString(),fileDir,filename);
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
-        for (LatLng latlng : mProportionMappingEngine.getRenderPath()) {
-            HaloLogger.logE(TAG, latlng.latitude + "," + latlng.longitude);
+        sb_helong.append("mProportionMappingEngine.getRenderPath screen start"+"\n");
+        for (LatLngOutSide latlng : mProportionMappingEngine.getRenderPath()) {
+            HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+            sb_helong.append(latlng.lat + "," + latlng.lng+"\n");
         }
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen end");
+        sb_helong.append("mProportionMappingEngine.getRenderPath screen end"+"\n");
+        FileUtils.write(sb_helong.toString(),_fileDir,_filename);
         List<Vector3> mainRoad = new ArrayList<>();
-        for (LatLng latlng : mProportionMappingEngine.mapping(0, mPreDynamicEndIndex)) {
-            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.latitude, latlng.longitude), DEFAULT_LEVEL);
+        for (LatLngOutSide latlng : mProportionMappingEngine.mapping(0, mPreDynamicEndIndex)) {
+            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
             mainRoad.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
         }
         mRenderPaths.add(mainRoad);
@@ -410,8 +441,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         //3.拉取对应的主路数据
         List<Vector3> dynamicPath = new ArrayList<>();
-        for (LatLng latlng : mProportionMappingEngine.mapping(startIndex, endIndex)) {
-            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.latitude, latlng.longitude), DEFAULT_LEVEL);
+        for (LatLngOutSide latlng : mProportionMappingEngine.mapping(startIndex, endIndex)) {
+            ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
             dynamicPath.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
         }
         mRenderPaths.clear();
@@ -525,8 +556,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
 
     }
-    private Vector3 parseLanlng(double lan,double lng){
-        ARWayProjection.PointD pd =ARWayProjection.toOpenGLLocation(new LatLng(lan,lng),DEFAULT_LEVEL);
+    private Vector3 parseLanlng(double lat,double lng){
+        ARWayProjection.PointD pd =ARWayProjection.toOpenGLLocation(new LatLngOutSide(lat,lng),DEFAULT_LEVEL);
         Vector3 position = new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z);
         return position;
     }
@@ -634,8 +665,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             List<List<LatLngOutSide>> links = new ArrayList<>();
             List<LatLngOutSide> link = new ArrayList<>();
             LatLngOutSide centerLatLng = new LatLngOutSide();
-            centerLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).latitude;
-            centerLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).longitude;
+            centerLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lat;
+            centerLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lng;
             LatLng[] point8 = new LatLng[8];
             int[] se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
             int breakStart = se[0];
@@ -658,8 +689,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 //continue;
                 //3.当覆盖时,缩小窗口,同时缩短Path到新窗口的边缘
                 LatLngOutSide preCenterLatLng = new LatLngOutSide();
-                preCenterLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).latitude;
-                preCenterLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).longitude;
+                preCenterLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lat;
+                preCenterLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lng;
                 double offsetCover = szCover.width - (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG;
                 HaloLogger.logE(TAG, "szCover.width=" + szCover.width);
                 HaloLogger.logE(TAG, "max=" + (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG);
@@ -710,6 +741,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
 
             //TODO : data for daoge
+
             StringBuilder sb = new StringBuilder();
             sb.append((++count)+" ");
             sb.append(centerPoint.lat+" ");
@@ -721,6 +753,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 sb.append(latlng.lng+" ");
             }
             HaloLogger.logE("daoge",sb.toString().trim());
+            sb_daoge.append(sb.toString()+"\n");
 
 
             HaloLogger.logE(TAG, "into jni");
@@ -730,11 +763,24 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
             if(res==0) {
                 HaloLogger.logE("daoge", "mainRoad point size = "+mainRoad.size());
+                sb_daoge.append("mainRoad point size = "+mainRoad.size()+"\n");
                 HaloLogger.logE("daoge", "\t"+mainRoad);
+                sb_daoge.append("\t"+mainRoad+"\n");
                 HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
+                sb_daoge.append("crossLinks.size = " + crossLinks.size()+"\n");
                 for(List<LatLngOutSide> cross:crossLinks){
                     HaloLogger.logE("daoge", "\t"+cross);
+                    sb_daoge.append("\t"+cross+"\n");
                 }
+                HaloLogger.logE("daoge", "main and road inter points size = "+crossPointIndexs.size());
+                sb_daoge.append("main and road inter points size = "+crossPointIndexs.size()+"\n");
+                HaloLogger.logE("daoge", "\t"+crossPointIndexs.subList(0,crossPointIndexs.size()-1));
+                sb_daoge.append("\t"+crossPointIndexs.subList(0,crossPointIndexs.size()-1)+"\n");
+            }else{
+                sb_daoge.append("mainRoad point size = "+0+"\n");
+                sb_daoge.append("crossLinks.size = " + 0+"\n");
+                sb_daoge.append("main and road inter points size = "+0+"\n");
+                sb_daoge.append("\t[]"+"\n");
             }
             if (res == 0 && crossLinks.size() > 0) {
                 HaloLogger.logE(TAG, "jni get road net success,crossLinks size=" + crossLinks.size() + ",mainRoad size=" + mainRoad.size());
@@ -752,7 +798,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     List<PointF> originalPath = new ArrayList<>();
                     List<Vector3> pathV3 = new ArrayList<>();
                     for (LatLngOutSide latlng : crossLink) {
-                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.lat, latlng.lng), DEFAULT_LEVEL);
+                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
                         pathV3.add(new Vector3(pd.x, -pd.y, DEFAULT_OPENGL_Z));
                     }
                     for (Vector3 v : pathV3) {
@@ -770,10 +816,13 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                         crossLinkVector3.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
                     }*/
                     HaloLogger.logE(TAG, "crossLink cross start");
+                    sb_helong.append("crossLink cross start"+"\n");
                     for (LatLngOutSide latlng : crossLink) {
                         HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+                        sb_helong.append(latlng.lat + "," + latlng.lng+"\n");
                     }
                     HaloLogger.logE(TAG, "crossLink cross end");
+                    sb_helong.append("crossLink cross end"+"\n");
 
                     //此links代表的是岔路
                     branchPaths.add(crossLinkVector3);
@@ -802,12 +851,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 }
                 //mProportionMappingEngine.mappingC(mStepPointIndexs.get(stepIndex),newCenterIndex);
                 //2.2处理主路以及对主路部分进行抽析
-                List<LatLng> subPath = new ArrayList<>();
-                for (LatLngOutSide latlng : mainRoad) {
-                    subPath.add(new LatLng(latlng.lat, latlng.lng));
-                }
                 HaloLogger.logE(TAG, "new center index = " + newCenterIndex);
-                mProportionMappingEngine.mapping(subPath, breakStart, breakEnd, crossPointIndexs);
+                mProportionMappingEngine.mapping(mainRoad, breakStart+1, breakEnd, crossPointIndexs);
+                HaloLogger.logE("ProportionMappingEngine","cross start");
+                for(LatLngOutSide latlng:mProportionMappingEngine.mapping(breakStart+1,breakEnd)){
+                    HaloLogger.logE("ProportionMappingEngine",latlng.lat+","+latlng.lng);
+                }
+                HaloLogger.logE("ProportionMappingEngine","cross end");
+                //HaloLogger.logE("daoge", "mainRoad_render");
+                //HaloLogger.logE("daoge","\t"+mProportionMappingEngine.getRenderPath(breakStart, breakEnd));
 
                 /*HaloLogger.logE(TAG, "jiaodian cross start");
                 for (int i = 0; i < crossPointIndexs.size(); i++) {
@@ -831,7 +883,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @param link         [out]
      * @return
      */
-    private int[] getPartPathFromCover(Size2iOutside szCover, int stepIndex, List<LatLng> path, LatLngOutSide centerLatLng, List<LatLngOutSide> link, LatLng[] point8) {
+    private int[] getPartPathFromCover(Size2iOutside szCover, int stepIndex, List<LatLngOutSide> path, LatLngOutSide centerLatLng, List<LatLngOutSide> link, LatLng[] point8) {
         link.clear();
         double latlng_width = szCover.width * PIXEL_2_LATLNG;
         double latlng_height = szCover.height * PIXEL_2_LATLNG;
@@ -855,21 +907,21 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //breakEnd:结束下标
         int breakStart = 0;
         for (int i = mStepPointIndexs.get(stepIndex) - 1; i >= 0; i--) {
-            LatLng latlng = path.get(i);
-            double offsetLat = Math.abs(centerLatLng.lat - latlng.latitude);
-            double offsetLng = Math.abs(centerLatLng.lng - latlng.longitude);
+            LatLngOutSide latlng = path.get(i);
+            double offsetLat = Math.abs(centerLatLng.lat - latlng.lat);
+            double offsetLng = Math.abs(centerLatLng.lng - latlng.lng);
             if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
                 if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
-                    link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+                    link.add(0, new LatLngOutSide(latlng.lat, latlng.lng));
                     breakStart = i <= 0 ? 0 : i - 1;
                 } else {
-                    LatLng preLatLng = path.get(i + 1);
+                    LatLngOutSide preLatLng = path.get(i + 1);
                     for (int j = 0; j < point8.length; j += 2) {
                         LatLng lineStart = point8[j];
                         LatLng lineEnd = point8[j + 1];
                         Vector3 result = new Vector3();
-                        int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
-                                                            new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
+                        int res = MathUtils.getIntersection(new Vector3(latlng.lat, latlng.lng, 0),
+                                                            new Vector3(preLatLng.lat, preLatLng.lng, 0),
                                                             new Vector3(lineStart.latitude, lineStart.longitude, 0),
                                                             new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
                                                             result);
@@ -883,30 +935,30 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 break;
             } else if (i == 0) {
                 breakStart = 0;
-                link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+                link.add(0, new LatLngOutSide(latlng.lat, latlng.lng));
                 break;
             } else {
-                link.add(0, new LatLngOutSide(latlng.latitude, latlng.longitude));
+                link.add(0, new LatLngOutSide(latlng.lat, latlng.lng));
             }
         }
         int breakEnd = 0;
         for (int i = mStepPointIndexs.get(stepIndex) + 1; i < path.size(); i++) {
-            LatLng latlng = path.get(i);
-            double offsetLat = Math.abs(centerLatLng.lat - latlng.latitude);
-            double offsetLng = Math.abs(centerLatLng.lng - latlng.longitude);
+            LatLngOutSide latlng = path.get(i);
+            double offsetLat = Math.abs(centerLatLng.lat - latlng.lat);
+            double offsetLng = Math.abs(centerLatLng.lng - latlng.lng);
             if (offsetLat >= latlng_width / 2 || offsetLng >= latlng_height / 2) {
                 if (offsetLat == latlng_width / 2 || offsetLng == latlng_height / 2) {
-                    link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+                    link.add(new LatLngOutSide(latlng.lat, latlng.lng));
                     breakEnd = i >= path.size() - 1 ? path.size() - 1 : i + 1;
                     HaloLogger.logE(TAG, "offset bigger than width or height,offsetLat == latlng_width/2");
                 } else {
-                    LatLng preLatLng = path.get(i - 1);
+                    LatLngOutSide preLatLng = path.get(i - 1);
                     for (int j = 0; j < point8.length; j += 2) {
                         LatLng lineStart = point8[j];
                         LatLng lineEnd = point8[j + 1];
                         Vector3 result = new Vector3();
-                        int res = MathUtils.getIntersection(new Vector3(latlng.latitude, latlng.longitude, 0),
-                                                            new Vector3(preLatLng.latitude, preLatLng.longitude, 0),
+                        int res = MathUtils.getIntersection(new Vector3(latlng.lat, latlng.lng, 0),
+                                                            new Vector3(preLatLng.lat, preLatLng.lng, 0),
                                                             new Vector3(lineStart.latitude, lineStart.longitude, 0),
                                                             new Vector3(lineEnd.latitude, lineEnd.longitude, 0),
                                                             result);
@@ -922,10 +974,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             } else if (i == path.size() - 1) {
                 HaloLogger.logE(TAG, "offset bigger than width or height,i == path.size()-1");
                 breakEnd = path.size() - 1;
-                link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+                link.add(new LatLngOutSide(latlng.lat, latlng.lng));
                 break;
             } else {
-                link.add(new LatLngOutSide(latlng.latitude, latlng.longitude));
+                link.add(new LatLngOutSide(latlng.lat, latlng.lng));
             }
         }
         return new int[]{breakStart, breakEnd};
@@ -981,7 +1033,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @return
      */
     private Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
-        LatLng latlng = new LatLng(location.getCoord().getLatitude(), location.getCoord().getLongitude());
+        LatLngOutSide latlng = new LatLngOutSide(location.getCoord().getLatitude(), location.getCoord().getLongitude());
         //latlng = mProportionMappingEngine.mapping(latlng, curIndex);
         //ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
         //不使用上面那种先映射到LatLng,再转换成opengl坐标,而是采用下面这种直接映射到opengl坐标的原因:
