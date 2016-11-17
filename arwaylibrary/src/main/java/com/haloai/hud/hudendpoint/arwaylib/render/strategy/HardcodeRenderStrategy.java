@@ -14,11 +14,19 @@ public class HardcodeRenderStrategy extends RenderStrategy {
     }
 
     @Override
-    public void updateCurrentRoadInfo(int _roadClassSDK, int mpDistance) {
+    public void updateCurrentRoadInfo(int _roadClassSDK, int mpDistance,int pathDistance) {
         int roadClass = getRoadClass(_roadClassSDK);
 
         if (this.renderParamsNotifier == null) {
             //Placeholder
+            return;
+        }
+        if(pathDistance<50){
+            currentGLCameraAngle = 10F;
+            currentGLScale = 1.5;
+            currentGLInScreenProportion = 0.6;
+            offset = 0;
+            renderParamsNotifier.onRenderParamsUpdated(getCurrentRenderParams(), IRenderStrategy.OFFSET_TYPE | IRenderStrategy.ANGLE_TYPE | IRenderStrategy.INSCREENPROPORTION_TYPE | IRenderStrategy.SCALE_TYPE, 2.0);
             return;
         }
         if (mpDistance >150) {
@@ -86,9 +94,10 @@ public class HardcodeRenderStrategy extends RenderStrategy {
     }
 
 
-
-
-
+    @Override
+    public void updateAnimation(AnimationType type) {
+        renderParamsNotifier.onAnimationUpdated(type);
+    }
 
     @Override
     public RenderParams getCurrentRenderParams() {

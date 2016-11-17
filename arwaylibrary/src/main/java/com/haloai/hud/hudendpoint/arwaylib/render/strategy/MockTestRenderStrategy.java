@@ -11,7 +11,7 @@ public class MockTestRenderStrategy extends RenderStrategy {
     }
 
     @Override
-    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance,int pathDistance) {
 
     }
 
@@ -29,6 +29,11 @@ public class MockTestRenderStrategy extends RenderStrategy {
     }
 
     public void setLevelInnerScale(double scale) {
+
+    }
+
+    @Override
+    public void updateAnimation(AnimationType type) {
 
     }
 }

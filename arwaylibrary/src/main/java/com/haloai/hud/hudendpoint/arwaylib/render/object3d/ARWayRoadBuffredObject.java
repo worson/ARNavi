@@ -82,7 +82,11 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         mStepLength = stepLength;
         mIsSkip = skip;
     }
-/*
+
+    public void setStepLength(float stepLength) {
+        mStepLength = stepLength;
+    }
+    /*
 
     public ARWayRoadBuffredObject(float height, float width, int color) {
         this(height,width,5,color);

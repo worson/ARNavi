@@ -13,7 +13,8 @@ android {
         sourceSets.main.jni.srcDirs = []
         ndk {
             moduleName "HaloECP" // Halo enlarged cross image process lib.
-            ldLibs "dl", "log", "Algorithm" // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
+            ldLibs "dl", "log", "Algorithm"
+            // "EGL", "GLESv3", Link with these libraries! 在这里添加你原先在makefile里ldlibs所链接的库
 ////            stl "stlport_shared"
         }
     }
@@ -60,9 +61,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    debugCompile 'com.android.support:support-v4:21.0.3'
     //    compile(name: 'openCVLibrary300-release', ext: 'aar')
     //    debugCompile(name: 'rajawali-release', ext: 'aar')
     //    compile 'org.rajawali3d:rajawali:1.1.337@aar'
@@ -72,4 +70,8 @@ dependencies {
     compile project(path: ':endpointsSharedLib')
     //compile(name: 'openCVLibrary300-release', ext: 'aar')
     compile project(':openCVLibrary300')
+    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:support-v4:21.0.3'
+    testCompile 'junit:junit:4.12'
+    debugCompile 'com.android.support:support-v4:21.0.3'
 }

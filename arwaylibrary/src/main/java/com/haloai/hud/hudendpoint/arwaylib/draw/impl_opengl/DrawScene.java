@@ -19,6 +19,7 @@ import org.rajawali3d.view.TextureView;
 public class DrawScene extends DrawObject implements IViewOperation{
 
     private static DrawScene       mDrawScene       = new DrawScene();
+    private float mLastArwayAlpha = 1;
 
     public DrawScene() {
     }
@@ -36,7 +37,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             mTextureView.setLayoutParams(params);
             mTextureView.setBackgroundColor(Color.TRANSPARENT);
-            mTextureView.setAlpha(1f);
+            mTextureView.setAlpha(mLastArwayAlpha);
         }
         return mTextureView;
     }
@@ -49,11 +50,22 @@ public class DrawScene extends DrawObject implements IViewOperation{
 
     }
 
+    public void setAlpha(float alpha){
+        mLastArwayAlpha=alpha;
+        if (mTextureView != null) {
+            mTextureView.setAlpha(mLastArwayAlpha);
+        }
+    }
+
     @Override
     public void resetView() {
 
     }
+
     public void animShowHide(boolean show) {
+        animShowHide(show,1000);
+    }
+    public void animShowHide(boolean show,long duration) {
         View[] views = new View[]{mTextureView};//
         ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
@@ -63,17 +75,17 @@ public class DrawScene extends DrawObject implements IViewOperation{
                     if(!v.isShown()){
                         v.setVisibility(View.VISIBLE);
                     }
-                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,1);
-                    animator.setDuration(1000);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", 0,mLastArwayAlpha);
+                    animator.setDuration(duration);
                 }else {
-                    animator = ObjectAnimator.ofFloat(v, "Alpha", 1,0);
-                    animator.setDuration(1000-100);
+                    animator = ObjectAnimator.ofFloat(v, "Alpha", mLastArwayAlpha,0);
+                    animator.setDuration(duration-100);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
                     animator.setInterpolator(new LinearInterpolator());
                     animator.setRepeatCount(0);
-//                    animator.start();
+                    animator.start();
                 }
             }
         }
@@ -85,9 +97,10 @@ public class DrawScene extends DrawObject implements IViewOperation{
             View v = views[i];
             if (v != null) {
                 if (show){
+//                    v.setAlpha(1);
                     v.setVisibility(View.VISIBLE);
-
                 }else {
+//                    v.setAlpha(0);
                     v.setVisibility(View.INVISIBLE);
                 }
 

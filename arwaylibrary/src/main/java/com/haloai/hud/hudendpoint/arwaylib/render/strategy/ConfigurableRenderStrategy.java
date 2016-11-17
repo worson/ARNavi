@@ -14,12 +14,17 @@ public class ConfigurableRenderStrategy extends  RenderStrategy{
     }
 
     @Override
-    public void updateCurrentRoadInfo(int roadClass, int mpDistance) {
+    public void updateCurrentRoadInfo(int roadClass, int mpDistance,int pathDistance) {
 
     }
 
     @Override
     public RenderParams getCurrentRenderParams() {
         return null;
+    }
+
+    @Override
+    public void updateAnimation(AnimationType type) {
+
     }
 }

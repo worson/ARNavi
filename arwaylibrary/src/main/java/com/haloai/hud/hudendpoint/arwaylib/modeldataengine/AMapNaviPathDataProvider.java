@@ -83,6 +83,11 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
+    public void setEndPath() {
+        mNaviPathChangeNotifier.onEndPath();
+    }
+
+    @Override
     public void setObjStartOrientation(double rotateZ) {
         mObjStartOrientation = rotateZ;
     }
@@ -97,9 +102,16 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
+    public void setTrafficLight(List<Vector3> lights) {
+        if (mNaviPathChangeNotifier != null) {
+            mNaviPathChangeNotifier.onTrafficLight(lights);
+        }
+    }
+
+    @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
 
-        double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 10;
+        double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 20;
         //假设curPoint为15级时的数据,现在拉取的是18级的数据
         IRenderStrategy.DataLevel lastLevel = mCurDataLevel;
         //factor_last_new =getFactorByLevel(lastLevel)/getFactorByLevel(level)

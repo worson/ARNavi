@@ -12,18 +12,22 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviInfo;
 import com.amap.api.navi.model.NaviLatLng;
+import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
 import com.haloai.hud.hudendpoint.arwaylib.utils.EnlargedCrossProcess;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
+import com.haloai.hud.hudendpoint.arwaylib.utils.PointD;
 import com.haloai.hud.hudendpoint.arwaylib.utils.PrintUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LinkInfoOutside;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.Size2iOutside;
 import com.haloai.hud.utils.HaloLogger;
 
+import org.rajawali3d.cameras.NewChaseCamera;
 import org.rajawali3d.math.vector.Vector3;
 
 import java.util.ArrayList;
@@ -45,6 +49,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     private static final double NEED_OPENGL_LENGTH            = 50;//摄像头高度角度不考虑时视口需要显示的opengl长度
     private static final double FACTOR_LEVEL20_OPENGL_2_METER = 16.5;//20级下opengl到米的转换系数 20级别下--1opengl~=16.5meter
     private static final double SEGMENT_OPENGL_LEGNTH         = 10;//每一个小段对应的opengl长度(也就是说需要四段20/5)
+    private static final int NUMBER_TRAFFIC_LIGHT             = 4;
 
     //Cache all navigation path data.That two member can not change address,because renderer is use that too.
     private INaviPathDataProvider mNaviPathDataProvider = new AMapNaviPathDataProvider();
@@ -111,6 +116,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     //ylqtest
     private IDynamicLoader mDynamicLoader = new DynamicLoader();
+    private int mLastLink = 0;
 
     public AMapNaviPathDataProcessor() {
         mDynamicLoader.setIDynamicLoadNotifer(this);
@@ -142,6 +148,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mCurLevelNeedMeter = (int) (NEED_OPENGL_LENGTH * FACTOR_LEVEL20_OPENGL_2_METER);
         mRoadNetDataProvider.reset();
         mNaviPathDataProvider.reset();
+        mLastLink=0;
         mEnlargedCrossProcess.clearJNIStatus();
 
         count = 0;
@@ -392,11 +399,16 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //显示第一根蚯蚓线
         processGuildLine(mStepPointIndexs.get(0));
 
+        mRenderStrategy.updateAnimation(IRenderStrategy.AnimationType.NAVI_START);
         //4.call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)
         //HaloLogger.logE(TAG, "initPath call processSteps(IRoadNetDataProcessor to get data and create IRoadNetDataProvider something)");
         //processSteps(0,1,2)
         //mRoadNetChangeNotifier.onRoadNetDataChange();
-
+        // TODO: 15/11/2016 调用画不场景
+        if(mPathLatLng.size()-1 <= mPreDynamicEndIndex){
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"");
+            mNaviPathDataProvider.setEndPath();
+        }
         mIsPathInited = true;
         return 1;
     }
@@ -450,6 +462,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mPreDynamicEndIndex = endIndex;
         mPreDynamicStartIndex = startIndex;
+
+        if(mPathLatLng.size()-1 <= endIndex){
+            mNaviPathDataProvider.setEndPath();
+        }
     }
 
     @Override
@@ -485,7 +501,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             int distanceOfMP = naviInfo.getCurStepRetainDistance();
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
                     .getLinks().get(naviInfo.getCurLink());
-            mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP);
+            mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP,naviInfo.getPathRetainDistance());
             /*//2.dynamic load with current path retain distance
             HaloLogger.logE(TAG,"mLeftMeterLength - naviInfo.getPathRetainDistance() = "+(mLeftMeterLength - naviInfo.getPathRetainDistance()));
             HaloLogger.logE(TAG,"NEED_LOAD_METER = "+NEED_LOAD_METER);
@@ -507,8 +523,82 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 processGuildLine(mStepPointIndexs.get(naviInfo.getCurStep()));
                 mCurStep = naviInfo.getCurStep();
             }
+            processTrafficLight(naviInfo.getCurStep(),naviInfo.getCurLink());
         }
     }
+
+    private void processTrafficLight(int curStep,int curLink) {
+        if (mAMapNavi == null) {
+            return;
+        }
+        AMapNaviPath path =  mAMapNavi.getNaviPath();
+        int linkIndex = absoluteLinkIndex(path,curStep,curLink);
+        if((linkIndex-mLastLink)>NUMBER_TRAFFIC_LIGHT || mLastLink==0){
+            List<AMapNaviLink> links = findLinks(path,curStep,curLink,NUMBER_TRAFFIC_LIGHT);
+            List<Vector3> lights = new ArrayList<>();
+            for(AMapNaviLink link:links){
+                if (link.getCoords().size()>1 && link.getTrafficLights()) {
+                    NaviLatLng latlng0 = link.getCoords().get(0);
+                    NaviLatLng latlng1 = link.getCoords().get(1);
+                    Vector3 p0 = parseLanlng(latlng0.getLatitude(),latlng0.getLongitude());
+                    Vector3 p1 = parseLanlng(latlng1.getLatitude(),latlng1.getLongitude());
+                    float radius = RoadRenderOption.TRAFFIC_DEVIATION_DISTANCE;
+                    double distance=Vector3.distanceTo(p0,p1);
+                    PointD position = new PointD();
+                    position.x = p0.x + (p1.x - p0.x) * radius / distance;
+                    position.y = p0.y + (p1.y - p0.y) * radius / distance;
+                    MathUtils.rotateAround(p0.x,p0.y,position.x,position.y,position,-90);
+
+                    lights.add(new Vector3(position.x,position.y,DEFAULT_OPENGL_Z));
+                }
+            }
+            mNaviPathDataProvider.setTrafficLight(lights);
+            mLastLink = linkIndex;
+        }
+
+    }
+    private Vector3 parseLanlng(double lan,double lng){
+        ARWayProjection.PointD pd =ARWayProjection.toOpenGLLocation(new LatLng(lan,lng),DEFAULT_LEVEL);
+        Vector3 position = new Vector3((pd.x-mOffsetX)*TIME_15_20,(-pd.y-mOffsetY)*TIME_15_20,DEFAULT_OPENGL_Z);
+        return position;
+    }
+    private List<AMapNaviLink> findLinks(AMapNaviPath path ,int curStep,int curLink,int cnt){
+        List<AMapNaviLink> validLinks = new ArrayList<>();
+        int has = 0;
+        int startLink = curLink;
+        int linkCnt = 0;
+        boolean over = false;
+        for (int i = curStep; i < path.getStepsCount(); i++) {
+            AMapNaviStep step = path.getSteps().get(i);
+            linkCnt = step.getLinks().size();
+            for (int j = startLink; j < linkCnt; j++) {
+                startLink = 0;
+                if(has++>cnt){
+                    over = true;
+                    break;
+                }
+                validLinks.add(step.getLinks().get(j));
+            }
+            if (over){
+                break;
+            }
+        }
+        return validLinks;
+    }
+    private int absoluteLinkIndex(AMapNaviPath path ,int curStep,int curLink){
+        if(path.getStepsCount()<curStep){
+            return -1;
+        }
+        int index = 0;
+        for (int i = 0; i < curStep; i++) {
+            index += path.getSteps().get(i).getLinks().size();
+        }
+        if(curLink>=0 && curLink<path.getSteps().get(curStep).getLinks().size()){
+            index += curLink;
+        }
+        return index;
+    }
+
 
     private void processGuildLine(int curIndexInPath) {
         List<ARWayProjection.PointD> guildLine = mProportionMappingEngine.mappingGuideV(curIndexInPath);

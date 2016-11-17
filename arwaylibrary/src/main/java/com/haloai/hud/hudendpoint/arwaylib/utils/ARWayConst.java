@@ -4,7 +4,7 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
  * Created by wangshengxing on 16/7/12.
  */
 public class ARWayConst {
-
+    public static final boolean IS_DEBUG_MODE = true;
     public static boolean IS_DARW_ARWAY = true; //是否偏航时清空显示数据
     //disiplay
     public static final boolean IS_YAW_CLEAR_DISPLAY = false; //是否偏航时清空显示数据
@@ -583,4 +583,7 @@ public class ARWayConst {
             "39.99661567550214,116.47976115345955\n" +
             "39.99664649739236,116.47965118288994\n" +
             "crossLink cross end";
+
+    public class IS_DEBUG_MODE {
+    }
 }
