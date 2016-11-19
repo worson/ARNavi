@@ -23,7 +23,7 @@ public interface ICarADASDataProvider {
         public long duration;
     }
     interface ICarADASNotifier {
-        void onCarShow();
+        void onCarShow(double x,double y,double z,double direction);
         void onCarAnimationUpdate(AnimData animData);
         void onDistChange(double dist);
         void onCarHide();

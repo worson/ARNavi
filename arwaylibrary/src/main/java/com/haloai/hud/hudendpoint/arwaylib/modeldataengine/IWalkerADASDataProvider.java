@@ -9,6 +9,8 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
  */
 public interface IWalkerADASDataProvider {
     interface IWalkerADASNotifier {
+        void showWalker();
+        void hideWalker();
         void setWalkerADASDataProvider(IWalkerADASDataProvider adasDataProvider);
     }
 }

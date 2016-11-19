@@ -548,8 +548,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     int end = link.getCoords().size()-1;
                     NaviLatLng latlng0 = link.getCoords().get(start);
                     NaviLatLng latlng1 = link.getCoords().get(end);
-                    Vector3 p0 = parseLanlng(latlng0.getLatitude(),latlng0.getLongitude());
-                    Vector3 p1 = parseLanlng(latlng1.getLatitude(),latlng1.getLongitude());
+                    Vector3 p0 = parseLatlng(latlng0.getLatitude(),latlng0.getLongitude());
+                    Vector3 p1 = parseLatlng(latlng1.getLatitude(),latlng1.getLongitude());
                     float radius = RoadRenderOption.TRAFFIC_DEVIATION_DISTANCE;
                     double distance = Vector3.distanceTo(p0, p1);
                     PointD position = new PointD();

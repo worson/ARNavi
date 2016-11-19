@@ -904,7 +904,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     @Override
-    public void onCarShow() {
+    public void onCarShow(double x,double y,double z,double direction) {
 
     }
 

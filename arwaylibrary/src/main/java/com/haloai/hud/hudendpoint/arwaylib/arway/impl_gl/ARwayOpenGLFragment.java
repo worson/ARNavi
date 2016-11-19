@@ -267,8 +267,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mRenderer.setRoadNetDataProvider(mNaviPathDataProcessor.getRoadNetDataProvider());
 
         mADASDataProcessor = new ADASDataProcessor();
-        mADASDataProcessor.setWalkerADASNotifier(x);
-        x.setWalkerADASDataProvider(mADASDataProcessor.getWalkerProvider());
+        mADASDataProcessor.setWalkerADASNotifier(mGlDrawNaviInfo);
+        mGlDrawNaviInfo.setWalkerADASDataProvider(mADASDataProcessor.getWalkerProvider());
         mADASDataProcessor.setCarADASNotifier(mRenderer);
         mRenderer.setCarADASDataProvider(mADASDataProcessor.getCarProvider());
         mADASDataProcessor.setLaneADASNotifier(mRenderer);
