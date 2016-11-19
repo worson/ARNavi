@@ -3834,6 +3834,7 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 
 		// 关于候选路径，求路径起点、终点离主路起点、终点距离最近的路径
 		double uMinOptionDis = 2*(rtScreen.width+rtScreen.height);				// 设定一个达不到的初值，便于循环比较
+		double uMaxOptionDis = -1;
 		for (int j=0; j<vecStartOptionPtId.size(); j++)
 		{
 			HAMapPoint hamStartOptionPt = vecBorderPt[vecStartOptionPtId[j]];
@@ -3841,6 +3842,12 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 			for (int k=0; k<vecEndOptionPtId.size(); k++)
 			{
 				HAMapPoint hamEndOptionPt = vecBorderPt[vecEndOptionPtId[k]];
+
+				if (hamStartOptionPt==hamEndOptionPt)
+				{
+					continue;
+				}
+
 				Vec2f vEnd(hamEndOptionPt.x-hamEndPt.x,hamEndOptionPt.y-hamEndPt.y);
 				float fAngle = getAngle(vStart,vEnd);
 				float fDelAngle = abs(fMainAngle-fAngle);
@@ -3860,7 +3867,6 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 						v1 = vEnd;
 					}
 				}
-
 			}
 		}
 
@@ -4127,6 +4133,64 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 		return -1;
 	}
 	
+	// =========== Error: 此处写死，只为保暂时演示效果，演示完一定要删除==========
+	if (hamCenterInNet.x==831136 && hamCenterInNet.y==1074731)
+	{		
+		// temp
+		vector<int> vecMatchPathTemp;
+		vector<int> vecMatchPathNodeIdTemp;
+		for (int i=0; i<=nMatchCenterSite-1; i++)
+		{
+			vecMatchPathTemp.push_back(vecMatchPath[i]);
+			vecMatchPathNodeIdTemp.push_back(vecMatchPathNodeId[i]);
+		}
+		vecMatchPathNodeIdTemp.push_back(vecMatchPathNodeId[nMatchCenterSite]);
+
+		vecMatchPathTemp.push_back(29);
+		vecMatchPathTemp.push_back(14);
+		vecMatchPathTemp.push_back(71);
+		vecMatchPathTemp.push_back(72);
+
+		vecMatchPathNodeIdTemp.push_back(12);
+		vecMatchPathNodeIdTemp.push_back(19);
+		vecMatchPathNodeIdTemp.push_back(70);
+		vecMatchPathNodeIdTemp.push_back(23);
+
+		
+		// 修改主路
+		vecMatchPath = vecMatchPathTemp;
+		vecMatchPathNodeId = vecMatchPathNodeIdTemp;
+
+		
+		// 修改终点
+		HAMapPoint hamPreTemp = hamCenterInNet;
+		bool bFlag = false;
+		for (int i=nMatchCenterSite; i<vecMatchPath.size(); i++)
+		{			
+			int nTempLinkId = vecMatchPath[i];
+			bool bR1 = isRectInside(vecRoadNetLinks[nTempLinkId][0],rtScreen);
+			bool bR2 = isRectInside(vecRoadNetLinks[nTempLinkId][vecRoadNetLinks[nTempLinkId].size()-1],rtScreen);
+			if (!(bR1&bR2))
+			{
+				nRet = getCrossPointLink2Rect(vecRoadNetLinks[nTempLinkId],
+					rtScreen, hamMatchNextPt);
+				if (nRet<0)
+				{
+					break;
+				}
+				bFlag = true;
+				break;
+			}
+		}
+		
+		if (!bFlag)
+		{
+			hamMatchNextPt = vecLinkEndPtnode[vecMatchPathNodeId[vecMatchPathNodeId.size()-1]].hamEndPoint;
+		}		
+	}
+	// ============================================================================
+
+
 	cv::Rect rtExScreen(rtScreen.x-nCrossRoadLen,rtScreen.y-nCrossRoadLen,
 						rtScreen.width+2*nCrossRoadLen,rtScreen.height+2*nCrossRoadLen);		// 扩大的窗口，用于延伸岔路
 // 	nRet = formRoadNet4(vecRoadNetLinks,vecRoadNetLinkInfos,
@@ -4733,6 +4797,11 @@ int MergeMapData::matchMainRoadCenterInNet6(const vector<HAMapPoint>& vecMainRoa
 			for (int k=0; k<vecEndOptionPtId.size(); k++)
 			{
 				HAMapPoint hamEndOptionPt = vecBorderPt[vecEndOptionPtId[k]];
+				if (hamStartOptionPt==hamEndOptionPt)
+				{
+					continue;
+				}
+
 				Vec2f vEnd(hamEndOptionPt.x-hamEndPt.x,hamEndOptionPt.y-hamEndPt.y);
 				float fAngle = getAngle(vStart,vEnd);
 				float fDelAngle = abs(fMainAngle-fAngle);
