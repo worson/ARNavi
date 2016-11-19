@@ -93,5 +93,6 @@ public class SuperArwaySceneUpdater {
 
     public void setRenderer(Renderer renderer) {
         mRenderer = renderer;
+        setScene(renderer.getCurrentScene());
     }
 }
