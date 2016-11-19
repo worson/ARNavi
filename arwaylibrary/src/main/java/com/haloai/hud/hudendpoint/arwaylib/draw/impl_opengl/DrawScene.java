@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.RelativeLayout;
 
+import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
 
@@ -18,6 +19,7 @@ import org.rajawali3d.view.TextureView;
  */
 public class DrawScene extends DrawObject implements IViewOperation{
 
+    private ViewGroup mGlViewgroup = null;
     private static DrawScene       mDrawScene       = new DrawScene();
     private float mLastArwayAlpha = 1;
 
@@ -45,6 +47,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
     @Override
     public void setView(Context context, View view) {
         if (view != null) {
+            mGlViewgroup = (ViewGroup)view.findViewById(R.id.opengl_viewgroup);
 //            mTextureView =(TextureView) view.findViewById(R.id.rajwali_surface);
         }
 
@@ -66,7 +69,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
         animShowHide(show,1000);
     }
     public void animShowHide(boolean show,long duration) {
-        View[] views = new View[]{mTextureView};//
+        View[] views = new View[]{mGlViewgroup,mTextureView};//
         ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
@@ -79,7 +82,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
                     animator.setDuration(duration);
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", mLastArwayAlpha,0);
-                    animator.setDuration(duration-100);
+                    animator.setDuration(duration);
 //                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
@@ -92,17 +95,18 @@ public class DrawScene extends DrawObject implements IViewOperation{
     }
 
     public void showHide(boolean show) {
-        View[] views = new View[]{mTextureView};//
+        View[] views = new View[]{mGlViewgroup,mTextureView};//
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
             if (v != null) {
                 if (show){
-//                    v.setAlpha(1);
+                    v.setAlpha(1);
                     v.setVisibility(View.VISIBLE);
                 }else {
-//                    v.setAlpha(0);
+                    v.setAlpha(0);
                     v.setVisibility(View.INVISIBLE);
                 }
+                v.invalidate();
 
             }
         }

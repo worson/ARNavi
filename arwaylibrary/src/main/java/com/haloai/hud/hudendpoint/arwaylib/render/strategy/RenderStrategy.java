@@ -29,9 +29,9 @@ public abstract class RenderStrategy implements IRenderStrategy {
 
     @Override
     public void reset() {
-        currentGLCameraAngle = 10F;
+        currentGLCameraAngle = 0F;
         currentGLScale = 1.5;
-        currentGLInScreenProportion = 0.6;
+        currentGLInScreenProportion = 0.4;
         offset=0;
         if(ARWayConst.IS_DEBUG_MODE){
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"RenderStrategy reset ");

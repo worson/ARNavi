@@ -6,6 +6,8 @@ import android.graphics.Color;
  * Created by wangshengxing on 16/10/19.
  */
 public class RoadRenderOption {
+
+    public static final boolean IS_ROAD_NET_REFLINE = false;
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
     public static final float TRAFFIC_DEVIATION_DISTANCE = 0.65F;

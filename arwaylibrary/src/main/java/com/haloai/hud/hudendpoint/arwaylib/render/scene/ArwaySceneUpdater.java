@@ -237,6 +237,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         reloadAllLayer();
 
         commitRender();
+
     }
 
     @Override
@@ -932,15 +933,19 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
                 roadLayers.road.setMaterial(material);
                 roadLayers.bottom.setMaterial(material);
-                roadLayers.refLine.setMaterial(material);
 
                 roadLayers.road.updateBufferedRoad(road,offset);
                 roadLayers.bottom.updateBufferedRoad(road,offset);
-                roadLayers.refLine.updateReferenceLine(road, offset);
 
-                roadLayers.refLine.setPosition(offset);
                 roadLayers.road.setPosition(offset);
                 roadLayers.bottom.setPosition(offset);
+
+                if(RoadRenderOption.IS_ROAD_NET_REFLINE) {
+                    roadLayers.refLine.setMaterial(material);
+                    roadLayers.refLine.updateReferenceLine(road, offset);
+                    roadLayers.refLine.setPosition(offset);
+
+                }
 
             }
         }
@@ -1082,7 +1087,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 //                        roadLayers.refLine.setMaterial(mCrossRefMaterial);
                         mCrossRoadBottom.addChild(roadLayers.bottom);
                         mCrossRoad.addChild(roadLayers.road);
-                        mCrossRefLine.addChild(roadLayers.refLine);
+                        if(RoadRenderOption.IS_ROAD_NET_REFLINE) {
+                            mCrossRefLine.addChild(roadLayers.refLine);
+                        }
                     }
                 }
             }
