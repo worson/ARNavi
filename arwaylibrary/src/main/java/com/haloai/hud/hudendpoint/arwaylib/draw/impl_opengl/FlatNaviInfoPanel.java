@@ -32,6 +32,7 @@ import com.haloai.hud.hudendpoint.arwaylib.bean.impl.RouteBean;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
 import com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedPanelView;
+import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IWalkerADASDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.utils.HaloLogger;
@@ -42,7 +43,7 @@ import java.util.List;
 /**
  * Created by wangshengxing on 16/7/15.
  */
-public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,SensorEventListener{
+public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,SensorEventListener, IWalkerADASDataProvider.IWalkerADASNotifier {
     private static final boolean GPS_DEBUG_MODE = true;
     private static final int SHOW_NAVI_INFO_ID  = 1;
 
@@ -97,6 +98,21 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     private int[] mSpeedNumImg = {R.drawable.smooth_number_0, R.drawable.smooth_number_1, R.drawable.smooth_number_2,
             R.drawable.smooth_number_3, R.drawable.smooth_number_4, R.drawable.smooth_number_5, R.drawable.smooth_number_6,
             R.drawable.smooth_number_7, R.drawable.smooth_number_8, R.drawable.smooth_number_9};
+
+    @Override
+    public void showWalker() {
+
+    }
+
+    @Override
+    public void hideWalker() {
+
+    }
+
+    @Override
+    public void setWalkerADASDataProvider(IWalkerADASDataProvider adasDataProvider) {
+
+    }
 
     class TimeReceiver extends BroadcastReceiver {
 

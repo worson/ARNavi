@@ -48,8 +48,8 @@ public class ProportionMappingEngine {
         double totalLength = 0;
         for (int i = 1; i < mOriPath.size(); i++) {
             totalLength += AMapUtils.calculateLineDistance(
-                    new LatLng(mOriPath.get(i - 1).lat,mOriPath.get(i - 1).lng),
-                    new LatLng(mOriPath.get(i).lat,mOriPath.get(i).lng));
+                    new LatLng(mOriPath.get(i - 1).lat, mOriPath.get(i - 1).lng),
+                    new LatLng(mOriPath.get(i).lat, mOriPath.get(i).lng));
             lengths.add(totalLength);
         }
         for (int i = 0; i < lengths.size(); i++) {
@@ -134,16 +134,16 @@ public class ProportionMappingEngine {
      * @param subPath           新的数据段
      * @param start             开始替换点在原始路径中的位置
      * @param end               结束替换点在原始路径中的位置
-     * @param crossPointIndexs_ 需要在抽析中被保留的点
+     * @param _crossPointIndexs 需要在抽析中被保留的点
      */
-    public void mapping(List<LatLngOutSide> subPath, int start, int end, List<Integer> crossPointIndexs_) {
+    public void mapping(List<LatLngOutSide> subPath, int start, int end, List<Integer> _crossPointIndexs) {
         //首先对subPath进行抽析处理
-        HaloLogger.logE(TAG,"cross start");
-        for(LatLngOutSide latlng:subPath){
-            HaloLogger.logE(TAG,latlng.lat+","+latlng.lng);
+        HaloLogger.logE(TAG, "cross start");
+        for (LatLngOutSide latlng : subPath) {
+            HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
         }
-        HaloLogger.logE(TAG,"cross end");
-        List<Integer> crossPointIndexs = new ArrayList<>(crossPointIndexs_);
+        HaloLogger.logE(TAG, "cross end");
+        List<Integer> crossPointIndexs = new ArrayList<>(_crossPointIndexs);
         crossPointIndexs.add(0, 0);
         crossPointIndexs.add(subPath.size() - 1);
         List<LatLngOutSide> temp = new ArrayList<>(subPath);
@@ -162,42 +162,42 @@ public class ProportionMappingEngine {
                 subPath.add(partPath.get(index));
             }
         }
-        HaloLogger.logE(TAG,"cross start");
-        for(LatLngOutSide latlng:subPath){
-            HaloLogger.logE(TAG,latlng.lat+","+latlng.lng);
+        HaloLogger.logE(TAG, "cross start");
+        for (LatLngOutSide latlng : subPath) {
+            HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
         }
-        HaloLogger.logE(TAG,"cross end");
+        HaloLogger.logE(TAG, "cross end");
 
-        HaloLogger.logE("tt__tt","被替换的主路部分 cross start");
-        for(LatLngOutSide latlng:mOriPath.subList(start,end)){
-            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+        HaloLogger.logE("tt__tt", "被替换的主路部分 cross start");
+        for (LatLngOutSide latlng : mOriPath.subList(start, end)) {
+            HaloLogger.logE("tt__tt", latlng.lat + "," + latlng.lng);
         }
-        HaloLogger.logE("tt__tt","被替换的主路部分 cross end");
-//        HaloLogger.logE("tt__tt","cross start");
-//        for(LatLngOutSide latlng:mRenderPath){
-//            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
-//        }
-//        HaloLogger.logE("tt__tt","cross end");
+        HaloLogger.logE("tt__tt", "被替换的主路部分 cross end");
+        //        HaloLogger.logE("tt__tt","cross start");
+        //        for(LatLngOutSide latlng:mRenderPath){
+        //            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+        //        }
+        //        HaloLogger.logE("tt__tt","cross end");
         double startProp = mProportionListOri.get(start);
         double endProp = mProportionListOri.get(end);
         for (int i = 0; i < mProportionListRender.size(); i++) {
             double prop = mProportionListRender.get(i);
             if (Math.abs(prop - startProp) <= X || prop > startProp) {
-                int replaceStart = i == 0 ? 0 : /*Math.abs(prop - startProp) <= X ? i : */i-1;
+                int replaceStart = i == 0 ? 0 : /*Math.abs(prop - startProp) <= X ? i : */i - 1;
                 for (int j = i; j < mProportionListRender.size(); j++) {
                     prop = mProportionListRender.get(j);
                     if (Math.abs(prop - endProp) <= X || prop > endProp) {
                         int replaceEnd = j;
-                        HaloLogger.logE("tt__tt","替换的主路 cross start");
-                        for(LatLngOutSide latlng:subPath){
-                            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+                        HaloLogger.logE("tt__tt", "替换的主路 cross start");
+                        for (LatLngOutSide latlng : subPath) {
+                            HaloLogger.logE("tt__tt", latlng.lat + "," + latlng.lng);
                         }
-                        HaloLogger.logE("tt__tt","替换的主路 cross end");
-                        HaloLogger.logE("tt__tt","替换后的主路 path start");
-                        for(LatLngOutSide latlng:mRenderPath.subList(replaceStart,replaceEnd+1)){
-                            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+                        HaloLogger.logE("tt__tt", "替换的主路 cross end");
+                        HaloLogger.logE("tt__tt", "替换后的主路 path start");
+                        for (LatLngOutSide latlng : mRenderPath.subList(replaceStart, replaceEnd + 1)) {
+                            HaloLogger.logE("tt__tt", latlng.lat + "," + latlng.lng);
                         }
-                        HaloLogger.logE("tt__tt","替换后的主路 path end");
+                        HaloLogger.logE("tt__tt", "替换后的主路 path end");
                         List<LatLngOutSide> headRenderPath = mRenderPath.subList(0, replaceStart + 1);
                         List<LatLngOutSide> tailRenderPath = mRenderPath.subList(replaceEnd, mRenderPath.size());
                         List<Double> headProportion = mProportionListRender.subList(0, replaceStart + 1);
@@ -211,17 +211,17 @@ public class ProportionMappingEngine {
                         List<Double> lengths = new ArrayList<>();
                         double totalLength = 0;
                         totalLength += AMapUtils.calculateLineDistance(
-                                new LatLng(replaceStartLatLngOutSide.lat,replaceStartLatLngOutSide.lng),
-                                new LatLng(subPath.get(0).lat,subPath.get(0).lng));
+                                new LatLng(replaceStartLatLngOutSide.lat, replaceStartLatLngOutSide.lng),
+                                new LatLng(subPath.get(0).lat, subPath.get(0).lng));
                         lengths.add(totalLength);
                         for (int k = 1; k < subPath.size(); k++) {
                             lengths.add(totalLength += AMapUtils.calculateLineDistance(
-                                    new LatLng(subPath.get(k - 1).lat,subPath.get(k-1).lng),
-                                    new LatLng(subPath.get(k).lat,subPath.get(k).lng)));
+                                    new LatLng(subPath.get(k - 1).lat, subPath.get(k - 1).lng),
+                                    new LatLng(subPath.get(k).lat, subPath.get(k).lng)));
                         }
                         totalLength += AMapUtils.calculateLineDistance(
-                                new LatLng(subPath.get(subPath.size() - 1).lat,subPath.get(subPath.size() - 1).lng),
-                                new LatLng(replaceEndLatLngOutSide.lat,replaceEndLatLngOutSide.lng));
+                                new LatLng(subPath.get(subPath.size() - 1).lat, subPath.get(subPath.size() - 1).lng),
+                                new LatLng(replaceEndLatLngOutSide.lat, replaceEndLatLngOutSide.lng));
                         for (int k = 0; k < lengths.size(); k++) {
                             middleProportion.add(replacedStartProportion + lengths.get(k) / totalLength * replacedTotalProportion);
                         }
@@ -249,11 +249,11 @@ public class ProportionMappingEngine {
                 break;
             }
         }
-//        HaloLogger.logE("tt__tt","screen start");
-//        for(LatLngOutSide latlng:mRenderPath){
-//            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
-//        }
-//        HaloLogger.logE("tt__tt","screen end");
+        //        HaloLogger.logE("tt__tt","screen start");
+        //        for(LatLngOutSide latlng:mRenderPath){
+        //            HaloLogger.logE("tt__tt",latlng.lat+","+latlng.lng);
+        //        }
+        //        HaloLogger.logE("tt__tt","screen end");
     }
 
     /**
@@ -280,11 +280,11 @@ public class ProportionMappingEngine {
         LatLngOutSide endLatLngOutSide = mOriPath.get(curIndex + 1);
         double curProp = startProp + (endProp - startProp) *
                 (AMapUtils.calculateLineDistance(
-                        new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
-                        new LatLng(LatLngOutSide.lat,LatLngOutSide.lng)) /
+                        new LatLng(startLatLngOutSide.lat, startLatLngOutSide.lng),
+                        new LatLng(LatLngOutSide.lat, LatLngOutSide.lng)) /
                         AMapUtils.calculateLineDistance(
-                                new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
-                                new LatLng(endLatLngOutSide.lat,endLatLngOutSide.lng)));
+                                new LatLng(startLatLngOutSide.lat, startLatLngOutSide.lng),
+                                new LatLng(endLatLngOutSide.lat, endLatLngOutSide.lng)));
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
             LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
@@ -313,11 +313,11 @@ public class ProportionMappingEngine {
         LatLngOutSide endLatLngOutSide = mOriPath.get(curIndex + 1);
         double curProp = startProp + (endProp - startProp) *
                 (AMapUtils.calculateLineDistance(
-                        new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
-                        new LatLng(LatLngOutSide.lat,LatLngOutSide.lng)) /
+                        new LatLng(startLatLngOutSide.lat, startLatLngOutSide.lng),
+                        new LatLng(LatLngOutSide.lat, LatLngOutSide.lng)) /
                         AMapUtils.calculateLineDistance(
-                                new LatLng(startLatLngOutSide.lat,startLatLngOutSide.lng),
-                                new LatLng(endLatLngOutSide.lat,endLatLngOutSide.lng)));
+                                new LatLng(startLatLngOutSide.lat, startLatLngOutSide.lng),
+                                new LatLng(endLatLngOutSide.lat, endLatLngOutSide.lng)));
         for (int i = 1; i < mProportionListRender.size(); i++) {
             double nextProp = mProportionListRender.get(i);
             LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
@@ -347,10 +347,10 @@ public class ProportionMappingEngine {
      * @param end   原始路径的终点
      * @return
      */
-    public List<LatLngOutSide> mapping(int start,int end){
-        double startProp = mProportionListOri.get(start>=mProportionListOri.size()-1?mProportionListOri.size()-2:start);
-        double endProp = mProportionListOri.get(end>=mProportionListOri.size()?mProportionListOri.size()-1:end);
-        for(int i=0;i<mProportionListRender.size()-1;i++){
+    public List<LatLngOutSide> mapping(int start, int end) {
+        double startProp = mProportionListOri.get(start >= mProportionListOri.size() - 1 ? mProportionListOri.size() - 2 : start);
+        double endProp = mProportionListOri.get(end >= mProportionListOri.size() ? mProportionListOri.size() - 1 : end);
+        for (int i = 0; i < mProportionListRender.size() - 1; i++) {
             double prop = mProportionListRender.get(i);
             if (prop >= startProp) {
                 int startRender = prop == startProp ? i : i == 0 ? 0 : i - 1;
@@ -367,6 +367,9 @@ public class ProportionMappingEngine {
         return null;
     }
 
+    public List<LatLngOutSide> getRenderPart(int start,int end){
+        return mRenderPath.subList(start,end);
+    }
     /**
      * 传入机动点的角标,返回蚯蚓线的Path
      * 默认长度是30m,前后各15m
@@ -396,12 +399,12 @@ public class ProportionMappingEngine {
                     guildLine.add(0, mRenderPath.get(j));
                     if (j == i - 1) {
                         addUp += AMapUtils.calculateLineDistance(
-                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
-                                new LatLng(preLatLngOutSide.lat,preLatLngOutSide.lng));
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(preLatLngOutSide.lat, preLatLngOutSide.lng));
                     } else {
                         addUp += AMapUtils.calculateLineDistance(
-                                new LatLng(mRenderPath.get(j + 1).lat,mRenderPath.get(j + 1).lng),
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng));
+                                new LatLng(mRenderPath.get(j + 1).lat, mRenderPath.get(j + 1).lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         break;
@@ -413,12 +416,12 @@ public class ProportionMappingEngine {
                     guildLine.add(mRenderPath.get(j));
                     if (j == i) {
                         addUp += AMapUtils.calculateLineDistance(
-                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
-                                new LatLng(nextLatLngOutSide.lat,nextLatLngOutSide.lng));
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(nextLatLngOutSide.lat, nextLatLngOutSide.lng));
                     } else {
                         addUp += AMapUtils.calculateLineDistance(
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng),
-                                new LatLng(mRenderPath.get(j - 1).lat,mRenderPath.get(j-1).lng));
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng),
+                                new LatLng(mRenderPath.get(j - 1).lat, mRenderPath.get(j - 1).lng));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         break;
@@ -460,12 +463,12 @@ public class ProportionMappingEngine {
                     double dist;
                     if (j == i - 1) {
                         addUp += (dist = AMapUtils.calculateLineDistance(
-                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
                     } else {
                         addUp += (dist = AMapUtils.calculateLineDistance(
-                                new LatLng(mRenderPath.get(j+1).lat,mRenderPath.get(j+1).lng),
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
+                                new LatLng(mRenderPath.get(j + 1).lat, mRenderPath.get(j + 1).lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         if (addUp > GUILD_LENGTH / 2) {
@@ -487,12 +490,12 @@ public class ProportionMappingEngine {
                     double dist;
                     if (j == i) {
                         addUp += (dist = AMapUtils.calculateLineDistance(
-                                new LatLng(curLatLngOutSide.lat,curLatLngOutSide.lng),
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng)));
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
                     } else {
                         addUp += (dist = AMapUtils.calculateLineDistance(
-                                new LatLng(mRenderPath.get(j).lat,mRenderPath.get(j).lng),
-                                new LatLng(mRenderPath.get(j-1).lat,mRenderPath.get(j-1).lng)));
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng),
+                                new LatLng(mRenderPath.get(j - 1).lat, mRenderPath.get(j - 1).lng)));
                     }
                     if (addUp >= GUILD_LENGTH / 2) {
                         if (addUp > GUILD_LENGTH / 2) {
@@ -523,5 +526,22 @@ public class ProportionMappingEngine {
      */
     public void mappingC(int oldCenterIndexInPath, int newCenterIndexInPart) {
 
+    }
+
+    /**
+     * 通过传入一个LatLng,返回该LatLng在渲染路径中的下标
+     *
+     * @param destLatLng
+     * @return
+     */
+    public int mapping(LatLngOutSide destLatLng) {
+        int index = 0;
+        for (LatLngOutSide latlng : mRenderPath) {
+            if (Math.abs(latlng.lat - destLatLng.lat) <= X && Math.abs(latlng.lng - destLatLng.lng) <= X) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
     }
 }

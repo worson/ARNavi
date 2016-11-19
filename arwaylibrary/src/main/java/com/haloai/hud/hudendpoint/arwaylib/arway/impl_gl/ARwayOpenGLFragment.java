@@ -52,7 +52,9 @@ import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
 import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.NaviAnimationNotifer;
 import com.haloai.hud.hudendpoint.arwaylib.map.amap.MapProjectionMachine;
+import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.ADASDataProcessor;
 import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.AMapNaviPathDataProcessor;
+import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IADASDataProcessor;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.RenderStrategyFactory;
 import com.haloai.hud.hudendpoint.arwaylib.test.debug.CrossImageDataCollector;
@@ -152,6 +154,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     //navi
     private IRenderStrategy           mCurrentRenderStrategy;
     private AMapNaviPathDataProcessor mNaviPathDataProcessor;
+    private ADASDataProcessor         mADASDataProcessor;
 
     //test
     private static TimeRecorder mUpdatePathRecorder   = null;
@@ -255,12 +258,21 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mCurrentRenderStrategy.setRenderParamsNotifier(mRenderer);
         mRenderer.initDefaultRenderParams(mCurrentRenderStrategy.getCurrentRenderParams());
         mCurrentRenderStrategy.getCurrentRenderParams();
+        //init processor and provider
         mNaviPathDataProcessor = new AMapNaviPathDataProcessor();
         mNaviPathDataProcessor.setRenderStrategy(mCurrentRenderStrategy);
         mNaviPathDataProcessor.setRoadNetChangeNotifier(mRenderer);
         mNaviPathDataProcessor.setNaviPathChangeNotifier(mRenderer);
         mRenderer.setNaviPathDataProvider(mNaviPathDataProcessor.getNaviPathDataProvider());
         mRenderer.setRoadNetDataProvider(mNaviPathDataProcessor.getRoadNetDataProvider());
+
+        mADASDataProcessor = new ADASDataProcessor();
+        mADASDataProcessor.setWalkerADASNotifier(mGlDrawNaviInfo);
+        mGlDrawNaviInfo.setWalkerADASDataProvider(mADASDataProcessor.getWalkerProvider());
+        mADASDataProcessor.setCarADASNotifier(mRenderer);
+        mRenderer.setCarADASDataProvider(mADASDataProcessor.getCarProvider());
+        mADASDataProcessor.setLaneADASNotifier(mRenderer);
+        mRenderer.setLaneADASDataProvider(mADASDataProcessor.getLaneProvider());
     }
 
     @Override
@@ -708,7 +720,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mNaviIcon = 0;
 
         mIsNeedNaviStartAnimation = false;
-//        mIsOnNaviStartAnimation = false;
+        //mIsOnNaviStartAnimation = false;
+        mADASDataProcessor.reset();
     }
 
     /**
@@ -1470,5 +1483,25 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (mDrawScene != null) {
             mDrawScene.setAlpha(alpha);
         }
+    }
+
+    //adas
+    public void showWalkerADAS(){
+        mADASDataProcessor.showWalkerADAS();
+    }
+    public void hideWalkerADAS(){
+        mADASDataProcessor.hideWalkerADAS();
+    }
+    public void showLaneADAS(boolean isLeft){
+        mADASDataProcessor.showLaneADAS(isLeft);
+    }
+    public void hideLaneADAS(){
+        mADASDataProcessor.hideLaneADAS();
+    }
+    public void showCarADAS(IADASDataProcessor.CarADASData carADASData){
+        mADASDataProcessor.showCarADAS(carADASData);
+    }
+    public void hideCarADAS(){
+        mADASDataProcessor.hideCarADAS();
     }
 }
