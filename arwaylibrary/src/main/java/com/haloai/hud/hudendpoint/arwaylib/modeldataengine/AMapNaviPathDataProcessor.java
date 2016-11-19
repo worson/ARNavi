@@ -394,6 +394,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mRenderPaths.addAll(paths);
         }
         mNaviPathDataProvider.initPath(mRenderPaths);
+        mFromPos = new Vector3(mRenderPaths.get(0).get(0));
+        mPreTime = System.currentTimeMillis();
 
         //显示第一根蚯蚓线
         processGuildLine(mStepPointIndexs.get(0));
@@ -477,6 +479,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 mPreTime = location.getTime();
             } else {
                 long duration = location.getTime() - mPreTime;
+                if(duration <= 400){
+                    return;
+                }
                 mPreTime = location.getTime();
                 if (mToPos != null) {
                     mFromPos = animPos;
@@ -485,6 +490,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 }
                 mToPos = convertLocation(location, mCurIndexInPath);
                 mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
+//                HaloLogger.logE(TAG,"duration="+(duration+ANIM_DURATION_REDUNDAN));
                 mNaviPathDataProvider.setAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             }
         }
@@ -537,8 +543,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             List<Vector3> lights = new ArrayList<>();
             for(AMapNaviLink link:links){
                 if (link.getCoords().size()>1 && link.getTrafficLights()) {
-                    NaviLatLng latlng0 = link.getCoords().get(0);
-                    NaviLatLng latlng1 = link.getCoords().get(1);
+                    int start = link.getCoords().size()-2;
+                    int end = link.getCoords().size()-1;
+                    NaviLatLng latlng0 = link.getCoords().get(start);
+                    NaviLatLng latlng1 = link.getCoords().get(end);
                     Vector3 p0 = parseLanlng(latlng0.getLatitude(),latlng0.getLongitude());
                     Vector3 p1 = parseLanlng(latlng1.getLatitude(),latlng1.getLongitude());
                     float radius = RoadRenderOption.TRAFFIC_DEVIATION_DISTANCE;

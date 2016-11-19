@@ -119,7 +119,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public static final int SCENE_HIDE_ANIMATION_ID = 0;
     public static final int SCENE_RENDER_APLLY_ID   = 1;
     public static final int RENDR_ROAD_NET_ID   = 2;
-    private static final int ANIMATION_NAVI_START_ID = 3;
+
 
     private Handler mHandler = new Handler() {
         @Override
@@ -133,9 +133,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                     mSceneUpdater.commitRender();
                     break;
                 case RENDR_ROAD_NET_ID:
-                    break;
-                case ANIMATION_NAVI_START_ID:
-                    mNaviAnimationNotifer.onNaviStartAnimation(1*500);
                     break;
                 default:
                     break;
@@ -352,9 +349,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void arriveDestination() {
         clearAllData();
         if (mSceneUpdater != null) {
-            mSceneUpdater.clearScene();
             mSceneUpdater.reset();
+            mSceneUpdater.clearScene();
         }
+        clearScene();
         System.gc();
     }
 
@@ -466,9 +464,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 mIsReadyForUpdate = true;
             }
         },(rotationTime+transTime)*1000);
-        //先加载动画
-        mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
-
+        //先加载fragment view动画
         //摄像头旋转动画
         mHandler.postDelayed(new Runnable() {
             @Override

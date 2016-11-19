@@ -231,21 +231,22 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     private void updateTimeAbout() {
         if (mRetainTimeTextView != null) {
+            int HOUR = 3600;
+            int MINUS = 60;
             int remainTime = 0;
-            String tText = "0";
-            String tScale = "min";
+            String tText = "";
             if (mNaviInfoBean != null && mCommonBean != null && mCommonBean.isNavingStart()) {
                 remainTime = mNaviInfoBean.getPathRetainTime();
             }
-            if (remainTime > 3 * 60 * 60) {
-                tText = "" + (int) ((remainTime / (6 * 60))) * 1.0 / 10;
-                tScale = "小时";
+            if (remainTime >HOUR) {
+                int hour = (int)(remainTime*1.0 /HOUR);
+                int minus = (int)(remainTime%HOUR*1.0/MINUS);
+                tText =hour+ "小时"+minus+"分钟";
             } else {
-                tText = "" + remainTime / 60;
-                tScale = "分钟";
+                tText = "" + remainTime / 60+"分钟";
             }
             //min显示
-            mRetainTimeTextView.setText(tText + tScale);
+            mRetainTimeTextView.setText(tText);
         }
     }
 

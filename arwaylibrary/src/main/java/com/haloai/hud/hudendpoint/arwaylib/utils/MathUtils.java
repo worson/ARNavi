@@ -712,7 +712,7 @@ public class MathUtils {
      * @return 0：正常返回 -1：异常
      */
     public static int translatePath(List<Vector3> path,List<Vector3> result,double dist){
-        if (path == null || path.size()>1) {
+        if (path == null || path.size()<=1 || result==null) {
             return -1;
         }
         int cnt = path.size();
@@ -722,22 +722,28 @@ public class MathUtils {
         Vector3 r3 = new Vector3();
         Vector3 v = new Vector3();
         int inter = 0;
-        for (int i = 0; i < cnt-1; i++) {
-            Vector3 p0 = path.get(i);
-            Vector3 p1 = path.get(i+1);
-            if(i==0 || i== (cnt-2)){
+        for (int i = 0; i < cnt; i++) {
+            if (i== (cnt-1)){
+                Vector3 p0 = path.get(i-1);
+                Vector3 p1 = path.get(i);
                 translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
-                if(i==0){
-                    v = r0;
-                }else {
-                    v = r1;
-                }
+                v = r1;
                 inter = 1;
-            }else {
-                Vector3 p2 = path.get(i+1);
-                translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
-                translateLine(p1.x,p1.y,p2.x,p2.y,r2,r3,dist);
-                inter = getIntersection(r0,r1,r2,r3,v);
+            } else {
+                if(i==0){
+                    Vector3 p0 = path.get(i);
+                    Vector3 p1 = path.get(i+1);
+                    translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
+                    v = r0;
+                    inter = 1;
+                }else {
+                    Vector3 p0 = path.get(i-1);
+                    Vector3 p1 = path.get(i);
+                    Vector3 p2 = path.get(i+1);
+                    translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
+                    translateLine(p1.x,p1.y,p2.x,p2.y,r2,r3,dist);
+                    inter = getIntersection(r0,r1,r2,r3,v);
+                }
             }
             if (inter != 0) {
                 result.add(new Vector3(v));

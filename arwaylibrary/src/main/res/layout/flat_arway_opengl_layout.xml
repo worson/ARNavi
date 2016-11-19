@@ -44,6 +44,7 @@
         android:id="@+id/navi_panel_viewgroup"
         android:layout_width="@dimen/flat_speed_circle_width"
         android:layout_height="@dimen/flat_speed_circle_height"
+        android:visibility="invisible"
         android:layout_centerInParent="true">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -165,8 +166,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginLeft="@dimen/flat_arway_left_margin"
-            android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="4dp"
             android:background="@color/arway_background"
             android:text="17公里"
             android:textStyle="bold"
@@ -178,7 +179,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="@dimen/flat_arway_bottom_margin"
+            android:layout_marginBottom="4dp"
             android:layout_marginLeft="7dp"
             android:layout_marginRight="2dp"
             android:layout_toRightOf="@+id/prefix_distance_textview"
