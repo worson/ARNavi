@@ -22,7 +22,7 @@ public interface IAdasSceneUpdater {
      * @param distance 与前车的距离，米
      * @param direction 当前行车的方向弧度(3点钟方向为起点，逆时针方向)
      */
-    void updateTrafficDetection(double distance,double direction);
+    void updateTrafficDetection(Vector3 position,double distance,double direction);
     void hideTrafficDetection();
 
 }
