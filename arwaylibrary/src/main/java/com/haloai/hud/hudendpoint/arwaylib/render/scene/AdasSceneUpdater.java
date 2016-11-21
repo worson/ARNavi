@@ -119,7 +119,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
     }
 
     @Override
-    public void updateTrafficDetection(Vector3 position,double distance, double direction) {
+    public void updateTrafficDetection(double distance, double direction) {
         mTrafficDetectionLayer.clearChildren();
         float width = mOptions.roadWidth;
         Material boadMaterial = new Material();
@@ -139,7 +139,6 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         object3D.setRotation(Vector3.Axis.Z,90-direction);
 
         mTrafficDetectionLayer.addChild(object3D);
-        mTrafficDetectionLayer.setPosition(position);
     }
 
     @Override
@@ -222,7 +221,6 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         mCarObject.setMaterial(mCarMaterial);
         mCarObject.setTransparent(true);
         mCarObject.setDepthTestEnabled(false);
-        mCarObject.rotate(Vector3.Axis.Z,90);
         mCarObject.setPosition(0,1*0.15,0);
     }
 
