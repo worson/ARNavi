@@ -412,6 +412,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mObject4Chase = mSceneUpdater.getCarObject();
         mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, 0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
+        HaloLogger.logE("test_bug","show degrees : "+(-rotateZ));
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
         HaloLogger.logE("ylq__", "__" + mRenderPath.get(0));
         HaloLogger.logE("ylq__", "__" + rotateZ);
@@ -932,15 +933,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (mAdasUpdater != null) {
             mAdasCarObject.setVisible(true);
             mAdasCarObject.setPosition(x,y,z);
-            mAdasCarObject.setRotation(Vector3.Axis.Z,direction);
+            mAdasCarObject.setRotation(Vector3.Axis.Z,Math.toDegrees(mObject4Chase.getRotZ()));
         }
-        HaloLogger.logE("longge_","car show");
-        HaloLogger.logE("longge_",x+","+y+","+z+","+direction);
     }
 
     @Override
     public void onCarAnimationUpdate(ICarADASDataProvider.AnimData animData) {
-        if (mAdasUpdater == null) {
+        if (!mIsMyInitScene || mAdasUpdater == null) {
             return;
         }
 
@@ -965,17 +964,15 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 animData.duration, mAdasCarObject);
         mAdasAnim.play();
         mAdasRotateAnim.play();
-        HaloLogger.logE("longge_",animData+"");
     }
 
     @Override
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
         if (mAdasUpdater != null) {
-            Vector3 position = new Vector3();
+            Vector3 position = new Vector3(mObject4Chase.getPosition());
             mAdasUpdater.updateTrafficDetection(position,dist,mObject4Chase.getRotZ());
         }
-        HaloLogger.logE("longge_","dist = "+dist);
     }
 
     @Override
@@ -997,7 +994,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (mAdasUpdater != null) {
             mAdasUpdater.hideLaneYawLine();
         }
-        HaloLogger.logE("longge_","car hide");
     }
 
     //adas
