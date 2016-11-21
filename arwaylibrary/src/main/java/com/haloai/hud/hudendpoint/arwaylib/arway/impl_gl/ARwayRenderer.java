@@ -742,6 +742,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void onAnimUpdate(INaviPathDataProvider.AnimData animData) {
         if (mIsMyInitScene) {
             clearLastAnim();
+            HaloLogger.logE("test_bug","onAnimUpdate:"+animData.duration);
             startAnim(animData.from, animData.to, animData.degrees, animData.duration);
         }
 
