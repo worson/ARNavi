@@ -159,7 +159,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
 
     public void initScene(){
-        RajLog.setDebugEnabled(true);
+        RajLog.setDebugEnabled(false);
         initRoadMaterial();
         initTextureMaterial();
 

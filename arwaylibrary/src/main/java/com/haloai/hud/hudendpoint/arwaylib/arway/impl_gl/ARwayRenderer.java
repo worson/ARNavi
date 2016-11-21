@@ -212,7 +212,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.setCamera(getCurrentCamera());
 
         if (ARWayConst.IS_ADAS) {
-            AdasSceneUpdater mAdasUpdater = AdasSceneUpdater.getInstance();
+            mAdasUpdater = AdasSceneUpdater.getInstance();
             mAdasUpdater.setRenderer(this);
             mAdasUpdater.initScene();
             mAdasUpdater.setOptions(mSceneUpdater.getRenderOptions());
@@ -928,13 +928,20 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onCarShow(double x,double y,double z,double direction) {
-        mAdasCarObject.setVisible(true);
-        mAdasCarObject.setPosition(x,y,z);
-        mAdasCarObject.setRotation(Vector3.Axis.Z,direction);
+        if (mAdasUpdater != null) {
+            mAdasCarObject.setVisible(true);
+            mAdasCarObject.setPosition(x,y,z);
+            mAdasCarObject.setRotation(Vector3.Axis.Z,direction);
+        }
+
     }
 
     @Override
     public void onCarAnimationUpdate(ICarADASDataProvider.AnimData animData) {
+        if (mAdasUpdater == null) {
+            return;
+        }
+
         if (mAdasAnim != null) {
             if (mAdasAnim.isPlaying()) {
                 mAdasAnim.pause();
@@ -949,34 +956,43 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             getCurrentScene().unregisterAnimation(mAdasRotateAnim);
             mAdasRotateAnim = null;
         }
-        Animation mTransAnim = createTranslateAnim(animData.from, animData.to, animData.duration, mAdasCarObject);
+        mAdasAnim = createTranslateAnim(animData.from, animData.to, animData.duration, mAdasCarObject);
         double degrees =  animData.degrees;
-        Animation mRotateAnim = createRotateAnim(Vector3.Axis.Z,
+        mAdasRotateAnim = createRotateAnim(Vector3.Axis.Z,
                 Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
                 animData.duration, mAdasCarObject);
-        mTransAnim.play();
-        mRotateAnim.play();
+        mAdasAnim.play();
+        mAdasRotateAnim.play();
     }
 
     @Override
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
-        mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+        if (mAdasUpdater != null) {
+            mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+        }
+
     }
 
     @Override
     public void onCarHide() {
-        mAdasCarObject.setVisible(false);
+        if (mAdasUpdater != null) {
+            mAdasCarObject.setVisible(false);
+        }
     }
 
     @Override
     public void onShowLaneYaw(List<Vector3> path, boolean left) {
-        mAdasUpdater.showLaneYawLine(path,left);
+        if (mAdasUpdater != null) {
+            mAdasUpdater.showLaneYawLine(path,left);
+        }
     }
 
     @Override
     public void onHideLaneYaw() {
-        mAdasUpdater.hideLaneYawLine();
+        if (mAdasUpdater != null) {
+            mAdasUpdater.hideLaneYawLine();
+        }
     }
 
     //adas

@@ -34,7 +34,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
     private RoadRenderOption mOptions = null;
 
-    private BaseObject3D mCarObject;
+    private Object3D mCarObject;
     private BaseObject3D mYawLaneObject;
     private BaseObject3D mTrafficDetectionLayer        = null;
 
@@ -44,20 +44,24 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
 
     public AdasSceneUpdater() {
-
+        initObject();
     }
 
-    public void initScene(){
+    private void initObject() {
         mCarObject          = new BaseObject3D();
         mYawLaneObject    = new BaseObject3D();
+    }
+
+
+    public void initScene(){
         initMaterial();
         initCarObject();
     }
 
     private void initMaterial(){
-        mCarMaterial = createTextureMaterial(R.drawable.adas_car,"adas_car",1,1);
-        mLaneLeftMaterial = createTextureMaterial(R.drawable.lane_yaw_left_half_circle,"adas_left_cicrle",1,1);
-        mLaneRightMaterial = createTextureMaterial(R.drawable.lane_yaw_right_half_circle,"adas_right_cicrle",1,1);
+        mCarMaterial = createTextureMaterial(R.drawable.adas_car,"adas_car_texture",1,1);
+        mLaneLeftMaterial = createTextureMaterial(R.drawable.lane_yaw_left_half_circle,"adas_left_cicrle_texture",1,1);
+        mLaneRightMaterial = createTextureMaterial(R.drawable.lane_yaw_right_half_circle,"adas_right_cicrle_texture",1,1);
 
         mLaneLeftMaterial.addPlugin(new TextureAlphaMaterialPlugin());
         mLaneRightMaterial.addPlugin(new TextureAlphaMaterialPlugin());
@@ -211,19 +215,17 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
 
     private void initCarObject(){
-        Object3D object = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
+        mCarObject = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
                 true,false,1,true);
-        object.setColor(0);
-        object.setMaterial(mCarMaterial);
-        object.setTransparent(true);
-        object.setDepthTestEnabled(false);
-        object.rotate(Vector3.Axis.Z,90);
-        object.setPosition(0,1*0.15,0);
-        mCarObject.clearChildren();
-        mCarObject.addChild(object);
+        mCarObject.setColor(0);
+        mCarObject.setMaterial(mCarMaterial);
+        mCarObject.setTransparent(true);
+        mCarObject.setDepthTestEnabled(false);
+        mCarObject.rotate(Vector3.Axis.Z,90);
+        mCarObject.setPosition(0,1*0.15,0);
     }
 
-    public BaseObject3D getCarObject() {
+    public Object3D getCarObject() {
         return mCarObject;
     }
 
@@ -238,7 +240,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         Material material = new Material();
         material.useVertexColors(useVertexColor);
         material.setColorInfluence(colorInfluence);
-        String tname = texturename==null?"create_texture"+textureCreateCnt++:texturename+textureCreateCnt;
+        String tname = texturename==null?"create_new_texture"+textureCreateCnt++:texturename+textureCreateCnt;
         Texture texture = new Texture(ATexture.TextureType.DIFFUSE,tname,sourceid);
         texture.setFilterType(ATexture.FilterType.LINEAR);
         texture.setWrapType(ATexture.WrapType.REPEAT);
