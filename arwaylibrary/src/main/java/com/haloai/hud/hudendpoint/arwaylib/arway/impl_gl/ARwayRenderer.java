@@ -972,7 +972,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
         if (mAdasUpdater != null) {
-            mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+            Vector3 position = new Vector3();
+            mAdasUpdater.updateTrafficDetection(position,dist,mObject4Chase.getRotZ());
         }
         HaloLogger.logE("longge_","dist = "+dist);
     }
@@ -1011,10 +1012,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     public Vector3 getCurPos4OtherCar() {
-        return null;
+        return mAdasCarObject.getPosition();
     }
 
     public double getCurDegrees4OtherCar() {
-        return 0;
+        return mAdasCarObject == null ? 0 : mAdasCarObject.getRotZ();
     }
 }
