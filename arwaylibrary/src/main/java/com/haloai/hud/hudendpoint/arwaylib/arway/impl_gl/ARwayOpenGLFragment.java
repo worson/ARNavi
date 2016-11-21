@@ -158,15 +158,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private ADASDataProcessor         mADASDataProcessor;
 
     //test
-    private static TimeRecorder mUpdatePathRecorder   = null;
+    private static TimeRecorder mUpdatePathRecorder   = new TimeRecorder();
     private static TimeRecorder mGpsTimeRecorder      = null;
     private static TimeRecorder mLocationTimeRecorder = null;
 
     static {
         if (ARWayConst.ENABLE_PERFORM_TEST) {
-            mUpdatePathRecorder = new TimeRecorder();
-            //            mGpsTimeRecorder = new TimeRecorder();
-            //            mLocationTimeRecorder = new TimeRecorder();
+//            mGpsTimeRecorder = new TimeRecorder();
+//            mLocationTimeRecorder = new TimeRecorder();
+
         }
     }
 
@@ -1151,9 +1151,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
                     mRenderer.naviStartAnimation();
-                    if (ARWayConst.ENABLE_PERFORM_TEST) {
-                        mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
-                    }
+                    mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
                 }
                 result = 0;
                 // TODO: 16/9/13 测试直接起步

@@ -164,6 +164,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     @Override
     public void doDraw() {
         super.doDraw();
+        updateServiceIndication();
         updateDirectionIcon();
         updateNextRoadDistance();
         updateNextRoadIndicate();
@@ -171,7 +172,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         updateNaviIndicate();
         updateNaviStatus();
         updateSpeedInfo();
-        updateServiceIndication();
+
     }
 
     private void updateSpeedInfo() {
@@ -194,15 +195,23 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     private void updateServiceIndication() {
         if (mServiceAreaViewGroup != null) {
-            int dist = mNaviInfoBean.getServiceAreaDistance();
-            if (dist > 0) {
-                String text = dist+"米";
-                mServiceAreatextView.setVisibility(View.VISIBLE);
-                mServiceAreatextView.setText(text);
-            } else {
+            int remainDistance = mNaviInfoBean.getServiceAreaDistance();
+            if(remainDistance>0){
+                int dist=0;
+                String text = null;
+                if (remainDistance >= 1000) {
+                    dist = (int)(((remainDistance / 100)) * 1.0 / 10);
+                    text = dist + "公里";
+                } else if (remainDistance >= 0) {
+                    text = ((remainDistance)) + "米";
+                }
+                if (text != null) {
+                    mServiceAreaViewGroup.setVisibility(View.VISIBLE);
+                    mServiceAreatextView.setText(text);
+                }
+            }else {
                 mServiceAreaViewGroup.setVisibility(View.INVISIBLE);
             }
-
         }
 
     }
