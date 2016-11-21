@@ -22,6 +22,7 @@ import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
+import com.haloai.hud.hudendpoint.arwaylib.render.scene.AdasSceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -81,11 +82,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     //rajawali about
     private Object3D mObject4Chase;
+    private Object3D mAdasCarObject;
     private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
+    private AdasSceneUpdater  mAdasUpdater  = null;
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
     private RotateOnAxisAnimation mRotateAnim = null;
+
+    private TranslateAnimation3D  mAdasAnim  = null;
+    private RotateOnAxisAnimation mAdasRotateAnim = null;
 
     //state
     //ps:mIsInitScene代表Rajawali自己初始化场景是否完成
@@ -204,6 +210,18 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.setScene(getCurrentScene());
         mSceneUpdater.initScene();
         mSceneUpdater.setCamera(getCurrentCamera());
+
+        if (ARWayConst.IS_ADAS) {
+            AdasSceneUpdater mAdasUpdater = AdasSceneUpdater.getInstance();
+            mAdasUpdater.setRenderer(this);
+            mAdasUpdater.initScene();
+            mAdasUpdater.setOptions(mSceneUpdater.getRenderOptions());
+
+            mAdasUpdater.setYawLaneObject(mSceneUpdater.getYawLaneLayer());
+            mAdasUpdater.setTrafficDetectionLayer(mSceneUpdater.getTrafficDetectionLayer());
+            mAdasUpdater.setAdasCarObject(mSceneUpdater.getAdasCarObject());
+        }
+
 
     }
 
@@ -385,6 +403,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.reset();
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
+
+        if (ARWayConst.IS_ADAS){
+            mAdasCarObject = mAdasUpdater.getCarObject();
+            mAdasCarObject.setVisible(false);
+        }
 
         mObject4Chase = mSceneUpdater.getCarObject();
         mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, 0);
@@ -905,22 +928,55 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onCarShow(double x,double y,double z,double direction) {
-
+        mAdasCarObject.setVisible(true);
+        mAdasCarObject.setPosition(x,y,z);
+        mAdasCarObject.setRotation(Vector3.Axis.Z,direction);
     }
 
     @Override
     public void onCarAnimationUpdate(ICarADASDataProvider.AnimData animData) {
-
+        if (mAdasAnim != null) {
+            if (mAdasAnim.isPlaying()) {
+                mAdasAnim.pause();
+            }
+            getCurrentScene().unregisterAnimation(mAdasAnim);
+            mAdasAnim = null;
+        }
+        if (mAdasRotateAnim != null) {
+            if (mAdasRotateAnim.isPlaying()) {
+                mAdasRotateAnim.pause();
+            }
+            getCurrentScene().unregisterAnimation(mAdasRotateAnim);
+            mAdasRotateAnim = null;
+        }
+        Animation mTransAnim = createTranslateAnim(animData.from, animData.to, animData.duration, mAdasCarObject);
+        double degrees =  animData.degrees;
+        Animation mRotateAnim = createRotateAnim(Vector3.Axis.Z,
+                Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
+                animData.duration, mAdasCarObject);
+        mTransAnim.play();
+        mRotateAnim.play();
     }
 
     @Override
     public void onDistChange(double dist) {
-
+        // TODO: 21/11/2016 确认方向
+        mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
     }
 
     @Override
     public void onCarHide() {
+        mAdasCarObject.setVisible(false);
+    }
 
+    @Override
+    public void onShowLaneYaw(List<Vector3> path, boolean left) {
+        mAdasUpdater.showLaneYawLine(path,left);
+    }
+
+    @Override
+    public void onHideLaneYaw() {
+        mAdasUpdater.hideLaneYawLine();
     }
 
     //adas

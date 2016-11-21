@@ -62,6 +62,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private BaseObject3D mCarObject          = null;
     private BaseObject3D mStarEndLayer        = null;
 
+    //plugin layer
+    private BaseObject3D mYawLaneLayer        = null;
+    private BaseObject3D mTrafficDetectionLayer        = null;
+    private BaseObject3D mAdasCarObject;
+
+
     private List<List<RoadLayers>>  mCrossRoadList        = new ArrayList();
     private List<RoadLayers>  mNaviRoadList         = new ArrayList();
     private List<RoadLayers>  mEndNaviRoadList         = new ArrayList();
@@ -160,6 +166,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         initAllLayer();
         initStaticLayer();
         initCarObject();
+    }
+
+    public BaseObject3D getYawLaneLayer() {
+        return mYawLaneLayer;
+    }
+
+    public BaseObject3D getTrafficDetectionLayer() {
+        return mTrafficDetectionLayer;
+    }
+
+    public BaseObject3D getAdasCarObject() {
+        return mAdasCarObject;
     }
 
     private void initStaticLayer() {
@@ -1132,6 +1150,12 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mCarObject = new BaseObject3D();
         mStarEndLayer = new BaseObject3D();
 
+        mYawLaneLayer = new BaseObject3D();
+        mTrafficDetectionLayer = new BaseObject3D();
+        mAdasCarObject = new BaseObject3D();
+
+
+
 
         /*mCrossRoadBottom.setRenderChildrenAsBatch(true);
         mCrossRoad.setRenderChildrenAsBatch(true);
@@ -1149,10 +1173,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mArwayMap = new BaseObject3D();
         mScene.clearChildren();
         Object3D[] layers = new Object3D[]{
-                mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mCrossRoad,
+                mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mYawLaneLayer,mCrossRoad,
                 mCrossRefLine, mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
                 mNaviGuideLineLayer,mNaviSymbolLayer,
-                mStarEndLayer,mCarObject,};
+                mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};
         for(Object3D layer:layers){
             if (layer != null) {
                 mArwayMap.addChild(layer);

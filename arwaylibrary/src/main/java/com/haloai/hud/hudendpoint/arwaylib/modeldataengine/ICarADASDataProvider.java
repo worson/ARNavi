@@ -2,6 +2,8 @@ package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
 import org.rajawali3d.math.vector.Vector3;
 
+import java.util.List;
+
 /**
  * author       : 龙;
  * date         : 2016/11/19;
@@ -28,6 +30,8 @@ public interface ICarADASDataProvider {
         void onDistChange(double dist);
         void onCarHide();
         void setCarADASDataProvider(ICarADASDataProvider adasDataProvider);
+        void onShowLaneYaw(List<Vector3> path,boolean left);
+        void onHideLaneYaw();
     }
     void setCarADASNotifier(ICarADASNotifier carADASNotifier);
 

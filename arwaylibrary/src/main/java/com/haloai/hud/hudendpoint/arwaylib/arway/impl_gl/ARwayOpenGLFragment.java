@@ -1149,9 +1149,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     mNaviPathDataProcessor.setPath(mAMapNavi,naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
                     mRenderer.naviStartAnimation();
-                    if (ARWayConst.ENABLE_PERFORM_TEST) {
-                        mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
-                    }
+                    mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
                 }
                 result = 0;
                 // TODO: 16/9/13 测试直接起步
