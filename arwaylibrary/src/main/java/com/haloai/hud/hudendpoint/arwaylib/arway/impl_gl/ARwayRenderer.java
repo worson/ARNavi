@@ -905,22 +905,23 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onCarShow(double x,double y,double z,double direction) {
-
+        HaloLogger.logE("longge_","car show");
+        HaloLogger.logE("longge_",x+","+y+","+z+","+direction);
     }
 
     @Override
     public void onCarAnimationUpdate(ICarADASDataProvider.AnimData animData) {
-
+        HaloLogger.logE("longge_",animData+"");
     }
 
     @Override
     public void onDistChange(double dist) {
-
+        HaloLogger.logE("longge_","dist = "+dist);
     }
 
     @Override
     public void onCarHide() {
-
+        HaloLogger.logE("longge_","car hide");
     }
 
     //adas
@@ -932,5 +933,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void setLaneADASDataProvider(ILaneADASDataProvider adasDataProvider) {
         mLaneADASDataProvider = adasDataProvider;
+    }
+
+    public Vector3 getCurPos4OtherCar() {
+        return null;
+    }
+
+    public double getCurDegrees4OtherCar() {
+        return 0;
     }
 }

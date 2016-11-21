@@ -4,6 +4,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.Log;
 
+import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.model.AMapNaviLink;
@@ -115,6 +116,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //ylqtest
     private IDynamicLoader mDynamicLoader = new DynamicLoader();
     private int            mLastLink      = 0;
+
+    private AMapNaviLocation mLocation;
 
     public AMapNaviPathDataProcessor() {
         mDynamicLoader.setIDynamicLoadNotifer(this);
@@ -471,6 +474,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     @Override
     public void setLocation(AMapNaviLocation location, Vector3 animPos, double animDegrees) {
         if (mIsPathInited) {
+            mLocation = location;
             //call DataProvider to update anim with cur location
             HaloLogger.logE(TAG,location.getCoord().getLatitude()+","+location.getCoord().getLongitude());
             if (mFromPos == null) {
@@ -489,6 +493,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     mFromDegrees = mFromDegrees < 0 ? mFromDegrees + 360 : mFromDegrees;
                 }
                 mToPos = convertLocation(location, mCurIndexInPath);
+                HaloLogger.logE("longge","our = "+mToPos.x+","+mToPos.y);
                 mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
 //                HaloLogger.logE(TAG,"duration="+(duration+ANIM_DURATION_REDUNDAN));
                 mNaviPathDataProvider.setAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
@@ -1054,7 +1059,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @param curIndex
      * @return
      */
-    private Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
+    public Vector3 convertLocation(AMapNaviLocation location, int curIndex) {
         LatLngOutSide latlng = new LatLngOutSide(location.getCoord().getLatitude(), location.getCoord().getLongitude());
         //latlng = mProportionMappingEngine.mapping(latlng, curIndex);
         //ARWayProjection.PointD pointD = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
@@ -1097,6 +1102,49 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         double offsetY = mNaviPathDataProvider.getCurOffsetY();
         v.x -= offsetX;
         v.y -= offsetY;
+        return v;
+    }
+
+    public double getDistWithFrontCar(Vector3 ourPos, Vector3 otherPos) {
+        return MathUtils.calculateDistance(ourPos.x,ourPos.y,otherPos.x,otherPos.y)*ARWayProjection.K*ARWayProjection.PIXEL_METER;
+    }
+
+    public Vector3 convertLocation(AMapNaviLocation location, int curPoint, int curStep) {
+        return convertLocation(location,getIndexInPath(curPoint,curStep));
+    }
+
+    /**
+     * 根据与当前位置的距离获取Vector3
+     * @param dist
+     * @return
+     */
+    public Vector3 getPosWithDist(double dist) {
+        double addUp= AMapUtils.calculateLineDistance(
+                new LatLng(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude()),
+                new LatLng(mPathLatLng.get(mCurIndexInPath).lat,mPathLatLng.get(mCurIndexInPath).lng));
+        LatLngOutSide latlng = new LatLngOutSide();
+        if(addUp>=dist){
+            LatLngOutSide nextLatLng = mPathLatLng.get(mCurIndexInPath);
+            LatLngOutSide preLatLng = new LatLngOutSide(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude());
+            latlng.lat = preLatLng.lat+(nextLatLng.lat-preLatLng.lat)*(dist/addUp);
+            latlng.lng = preLatLng.lng+(nextLatLng.lng-preLatLng.lng)*(dist/addUp);
+        }else {
+            for (int i = mCurIndexInPath+1; i < mPathLatLng.size(); i++) {
+                LatLngOutSide nextLatLng = mPathLatLng.get(i);
+                LatLngOutSide preLatLng = mPathLatLng.get(i-1);
+                if((addUp+=AMapUtils.calculateLineDistance(
+                        new LatLng(nextLatLng.lat,nextLatLng.lng),
+                        new LatLng(preLatLng.lat,preLatLng.lng)
+                ))>=dist){
+                    latlng.lat = preLatLng.lat+(nextLatLng.lat-preLatLng.lat)*(dist/addUp);
+                    latlng.lng = preLatLng.lng+(nextLatLng.lng-preLatLng.lng)*(dist/addUp);
+                    break;
+                }
+            }
+        }
+        Vector3 v = parseLatlng(latlng.lat,latlng.lng);
+        HaloLogger.logE("longge","dist = "+
+                MathUtils.calculateDistance(v.x,v.y,mToPos.x,mToPos.y));
         return v;
     }
 }
