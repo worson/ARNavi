@@ -23,6 +23,11 @@ public interface ICarADASDataProvider {
         public Vector3 to = new Vector3();
         public double degrees;
         public long duration;
+
+        @Override
+        public String toString() {
+            return from+","+to+","+degrees+","+duration;
+        }
     }
     interface ICarADASNotifier {
         void onCarShow(double x,double y,double z,double direction);
@@ -35,5 +40,9 @@ public interface ICarADASDataProvider {
     }
     void setCarADASNotifier(ICarADASNotifier carADASNotifier);
 
+    void setAnim(Vector3 from,Vector3 to,double degrees,long duration);
+    void showCar(double x,double y,double z,double direction);
+    void hideCar();
+    void distChange(double dist);
 
 }

@@ -933,7 +933,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             mAdasCarObject.setPosition(x,y,z);
             mAdasCarObject.setRotation(Vector3.Axis.Z,direction);
         }
-
+        HaloLogger.logE("longge_","car show");
+        HaloLogger.logE("longge_",x+","+y+","+z+","+direction);
     }
 
     @Override
@@ -963,6 +964,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 animData.duration, mAdasCarObject);
         mAdasAnim.play();
         mAdasRotateAnim.play();
+        HaloLogger.logE("longge_",animData+"");
     }
 
     @Override
@@ -971,7 +973,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (mAdasUpdater != null) {
             mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
         }
-
+        HaloLogger.logE("longge_","dist = "+dist);
     }
 
     @Override
@@ -993,6 +995,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (mAdasUpdater != null) {
             mAdasUpdater.hideLaneYawLine();
         }
+        HaloLogger.logE("longge_","car hide");
     }
 
     //adas
@@ -1004,5 +1007,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void setLaneADASDataProvider(ILaneADASDataProvider adasDataProvider) {
         mLaneADASDataProvider = adasDataProvider;
+    }
+
+    public Vector3 getCurPos4OtherCar() {
+        return null;
+    }
+
+    public double getCurDegrees4OtherCar() {
+        return 0;
     }
 }

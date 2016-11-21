@@ -66,6 +66,7 @@ import com.haloai.hud.navigation.NavigationSDKAdapter;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
 
+import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.ISurfaceRenderer;
 import org.rajawali3d.view.IDisplay;
 import org.rajawali3d.view.ISurface;
@@ -76,7 +77,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoadedListener, OnCameraChangeListener, IStateContoller, INaviUpdater, INaviDisplayPresenter,NaviAnimationNotifer {
+public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoadedListener, OnCameraChangeListener, IStateContoller, INaviUpdater, INaviDisplayPresenter, NaviAnimationNotifer {
     private static final String  TAG                 = ARWayConst.ERROR_LOG_TAG;
     // form HudAMapFragmentNavigation
     public final static  boolean IS_DEBUG_MODE       = false;
@@ -116,14 +117,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
     //bean
     private static NaviInfoBean mNaviInfoBean = (NaviInfoBean) BeanFactory.getBean(BeanFactory.BeanType.NAVI_INFO);
-//    private static FlatNaviInfoPanel mNaviInfoBean = FlatNaviInfoPanel.getInstance();
+    //    private static FlatNaviInfoPanel mNaviInfoBean = FlatNaviInfoPanel.getInstance();
     private static RouteBean    mRouteBean    = (RouteBean) BeanFactory.getBean(BeanFactory.BeanType.ROUTE);
     private static CommonBean   mCommonBean   = (CommonBean) BeanFactory.getBean(BeanFactory.BeanType.COMMON);
 
     //navi temp data
     private int mCurStep        = 0;
     private int mCurPoint       = 0;
-    private int  mCurIndexInPath = 0;
+    private int mCurIndexInPath = 0;
     private int mNaviIcon       = 0;
 
     private boolean mIsNaving = false;
@@ -131,9 +132,9 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private static       CrossImageDataCollector mCrossImageDataCollector = new CrossImageDataCollector();
     private static final int                     DEFAULT_GPS_NUMBER       = 10;
     private int mGpsWorkCnt;
-    private boolean mGpsWork = true;
+    private boolean mGpsWork                  = true;
     private boolean mIsNeedNaviStartAnimation = false;
-    private boolean mIsOnNaviStartAnimation = false;
+    private boolean mIsOnNaviStartAnimation   = false;
 
     public ARwayOpenGLFragment() {
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "fragment 正在初始化");
@@ -143,8 +144,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     //draw object
     private DrawScene            mDrawScene            = (DrawScene) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.GL_SCENE);
     private GlDrawCompass        mGlDrawCompass        = (GlDrawCompass) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.COMPASS);
-//    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
-    private FlatNaviInfoPanel       mGlDrawNaviInfo       = FlatNaviInfoPanel.getInstance();
+    //    private GlDrawNaviInfo       mGlDrawNaviInfo       = (GlDrawNaviInfo) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.NAVI_INFO);
+    private FlatNaviInfoPanel    mGlDrawNaviInfo       = FlatNaviInfoPanel.getInstance();
     private GlDrawSpeedDial      mGlDrawSpeedDial      = (GlDrawSpeedDial) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.SPEED);
     private GlDrawRetainDistance mGlDrawRetainDistance = (GlDrawRetainDistance) DrawObjectFactory.getGlDrawObject(DrawObjectFactory.DrawType.RETAIN_DISTANCE);
 
@@ -165,10 +166,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (ARWayConst.ENABLE_PERFORM_TEST) {
 //            mGpsTimeRecorder = new TimeRecorder();
 //            mLocationTimeRecorder = new TimeRecorder();
+
         }
     }
-    private static final int ANIMATION_NAVI_START_ID = 3;
-    private Handler mHandler = new Handler() {
+
+    private static final int     ANIMATION_NAVI_START_ID = 3;
+    private              Handler mHandler                = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -191,7 +194,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mLayout = (ViewGroup) inflater.inflate(R.layout.fragment_arway_open_gl, container, false);
 
         View mainARWayView = DrawObjectFactory.createGlDrawObjectLayoutIntance(mContext, mLayout, R.layout.flat_arway_opengl_layout);
-        ImageView maskView = (ImageView)mLayout.findViewById(R.id.arway_mask_imageview);
+        ImageView maskView = (ImageView) mLayout.findViewById(R.id.arway_mask_imageview);
         maskView.setBackgroundResource(R.drawable.arway_mask);
 
         /*if (mainARWayView !=null  && mainARWayView.getParent()!= null) {
@@ -236,7 +239,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             }
         }
         hideARWay();
-//        mDrawScene.animShowHide(false);
+        //        mDrawScene.animShowHide(false);
 
         mGlDrawNaviInfo.init(getActivity());
 
@@ -245,7 +248,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     private void initPrepare() {
-        if(IS_VIEW_DEBUG_MODE){
+        if (IS_VIEW_DEBUG_MODE) {
             mGlDrawNaviInfo.viewDebug = IS_VIEW_DEBUG_MODE;
         }
     }
@@ -387,7 +390,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (ARWayConst.IS_AMAP_VIEW) {
             mAmapNaviView.onResume();
         }
-        if(IS_VIEW_DEBUG_MODE){
+        if (IS_VIEW_DEBUG_MODE) {
             mGlDrawNaviInfo.doDraw();
         }
         HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "naving fragment onResume");
@@ -424,7 +427,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         mIsOnNaviStartAnimation = !hidden;
         if (!hidden) {
-            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onHiddenChanged "+hidden);
+            HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onHiddenChanged " + hidden);
             rOnNaviStartAnimation();
             showHideSpeedPanel(true);
         }
@@ -517,7 +520,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
      */
     public void onNavingStartView() {
         hideARWay();
-//        mDrawScene.animShowHide(false);
+        //        mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
         mGlDrawCompass.onNaviStart();
         quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
@@ -531,41 +534,41 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
      */
     public void prepareNavingStartView() {
         hideARWay();
-//        mDrawScene.animShowHide(false);
+        //        mDrawScene.animShowHide(false);
         mGlDrawCompass.showHide(true);
         mGlDrawCompass.onNaviStart();
         // TODO: 16/8/2 确保不会切换错乱
         quickSwitchViewStatus(IDriveStateLister.DriveState.PAUSE);
     }
 
-    private void rOnNaviStartAnimation(){
+    private void rOnNaviStartAnimation() {
         final long duration = 1000;
-        if (mIsNeedNaviStartAnimation&&mIsOnNaviStartAnimation){
+        if (mIsNeedNaviStartAnimation && mIsOnNaviStartAnimation) {
             mIsNeedNaviStartAnimation = false;
-//            mIsOnNaviStartAnimation = false;
+            //            mIsOnNaviStartAnimation = false;
 
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"real onNaviStartAnimation called ");
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "real onNaviStartAnimation called ");
             //复位显示速度表盘、隐藏信息面板、隐藏arway
             mGlDrawNaviInfo.hideNaviInfoPanel();
-//            mGlDrawNaviInfo.showSpeedPanel();
+            //            mGlDrawNaviInfo.showSpeedPanel();
             mDrawScene.showHide(false);
             //隐藏速度表盘
-//            mGlDrawNaviInfo.hideSpeedPanelAnim(duration);
+            //            mGlDrawNaviInfo.hideSpeedPanelAnim(duration);
             //显示信息面板动画、显示arway
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    mDrawScene.animShowHide(true,duration);
-                    mGlDrawNaviInfo.showNaviInfoPanel(2*duration);
+                    mDrawScene.animShowHide(true, duration);
+                    mGlDrawNaviInfo.showNaviInfoPanel(2 * duration);
                     mGlDrawNaviInfo.roadFlipAnimation(duration);
                 }
-            },0);//duration/2
+            }, 0);//duration/2
         }
     }
 
     @Override
     public void onNaviStartAnimation(final long duration) {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"onNaviStartAnimation called ");
+        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onNaviStartAnimation called ");
         mIsNeedNaviStartAnimation = true;
         rOnNaviStartAnimation();
     }
@@ -583,7 +586,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         mGlDrawCompass.showHide(true);
         //        mGlDrawCompass.animShowHide(false);
-//        mDrawScene.animShowHide(true);
+        //        mDrawScene.animShowHide(true);
         animSwitchViewStatus(IDriveStateLister.DriveState.DRIVING);
 
         /*if(!mCommonBean.isGpsWork() || (!mCommonBean.isHasNetwork() && mCommonBean.isYaw())){
@@ -751,10 +754,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mGlDrawNaviInfo.hideNaviInfoPanel();
         mGlDrawNaviInfo.showSpeedPanel();
 
-        mDrawScene.animShowHide(false,500);
+        mDrawScene.animShowHide(false, 500);
 
         resetData();
-        mIsNaving=false;
+        mIsNaving = false;
 
         ARWayController.NaviInfoBeanUpdate.reset();
         ARWayController.RouteBeanUpdater.reset();
@@ -1007,7 +1010,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (matchPath) {
             onGpsStatusChanged(true);
         }
-        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY && mRenderer.getCurPos()!=null && mIsNaving) {
+        if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY && mRenderer.getCurPos() != null && mIsNaving) {
             //mRenderer.updateLocation(location, mCurIndexInPath);
             mNaviPathDataProcessor.setLocation(location, mRenderer.getCurPos(), mRenderer.getCurDegrees());
         }
@@ -1126,7 +1129,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
-//                mDrawScene.animShowHide(false);
+                //                mDrawScene.animShowHide(false);
                 mGlDrawCompass.showHide(true);
                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath initPath,mode is " + aMapNavi.getNaviPath().getStrategy());
                 if (ARWayConst.ENABLE_LOG_OUT) {
@@ -1145,7 +1148,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                         mUpdatePathRecorder.start();
                     }
                     //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
-                    mNaviPathDataProcessor.setPath(mAMapNavi,naviPath);
+                    mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
                     mRenderer.naviStartAnimation();
                     mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
@@ -1240,7 +1243,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
     public void onSpeedUpgraded(float speed) {
         ARWayController.SpeedBeanUpdater.setSpeed((int) speed);
-        ARWayController.NaviInfoBeanUpdate.setSpeed((int)speed);
+        ARWayController.NaviInfoBeanUpdate.setSpeed((int) speed);
         updateSpeedDialDisplay();
     }
 
@@ -1271,7 +1274,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
      */
     public void hideARWay() {
         if (arway != null) {
-//            arway.setVisibility(View.INVISIBLE);
+            //            arway.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -1339,7 +1342,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
     @Override
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        mGlDrawNaviInfo.showLaneInfo(laneInfos,laneBackgroundInfo,laneRecommendedInfo);
+        mGlDrawNaviInfo.showLaneInfo(laneInfos, laneBackgroundInfo, laneRecommendedInfo);
     }
 
     @Override
@@ -1392,12 +1395,12 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     /**
-     *
      * @param show
      */
-    public void showHideBlockView(boolean show){
+    public void showHideBlockView(boolean show) {
         mGlDrawNaviInfo.showHideForMask(show);
     }
+
     /**
      * 配合主工程是否显示表盘
      *
@@ -1467,38 +1470,73 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     public double changeCameraLookDistBy(double changeValue) {
         return mRenderer.changeCameraLookDistBy(changeValue);
     }
-    
-    public void changeStrategy(boolean bol){
-        if(bol){
+
+    public void changeStrategy(boolean bol) {
+        if (bol) {
             mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_20);
-        }else{
+        } else {
             mRenderer.changeStrategy(IRenderStrategy.DataLevel.LEVEL_18);
         }
     }
 
-    public void setArwayAlpha(float alpha){
+    public void setArwayAlpha(float alpha) {
         if (mDrawScene != null) {
             mDrawScene.setAlpha(alpha);
         }
     }
 
     //adas
-    public void showWalkerADAS(){
+    public void showWalkerADAS() {
         mADASDataProcessor.showWalkerADAS();
     }
-    public void hideWalkerADAS(){
+
+    public void hideWalkerADAS() {
         mADASDataProcessor.hideWalkerADAS();
     }
-    public void showLaneADAS(boolean isLeft){
+
+    public void showLaneADAS(boolean isLeft) {
         mADASDataProcessor.showLaneADAS(isLeft);
     }
-    public void hideLaneADAS(){
+
+    public void hideLaneADAS() {
         mADASDataProcessor.hideLaneADAS();
     }
-    public void showCarADAS(IADASDataProcessor.CarADASData carADASData){
-        mADASDataProcessor.showCarADAS(carADASData);
+
+    public void updateCarADAS(AMapNaviLocation location, int curPoint, int curStep) {
+        if (true/*在非演示程序上跑出ADAS的效果需要特殊处理,此时curStep表示前车距离我们的距离*/) {
+            //5 <= curStep <= 100
+            Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
+            double carRealBearing = mRenderer.getCurDegrees4OtherCar();
+            int dist=curStep;
+            Vector3 pos = mNaviPathDataProcessor.getPosWithDist(dist);
+            double bearing = 0;
+            long time = System.currentTimeMillis();
+            double distWithFrontCar = dist;
+            //使用location+curIndexInPath构建出
+            IADASDataProcessor.CarADASData carADASData = new IADASDataProcessor.CarADASData(
+                    carRealPos, carRealBearing, pos, bearing, time, distWithFrontCar);
+            mADASDataProcessor.updateCarADAS(carADASData);
+            //HaloLogger.logE("longge","dist = "+curStep);
+            //HaloLogger.logE("longge","time = "+time);
+            //HaloLogger.logE("longge","our = "+pos.x+","+pos.y);
+            HaloLogger.logE("longge","other = "+pos.x+","+pos.y);
+        } else {
+            Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
+            double carRealBearing = mRenderer.getCurDegrees4OtherCar();
+            if (location != null) {
+                Vector3 pos = mNaviPathDataProcessor.convertLocation(location, curPoint, curStep);
+                double bearing = location.getBearing();
+                long time = location.getTime();
+                double distWithFrontCar = mNaviPathDataProcessor.getDistWithFrontCar(mRenderer.getCurPos(), pos);
+                //使用location+curIndexInPath构建出
+                IADASDataProcessor.CarADASData carADASData = new IADASDataProcessor.CarADASData(
+                        carRealPos, carRealBearing, pos, bearing, time, distWithFrontCar);
+                mADASDataProcessor.updateCarADAS(carADASData);
+            }
+        }
     }
-    public void hideCarADAS(){
+
+    public void hideCarADAS() {
         mADASDataProcessor.hideCarADAS();
     }
 }
