@@ -1028,7 +1028,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     public Vector3 getCurPos4OtherCar() {
-        return mAdasCarObject.getPosition();
+        return mAdasCarObject == null ? null : mAdasCarObject.getPosition();
     }
 
     public double getCurDegrees4OtherCar() {
