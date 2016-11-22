@@ -6,6 +6,8 @@
 //  Copyright © 2016 HaloAI. All rights reserved.
 //
 
+
+
 // 融合高德与四维地图数据
 #ifndef MergeMapData_hpp
 #define MergeMapData_hpp
@@ -497,6 +499,10 @@ public:
 	// 图像上显示字符，方便查看结构关系
 	void drawNode(cv::Mat matImg, const vector<LinkEndPointNode> vecLinkEndPtnode,
 				const std::vector<std::vector<HAMapPoint> >& vecRoadNetLink);
+
+	// 绘制路网
+	void drawRoadNet(const std::vector< std::vector<HAMapPoint> >& vecRoadNetLink,
+		cv::Size2i szCover,	HAMapPoint hamPixelCenter,cv::Mat& matRoadNetImg);
 #endif
 
 public:

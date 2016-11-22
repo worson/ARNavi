@@ -38,12 +38,12 @@ public class ADASDataProcessor implements IADASDataProcessor {
 
     @Override
     public void showWalkerADAS() {
-
+        mWalkerADASDataProvider.showWalker();
     }
 
     @Override
     public void hideWalkerADAS() {
-
+        mWalkerADASDataProvider.hideWalker();
     }
 
     @Override
@@ -91,7 +91,7 @@ public class ADASDataProcessor implements IADASDataProcessor {
 
     @Override
     public void setWalkerADASNotifier(IWalkerADASDataProvider.IWalkerADASNotifier adasNotifier) {
-
+        mWalkerADASDataProvider.setWalkerADASNotifier(adasNotifier);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ADASDataProcessor implements IADASDataProcessor {
 
     @Override
     public void setLaneADASNotifier(ILaneADASDataProvider.ILaneADASNotifier adasNotifier) {
-
+        mLaneADASDataProvider.setLaneADASNotifier(adasNotifier);
     }
 
     @Override

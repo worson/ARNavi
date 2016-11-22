@@ -3,6 +3,7 @@
 
 #include <vector>
 //#include "core.hpp"
+#include <opencv2/opencv.hpp>
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "types.h"
@@ -51,6 +52,12 @@ public:
 
 
 private:
+	// 坐标转换，主路经纬度转像素
+	int mainGps2Pixel(const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadGpslinks,		// 主路gps点
+								HALocationCoordinate2D halGpsCenterPoint,		// 中心点gps
+								vector<HAMapPoint>& vecMainRoadPixelPt,		// 主路像素坐标
+								HAMapPoint& hamPixelCenter);		// 中心点像素坐标
+	
 	/*
 	功能：
 		像素坐标转gps坐标
@@ -61,9 +68,27 @@ private:
 	返回：
 		0 - 正常，其他 - 异常
 	*/
-	int pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
+	int pixel2Gps(const std::vector<HAMapPoint>& vecPixelPoint,
 				HAMapPoint hamOffset,
 				std::vector<HALocationCoordinate2D>& vecGpsPoint);
+
+	// 坐标转换，经纬度转像素
+	/*
+	功能：
+		gps坐标转像素坐标
+	参数：
+		[in]const std::vector<HALocationCoordinate2D>& vecGpsPoint - 像素坐标点集
+		[in]HAMapPoint hamOffset - 偏移量		
+		[out]std::vector<HAMapPoint> vecPixelPoint - 转换后坐标
+	返回：
+		0 - 正常，其他 - 异常
+	*/
+	int gps2Pixel(const std::vector<HALocationCoordinate2D>& vecGpsPoint,
+				HAMapPoint hamOffset,
+				std::vector<HAMapPoint>& vecGpsPointvecPixelPoint);
+
+	// 确定字典文件
+	int confirmDict(std::string strDictPath, HALocationCoordinate2D halGpsCenterPoint);
 
 	/*
 	功能：
@@ -91,7 +116,7 @@ private:
 						const std::vector<std::string>& vecFileNames,
 						std::string& strDictFileName);
 
-	
+
 
 private:
 	bool m_IsReadDictionary;		// 标记是否已读数字字典

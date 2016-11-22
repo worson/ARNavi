@@ -16,6 +16,7 @@
 
 using namespace std;
 
+
 #ifdef _WINDOWS_VER_
 	#define DIR_TYPE 0x4000
 	#define FILE_TYPE 0x8000
@@ -36,7 +37,9 @@ CrossRoad::~CrossRoad(void)
 {
 }
 
+
 // 获取路网数据
+//int g_nSaveNum = 0;
 int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadGpslinks,
 							 const std::vector<LinkInfo>& vecMainRoadGpsLinkInfos,					
 							 HALocationCoordinate2D halGpsCenterPoint,
@@ -70,75 +73,27 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 		LOGD("halGpsCenterPoint.latitude=%lf, halGpsCenterPoint.longitude=%lf\n",halGpsCenterPoint.latitude, halGpsCenterPoint.longitude);
 	#endif
 
-	int nRet = 0;	
+	int nRet = 0;
 
-	// 读取字典数据
+	// 读取字典数据	
 	if (!m_IsReadDictionary)
 	{		
-		// 在指定路径中获取符合后缀要求的所有文件
-		std::string strSuffix = ".hmd";
-		std::vector<std::string> vecFileNames;
-		nRet = getSuffixFiles(strDictPath, strSuffix, vecFileNames);
+		nRet = confirmDict(strDictPath, halGpsCenterPoint);
 		if (nRet<0)
-		{		
-			LOGD("getCrossLinks - getSuffixFiles Error!!\n");		
+		{
 			return -1;
 		}
-		#if IS_PRINT_LOG
-			LOGD("getCrossLinks - getSuffixFiles: \n");
-			for (int i=0; i<vecFileNames.size(); i++)
-			{
-				LOGD("	vecFileNames[%d] - %s\n",i,vecFileNames[i].c_str());
-			}
-		#endif
-
-		// 确定字典文件
-		std::string strDictFileName;
-		if (!getDictFileName(halGpsCenterPoint,	vecFileNames, strDictFileName))
-		{		
-			LOGD("getCrossLinks - getDictFileName Error!!\n");		
-			return -1;
-		}		
-		#if IS_PRINT_LOG
-			LOGD("getCrossLinks - getDictFileName: strDictFileName = %s\n", strDictFileName.c_str());			
-		#endif
-
-		nRet = m_haloNav.readDictionary(strDictFileName);
-		if (nRet<0)
-		{		
-			LOGD("getCrossLinks - readDictionary Error!!\n");		
-			return -1;
-		}
-		m_IsReadDictionary = true;
 	}
-	
 	LOGD("===========getCrossLinks - readDictionary end!!=========\n");
-
+	
 	// 坐标转换，主路经纬度转像素
-	HAMapPoint hamOffset = m_haloNav.getOffset();		// 偏移量
-	vector<vector<HAMapPoint> > vecMainRoadPixelLinks;
 	vector<HAMapPoint> vecMainRoadPixelPt;
-	for (int i=0; i<nNumLink; i++)
+	HAMapPoint hamPixelCenter;
+	nRet = mainGps2Pixel(vecMainRoadGpslinks,halGpsCenterPoint,vecMainRoadPixelPt,hamPixelCenter);
+	if (nRet < 0)
 	{
-		vector<HALocationCoordinate2D> vecLink = vecMainRoadGpslinks[i];
-		int nNumPt = vecLink.size();
-		HAMapPoint hamPixelXY;
-		vector<HAMapPoint> vecTemp;
-		for (int j=0; j<nNumPt; j++)
-		{			
-			hamPixelXY = HAMapPointForCoordinate(vecLink[j]);
-			hamPixelXY.x -= hamOffset.x;		// 减去偏移量
-			hamPixelXY.y -= hamOffset.y;
-			vecTemp.push_back(hamPixelXY);
-			vecMainRoadPixelPt.push_back(hamPixelXY);
-		}
-		vecMainRoadPixelLinks.push_back(vecTemp);
+		return -1;
 	}
-
-	// 中心点
-	HAMapPoint hamPixelCenter = HAMapPointForCoordinate(halGpsCenterPoint);
-	hamPixelCenter.x -= hamOffset.x;
-	hamPixelCenter.y -= hamOffset.y;
 
 	LOGD("===========getCrossLinks - HAMapPointForCoordinate end!!=========\n");	
 		
@@ -150,8 +105,29 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 // 		vecRoadNetLinkInfo,vecRoadNetLink);
 	if (nRet<0)
 	{
-		LOGD("getCrossLinks - findLinks Error!!\n");	
-		return -1;
+		// 当前字典无效-重找
+		nRet = confirmDict(strDictPath, halGpsCenterPoint);
+		if (nRet<0)
+		{
+			LOGD("getCrossLinks - no valid dict!!\n");
+			return -1;
+		}
+		// 坐标转换，主路经纬度转像素
+		vecMainRoadPixelPt.clear();
+		//HAMapPoint hamPixelCenter;
+		nRet = mainGps2Pixel(vecMainRoadGpslinks,halGpsCenterPoint,vecMainRoadPixelPt,hamPixelCenter);
+		if (nRet < 0)
+		{
+			return -1;
+		}
+		
+		// 获取路网link			
+		nRet = m_haloNav.findLinks(hamPixelCenter,szCover.width,szCover.height,vecRoadNetLinkInfo,vecRoadNetLink);
+		if (nRet<0)
+		{
+			LOGD("getCrossLinks - findLinks Error!!\n");
+			return -1;
+		}		
 	}
 	
 #if IS_PRINT_LOG
@@ -167,6 +143,18 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	int nOffsetx = hamPixelCenter.x - szCover.width/2;
 	int nOffsety = hamPixelCenter.y - szCover.height/2;	
 	merMapdata.m_ptOffset = cv::Point(nOffsetx, nOffsety);
+#endif
+
+#if 0		// 绘制路网	
+	cv::Mat matRoadNetImg;
+	merMapdata.drawRoadNet(vecRoadNetLink, cv::Size2i(6400,6400), hamPixelCenter, matRoadNetImg);		
+// 	merMapdata.drawImage(matRoadNetImg,hamPixelCenter, vecMainRoadPixelPt, 
+// 		cv::Scalar(255,0,0),50);
+
+	char chSaveNum[20];
+	itoa(g_nSaveNum++,chSaveNum,10);
+	string str = "D:\\Halo\\ArWay\\output\\gimage\\roadNet\\" + string(chSaveNum) + ".bmp";
+	cv::imwrite(str,matRoadNetImg);
 #endif
 
 	HAMapPoint hamCenterInNet;
@@ -210,6 +198,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	LOGD("===========getCrossLinks - matchMainRoadCenterInNet end!!=========\n");
 
 	// 坐标转换，像素转经纬度
+	HAMapPoint hamOffset = m_haloNav.getOffset();		// 偏移量
 #if 0
 	int nNumRoadNetLink = vecRoadNetLink.size();
 	vecCrossGpsLinks.clear();
@@ -273,8 +262,96 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 	return 0;
 }
 
+// 确定字典
+int CrossRoad::confirmDict(std::string strDictPath, HALocationCoordinate2D halGpsCenterPoint)
+{
+	// 在指定路径中获取符合后缀要求的所有文件
+	std::string strSuffix = ".hmd";
+	std::vector<std::string> vecFileNames;
+	int nRet = getSuffixFiles(strDictPath, strSuffix, vecFileNames);
+	if (nRet<0)
+	{		
+		LOGD("getCrossLinks - getSuffixFiles Error!!\n");		
+		return -1;
+	}
+#if IS_PRINT_LOG
+	LOGD("getCrossLinks - getSuffixFiles: \n");
+	for (int i=0; i<vecFileNames.size(); i++)
+	{
+		LOGD("	vecFileNames[%d] - %s\n",i,vecFileNames[i].c_str());
+	}
+#endif
 
-int CrossRoad::pixel2Gps(const std::vector<HAMapPoint> vecPixelPoint,
+	// 确定字典文件
+	std::string strDictFileName;
+	if (!getDictFileName(halGpsCenterPoint,	vecFileNames, strDictFileName))
+	{		
+		LOGD("getCrossLinks - getDictFileName Error!!\n");		
+		return -1;
+	}		
+#if IS_PRINT_LOG
+	LOGD("getCrossLinks - getDictFileName: strDictFileName = %s\n", strDictFileName.c_str());			
+#endif
+
+	nRet = m_haloNav.readDictionary(strDictFileName);
+	if (nRet<0)
+	{		
+		LOGD("getCrossLinks - readDictionary Error!!\n");		
+		return -1;
+	}
+	m_IsReadDictionary = true;
+
+	return 0;
+}
+
+// 主路经纬度转像素
+
+
+
+// 坐标转换，主路经纬度转像素
+int CrossRoad::mainGps2Pixel(const std::vector<std::vector<HALocationCoordinate2D> >& vecMainRoadGpslinks,		// 主路gps点
+							 HALocationCoordinate2D halGpsCenterPoint,		// 中心点gps
+							 vector<HAMapPoint>& vecMainRoadPixelPt,		// 主路像素坐标
+							 HAMapPoint& hamPixelCenter)		// 中心点像素坐标
+{
+	int nNumLink = vecMainRoadGpslinks.size();
+
+	// 参数自检
+	if (nNumLink<=0)
+	{
+		return -1;
+	}
+
+	// 坐标转换，主路经纬度转像素
+	HAMapPoint hamOffset = m_haloNav.getOffset();		// 偏移量
+	vector<vector<HAMapPoint> > vecMainRoadPixelLinks;
+	/*vector<HAMapPoint> vecMainRoadPixelPt;*/
+	for (int i=0; i<nNumLink; i++)
+	{
+		vector<HALocationCoordinate2D> vecLink = vecMainRoadGpslinks[i];
+		int nNumPt = vecLink.size();
+		HAMapPoint hamPixelXY;
+		vector<HAMapPoint> vecTemp;
+		for (int j=0; j<nNumPt; j++)
+		{			
+			hamPixelXY = HAMapPointForCoordinate(vecLink[j]);
+			hamPixelXY.x -= hamOffset.x;		// 减去偏移量
+			hamPixelXY.y -= hamOffset.y;
+			vecTemp.push_back(hamPixelXY);
+			vecMainRoadPixelPt.push_back(hamPixelXY);
+		}
+		vecMainRoadPixelLinks.push_back(vecTemp);
+	}
+
+	// 中心点
+	hamPixelCenter = HAMapPointForCoordinate(halGpsCenterPoint);
+	hamPixelCenter.x -= hamOffset.x;
+	hamPixelCenter.y -= hamOffset.y;
+
+	return 0;
+}
+
+int CrossRoad::pixel2Gps(const std::vector<HAMapPoint>& vecPixelPoint,
 						 HAMapPoint hamOffset,
 						 std::vector<HALocationCoordinate2D>& vecGpsPoint)
 {
@@ -412,3 +489,4 @@ void CrossRoad::clearHistoryCrossPoint()
 }
 
 // 控制打印log
+
