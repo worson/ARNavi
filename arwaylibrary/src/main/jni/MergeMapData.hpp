@@ -6,6 +6,8 @@
 //  Copyright © 2016 HaloAI. All rights reserved.
 //
 
+
+
 // 融合高德与四维地图数据
 #ifndef MergeMapData_hpp
 #define MergeMapData_hpp
@@ -18,7 +20,7 @@
 #define EXTEND_ROAD_ANGLE	25		// 角度阈值，用于拓展link
 #define KEYPOINT_COSV_TH		0.75	// 寻找主路关键点，余弦阈值	
 
-#define CROSSROAD_LENGTH	200		// 岔路长度
+#define CROSSROAD_LENGTH	300		// 岔路长度
 
 #define IS_DRAW		0		// 是否绘图，1-是，0-否
 #define IS_DRAW1	0		// 是否绘图，1-是，0-否
@@ -497,6 +499,10 @@ public:
 	// 图像上显示字符，方便查看结构关系
 	void drawNode(cv::Mat matImg, const vector<LinkEndPointNode> vecLinkEndPtnode,
 				const std::vector<std::vector<HAMapPoint> >& vecRoadNetLink);
+
+	// 绘制路网
+	void drawRoadNet(const std::vector< std::vector<HAMapPoint> >& vecRoadNetLink,
+		cv::Size2i szCover,	HAMapPoint hamPixelCenter,cv::Mat& matRoadNetImg);
 #endif
 
 public:
