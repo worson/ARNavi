@@ -976,4 +976,17 @@ public class MathUtils {
         return amapDegrees/* > 180 ? amapDegrees - 360 : amapDegrees*/;
     }
 
+    /**
+     * rajawali roz 转换成 setRotation 方法
+     * @param rotz
+     * @return
+     */
+    public static double rotz2Radians(double rotz){
+       return Math.PI/2-rotz;
+    }
+
+    public static double radians2Rotz(double radians){
+        return Math.PI/2-radians;
+    }
+
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.hardware.Sensor;
@@ -36,6 +37,8 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IWalkerADASDataProvid
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.utils.HaloLogger;
+
+import com.amap.api.col.dy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,6 +167,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     @Override
     public void doDraw() {
         super.doDraw();
+        updateServiceIndication();
         updateDirectionIcon();
         updateNextRoadDistance();
         updateNextRoadIndicate();
@@ -171,7 +175,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
         updateNaviIndicate();
         updateNaviStatus();
         updateSpeedInfo();
-        updateServiceIndication();
+
     }
 
     private void updateSpeedInfo() {
@@ -194,15 +198,23 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     private void updateServiceIndication() {
         if (mServiceAreaViewGroup != null) {
-            int dist = mNaviInfoBean.getServiceAreaDistance();
-            if (dist > 0) {
-                String text = dist+"米";
-                mServiceAreatextView.setVisibility(View.VISIBLE);
-                mServiceAreatextView.setText(text);
-            } else {
+            int remainDistance = mNaviInfoBean.getServiceAreaDistance();
+            if(remainDistance>0){
+                int dist=0;
+                String text = null;
+                if (remainDistance >= 1000) {
+                    dist = (int)(((remainDistance / 100)) * 1.0 / 10);
+                    text = dist + "公里";
+                } else if (remainDistance >= 0) {
+                    text = ((remainDistance)) + "米";
+                }
+                if (text != null) {
+                    mServiceAreaViewGroup.setVisibility(View.VISIBLE);
+                    mServiceAreatextView.setText(text);
+                }
+            }else {
                 mServiceAreaViewGroup.setVisibility(View.INVISIBLE);
             }
-
         }
 
     }
@@ -413,18 +425,18 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        /*if (mDriveWayView == null) {
+        if (mDriveWayView != null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }*/
+        }
     }
 
     public void hideLaneInfo() {
         //隐藏车道信息
-        if (mDriveWayView == null) {
+        if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
         }
     }
@@ -456,14 +468,13 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mRetainTimeTextView = (TextView) view.findViewById(R.id.prefix_time_textview);
             mRetainDistanceTextView = (TextView) view.findViewById(R.id.prefix_distance_textview);
 
-
-
             mSystemTimeHourTenImageview = (ImageView) view.findViewById(R.id.hour_ten_imageview);
             mSystemTimeHourOneImageview = (ImageView) view.findViewById(R.id.hour_one_imageview);
             mSystemTimeMinuteTenImageview = (ImageView) view.findViewById(R.id.minute_ten_imageview);
             mSystemTimeMinuteOneImageview = (ImageView) view.findViewById(R.id.minute_one_imageview);
 
-
+            //此句不能删....HL
+            dy.a(context);
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
 

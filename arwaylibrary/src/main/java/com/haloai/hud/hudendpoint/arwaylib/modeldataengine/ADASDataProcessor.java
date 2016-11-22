@@ -4,6 +4,8 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 
 import org.rajawali3d.math.vector.Vector3;
 
+import java.util.List;
+
 /**
  * author       : 龙;
  * date         : 2016/11/19;
@@ -45,13 +47,14 @@ public class ADASDataProcessor implements IADASDataProcessor {
     }
 
     @Override
-    public void showLaneADAS(boolean isLeft) {
-
+    public void showLaneADAS(List<Vector3> path, boolean isLeft) {
+        if(path != null)
+            mLaneADASDataProvider.showLaneADAS(path,isLeft);
     }
 
     @Override
     public void hideLaneADAS() {
-
+        mLaneADASDataProvider.hideLaneADAS();
     }
 
     @Override

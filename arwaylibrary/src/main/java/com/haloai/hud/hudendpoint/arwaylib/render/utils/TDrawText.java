@@ -16,6 +16,18 @@ public class TDrawText {
     public final static Paint pt = new Paint();
     public static int[] buffer = null;
 
+    /**
+     * 文字在bitmap中居中
+     * @param mstr
+     * @param iFontSize
+     * @param iFontStyle
+     * @param iParam
+     * @param txtrgb
+     * @param srgb
+     * @param colorbg
+     * @param iHaloWidth
+     * @return
+     */
     public synchronized static Bitmap drawBitmapText(String mstr, int iFontSize, int iFontStyle, int[] iParam, int txtrgb,
                                               int srgb, int colorbg, int iHaloWidth) {
         if(DEBUG) {
@@ -40,6 +52,8 @@ public class TDrawText {
         iParam[3] = iWordHeight;
 
         Canvas canvas = GLBitmapUtil.lockCanvas(iWordWidth, iWordHeight);
+        float x = (canvas.getWidth()-iWordWidth)/2;
+        float y = (canvas.getHeight()-iWordHeight)/2;
         if (iHaloWidth != 0) {
             pt.setStrokeWidth(iHaloWidth);
             // 尽量减少描边交接处像素
@@ -49,16 +63,17 @@ public class TDrawText {
             pt.setColor(srgb);
             // 设置透明度为90
             pt.setAlpha(230);
-            canvas.drawText(mstr, 0, 0 - fm.ascent, pt); //注意Drawtext的第二个参数为基准线(baseline),
+            canvas.drawText(mstr, x, y - fm.ascent, pt); //注意Drawtext的第二个参数为基准线(baseline),
         }
         pt.setStrokeCap(Paint.Cap.ROUND);
         pt.setStrokeJoin(Paint.Join.ROUND);
         pt.setStyle(Paint.Style.FILL);
         pt.setColor(txtrgb);
         pt.setAlpha(255);
-        canvas.drawText(mstr, 0, 0 - fm.ascent, pt);
-        Bitmap bmp = GLBitmapUtil.getLockedBitmap();
-//        GLBitmapUtil.unlockCanvas();
+        canvas.drawText(mstr,x, y - fm.ascent, pt);
+        Bitmap drawBitmap = GLBitmapUtil.getLockedBitmap();
+        Bitmap bmp = drawBitmap.copy(drawBitmap.getConfig(),false);
+        GLBitmapUtil.unlockCanvas();
         return bmp;
     }
 

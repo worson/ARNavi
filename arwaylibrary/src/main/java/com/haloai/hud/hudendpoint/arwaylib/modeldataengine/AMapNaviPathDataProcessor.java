@@ -476,14 +476,13 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         if (mIsPathInited) {
             mLocation = location;
             //call DataProvider to update anim with cur location
-            HaloLogger.logE(TAG,location.getCoord().getLatitude()+","+location.getCoord().getLongitude());
             if (mFromPos == null) {
                 mFromPos = convertLocation(location, mCurIndexInPath);
                 mFromDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
                 mPreTime = location.getTime();
             } else {
                 long duration = location.getTime() - mPreTime;
-                if(duration <= 400){
+                if(duration <= 250){
                     return;
                 }
                 mPreTime = location.getTime();
@@ -493,9 +492,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                     mFromDegrees = mFromDegrees < 0 ? mFromDegrees + 360 : mFromDegrees;
                 }
                 mToPos = convertLocation(location, mCurIndexInPath);
-                HaloLogger.logE("longge","our = "+mToPos.x+","+mToPos.y);
                 mToDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
-//                HaloLogger.logE(TAG,"duration="+(duration+ANIM_DURATION_REDUNDAN));
                 mNaviPathDataProvider.setAnim(mFromPos, mToPos, mToDegrees - mFromDegrees, duration + ANIM_DURATION_REDUNDAN);
             }
         }
@@ -1105,46 +1102,30 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         return v;
     }
 
-    public double getDistWithFrontCar(Vector3 ourPos, Vector3 otherPos) {
-        return MathUtils.calculateDistance(ourPos.x,ourPos.y,otherPos.x,otherPos.y)*ARWayProjection.K*ARWayProjection.PIXEL_METER;
-    }
-
     public Vector3 convertLocation(AMapNaviLocation location, int curPoint, int curStep) {
         return convertLocation(location,getIndexInPath(curPoint,curStep));
     }
 
+    public double getDistWithFrontCar(AMapNaviLocation location) {
+        return mLocation == null ? 0:AMapUtils.calculateLineDistance(new LatLng(location.getCoord().getLatitude(),location.getCoord().getLongitude()),
+                new LatLng(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude()));
+    }
+
     /**
-     * 根据与当前位置的距离获取Vector3
-     * @param dist
+     * 获取用于车道偏移的一段Path
      * @return
      */
-    public Vector3 getPosWithDist(double dist) {
-        double addUp= AMapUtils.calculateLineDistance(
-                new LatLng(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude()),
-                new LatLng(mPathLatLng.get(mCurIndexInPath).lat,mPathLatLng.get(mCurIndexInPath).lng));
-        LatLngOutSide latlng = new LatLngOutSide();
-        if(addUp>=dist){
-            LatLngOutSide nextLatLng = mPathLatLng.get(mCurIndexInPath);
-            LatLngOutSide preLatLng = new LatLngOutSide(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude());
-            latlng.lat = preLatLng.lat+(nextLatLng.lat-preLatLng.lat)*(dist/addUp);
-            latlng.lng = preLatLng.lng+(nextLatLng.lng-preLatLng.lng)*(dist/addUp);
-        }else {
-            for (int i = mCurIndexInPath+1; i < mPathLatLng.size(); i++) {
-                LatLngOutSide nextLatLng = mPathLatLng.get(i);
-                LatLngOutSide preLatLng = mPathLatLng.get(i-1);
-                if((addUp+=AMapUtils.calculateLineDistance(
-                        new LatLng(nextLatLng.lat,nextLatLng.lng),
-                        new LatLng(preLatLng.lat,preLatLng.lng)
-                ))>=dist){
-                    latlng.lat = preLatLng.lat+(nextLatLng.lat-preLatLng.lat)*(dist/addUp);
-                    latlng.lng = preLatLng.lng+(nextLatLng.lng-preLatLng.lng)*(dist/addUp);
-                    break;
-                }
+    public List<Vector3> getCurPathPart() {
+        List<ARWayProjection.PointD> listP = mProportionMappingEngine.mappingGuideV(mCurIndexInPath);
+        if (listP != null) {
+            List<Vector3> listV = new ArrayList<>();
+            for (ARWayProjection.PointD pointD : listP) {
+                Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
+                listV.add(v);
             }
+            mNaviPathDataProvider.setGuildLine(listV);
+            return listV;
         }
-        Vector3 v = parseLatlng(latlng.lat,latlng.lng);
-        HaloLogger.logE("longge","dist = "+
-                MathUtils.calculateDistance(v.x,v.y,mToPos.x,mToPos.y));
-        return v;
+        return null;
     }
 }

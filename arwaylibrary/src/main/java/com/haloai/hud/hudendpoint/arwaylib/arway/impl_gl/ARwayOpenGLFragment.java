@@ -158,15 +158,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private ADASDataProcessor         mADASDataProcessor;
 
     //test
-    private static TimeRecorder mUpdatePathRecorder   = null;
+    private static TimeRecorder mUpdatePathRecorder   = new TimeRecorder();
     private static TimeRecorder mGpsTimeRecorder      = null;
     private static TimeRecorder mLocationTimeRecorder = null;
 
     static {
         if (ARWayConst.ENABLE_PERFORM_TEST) {
-            mUpdatePathRecorder = new TimeRecorder();
-            //            mGpsTimeRecorder = new TimeRecorder();
-            //            mLocationTimeRecorder = new TimeRecorder();
+//            mGpsTimeRecorder = new TimeRecorder();
+//            mLocationTimeRecorder = new TimeRecorder();
+
         }
     }
 
@@ -295,7 +295,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             AMapNaviViewOptions viewOptions = mAmapNaviView.getViewOptions();
             viewOptions.setNaviNight(true);
             viewOptions.setLayoutVisible(false);
-            viewOptions.setNaviViewTopic(AMapNaviViewOptions.BLUE_COLOR_TOPIC);
+            //viewOptions.setNaviViewTopic(AMapNaviViewOptions.BLUE_COLOR_TOPIC);
             viewOptions.setCrossDisplayShow(false);
             viewOptions.setAutoChangeZoom(false);
             viewOptions.setAutoDrawRoute(false);
@@ -1005,13 +1005,14 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (mLocationTimeRecorder != null) {
             mLocationTimeRecorder.start();
         }
-        // FIXME: 16/6/28 直接更新位置进去，在ARWYAN库中判断，方便根据情况处理显示
+        // FIXME: 16/6/28 直接更新位置进去，在ARWAY库中判断，方便根据情况处理显示
         boolean matchPath = location.isMatchNaviPath();
         if (matchPath) {
             onGpsStatusChanged(true);
         }
         if (mRenderer != null && matchPath && ARWayConst.IS_DARW_ARWAY && mRenderer.getCurPos() != null && mIsNaving) {
             //mRenderer.updateLocation(location, mCurIndexInPath);
+            HaloLogger.logE("test_bug__","real BEARING = "+location.getBearing());
             mNaviPathDataProcessor.setLocation(location, mRenderer.getCurPos(), mRenderer.getCurDegrees());
         }
         ARWayController.CommonBeanUpdater.setMatchNaviPath(matchPath);
@@ -1151,9 +1152,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
                     mRenderer.naviStartAnimation();
-                    if (ARWayConst.ENABLE_PERFORM_TEST) {
-                        mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
-                    }
+                    mUpdatePathRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, "UpdatePath");
                 }
                 result = 0;
                 // TODO: 16/9/13 测试直接起步
@@ -1497,7 +1496,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     public void showLaneADAS(boolean isLeft) {
-        mADASDataProcessor.showLaneADAS(isLeft);
+        mADASDataProcessor.showLaneADAS(mNaviPathDataProcessor.getCurPathPart(),isLeft);
     }
 
     public void hideLaneADAS() {
@@ -1505,36 +1504,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     public void updateCarADAS(AMapNaviLocation location, int curPoint, int curStep) {
-        if (true/*在非演示程序上跑出ADAS的效果需要特殊处理,此时curStep表示前车距离我们的距离*/) {
-            //5 <= curStep <= 100
-            Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
-            double carRealBearing = mRenderer.getCurDegrees4OtherCar();
-            int dist=curStep;
-            Vector3 pos = mNaviPathDataProcessor.getPosWithDist(dist);
-            double bearing = 0;
-            long time = System.currentTimeMillis();
-            double distWithFrontCar = dist;
+        Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
+        double carRealBearing = mRenderer.getCurDegrees4OtherCar();
+        if (location != null) {
+            Vector3 pos = mNaviPathDataProcessor.convertLocation(location, curPoint, curStep);
+            double bearing = location.getBearing();
+            long time = location.getTime();
+            double distWithFrontCar = mNaviPathDataProcessor.getDistWithFrontCar(location);
             //使用location+curIndexInPath构建出
             IADASDataProcessor.CarADASData carADASData = new IADASDataProcessor.CarADASData(
                     carRealPos, carRealBearing, pos, bearing, time, distWithFrontCar);
             mADASDataProcessor.updateCarADAS(carADASData);
-            //HaloLogger.logE("longge","dist = "+curStep);
-            //HaloLogger.logE("longge","time = "+time);
-            //HaloLogger.logE("longge","our = "+pos.x+","+pos.y);
-            HaloLogger.logE("longge","other = "+pos.x+","+pos.y);
-        } else {
-            Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
-            double carRealBearing = mRenderer.getCurDegrees4OtherCar();
-            if (location != null) {
-                Vector3 pos = mNaviPathDataProcessor.convertLocation(location, curPoint, curStep);
-                double bearing = location.getBearing();
-                long time = location.getTime();
-                double distWithFrontCar = mNaviPathDataProcessor.getDistWithFrontCar(mRenderer.getCurPos(), pos);
-                //使用location+curIndexInPath构建出
-                IADASDataProcessor.CarADASData carADASData = new IADASDataProcessor.CarADASData(
-                        carRealPos, carRealBearing, pos, bearing, time, distWithFrontCar);
-                mADASDataProcessor.updateCarADAS(carADASData);
-            }
         }
     }
 

@@ -22,6 +22,7 @@ import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
+import com.haloai.hud.hudendpoint.arwaylib.render.scene.AdasSceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.ArwaySceneUpdater;
 import com.haloai.hud.hudendpoint.arwaylib.render.strategy.IRenderStrategy;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -81,11 +82,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     //rajawali about
     private Object3D mObject4Chase;
+    private Object3D mAdasCarObject;
+    private Object3D mAdasDetectObject;
+
     private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
+    private AdasSceneUpdater  mAdasUpdater  = null;
+
 
     //about animation
     private TranslateAnimation3D  mTransAnim  = null;
     private RotateOnAxisAnimation mRotateAnim = null;
+
+    private TranslateAnimation3D  mAdasAnim  = null;
+    private RotateOnAxisAnimation mAdasRotateAnim = null;
 
     //state
     //ps:mIsInitScene代表Rajawali自己初始化场景是否完成
@@ -205,6 +214,22 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mSceneUpdater.initScene();
         mSceneUpdater.setCamera(getCurrentCamera());
 
+        if (ARWayConst.IS_ADAS) {
+            mAdasUpdater = AdasSceneUpdater.getInstance();
+            mAdasUpdater.setRenderer(this);
+            mAdasUpdater.initScene();
+            mAdasUpdater.setOptions(mSceneUpdater.getRenderOptions());
+
+            mAdasDetectObject = mSceneUpdater.getTrafficDetectionLayer();
+            mAdasUpdater.setYawLaneObject(mSceneUpdater.getYawLaneLayer());
+            mAdasUpdater.setTrafficDetectionLayer(mSceneUpdater.getTrafficDetectionLayer());
+            mAdasUpdater.setAdasCarObject(mSceneUpdater.getAdasCarObject());
+
+            mAdasCarObject = mSceneUpdater.getAdasCarObject();
+            mAdasCarObject.setVisible(false);
+        }
+
+
     }
 
 
@@ -289,6 +314,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
         }
+        calculateTrafficDetectionObject();
         mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
         if (ARWayConst.ENABLE_PERFORM_TEST) {
@@ -389,6 +415,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mObject4Chase = mSceneUpdater.getCarObject();
         mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, 0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
+        HaloLogger.logE("test_bug","show degrees : "+(-rotateZ));
         mObject4Chase.setRotation(Vector3.Axis.Z, -rotateZ);
         HaloLogger.logE("ylq__", "__" + mRenderPath.get(0));
         HaloLogger.logE("ylq__", "__" + rotateZ);
@@ -452,6 +479,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(), (float) mNaviPathDataProvider.getTopborder(), (float) mNaviPathDataProvider.getRightborder(), (float) mNaviPathDataProvider.getBottomborder(), 1, 0.f);
         mSceneUpdater.commitRender();
+        
     }
 
     public void naviStartAnimation() {
@@ -713,6 +741,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void onAnimUpdate(INaviPathDataProvider.AnimData animData) {
         if (mIsMyInitScene) {
             clearLastAnim();
+            HaloLogger.logE("test_bug","onAnimUpdate:"+animData.duration);
             startAnim(animData.from, animData.to, animData.degrees, animData.duration);
         }
 
@@ -905,23 +934,86 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onCarShow(double x,double y,double z,double direction) {
-        HaloLogger.logE("longge_","car show");
-        HaloLogger.logE("longge_",x+","+y+","+z+","+direction);
+        if (mAdasUpdater != null) {
+            mAdasCarObject.setVisible(true);
+            mAdasCarObject.setPosition(x,y,z);
+            mAdasCarObject.setRotation(Vector3.Axis.Z,Math.toDegrees(mObject4Chase.getRotZ()));
+        }
     }
 
     @Override
     public void onCarAnimationUpdate(ICarADASDataProvider.AnimData animData) {
-        HaloLogger.logE("longge_",animData+"");
+        if (!mIsMyInitScene || mAdasUpdater == null) {
+            return;
+        }
+
+        if (mAdasAnim != null) {
+            if (mAdasAnim.isPlaying()) {
+                mAdasAnim.pause();
+            }
+            getCurrentScene().unregisterAnimation(mAdasAnim);
+            mAdasAnim = null;
+        }
+        if (mAdasRotateAnim != null) {
+            if (mAdasRotateAnim.isPlaying()) {
+                mAdasRotateAnim.pause();
+            }
+            getCurrentScene().unregisterAnimation(mAdasRotateAnim);
+            mAdasRotateAnim = null;
+        }
+        mAdasAnim = createTranslateAnim(animData.from, animData.to, animData.duration, mAdasCarObject);
+        double degrees =  animData.degrees;
+        mAdasRotateAnim = createRotateAnim(Vector3.Axis.Z,
+                Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,
+                animData.duration, mAdasCarObject);
+        mAdasAnim.play();
+        mAdasRotateAnim.play();
     }
 
+    private void calculateTrafficDetectionObject(){
+        if (mAdasDetectObject == null || mObject4Chase ==null) {
+            return;
+        }
+        double dist = 3;
+        double roz = mObject4Chase.getRotZ();
+        Vector3 carPostion = new Vector3(mObject4Chase.getPosition());
+        MathUtils.rotateAround(carPostion.x,carPostion.y,carPostion.x+dist,carPostion.y,carPostion,-roz);
+        mAdasDetectObject.setPosition(carPostion);
+        mAdasDetectObject.setRotation(Vector3.Axis.Z,Math.toDegrees(roz));
+
+    }
     @Override
     public void onDistChange(double dist) {
-        HaloLogger.logE("longge_","dist = "+dist);
+        // TODO: 21/11/2016 确认方向
+        if (mAdasUpdater != null) {
+            mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+            mAdasDetectObject.setVisible(true);
+            calculateTrafficDetectionObject();
+        }
     }
 
     @Override
     public void onCarHide() {
-        HaloLogger.logE("longge_","car hide");
+        if (mAdasUpdater != null) {
+            mAdasCarObject.setVisible(false);
+            mAdasDetectObject.setVisible(false);
+        }
+    }
+
+
+
+    @Override
+    public void onShowLaneADAS(List<Vector3> path, boolean isLeft) {
+        if (mAdasUpdater != null) {
+            mAdasUpdater.showLaneYawLine(path,isLeft);
+        }
+    }
+
+    @Override
+    public void onHideLaneADAS() {
+        if (mAdasUpdater != null) {
+            mAdasUpdater.hideLaneYawLine();
+        }
     }
 
     //adas
@@ -936,10 +1028,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     public Vector3 getCurPos4OtherCar() {
-        return null;
+        return mAdasCarObject.getPosition();
     }
 
     public double getCurDegrees4OtherCar() {
-        return 0;
+        return mAdasCarObject == null ? 0 : mAdasCarObject.getRotZ();
     }
 }
