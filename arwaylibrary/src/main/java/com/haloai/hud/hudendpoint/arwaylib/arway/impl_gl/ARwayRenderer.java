@@ -82,7 +82,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     //rajawali about
     private Object3D mObject4Chase;
-
     private Object3D mAdasCarObject;
     private Object3D mAdasDetectObject;
 
@@ -1002,15 +1001,17 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
     }
 
+
+
     @Override
-    public void onShowLaneYaw(List<Vector3> path, boolean left) {
+    public void onShowLaneADAS(List<Vector3> path, boolean isLeft) {
         if (mAdasUpdater != null) {
-            mAdasUpdater.showLaneYawLine(path,left);
+            mAdasUpdater.showLaneYawLine(path,isLeft);
         }
     }
 
     @Override
-    public void onHideLaneYaw() {
+    public void onHideLaneADAS() {
         if (mAdasUpdater != null) {
             mAdasUpdater.hideLaneYawLine();
         }

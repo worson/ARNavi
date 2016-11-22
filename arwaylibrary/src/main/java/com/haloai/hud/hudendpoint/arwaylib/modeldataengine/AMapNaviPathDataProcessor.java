@@ -1110,4 +1110,22 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         return mLocation == null ? 0:AMapUtils.calculateLineDistance(new LatLng(location.getCoord().getLatitude(),location.getCoord().getLongitude()),
                 new LatLng(mLocation.getCoord().getLatitude(),mLocation.getCoord().getLongitude()));
     }
+
+    /**
+     * 获取用于车道偏移的一段Path
+     * @return
+     */
+    public List<Vector3> getCurPathPart() {
+        List<ARWayProjection.PointD> listP = mProportionMappingEngine.mappingGuideV(mCurIndexInPath);
+        if (listP != null) {
+            List<Vector3> listV = new ArrayList<>();
+            for (ARWayProjection.PointD pointD : listP) {
+                Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
+                listV.add(v);
+            }
+            mNaviPathDataProvider.setGuildLine(listV);
+            return listV;
+        }
+        return null;
+    }
 }

@@ -59,7 +59,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
     }
 
     private void initMaterial(){
-        mCarMaterial = createTextureMaterial(R.drawable.adas_car,"adas_car_texture",1,1);
+        mCarMaterial = createTextureMaterial(R.drawable.arway_tex_car_1,"adas_car_texture",1,1);
         mLaneLeftMaterial = createTextureMaterial(R.drawable.lane_yaw_left_half_circle,"adas_left_cicrle_texture",1,1);
         mLaneRightMaterial = createTextureMaterial(R.drawable.lane_yaw_right_half_circle,"adas_right_cicrle_texture",1,1);
 
@@ -221,6 +221,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         mCarObject.setMaterial(mCarMaterial);
         mCarObject.setTransparent(true);
         mCarObject.setDepthTestEnabled(false);
+        mCarObject.setRotation(Vector3.Axis.Z,90);
         mCarObject.setPosition(0,1*0.15,0);
     }
 

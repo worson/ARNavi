@@ -1496,7 +1496,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     public void showLaneADAS(boolean isLeft) {
-        mADASDataProcessor.showLaneADAS(isLeft);
+        mADASDataProcessor.showLaneADAS(mNaviPathDataProcessor.getCurPathPart(),isLeft);
     }
 
     public void hideLaneADAS() {
@@ -1504,7 +1504,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     public void updateCarADAS(AMapNaviLocation location, int curPoint, int curStep) {
-        HaloLogger.logE("test_bug__","ADAS BEARING = "+location.getBearing());
         Vector3 carRealPos = mRenderer.getCurPos4OtherCar();
         double carRealBearing = mRenderer.getCurDegrees4OtherCar();
         if (location != null) {

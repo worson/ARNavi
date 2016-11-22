@@ -35,8 +35,6 @@ public interface ICarADASDataProvider {
         void onDistChange(double dist);
         void onCarHide();
         void setCarADASDataProvider(ICarADASDataProvider adasDataProvider);
-        void onShowLaneYaw(List<Vector3> path,boolean left);
-        void onHideLaneYaw();
     }
     void setCarADASNotifier(ICarADASNotifier carADASNotifier);
 

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.hardware.Sensor;
@@ -422,18 +423,18 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        /*if (mDriveWayView == null) {
+        if (mDriveWayView != null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }*/
+        }
     }
 
     public void hideLaneInfo() {
         //隐藏车道信息
-        if (mDriveWayView == null) {
+        if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
         }
     }
@@ -466,6 +467,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mRetainDistanceTextView = (TextView) view.findViewById(R.id.prefix_distance_textview);
 
 
+            //BitmapFactory.decodeResource(context.getResources(),R.drawable.abc_ab_share_pack_holo_dark);
 
             mSystemTimeHourTenImageview = (ImageView) view.findViewById(R.id.hour_ten_imageview);
             mSystemTimeHourOneImageview = (ImageView) view.findViewById(R.id.hour_one_imageview);
@@ -475,7 +477,6 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
-
             mNaviPanelViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.navi_panel_viewgroup);
             mCompassViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.compass_viewgroup);
             mDirectionImageview = (ImageView) mMainLayout.findViewById(R.id.compass_direction_imageview);
