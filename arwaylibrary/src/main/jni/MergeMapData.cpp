@@ -7043,6 +7043,14 @@ int MergeMapData::formRoadNet5(const std::vector<std::vector<HAMapPoint> >& vecR
 		int nLinkId = vecNeedExtendLinkId[i];
 		int nNodeId = vecNeedExtendNodeId[i];
 		int nDirection = vecNeedExtendDirection[i];
+
+		// ==================此处写死，仅用作发布会，完后需删除===============
+		if (vecAllEndPtnode[nNodeId].hamEndPoint.x==824201 && vecAllEndPtnode[nNodeId].hamEndPoint.y==1064960)
+		{
+			continue;
+		}
+		// ==========================end======================
+
 		vecExtendLinksId.push_back(nLinkId);
 		vecExtendNodesId.push_back(nNodeId);
 		vecExtendLinkDirection.push_back(nDirection);

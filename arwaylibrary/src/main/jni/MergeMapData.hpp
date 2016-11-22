@@ -20,7 +20,7 @@
 #define EXTEND_ROAD_ANGLE	25		// 角度阈值，用于拓展link
 #define KEYPOINT_COSV_TH		0.75	// 寻找主路关键点，余弦阈值	
 
-#define CROSSROAD_LENGTH	300		// 岔路长度
+#define CROSSROAD_LENGTH	200		// 岔路长度
 
 #define IS_DRAW		0		// 是否绘图，1-是，0-否
 #define IS_DRAW1	0		// 是否绘图，1-是，0-否
