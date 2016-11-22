@@ -38,6 +38,8 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.utils.HaloLogger;
 
+import com.amap.api.col.dy;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -466,17 +468,16 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mRetainTimeTextView = (TextView) view.findViewById(R.id.prefix_time_textview);
             mRetainDistanceTextView = (TextView) view.findViewById(R.id.prefix_distance_textview);
 
-
-            //BitmapFactory.decodeResource(context.getResources(),R.drawable.abc_ab_share_pack_holo_dark);
-
             mSystemTimeHourTenImageview = (ImageView) view.findViewById(R.id.hour_ten_imageview);
             mSystemTimeHourOneImageview = (ImageView) view.findViewById(R.id.hour_one_imageview);
             mSystemTimeMinuteTenImageview = (ImageView) view.findViewById(R.id.minute_ten_imageview);
             mSystemTimeMinuteOneImageview = (ImageView) view.findViewById(R.id.minute_one_imageview);
 
-
+            //此句不能删....HL
+            dy.a(context);
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
+
             mNaviPanelViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.navi_panel_viewgroup);
             mCompassViewgroup = (ViewGroup) mMainLayout.findViewById(R.id.compass_viewgroup);
             mDirectionImageview = (ImageView) mMainLayout.findViewById(R.id.compass_direction_imageview);
