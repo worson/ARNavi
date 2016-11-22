@@ -82,9 +82,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private boolean mIsGuideLineDirty = true;
 
 
-    //basic
-    private Context mContext;
-
     //VERTICE_ROAD
     private RoadRenderOption             mOptions = new RoadRenderOption();
     private RoadRenderOption.LayersColor mColors  = null;
@@ -261,10 +258,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     @Override
     public void setScene(Scene scene) {
         super.setScene(scene);
-    }
-
-    public void setContext(Context context) {
-        mContext = context;
     }
 
     private void initTextureMaterial() {
@@ -814,6 +807,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         object.setPosition(0,1*0.15,0);
         mCarObject.clearChildren();
         mCarObject.addChild(object);
+
+//        mTrafficDetectionLayer.setPosition(0,1,0);
+//        mCarObject.addChild(mTrafficDetectionLayer);
 
     }
 

@@ -249,7 +249,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         mDouglasPath = douglasPath;
         //mPointIndexsToKeep = pointIndexsToKeep;
 
-        //calc and save the car need to rotate degrees
+        //calc and save the car_mtl need to rotate degrees
         Vector3 p1 = mDouglasPath.get(0);
         Vector3 p2 = mDouglasPath.get(1);
         for (int i = 1; i < mDouglasPath.size(); i++) {

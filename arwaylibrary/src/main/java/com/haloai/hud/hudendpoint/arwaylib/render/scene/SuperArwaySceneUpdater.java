@@ -1,5 +1,7 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
+import android.content.Context;
+
 import org.rajawali3d.Object3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.textures.TextureManager;
@@ -15,7 +17,9 @@ public class SuperArwaySceneUpdater {
     protected Camera mCamera;
     protected Vector3 mCurPosition = new Vector3();
     protected TextureManager mTextureManager;
-    protected Renderer mRenderer;
+    protected Renderer       mRenderer;
+    //basic
+    protected    Context        mContext;
 
     public SuperArwaySceneUpdater() {
     }
@@ -45,6 +49,10 @@ public class SuperArwaySceneUpdater {
             result &= mScene.removeChild(object3D);
         }
         return result;
+    }
+
+    public void setContext(Context context) {
+        mContext = context;
     }
 
     public void setScene(Scene scene) {

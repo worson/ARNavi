@@ -327,8 +327,8 @@ public class ARWayController {
     }
 
     /***
-     * the class for update data about car speed dispaly
-     * NetworkBeanUpdater class is a packing class for car speed.
+     * the class for update data about car_mtl speed dispaly
+     * NetworkBeanUpdater class is a packing class for car_mtl speed.
      */
     public static class SpeedBeanUpdater {
         private static SpeedBean mSpeedBean = (SpeedBean) BeanFactory.getBean(BeanFactory.BeanType.SPEED);
