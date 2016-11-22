@@ -544,4 +544,86 @@ public class ProportionMappingEngine {
         }
         return -1;
     }
+
+    /**
+     * 根据当前位置向后去N距离的路径
+     * @param curIndexInPath
+     * @param length
+     * @return
+     */
+    public List<ARWayProjection.PointD> mappingPart(int curIndexInPath, int length) {
+        double GUILD_LENGTH = length*2;
+        if (curIndexInPath >= mProportionListOri.size() - 1) {
+            return null;
+        }
+        double prop = mProportionListOri.get(curIndexInPath);
+        List<ARWayProjection.PointD> partPath = new ArrayList<>();
+        for (int i = 1; i < mProportionListRender.size(); i++) {
+            double nextProp = mProportionListRender.get(i);
+            if (nextProp >= prop) {
+                LatLngOutSide nextLatLngOutSide = mRenderPath.get(i);
+                double preProp = mProportionListRender.get(i - 1);
+                LatLngOutSide preLatLngOutSide = mRenderPath.get(i - 1);
+                double lat = preLatLngOutSide.lat + (nextLatLngOutSide.lat - preLatLngOutSide.lat) * ((prop - preProp) / (nextProp - preProp));
+                double lng = preLatLngOutSide.lng + (nextLatLngOutSide.lng - preLatLngOutSide.lng) * ((prop - preProp) / (nextProp - preProp));
+                LatLngOutSide curLatLngOutSide = new LatLngOutSide(lat, lng);
+                //left
+                double addUp = 0;
+                for (int j = i - 1; j >= 0; j--) {
+                    partPath.add(0, ARWayProjection.toOpenGLLocation(mRenderPath.get(j), mDefaultLevel));
+                    double dist;
+                    if (j == i - 1) {
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
+                    } else {
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j + 1).lat, mRenderPath.get(j + 1).lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
+                    }
+                    if (addUp >= GUILD_LENGTH / 2) {
+                        if (addUp > GUILD_LENGTH / 2) {
+                            ARWayProjection.PointD prePD = j == i - 1 ? ARWayProjection.toOpenGLLocation(curLatLngOutSide, mDefaultLevel) : partPath.get(1);
+                            ARWayProjection.PointD nextPD = partPath.remove(0);
+                            double scale = 1 - ((addUp - GUILD_LENGTH / 2) / dist);
+                            double x = prePD.x + (nextPD.x - prePD.x) * scale;
+                            double y = prePD.y + (nextPD.y - prePD.y) * scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x, y);
+                            partPath.add(0, makePD);
+                        }
+                        break;
+                    }
+                }
+                //right
+                addUp = 0;
+                for (int j = i; j < mRenderPath.size(); j++) {
+                    partPath.add(ARWayProjection.toOpenGLLocation(mRenderPath.get(j), mDefaultLevel));
+                    double dist;
+                    if (j == i) {
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(curLatLngOutSide.lat, curLatLngOutSide.lng),
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng)));
+                    } else {
+                        addUp += (dist = AMapUtils.calculateLineDistance(
+                                new LatLng(mRenderPath.get(j).lat, mRenderPath.get(j).lng),
+                                new LatLng(mRenderPath.get(j - 1).lat, mRenderPath.get(j - 1).lng)));
+                    }
+                    if (addUp >= GUILD_LENGTH / 2) {
+                        if (addUp > GUILD_LENGTH / 2) {
+                            ARWayProjection.PointD prePD = j == i ? ARWayProjection.toOpenGLLocation(curLatLngOutSide, mDefaultLevel) : partPath.get(partPath.size() - 2);
+                            ARWayProjection.PointD nextPD = partPath.remove(partPath.size() - 1);
+                            double scale = 1 - ((addUp - GUILD_LENGTH / 2) / dist);
+                            double x = prePD.x + (nextPD.x - prePD.x) * scale;
+                            double y = prePD.y + (nextPD.y - prePD.y) * scale;
+                            ARWayProjection.PointD makePD = new ARWayProjection.PointD(x, y);
+                            partPath.add(makePD);
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return partPath;
+    }
 }

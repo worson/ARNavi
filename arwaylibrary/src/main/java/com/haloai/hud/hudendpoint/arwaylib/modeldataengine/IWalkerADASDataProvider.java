@@ -13,4 +13,7 @@ public interface IWalkerADASDataProvider {
         void hideWalker();
         void setWalkerADASDataProvider(IWalkerADASDataProvider adasDataProvider);
     }
+    void setWalkerADASNotifier(IWalkerADASNotifier walkerADASNotifier);
+    void showWalker();
+    void hideWalker();
 }

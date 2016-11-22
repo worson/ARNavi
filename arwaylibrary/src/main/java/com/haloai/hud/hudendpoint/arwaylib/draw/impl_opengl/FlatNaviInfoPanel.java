@@ -89,6 +89,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     private TextView  mRetainTimeTextView;
     private TextView  mRetainDistanceTextView;
     private TextView  mRoadNamePrefixTextView;
+    private View mWalkerADASView;
 
     private ImageView mSystemTimeHourTenImageview;
     private ImageView mSystemTimeHourOneImageview;
@@ -104,12 +105,12 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     @Override
     public void showWalker() {
-
+        mWalkerADASView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideWalker() {
-
+        mWalkerADASView.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -472,6 +473,8 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mSystemTimeHourOneImageview = (ImageView) view.findViewById(R.id.hour_one_imageview);
             mSystemTimeMinuteTenImageview = (ImageView) view.findViewById(R.id.minute_ten_imageview);
             mSystemTimeMinuteOneImageview = (ImageView) view.findViewById(R.id.minute_one_imageview);
+
+            mWalkerADASView = view.findViewById(R.id.walker_view);
 
             //此句不能删....HL
             dy.a(context);

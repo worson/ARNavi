@@ -216,6 +216,16 @@
             android:textColor="#27a8c2"
             android:textSize="36sp"/>
 
+        <View
+            android:layout_below="@+id/speed_textview"
+            android:layout_alignLeft="@+id/speed_textview"
+            android:id="@+id/walker_view"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/adas_walker"
+            android:visibility="invisible">
+        </View>
+
         <RelativeLayout
             android:id="@+id/speed_limit_viewgroup"
             android:layout_width="25dp"

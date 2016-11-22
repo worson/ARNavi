@@ -4450,8 +4450,10 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 	cv::circle( matTemp,ptTemp0,1,cv::Scalar( 0, 255, 255),3,8);
 	cv::circle( matTemp,ptTemp1,1,cv::Scalar( 0, 255, 255),3,8);
 	Scalar color(100,100,0);
-	cv::line(matTemp,ptTemp0,ptV,color,1);	
-	cv::line(matTemp,ptV,ptTemp1,color,1);
+
+	// 绘制匹配路径起点、匹配点、终点连线
+ 	cv::line(matTemp,ptTemp0,ptV,color,1);	
+ 	cv::line(matTemp,ptV,ptTemp1,color,1);
 
 	// 绘制匹配路径
 	for (int i=0; i<vecMatchPath.size(); i++)
@@ -4499,7 +4501,7 @@ int MergeMapData::matchMainRoadCenterInNet5(const vector<HAMapPoint>& vecMainRoa
 		cv::circle( matTemp,ptTemp,1,cv::Scalar( 0, 0, 255),5,8);
 	}
 
-	m_matImage = matTemp.clone();	
+	m_matImage = matTemp.clone();
 
 	#if IS_SON_DRAW
 		cv::imshow("m_matImage",m_matImage);
@@ -5337,18 +5339,19 @@ int MergeMapData::filterRoadNet1(const std::vector<std::vector<HAMapPoint> >& ve
 			if (vecLinkPt[0]==hamNodePt)
 			{
 				// 逆序重排
-				reverseOrder(vecLinkPt);		// 倒序重排，与主路方向一致		
+				reverseOrder(vecLinkPt);		// 倒序重排，与主路方向一致
 			}
 			HAMapPoint hamPrePt = vecLinkPt[0];
 			HAMapPoint hamCurPt;
 			vecSinglePathPt.push_back(hamPrePt);
 			if (!isRectInside(hamPrePt,rtScreen))
 			{
-				break;;
+				break;
 			}
 			bool bIsBreak = false;
 			for (int k=1; k<nPtNum; k++)
 			{
+				float fTempDis = 0.f;
 				hamCurPt = vecLinkPt[k];
 				if (!isRectInside(hamCurPt,rtScreen))
 				{
@@ -5363,25 +5366,54 @@ int MergeMapData::filterRoadNet1(const std::vector<std::vector<HAMapPoint> >& ve
 						bIsBreak = true;
 						break;
 					}
+					fTempDis = getDistancePoint2Point(vecLinkPt[k-1].x,vecLinkPt[k-1].y,hamCrossPt.x,hamCrossPt.y);
+					fDis += fTempDis;
 
-					fDis += getDistancePoint2Point(vecLinkPt[k-1].x,vecLinkPt[k-1].y,hamCrossPt.x,hamCrossPt.y);
-					vecSinglePathPt.push_back(hamCrossPt);
+					if (fDis>=nCrossRoadLen)
+					{
+						// 控制岔路长度严格等于nCrossRoadLen						
+						float fDel = fDis - nCrossRoadLen;		// 多余的长度
+						fDel = fTempDis - fDel;			// 需要的长度
+						float fX = vecLinkPt[k-1].x + fDel*(vecLinkPt[k].x-vecLinkPt[k-1].x)/fTempDis;
+						float fY = vecLinkPt[k-1].y + fDel*(vecLinkPt[k].y-vecLinkPt[k-1].y)/fTempDis;					
+						HAMapPoint hamRailPt = {fX,fY};
+						vecSinglePathPt.push_back(hamRailPt);
+
+						break;
+					}
+					else
+					{
+						vecSinglePathPt.push_back(hamCrossPt);
+					}
+					
 					bIsBreak = true;
 					break;
 				}
-				fDis += getDistancePoint2Point(vecLinkPt[k-1].x,vecLinkPt[k-1].y,vecLinkPt[k].x,vecLinkPt[k].y);
-				vecSinglePathPt.push_back(hamCurPt);
+				fTempDis = getDistancePoint2Point(vecLinkPt[k-1].x,vecLinkPt[k-1].y,vecLinkPt[k].x,vecLinkPt[k].y);	
+				fDis += fTempDis;				
 				if (fDis>CROSSROAD_LENGTH/*nCrossRoadLen*/)
 				{					
 					bIsBreak = true;					
 				}
-				if (fDis>nCrossRoadLen)
+								
+				if (fDis>=nCrossRoadLen)
 				{
+					// 控制岔路长度严格等于nCrossRoadLen
+					float fDel = fDis - nCrossRoadLen;		// 多余的长度
+					fDel = fTempDis - fDel;			// 需要的长度
+					float fX = vecLinkPt[k-1].x + fDel*(vecLinkPt[k].x-vecLinkPt[k-1].x)/fTempDis;
+					float fY = vecLinkPt[k-1].y + fDel*(vecLinkPt[k].y-vecLinkPt[k-1].y)/fTempDis;					
+					HAMapPoint hamRailPt = {fX,fY};
+					vecSinglePathPt.push_back(hamRailPt);
 					break;
+				}
+				else
+				{
+					vecSinglePathPt.push_back(hamCurPt);
 				}
 			}	// end k
 
-			if (bIsBreak && fDis>nCrossRoadLen)
+			if (!isRectInside(hamCurPt,rtScreen) || (bIsBreak && fDis>nCrossRoadLen))
 			{
 				break;
 			}
@@ -7011,6 +7043,14 @@ int MergeMapData::formRoadNet5(const std::vector<std::vector<HAMapPoint> >& vecR
 		int nLinkId = vecNeedExtendLinkId[i];
 		int nNodeId = vecNeedExtendNodeId[i];
 		int nDirection = vecNeedExtendDirection[i];
+
+		// ==================此处写死，仅用作发布会，完后需删除===============
+		if (vecAllEndPtnode[nNodeId].hamEndPoint.x==824201 && vecAllEndPtnode[nNodeId].hamEndPoint.y==1064960)
+		{
+			continue;
+		}
+		// ==========================end======================
+
 		vecExtendLinksId.push_back(nLinkId);
 		vecExtendNodesId.push_back(nNodeId);
 		vecExtendLinkDirection.push_back(nDirection);
@@ -7807,6 +7847,7 @@ int MergeMapData::getDisBorder2MatchPt(const std::vector<std::vector<HAMapPoint>
 
 // 遍历图，获取边界点
 // bool bIsFrontTrave - 表示遍历方向，true - 朝正方向遍历，false - 朝反方向遍历
+//int g_nSav = 0;
 int MergeMapData::traverseMap1(const std::vector<std::vector<HAMapPoint> >& vecRoadNetLink,
 							  const vector<LinkEndPointNode> vecLinkEndPtnode,
 							  int nCurEndPtSite,
@@ -7835,8 +7876,14 @@ int MergeMapData::traverseMap1(const std::vector<std::vector<HAMapPoint> >& vecR
 		drawNode(matImg, vecLinkEndPtnode, vecRoadNetLink);
 		Point ptCurPt = Point(vecLinkEndPtnode[nCurEndPtSite].hamEndPoint.x,vecLinkEndPtnode[nCurEndPtSite].hamEndPoint.y)-m_ptOffset;
 		cv::circle( matImg,ptCurPt,3,cv::Scalar( 0, 255, 0),-1,8);		
+		cv::namedWindow("matImg",WINDOW_AUTOSIZE);
 		cv::imshow("matImg",matImg);
 		cv::waitKey(0);
+
+/* 		char chSaveNum[20];
+ 		itoa(g_nSav++,chSaveNum,10);
+ 		string str = "D:\\Halo\\ArWay\\output\\gimage\\roadNet\\" + string(chSaveNum) + "_1.bmp";
+ 		cv::imwrite(str,matImg);*/		
 	#endif
 #endif
 
@@ -9536,4 +9583,174 @@ void MergeMapData::drawNavi2(cv::Mat& matNavi,HAMapPoint hptCenter, vector<HAMap
 	}
 
 }
+
+
+// 绘制路网
+void MergeMapData::drawRoadNet(const std::vector< std::vector<HAMapPoint> >& vecRoadNetLink,
+							cv::Size2i szCover,	HAMapPoint hamPixelCenter,cv::Mat& matRoadNetImg)
+{
+	int nNumLink = vecRoadNetLink.size();
+	// 基于主路绘制路网
+	matRoadNetImg.create(szCover.height,szCover.width,CV_8UC3); 
+	matRoadNetImg.setTo(0);	
+	for (int i=0; i<nNumLink; i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[i],cv::Scalar(255,255,255),20);
+	}
+		
+
+	// 绘制岔路
+	vector<int> veCrossRoadLinkId1;	
+	veCrossRoadLinkId1.push_back(182);
+	//veCrossRoadLinkId1.push_back(175);
+	//veCrossRoadLinkId1.push_back(207);
+	for (int i=0; i<veCrossRoadLinkId1.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId1[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId2;	
+	veCrossRoadLinkId2.push_back(406);
+	veCrossRoadLinkId2.push_back(407);	
+	for (int i=0; i<veCrossRoadLinkId2.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId2[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId3;	
+	veCrossRoadLinkId3.push_back(184);
+	veCrossRoadLinkId3.push_back(178);	
+	veCrossRoadLinkId3.push_back(177);
+	for (int i=0; i<veCrossRoadLinkId3.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId3[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId4;	
+	veCrossRoadLinkId4.push_back(233);
+	veCrossRoadLinkId4.push_back(232);	
+	veCrossRoadLinkId4.push_back(206);
+	for (int i=0; i<veCrossRoadLinkId4.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId4[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId5;	
+	veCrossRoadLinkId5.push_back(169);	
+	for (int i=0; i<veCrossRoadLinkId5.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId5[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId6;	
+	veCrossRoadLinkId6.push_back(186);	
+	for (int i=0; i<veCrossRoadLinkId6.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId6[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId7;	
+	veCrossRoadLinkId7.push_back(31);	
+	veCrossRoadLinkId7.push_back(32);
+	for (int i=0; i<veCrossRoadLinkId7.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId7[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId8;	
+	veCrossRoadLinkId8.push_back(34);	
+	veCrossRoadLinkId8.push_back(33);
+	for (int i=0; i<veCrossRoadLinkId8.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId8[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId9;	
+	veCrossRoadLinkId9.push_back(28);	
+	for (int i=0; i<veCrossRoadLinkId9.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId9[i]],cv::Scalar(0,255,0),20);
+	}
+	
+	vector<int> veCrossRoadLinkId10;	
+	veCrossRoadLinkId10.push_back(48);	
+	for (int i=0; i<veCrossRoadLinkId10.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId10[i]],cv::Scalar(0,255,0),20);
+	}
+
+	vector<int> veCrossRoadLinkId11;	
+	veCrossRoadLinkId11.push_back(126);	
+	for (int i=0; i<veCrossRoadLinkId11.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId11[i]],cv::Scalar(0,255,0),20);
+	}
+
+	// 绘制主路
+	vector<int> vecMainRoadLinkId;
+	vecMainRoadLinkId.push_back(71);
+	vecMainRoadLinkId.push_back(130);
+	vecMainRoadLinkId.push_back(238);
+	vecMainRoadLinkId.push_back(237);
+	vecMainRoadLinkId.push_back(201);
+	vecMainRoadLinkId.push_back(412);
+	vecMainRoadLinkId.push_back(413);
+	vecMainRoadLinkId.push_back(425);
+	vecMainRoadLinkId.push_back(426);
+	vecMainRoadLinkId.push_back(203);
+	vecMainRoadLinkId.push_back(197);
+	vecMainRoadLinkId.push_back(185);
+	vecMainRoadLinkId.push_back(234);
+	vecMainRoadLinkId.push_back(235);
+	vecMainRoadLinkId.push_back(244);
+	vecMainRoadLinkId.push_back(245);
+	vecMainRoadLinkId.push_back(134);
+	vecMainRoadLinkId.push_back(22);
+	vecMainRoadLinkId.push_back(74);
+	vecMainRoadLinkId.push_back(75);
+	vecMainRoadLinkId.push_back(44);
+	for (int i=0; i<vecMainRoadLinkId.size(); i++)
+	{		
+		drawImage(matRoadNetImg, hamPixelCenter, vecRoadNetLink[vecMainRoadLinkId[i]],cv::Scalar(255,0,0),50);
+	}
+
+	// 保存
+	cv::imwrite("D:\\Halo\\ArWay\\output\\gimage\\roadNet\\0.bmp",matRoadNetImg);
+
+	// 筛选
+	vector<vector<int> > vecCrossMerge;
+	vecCrossMerge.push_back(veCrossRoadLinkId1);
+	vecCrossMerge.push_back(veCrossRoadLinkId2);
+	vecCrossMerge.push_back(veCrossRoadLinkId3);
+	vecCrossMerge.push_back(veCrossRoadLinkId4);
+	vecCrossMerge.push_back(veCrossRoadLinkId5);
+	vecCrossMerge.push_back(veCrossRoadLinkId6);
+	vecCrossMerge.push_back(veCrossRoadLinkId7);
+	vecCrossMerge.push_back(veCrossRoadLinkId8);
+	vecCrossMerge.push_back(veCrossRoadLinkId9);
+	vecCrossMerge.push_back(veCrossRoadLinkId10);
+	vecCrossMerge.push_back(veCrossRoadLinkId11);
+
+
+	Mat matSimple(matRoadNetImg.rows,matRoadNetImg.cols,CV_8UC3);
+	matSimple.setTo(0);	
+	for (int i=0; i<vecCrossMerge.size(); i++)
+	{
+		vector<int> veCrossRoadLinkId = vecCrossMerge[i];
+		for (int j=0; j<veCrossRoadLinkId.size(); j++)
+		{		
+			drawImage(matSimple, hamPixelCenter, vecRoadNetLink[veCrossRoadLinkId[j]],cv::Scalar(0,255,0),20);
+		}
+	}
+	for (int i=0; i<vecMainRoadLinkId.size(); i++)
+	{		
+		drawImage(matSimple, hamPixelCenter, vecRoadNetLink[vecMainRoadLinkId[i]],cv::Scalar(255,0,0),50);
+	}
+	
+	
+
+	// 保存
+	cv::imwrite("D:\\Halo\\ArWay\\output\\gimage\\roadNet\\1.bmp",matSimple);
+}
+
 #endif

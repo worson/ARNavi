@@ -1116,14 +1116,13 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * @return
      */
     public List<Vector3> getCurPathPart() {
-        List<ARWayProjection.PointD> listP = mProportionMappingEngine.mappingGuideV(mCurIndexInPath);
+        List<ARWayProjection.PointD> listP = mProportionMappingEngine.mappingPart(mCurIndexInPath,200);
         if (listP != null) {
             List<Vector3> listV = new ArrayList<>();
             for (ARWayProjection.PointD pointD : listP) {
                 Vector3 v = new Vector3((pointD.x - mOffsetX) * TIME_15_20, (-pointD.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z);
                 listV.add(v);
             }
-            mNaviPathDataProvider.setGuildLine(listV);
             return listV;
         }
         return null;
