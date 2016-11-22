@@ -224,6 +224,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             mAdasUpdater.setYawLaneObject(mSceneUpdater.getYawLaneLayer());
             mAdasUpdater.setTrafficDetectionLayer(mSceneUpdater.getTrafficDetectionLayer());
             mAdasUpdater.setAdasCarObject(mSceneUpdater.getAdasCarObject());
+
+            mAdasCarObject = mSceneUpdater.getAdasCarObject();
+            mAdasCarObject.setVisible(false);
         }
 
 
@@ -409,11 +412,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
 
-        if (ARWayConst.IS_ADAS){
-            mAdasCarObject = mAdasUpdater.getCarObject();
-            mAdasCarObject.setVisible(false);
-        }
-
         mObject4Chase = mSceneUpdater.getCarObject();
         mObject4Chase.setPosition(mRenderPath.get(0).x, mRenderPath.get(0).y, 0);
         double rotateZ = mNaviPathDataProvider == null ? 0 : mNaviPathDataProvider.getObjStartOrientation();
@@ -481,6 +479,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(), (float) mNaviPathDataProvider.getTopborder(), (float) mNaviPathDataProvider.getRightborder(), (float) mNaviPathDataProvider.getBottomborder(), 1, 0.f);
         mSceneUpdater.commitRender();
+        
     }
 
     public void naviStartAnimation() {
@@ -978,7 +977,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         double dist = 3;
         double roz = mObject4Chase.getRotZ();
         Vector3 carPostion = new Vector3(mObject4Chase.getPosition());
-        MathUtils.rotateAround(carPostion.x,carPostion.y,carPostion.x+dist,carPostion.y,carPostion,roz);
+        MathUtils.rotateAround(carPostion.x,carPostion.y,carPostion.x+dist,carPostion.y,carPostion,-roz);
         mAdasDetectObject.setPosition(carPostion);
         mAdasDetectObject.setRotation(Vector3.Axis.Z,Math.toDegrees(roz));
 
