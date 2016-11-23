@@ -417,6 +417,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         HaloLogger.logE("ylq__", "myInitScene");
         clearScene();
         mSceneUpdater.reset();
+        if(ARWayConst.IS_ADAS){
+            mAdasUpdater.reset();
+        }
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
 
@@ -978,23 +981,31 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mAdasRotateAnim.play();
     }
 
-    private void calculateTrafficDetectionObject(){
-        if (mAdasDetectObject == null || mObject4Chase ==null) {
+    private void calculateTrafficDetectionObject() {
+        if (mAdasDetectObject == null || mObject4Chase == null || mAdasCarObject == null) {
             return;
         }
-        double dist = 1.2;
+        String tag = "test_roation";
+        double dist = 2;
         double roz = mObject4Chase.getRotZ();
         Vector3 carPostion = new Vector3(mObject4Chase.getPosition());
-        MathUtils.rotateAround(carPostion.x,carPostion.y,carPostion.x+dist,carPostion.y,carPostion,Math.PI/2-roz);
+        MathUtils.rotateAround(carPostion.x, carPostion.y, carPostion.x + dist, carPostion.y, carPostion, Math.PI / 2 - roz);
         mAdasDetectObject.setPosition(carPostion);
-        mAdasDetectObject.setRotation(Vector3.Axis.Z,Math.toDegrees(roz));
 
+        /*Vector3 chase = new Vector3(mObject4Chase.getPosition());
+        Vector3 destPos = new Vector3(mAdasCarObject.getPosition());
+        double radius = Math.atan2(destPos.y-chase.y,destPos.x-chase.x);
+        radius = radius< Math.PI?radius:2*Math.PI-radius;
+        double degress = 90-Math.toDegrees(radius);
+        HaloLogger.logE(tag,String.format(" radius %s destPos %s,curPostion %s ,degress %s ",radius,destPos,carPostion,degress));*/
+
+        mAdasDetectObject.setRotation(Vector3.Axis.Z, roz);
     }
     @Override
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
         if (mAdasUpdater != null) {
-            mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+            mAdasUpdater.updateTrafficDetection(dist,0);
             mAdasDetectObject.setVisible(true);
             calculateTrafficDetectionObject();
         }
