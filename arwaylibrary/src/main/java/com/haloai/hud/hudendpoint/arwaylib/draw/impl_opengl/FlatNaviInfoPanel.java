@@ -23,7 +23,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.amap.api.col.dy;
+//import com.amap.api.col.dy;
 import com.amap.api.navi.model.AMapLaneInfo;
 import com.amap.api.navi.view.DriveWayView;
 import com.haloai.hud.hudendpoint.arwaylib.R;
@@ -428,8 +428,8 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             int remainDistance = mNaviInfoBean.getPathRetainDistance();
             String text = null;
             if (remainDistance > 1000) {
-                dist = (int)(((remainDistance / 100)) * 1.0 / 10);
-                text = dist + "公里";
+                float pathDist = (float) (((remainDistance / 100)) * 1.0 / 10);
+                text = pathDist + "公里";
             } else if (remainDistance >= 0) {
                 text = ((remainDistance)) + "米";
             }
@@ -440,20 +440,20 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        if (mDriveWayView != null) {
+        /*if (mDriveWayView != null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }
+        }*/
     }
 
     public void hideLaneInfo() {
         //隐藏车道信息
-        if (mDriveWayView != null) {
+        /*if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
-        }
+        }*/
     }
 
     @Override
@@ -491,7 +491,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mWalkerADASView = view.findViewById(R.id.walker_view);
 
             //此句不能删....HL
-            dy.a(context);
+//            dy.a(context);
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
 
