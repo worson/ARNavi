@@ -1145,6 +1145,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mYawLaneLayer = new BaseObject3D();
         mTrafficDetectionLayer = new BaseObject3D();
         mAdasCarObject = new BaseObject3D();
+        mAdasCarObject.setOrthographic(true);
 
 
 

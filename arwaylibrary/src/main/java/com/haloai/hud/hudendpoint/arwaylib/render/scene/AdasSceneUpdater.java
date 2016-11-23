@@ -68,8 +68,8 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
     public void initScene(){
         initMaterial();
-//        initCarObject();
-        initObject3DCarObject();
+        initCarObject();
+//        initObject3DCarObject();
     }
 
     public void reset(){
@@ -77,7 +77,7 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
     }
 
     private void initMaterial(){
-        mCarMaterial = createTextureMaterial(R.drawable.arway_tex_car_1,"adas_car_texture",1,1);
+        mCarMaterial = createTextureMaterial(R.drawable.car_tail,"adas_car_texture",1,1);
         mLaneLeftMaterial = createTextureMaterial(R.drawable.lane_yaw_left_half_circle,"adas_left_cicrle_texture",1,1);
         mLaneRightMaterial = createTextureMaterial(R.drawable.lane_yaw_right_half_circle,"adas_right_cicrle_texture",1,1);
 
@@ -281,16 +281,15 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
 
     private void initCarObject(){
-        mCarObject = new Plane(1f,0.5f,10,10, Vector3.Axis.Z,
+        mCarObject = new Plane(0.5f,0.5f,10,10, Vector3.Axis.Z,
                 true,false,1,true);
         mCarObject.setColor(0);
         mCarObject.setMaterial(mCarMaterial);
         mCarObject.setTransparent(true);
         mCarObject.setDepthTestEnabled(false);
-        mCarObject.setRotation(Vector3.Axis.Z,90);
+//        mCarObject.setRotation(Vector3.Axis.Z,90);
         mCarObject.setPosition(0,1*0.15,0);
     }
-
     private void initObject3DCarObject(){
         boolean debug = false;
         Object3D carObj = null;
