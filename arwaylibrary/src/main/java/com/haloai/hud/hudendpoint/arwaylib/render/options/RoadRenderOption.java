@@ -28,6 +28,7 @@ public class RoadRenderOption {
     public float refLineStepLength = ROAD_WIDTH * 2.75f;
     public float netRefLineHeight  = ROAD_WIDTH * 1.1f;
     public float netRrefLineWidth  = ROAD_WIDTH * 1.1f;
+    public float adasWidth         = ROAD_WIDTH * 0.55f;
 
     public void setLayersWidth(final float width){
         naviRoadWidth = width * 0.55f;
@@ -39,6 +40,7 @@ public class RoadRenderOption {
         refLineStepLength = width * 2.75f;
         netRefLineHeight = width * 0.77f;
         netRrefLineWidth = width * 0.77f;
+        adasWidth = width * 0.75f;
     }
 
     public LayersColor mColors = new LayersColor();

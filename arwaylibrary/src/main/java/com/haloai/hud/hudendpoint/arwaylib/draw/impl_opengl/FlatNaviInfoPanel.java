@@ -37,8 +37,8 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IWalkerADASDataProvid
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DisplayUtil;
 import com.haloai.hud.utils.HaloLogger;
-
-import com.amap.api.col.dy;
+// TODO: 22/11/2016
+//import com.amap.api.col.dy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -426,20 +426,20 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        if (mDriveWayView != null) {
+        /*if (mDriveWayView != null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }
+        }*/
     }
 
     public void hideLaneInfo() {
         //隐藏车道信息
-        if (mDriveWayView != null) {
+        /*if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
-        }
+        }*/
     }
 
     @Override
@@ -477,7 +477,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mWalkerADASView = view.findViewById(R.id.walker_view);
 
             //此句不能删....HL
-            dy.a(context);
+//            dy.a(context);
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
 

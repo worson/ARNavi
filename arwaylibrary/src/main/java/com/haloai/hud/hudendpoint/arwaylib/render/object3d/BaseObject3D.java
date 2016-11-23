@@ -125,7 +125,7 @@ public class BaseObject3D extends Object3D {
                 child.setParent(parent);
                 if (mRenderChildrenAsBatch)
                     child.setPartOfBatch(true);
-//                mChildren.add(child);
+                mChildren.add(child);
             }
         };
         internalOfferTask(task);

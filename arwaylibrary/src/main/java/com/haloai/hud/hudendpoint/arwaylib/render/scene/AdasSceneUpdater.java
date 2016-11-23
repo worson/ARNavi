@@ -2,6 +2,7 @@ package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.nfc.Tag;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
@@ -12,14 +13,15 @@ import com.haloai.hud.hudendpoint.arwaylib.render.utils.TDrawText;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.utils.HaloLogger;
 
-import org.opencv.core.Mat;
 import org.rajawali3d.Object3D;
+import org.rajawali3d.loader.LoaderOBJ;
+import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.plugins.AlphaMaskMaterialPlugin;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
+import org.rajawali3d.primitives.Sphere;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ import java.util.List;
  */
 
 public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSceneUpdater {
+    public static final String TAG = AdasSceneUpdater.class.getSimpleName();
 
     public static  boolean IS_SINGLETON  = true;
     private static AdasSceneUpdater mAdasSceneUpdater = null;
@@ -42,6 +45,16 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
     private Material mLaneLeftMaterial             = null;
     private Material mLaneRightMaterial             = null;
 
+    private Texture mDistanceBoardTexture;
+
+    private Object3D mTrafficPlaneArrow;
+    private Object3D mDistanceBoardObj;
+
+    private double mAdasdistance = 0;
+    private volatile boolean mNeedUpdateDistance = false;
+    private volatile boolean mResetAdasDistanceDetect = true;
+    private Bitmap mAdasDistanceBitmap;
+
 
     public AdasSceneUpdater() {
         initObject();
@@ -55,7 +68,12 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
     public void initScene(){
         initMaterial();
-        initCarObject();
+//        initCarObject();
+        initObject3DCarObject();
+    }
+
+    public void reset(){
+        mResetAdasDistanceDetect = true;
     }
 
     private void initMaterial(){
@@ -97,6 +115,8 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         ARWayRoadBuffredObject road = new ARWayRoadBuffredObject(mOptions.roadWidth);
         ARWayRoadBuffredObject.ShapeType type = ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD;
         road.setColor(0xff955410);
+        // TODO: 22/11/2016
+//        road.setColor(Color.RED);
         road.setShapeType(type);
         if (!ARWayConst.IS_USE_ROAD_TEXTURE) {
             type = ARWayRoadBuffredObject.ShapeType.VERTICE_ROAD;
@@ -120,27 +140,71 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
 
     @Override
     public void updateTrafficDetection(double distance, double direction) {
-        mTrafficDetectionLayer.clearChildren();
-        float width = mOptions.roadWidth;
+        mNeedUpdateDistance = false;
+        mAdasdistance = distance;
+        if (mResetAdasDistanceDetect || mTrafficPlaneArrow == null || mDistanceBoardObj == null) {
+            mResetAdasDistanceDetect = false;
+            initTrafficObject();
+        }else {
+            mAdasDistanceBitmap = TDrawText.drawBitmapText((int)mAdasdistance+"m",25,0,new int[4],Color.WHITE,Color.BLUE,
+                    Color.BLACK,1);
+        }
+
+
+        /*
+        float width = mOptions.naviRoadWidth;
         Material boadMaterial = new Material();
         boadMaterial.setColorInfluence(0.1f);
-
-        Bitmap bitmap =  TDrawText.drawBitmapText((int)distance+"m",25,0,new int[4],Color.WHITE,Color.BLUE,
+        mAdasDistanceBitmap =  TDrawText.drawBitmapText((int)mAdasdistance+"m",25,0,new int[4],Color.WHITE,Color.BLUE,
                 Color.BLACK,1);
         try {
-            boadMaterial.addTexture(new Texture("timeTexture", bitmap));
+            mDistanceBoardTexture = new Texture("timeTexture", mAdasDistanceBitmap);
+//            mDistanceBoardTexture.shouldRecycle(true);
+            boadMaterial.addTexture(mDistanceBoardTexture);
         } catch (ATexture.TextureException e) {
             e.printStackTrace();
         }
-        Object3D board = createPlane(width,width,false,boadMaterial);
-        Object3D object3D =  createPlaneArrow(width,3,0.4f);
-        object3D.addChild(board);
+        mDistanceBoardObj = createPlane(width,width,false,boadMaterial);*/
 
-        object3D.setRotation(Vector3.Axis.Z,90-direction);
 
-        mTrafficDetectionLayer.addChild(object3D);
+        mTrafficDetectionLayer.clearChildren();
+        mTrafficDetectionLayer.addChild(mTrafficPlaneArrow);
+        mTrafficDetectionLayer.addChild(mDistanceBoardObj);
+        mNeedUpdateDistance=true;
+        HaloLogger.logE(TAG,"updateTrafficDetection");
     }
 
+    public void onRender(long ellapsedRealtime, double deltaTime) {
+        if(mNeedUpdateDistance){
+            mNeedUpdateDistance = false;
+            mDistanceBoardTexture.setBitmap(mAdasDistanceBitmap);
+            mRenderer.getTextureManager().replaceTexture(mDistanceBoardTexture);
+        }
+    }
+
+    private void initTrafficObject(){
+
+        float width = 0.27f;
+        float height = width*4.5f;
+        float arrowHeight = 0.4f*width;
+        mTrafficPlaneArrow =  createPlaneArrow(width,height,arrowHeight);
+        Material boadMaterial = new Material();
+        boadMaterial.setColorInfluence(0.1f);
+        mAdasDistanceBitmap =  TDrawText.drawBitmapText((int)mAdasdistance+"m",25,0,new int[4],Color.WHITE,Color.BLUE,
+                Color.BLACK,1);
+        try {
+            mDistanceBoardTexture = new Texture("timeTexture", mAdasDistanceBitmap);
+            mDistanceBoardTexture.shouldRecycle(true);
+            boadMaterial.addTexture(mDistanceBoardTexture);
+        } catch (ATexture.TextureException e) {
+            e.printStackTrace();
+        }
+        mDistanceBoardObj = createPlane(width,width,false,boadMaterial);
+        mDistanceBoardObj.setPosition(0,-0.3*(height-2*arrowHeight)/2,0);
+        HaloLogger.logE(TAG,"initTrafficObject");
+
+
+    }
     @Override
     public void hideTrafficDetection() {
 
@@ -167,12 +231,12 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         int color = 0xffa08843;
         float width = totalWidth;
         float iconWidth = width*0.3f;
-        float iconHeight = width*0.5f;
+        float iconHeight = width*0.85f;
         float planeHeight = totalHeight-2*arrowHeight;
         float errorHeight = -planeHeight*0.01f;
 
         Object3D textArrowObj = createPlane(iconWidth,iconHeight,false,mArrowIconMaterial);
-        textArrowObj.setPosition(0,(width+planeHeight/2)/2,0);
+        textArrowObj.setPosition(0,(width+planeHeight/3)/2,0);
 
         Object3D tailArrowObj = createPlane(width,arrowHeight,false,mTailArrowMaretial);
         tailArrowObj.setColor(color);
@@ -202,11 +266,11 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         Plane plane = new Plane(width,height,10,10, Vector3.Axis.Z,
                 true,false,1,true);//,Color.BLACK
         plane.setTransparent(true);
-        plane.setPosition(0,0,height/2);
         plane.setMaterial(material);
         if(!orth){
             return plane;
         }
+        plane.setPosition(0,0,height/2);
         BaseObject3D baseObject3D = new BaseObject3D();
         baseObject3D.setOrthographic(true,0.04f);
         baseObject3D.addChild(plane);
@@ -223,6 +287,35 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         mCarObject.setDepthTestEnabled(false);
         mCarObject.setRotation(Vector3.Axis.Z,90);
         mCarObject.setPosition(0,1*0.15,0);
+    }
+
+    private void initObject3DCarObject(){
+        boolean debug = false;
+        Object3D carObj = null;
+        LoaderOBJ objParser = new LoaderOBJ(mContext.getResources(),
+                mTextureManager,R.raw.white);//R.raw.qizi_obj multiobjects_obj
+        try {
+            objParser.parse();
+            carObj = objParser.getParsedObject();
+            float oScale = 0.31f;
+            if(debug){
+                oScale = 0.8f;
+            }
+            carObj.setScale(new Vector3(oScale,oScale,oScale));
+        } catch (ParsingException e) {
+            e.printStackTrace();
+        }
+        //旋转的
+        if(!debug) {
+            carObj.rotate(Vector3.Axis.X,90);
+            carObj.rotate(Vector3.Axis.Z,90);
+            carObj.rotate(Vector3.Axis.X,180);
+            carObj.setDepthTestEnabled(false);
+            carObj.setDepthMaskEnabled(false);
+        }else {
+            carObj.rotate(Vector3.Axis.Y,-90);
+        }
+        mCarObject = carObj;
     }
 
     public Object3D getCarObject() {

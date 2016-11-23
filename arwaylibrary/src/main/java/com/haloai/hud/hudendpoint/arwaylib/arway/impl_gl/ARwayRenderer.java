@@ -20,6 +20,8 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
+import com.haloai.hud.hudendpoint.arwaylib.render.object3d.BaseObject3D;
+import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolatorListener;
 import com.haloai.hud.hudendpoint.arwaylib.render.scene.AdasSceneUpdater;
@@ -81,9 +83,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private List<Vector3>       mRenderPath  = new ArrayList<>();
 
     //rajawali about
-    private Object3D mObject4Chase;
-    private Object3D mAdasCarObject;
-    private Object3D mAdasDetectObject;
+    private Object3D     mObject4Chase;
+    private Object3D     mAdasCarObject;
+    private BaseObject3D mAdasDetectObject;
 
     private ArwaySceneUpdater mSceneUpdater = null;//ArwaySceneUpdater.getInstance()
     private AdasSceneUpdater  mAdasUpdater  = null;
@@ -208,6 +210,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void initSceneUpdater() {
         mSceneUpdater = ArwaySceneUpdater.getInstance();
+        RoadRenderOption roadOption =  mSceneUpdater.getRenderOptions();
+        roadOption.setLayersWidth(1);
         mSceneUpdater.setRenderer(this);
         mSceneUpdater.setContext(getContext());
         mSceneUpdater.setScene(getCurrentScene());
@@ -217,12 +221,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         if (ARWayConst.IS_ADAS) {
             mAdasUpdater = AdasSceneUpdater.getInstance();
             mAdasUpdater.setRenderer(this);
-            mAdasUpdater.initScene();
             mAdasUpdater.setOptions(mSceneUpdater.getRenderOptions());
+            mAdasUpdater.setContext(getContext());
+            mAdasUpdater.initScene();
 
             mAdasDetectObject = mSceneUpdater.getTrafficDetectionLayer();
             mAdasUpdater.setYawLaneObject(mSceneUpdater.getYawLaneLayer());
-            mAdasUpdater.setTrafficDetectionLayer(mSceneUpdater.getTrafficDetectionLayer());
+            mAdasUpdater.setTrafficDetectionLayer(mAdasDetectObject);
             mAdasUpdater.setAdasCarObject(mSceneUpdater.getAdasCarObject());
 
             mAdasCarObject = mSceneUpdater.getAdasCarObject();
@@ -314,7 +319,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
         }
-        calculateTrafficDetectionObject();
+        if(ARWayConst.IS_ADAS){
+            mAdasUpdater.onRender(ellapsedRealtime,deltaTime);
+            calculateTrafficDetectionObject();
+        }
         mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
         if (ARWayConst.ENABLE_PERFORM_TEST) {
@@ -409,6 +417,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         HaloLogger.logE("ylq__", "myInitScene");
         clearScene();
         mSceneUpdater.reset();
+        if(ARWayConst.IS_ADAS){
+            mAdasUpdater.reset();
+        }
         //啊奇
         mSceneUpdater.getRenderOptions().setLayersWidth((float) mParamsRefresher.getInitializtionRoadWidth());
 
@@ -970,23 +981,31 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         mAdasRotateAnim.play();
     }
 
-    private void calculateTrafficDetectionObject(){
-        if (mAdasDetectObject == null || mObject4Chase ==null) {
+    private void calculateTrafficDetectionObject() {
+        if (mAdasDetectObject == null || mObject4Chase == null || mAdasCarObject == null) {
             return;
         }
-        double dist = 3;
+        String tag = "test_roation";
+        double dist = 2;
         double roz = mObject4Chase.getRotZ();
         Vector3 carPostion = new Vector3(mObject4Chase.getPosition());
-        MathUtils.rotateAround(carPostion.x,carPostion.y,carPostion.x+dist,carPostion.y,carPostion,-roz);
+        MathUtils.rotateAround(carPostion.x, carPostion.y, carPostion.x + dist, carPostion.y, carPostion, Math.PI / 2 - roz);
         mAdasDetectObject.setPosition(carPostion);
-        mAdasDetectObject.setRotation(Vector3.Axis.Z,Math.toDegrees(roz));
 
+        /*Vector3 chase = new Vector3(mObject4Chase.getPosition());
+        Vector3 destPos = new Vector3(mAdasCarObject.getPosition());
+        double radius = Math.atan2(destPos.y-chase.y,destPos.x-chase.x);
+        radius = radius< Math.PI?radius:2*Math.PI-radius;
+        double degress = 90-Math.toDegrees(radius);
+        HaloLogger.logE(tag,String.format(" radius %s destPos %s,curPostion %s ,degress %s ",radius,destPos,carPostion,degress));*/
+
+        mAdasDetectObject.setRotation(Vector3.Axis.Z, roz);
     }
     @Override
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
         if (mAdasUpdater != null) {
-            mAdasUpdater.updateTrafficDetection(dist,mObject4Chase.getRotZ());
+            mAdasUpdater.updateTrafficDetection(dist,0);
             mAdasDetectObject.setVisible(true);
             calculateTrafficDetectionObject();
         }
