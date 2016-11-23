@@ -1,62 +1,1 @@
-# Blender MTL File: 'None'
-# Material Count: 6
-
-newmtl 51FABRIC
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.501961 0.501961 0.533333
-Ks 0.449020 0.449020 0.449020
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 51REK
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.398431 0.398431 0.398431
-Ks 0.449020 0.449020 0.449020
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 51basic
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.116078 0.116078 0.116078
-Ks 0.072549 0.072549 0.072549
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 51body
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.467451 0.467451 0.467451
-Ks 0.449020 0.449020 0.449020
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 51tyre
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.467451 0.467451 0.467451
-Ks 0.449020 0.449020 0.449020
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
-
-newmtl 51tyreSF
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.470588 0.470588 0.470588
-Ks 0.449020 0.449020 0.449020
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware# 创建的文件:23.11.2016 11:19:13newmtl 60TOP	Ns 10.000000	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.000000 0.000000 0.000000	Kd 0.588000 0.588000 0.588000	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_top.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_top.jpgnewmtl 60body	Ns 10.000000	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.000000 0.000000 0.000000	Kd 0.588000 0.588000 0.588000	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_body.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_body.jpg	map_d /Users/keith/Desktop/Archive/textures/car_body_w.jpgnewmtl 60basic	Ns 9.999999	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.164706 0.164706 0.164706	Kd 0.164706 0.164706 0.164706	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000newmtl 60FABRIC	Ns 9.999999	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.627451 0.627451 0.666667	Kd 0.627451 0.627451 0.666667	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_fabri.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_fabri.jpgnewmtl 60REK	Ns 25.000000	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.100000 0.100000 0.100000	Kd 0.500000 0.500000 0.500000	Ks 0.045000 0.045000 0.045000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_rek.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_rek.jpgnewmtl 60TYRE	Ns 10.000000	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.000000 0.000000 0.000000	Kd 0.588000 0.588000 0.588000	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_tyre.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_tyre.jpgnewmtl 60TYRESF	Ns 9.999999	Ni 1.500000	d 1.000000	Tr 0.000000	Tf 1.000000 1.000000 1.000000 	illum 2	Ka 0.588235 0.588235 0.588235	Kd 0.588235 0.588235 0.588235	Ks 0.000000 0.000000 0.000000	Ke 0.000000 0.000000 0.000000	map_Ka /Users/keith/Desktop/Archive/textures/car_tyre_sf.jpg	map_Kd /Users/keith/Desktop/Archive/textures/car_tyre_sf.jpg
