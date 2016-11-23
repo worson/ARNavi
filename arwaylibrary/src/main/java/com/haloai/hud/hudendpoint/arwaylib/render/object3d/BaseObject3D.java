@@ -42,9 +42,11 @@ public class BaseObject3D extends Object3D {
     private boolean hasVerticesColor = false;
 
     private boolean mIsOrth       = false;
+    private boolean mIsOrthScale = false;
     private double  mDisplayScale = 1;
 
     private final LinkedList<AFrameTask> mFrameTaskQueue;
+
 
     public BaseObject3D() {
         mFrameTaskQueue = new LinkedList<>();
@@ -144,6 +146,11 @@ public class BaseObject3D extends Object3D {
     public void setOrthographic(boolean isOrth, float displayScale){
         mIsOrth = isOrth;
         mDisplayScale = displayScale;
+        mIsOrthScale = true;
+    }
+
+    public void setOrthographic(boolean isOrth){
+        mIsOrth = isOrth;
     }
 
     /**
@@ -177,12 +184,14 @@ public class BaseObject3D extends Object3D {
     public void preRenderHandle(Camera camera){
         performFrameTasks(); //Handle the task queue
         if(mIsOrth) {
-            double dist = Math.sqrt(Math.pow(camera.getPosition().x - getPosition().x, 2.0)
-                    + Math.pow(camera.getPosition().y - getPosition().y, 2.0)
-                    + Math.pow(camera.getPosition().z - getPosition().z, 2.0));
-            double near = camera.getNearPlane();
-            double convert = (near) / ((dist + near));
-            setScale(mDisplayScale/convert);
+            if(mIsOrthScale) {
+                double dist = Math.sqrt(Math.pow(camera.getPosition().x - getPosition().x, 2.0)
+                        + Math.pow(camera.getPosition().y - getPosition().y, 2.0)
+                        + Math.pow(camera.getPosition().z - getPosition().z, 2.0));
+                double near = camera.getNearPlane();
+                double convert = (near) / ((dist + near));
+                setScale(mDisplayScale / convert);
+            }
             Quaternion quaternion = camera.getOrientation();
             quaternion.multiply(-1);
             setOrientation(quaternion);
