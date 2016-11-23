@@ -986,7 +986,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             return;
         }
         String tag = "test_roation";
-        double dist = 2;
+        double dist = 1;
         double roz = mObject4Chase.getRotZ();
         Vector3 carPostion = new Vector3(mObject4Chase.getPosition());
         MathUtils.rotateAround(carPostion.x, carPostion.y, carPostion.x + dist, carPostion.y, carPostion, Math.PI / 2 - roz);
@@ -999,13 +999,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         double degress = 90-Math.toDegrees(radius);
         HaloLogger.logE(tag,String.format(" radius %s destPos %s,curPostion %s ,degress %s ",radius,destPos,carPostion,degress));*/
 
-        mAdasDetectObject.setRotation(Vector3.Axis.Z, roz);
+        mAdasDetectObject.setRotation(Vector3.Axis.Z, Math.toDegrees(roz));
     }
     @Override
     public void onDistChange(double dist) {
         // TODO: 21/11/2016 确认方向
         if (mAdasUpdater != null) {
-            mAdasUpdater.updateTrafficDetection(dist,0);
+            mAdasUpdater.updateTrafficDetection(dist,90);
             mAdasDetectObject.setVisible(true);
             calculateTrafficDetectionObject();
         }

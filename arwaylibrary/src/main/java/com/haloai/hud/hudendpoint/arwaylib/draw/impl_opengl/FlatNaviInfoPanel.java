@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.amap.api.col.dy;
 import com.amap.api.navi.model.AMapLaneInfo;
 import com.amap.api.navi.view.DriveWayView;
 import com.haloai.hud.hudendpoint.arwaylib.R;
@@ -98,6 +99,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     private RelativeLayout mLaneInfoViewgroup;
     private DriveWayView   mDriveWayView;
+    private ObjectAnimator objectAnimator;
 
     private int[] mSpeedNumImg = {R.drawable.smooth_number_0, R.drawable.smooth_number_1, R.drawable.smooth_number_2,
             R.drawable.smooth_number_3, R.drawable.smooth_number_4, R.drawable.smooth_number_5, R.drawable.smooth_number_6,
@@ -105,11 +107,23 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
 
     @Override
     public void showWalker() {
+        if(objectAnimator!= null && objectAnimator.isRunning()){
+            objectAnimator.pause();
+            mWalkerADASView.clearAnimation();
+        }
         mWalkerADASView.setVisibility(View.VISIBLE);
+        objectAnimator = ObjectAnimator.ofFloat(mWalkerADASView,"alpha",1,0.66f,0.33f,0,0.5f,1f);
+        objectAnimator.setDuration(2000);
+        objectAnimator.setRepeatCount(-1);
+        objectAnimator.start();
     }
 
     @Override
     public void hideWalker() {
+        if(objectAnimator!= null && objectAnimator.isRunning()){
+            objectAnimator.pause();
+            mWalkerADASView.clearAnimation();
+        }
         mWalkerADASView.setVisibility(View.INVISIBLE);
     }
 
@@ -426,20 +440,20 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     public void showLaneInfo(AMapLaneInfo[] laneInfos, byte[] laneBackgroundInfo, byte[] laneRecommendedInfo) {
-        /*if (mDriveWayView != null) {
+        if (mDriveWayView != null) {
             if(viewDebug){
                 HaloLogger.logE("showLaneInfo","showLaneInfo");
             }
             mDriveWayView.loadDriveWayBitmap(laneBackgroundInfo, laneRecommendedInfo);
             mDriveWayView.setVisibility(View.VISIBLE);
-        }*/
+        }
     }
 
     public void hideLaneInfo() {
         //隐藏车道信息
-        /*if (mDriveWayView != null) {
+        if (mDriveWayView != null) {
             mDriveWayView.setVisibility(View.INVISIBLE);
-        }*/
+        }
     }
 
     @Override
@@ -477,7 +491,7 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             mWalkerADASView = view.findViewById(R.id.walker_view);
 
             //此句不能删....HL
-//            dy.a(context);
+            dy.a(context);
             mLaneInfoViewgroup = (RelativeLayout) view.findViewById(R.id.lane_info_viewgroup);
             mDriveWayView = (DriveWayView) view.findViewById(R.id.lane_info_view);
 

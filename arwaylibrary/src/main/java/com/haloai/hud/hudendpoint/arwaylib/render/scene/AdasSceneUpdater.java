@@ -170,6 +170,8 @@ public class AdasSceneUpdater extends SuperArwaySceneUpdater implements IAdasSce
         mTrafficDetectionLayer.clearChildren();
         mTrafficDetectionLayer.addChild(mTrafficPlaneArrow);
         mTrafficDetectionLayer.addChild(mDistanceBoardObj);
+
+        mTrafficDetectionLayer.setRotation(Vector3.Axis.Z,direction);
         mNeedUpdateDistance=true;
         HaloLogger.logE(TAG,"updateTrafficDetection");
     }

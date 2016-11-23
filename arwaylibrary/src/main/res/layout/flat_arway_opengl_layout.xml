@@ -191,8 +191,9 @@
 
         <RelativeLayout
             android:id="@+id/lane_info_viewgroup"
-            android:layout_width="100dp"
-            android:layout_height="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_width="120dp"
+            android:layout_height="30dp"
             android:layout_centerHorizontal="true">
 
 
@@ -222,7 +223,7 @@
             android:id="@+id/walker_view"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/adas_walker"
+            android:background="@drawable/walker"
             android:visibility="invisible">
         </View>
 
