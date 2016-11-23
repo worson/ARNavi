@@ -820,17 +820,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
         int pathSize = path.size();
         final Vector3 offset = new Vector3(path.get(0));
-        if (mIndicationLine != null) {
-            mNaviGuideLineLayer.removeChild(mIndicationLine);
-            mIndicationLine = null;
-        }
+        mIndicationLine = null;
         if (mIndicationLine == null) {
             mIndicationLine = new ARWayRoadBuffredObject(mOptions.guideLineWidth,mColors.guideLine, ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD);
             mIndicationLine.setMaterial(mCommonRoadMaterial);
             mIndicationLine.setColor(mColors.guideLine);
-            if (mNaviGuideLineLayer != null) {
-                mNaviGuideLineLayer.addChild(mIndicationLine);
-            }
         }
         if (mIndicationArrow == null) {
             mIndicationArrow = new Plane(mOptions.guideLineWidth*4, mOptions.guideLineWidth*4,10,10, Vector3.Axis.Z,
@@ -840,9 +834,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mIndicationArrow.setMaterial(mArrowMaterial);
             mIndicationArrow.setBlendingEnabled(true);
             mIndicationArrow.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-            if (mNaviGuideLineLayer != null) {
-                mNaviGuideLineLayer.addChild(mIndicationArrow);
-            }
+        }
+        if (mNaviGuideLineLayer != null) {
+            mNaviGuideLineLayer.clearChildren();
+            mNaviGuideLineLayer.addChild(mIndicationLine);
+            mNaviGuideLineLayer.addChild(mIndicationArrow);
         }
         mNaviGuideLineLayer.setPosition(0,0,0);
         mIndicationLine.setPosition(offset);
