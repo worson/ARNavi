@@ -409,13 +409,12 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     }
 
     private void updateNextRoadDistance() {
-        int dist = 0;
+        float dist = 0;
         if (mRoadDistanceTextView != null) {
-//            int remainDistance = mNaviInfoBean.getPathRetainTime();
             int remainDistance = mNaviInfoBean.getStepRetainDistance();
             String text = null;
             if (remainDistance > 1000) {
-                dist = (int)(((remainDistance / 100)) * 1.0 / 10);
+                dist = (float) (((remainDistance / 100)) * 1.0 / 10);
                 text = dist + "公里";
             } else if (remainDistance >= 0) {
                 text = ((remainDistance)) + "米";
@@ -429,7 +428,11 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
             String text = null;
             if (remainDistance > 1000) {
                 float pathDist = (float) (((remainDistance / 100)) * 1.0 / 10);
-                text = pathDist + "公里";
+                if(pathDist>1000){
+                    text = (int)pathDist + "公里";
+                }else {
+                    text = pathDist + "公里";
+                }
             } else if (remainDistance >= 0) {
                 text = ((remainDistance)) + "米";
             }
