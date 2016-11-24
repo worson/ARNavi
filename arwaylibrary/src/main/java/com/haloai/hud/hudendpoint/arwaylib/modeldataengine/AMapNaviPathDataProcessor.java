@@ -337,20 +337,20 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
         //TODO 根据动态加载的距离去拉去路网信息(真正运行时需要走的逻辑)
-        //        for (int i = 0; i < mPreDynamicEndIndex; i++) {
-        //            if (mStepPointIndexs.contains(i)) {
-        //                HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
-        //                processSteps(mStepPointIndexs.indexOf(i));
-        //            }
-        //        }
+        for (int i = 0; i < mPreDynamicEndIndex; i++) {
+            if (mStepPointIndexs.contains(i)) {
+                HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
+                processSteps(mStepPointIndexs.indexOf(i));
+            }
+        }
 
         //TODO 没有动态加载的情况下一次性拉去路网信息(测试时使用)
-        //        for (int i = 0; i < mStepPointIndexs.size(); i++) {
-        //            processSteps(i);
-        //        }
+        /*for (int i = 0; i < mStepPointIndexs.size(); i++) {
+            processSteps(i);
+        }*/
 
         //TODO 北京演示时使用这部分,模拟一段假的但是效果更好的岔路显示出来
-        getShowBranchLines();
+//        getShowBranchLines();
 
         FileUtils.write(sb_daoge.toString(), fileDir, filename);
         HaloLogger.logE(TAG, "mProportionMappingEngine.getRenderPath screen start");
@@ -687,240 +687,240 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * 访问路网模块获取指定steps的路网数据
      */
     private void processSteps(int... stepIndexs) {
-//        HaloLogger.logE(TAG, "process steps start " + (count + 1));
-//        Log.e("ylq", "add start");
-//        for (Integer stepIndex : stepIndexs) {
-//            if (mAlreadyLoadStep.contains(stepIndex)) {
-//                continue;
-//            }
-//            mAlreadyLoadStep.add(stepIndex);
-//            //1.根据stepIndex构建数据
-//            //  1.机动点前后道路link形式(暂时由一条link表示整个导航路)
-//            //  2.每个link的info
-//            //  3.机动点经纬度
-//            //  4.切割机动点前后N*N范围的点,且取到边缘点
-//            //  5.使用返回的数据替代原先的数据(主路部分)
-//            Size2iOutside szCover = new Size2iOutside();
-//            szCover.width = 800;
-//            szCover.height = 800;
-//
-//            List<List<LatLngOutSide>> links = new ArrayList<>();
-//            List<LatLngOutSide> link = new ArrayList<>();
-//            LatLngOutSide centerLatLng = new LatLngOutSide();
-//            centerLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lat;
-//            centerLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lng;
-//            LatLng[] point8 = new LatLng[8];
-//            int[] se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
-//            int breakStart = se[0];
-//            int breakEnd = se[1];
-//            if (breakStart < mPreEndBreak) {
-//                //1.合并两个step,问题是按照当前算法路线越长越复杂,越容易匹配到错误的道路
-//                /*LatLng lastEnd = mPathLatLng.get(mPreEndBreak);
-//                LatLng thisStart = mPathLatLng.get(breakStart);
-//                szCover.width = (int) (szCover.width*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
-//                szCover.height = (int) (szCover.height*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
-//                HaloLogger.logE(TAG,"width="+szCover.width);
-//                HaloLogger.logE(TAG,"height="+szCover.height);
-//                //将扩充后的窗口中的点也添加到link中
-//                for(int i=breakStart;i>=mPreStartBreak;i--){
-//                    link.add(0,new LatLngOutSide(mPathLatLng.get(i).latitude,mPathLatLng.get(i).longitude));
-//                }
-//                breakStart = mPreStartBreak;
-//                mPreEndBreak = breakEnd;*/
-//                //2.暂时先跳过该路口不做处理,因为合并处理时得不到岔路,问题是可能会跳过多个路口,导致路口显示过少
-//                //continue;
-//                //3.当覆盖时,缩小窗口,同时缩短Path到新窗口的边缘
-//                LatLngOutSide preCenterLatLng = new LatLngOutSide();
-//                preCenterLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lat;
-//                preCenterLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lng;
-//                double offsetCover = szCover.width - (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG;
-//                HaloLogger.logE(TAG, "szCover.width=" + szCover.width);
-//                HaloLogger.logE(TAG, "max=" + (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG);
-//                HaloLogger.logE(TAG, "offsetCover=" + offsetCover);
-//                HaloLogger.logE(TAG, "pre center=" + preCenterLatLng.lat + "," + preCenterLatLng.lng);
-//                HaloLogger.logE(TAG, "cur center=" + centerLatLng.lat + "," + centerLatLng.lng);
-//                //TODO : 为什么会有明明很远的两个点,但是却判断到了相交导致offsetCover算出来是个负数的情况??????
-//                if (offsetCover < 0 || offsetCover >= szCover.width / 2) {
-//                    continue;
-//                }
-//                szCover.width -= 2 * offsetCover;
-//                szCover.height -= 2 * offsetCover;
-//                se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
-//                breakStart = se[0];
-//                breakEnd = se[1];
-//
-//            }
-//            HaloLogger.logE("cover", "szCover : " + szCover.width + "," + szCover.height);
-//            HaloLogger.logE("cover", "breakStart : " + breakStart);
-//            HaloLogger.logE("cover", "breakEnd : " + breakEnd);
-//            HaloLogger.logE("cover", "cover cross start");
-//            for (LatLng latlng : point8) {
-//                HaloLogger.logE("cover", latlng.latitude + "," + latlng.longitude);
-//            }
-//            HaloLogger.logE("cover", "cover cross end");
-//            HaloLogger.logE("cover", "main cross start");
-//            for (LatLngOutSide latlng : link) {
-//                HaloLogger.logE("cover", latlng.lat + "," + latlng.lng);
-//            }
-//            HaloLogger.logE("cover", "main cross end");
-//
-//            HaloLogger.logE(TAG, "width=" + szCover.width + ",height=" + szCover.height);
-//            if (breakEnd == 0) {
-//                breakEnd = mPathLatLng.size() - 1;
-//            }
-//            HaloLogger.logE(TAG, "breakStart=" + breakStart + ",breakEnd=" + breakEnd);
-//            links.add(link);
-//
-//            List<LinkInfoOutside> linkInfos = new ArrayList<>();
-//
-//            LatLngOutSide centerPoint = new LatLngOutSide();
-//            centerPoint.lat = centerLatLng.lat;
-//            centerPoint.lng = centerLatLng.lng;
-//
-//            List<List<LatLngOutSide>> crossLinks = new ArrayList<>();
-//            List<LatLngOutSide> mainRoad = new ArrayList<>();
-//            List<Integer> crossPointIndexs = new ArrayList<>();
-//
-//
-//            //TODO : data for daoge
-//
-//            StringBuilder sb = new StringBuilder();
-//            sb.append((++count) + " ");
-//            sb.append(centerPoint.lat + " ");
-//            sb.append(centerPoint.lng + " ");
-//            sb.append(szCover.width + " ");
-//            sb.append(szCover.height + " ");
-//            for (LatLngOutSide latlng : links.get(0)) {
-//                sb.append(latlng.lat + " ");
-//                sb.append(latlng.lng + " ");
-//            }
-//            HaloLogger.logE("daoge", sb.toString().trim());
-//            sb_daoge.append(sb.toString() + "\n");
-//
-//
-//            HaloLogger.logE(TAG, "into jni");
-//            int res = mEnlargedCrossProcess.updateCrossLinks(links, linkInfos, centerPoint, szCover, crossLinks, mainRoad, crossPointIndexs);
-//            HaloLogger.logE(TAG, "outto jni");
-//            HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
-//
-//            if (res == 0) {
-//                HaloLogger.logE("daoge", "mainRoad point size = " + mainRoad.size());
-//                sb_daoge.append("mainRoad point size = " + mainRoad.size() + "\n");
-//                HaloLogger.logE("daoge", "\t" + mainRoad);
-//                sb_daoge.append("\t" + mainRoad + "\n");
-//                HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
-//                sb_daoge.append("crossLinks.size = " + crossLinks.size() + "\n");
-//                for (List<LatLngOutSide> cross : crossLinks) {
-//                    HaloLogger.logE("daoge", "\t" + cross);
-//                    sb_daoge.append("\t" + cross + "\n");
-//                }
-//                HaloLogger.logE("daoge", "main and road inter points size = " + crossPointIndexs.size());
-//                sb_daoge.append("main and road inter points size = " + crossPointIndexs.size() + "\n");
-//                HaloLogger.logE("daoge", "\t" + crossPointIndexs.subList(0, crossPointIndexs.size() - 1));
-//                sb_daoge.append("\t" + crossPointIndexs.subList(0, crossPointIndexs.size() - 1) + "\n");
-//            } else {
-//                sb_daoge.append("mainRoad point size = " + 0 + "\n");
-//                sb_daoge.append("crossLinks.size = " + 0 + "\n");
-//                sb_daoge.append("main and road inter points size = " + 0 + "\n");
-//                sb_daoge.append("\t[]" + "\n");
-//            }
-//            if (res == 0 && crossLinks.size() > 0) {
-//                HaloLogger.logE(TAG, "jni get road net success,crossLinks size=" + crossLinks.size() + ",mainRoad size=" + mainRoad.size());
-//                mPreStartBreak = breakStart;
-//                mPreEndBreak = breakEnd;
-//                mPreStepIndex = stepIndex;
-//                //2.将经纬度数据处理转换成Vector3数据,将主路拼接到原主路上,将其他link添加到路网中
-//                //2.1处理岔路--抽析--转换--填充到集合中
-//                List<List<Vector3>> branchPaths = new ArrayList<>();
-//                for (int i = 0; i < crossLinks.size(); i++) {
-//                    List<LatLngOutSide> crossLink = crossLinks.get(i);
-//                    //抽析岔路
-//                    List<Vector3> crossLinkVector3 = new ArrayList<>();
-//                    List<PointF> returnPath = new ArrayList<>();
-//                    List<PointF> originalPath = new ArrayList<>();
-//                    List<Vector3> pathV3 = new ArrayList<>();
-//                    for (LatLngOutSide latlng : crossLink) {
-//                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
-//                        pathV3.add(new Vector3(pd.x, -pd.y, DEFAULT_OPENGL_Z));
-//                    }
-//                    for (Vector3 v : pathV3) {
-//                        originalPath.add(new PointF((float) v.x, (float) v.y));
-//                    }
-//                    Douglas.rarefyGetPointFs(new ArrayList<Integer>(), returnPath, originalPath, RAREFY_PIXEL_COUNT / ARWayProjection.K);
-//                    HaloLogger.logE(TAG, "ori size = " + originalPath.size());
-//                    HaloLogger.logE(TAG, "ret size = " + returnPath.size());
-//                    for (PointF p : returnPath) {
-//                        crossLinkVector3.add(new Vector3((p.x - mOffsetX) * TIME_15_20, (p.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
-//                    }
-//                    /*List<Vector3> crossLinkVector3 = new ArrayList<>();
-//                    for (LatLngOutSide latlng : crossLink) {
-//                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.lat, latlng.lng), DEFAULT_LEVEL);
-//                        crossLinkVector3.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
-//                    }*/
-//                    HaloLogger.logE(TAG, "crossLink cross start");
-//                    sb_helong.append("crossLink cross start" + "\n");
-//                    for (LatLngOutSide latlng : crossLink) {
-//                        HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
-//                        sb_helong.append(latlng.lat + "," + latlng.lng + "\n");
-//                    }
-//                    HaloLogger.logE(TAG, "crossLink cross end");
-//                    sb_helong.append("crossLink cross end" + "\n");
-//
-//                    //此links代表的是岔路
-//                    branchPaths.add(crossLinkVector3);
-//                }
-//                mBranchPaths.add(branchPaths);
-//                mBranchInPathIndexs.add(mStepPointIndexs.get(stepIndex));
-//                /*HaloLogger.logE(TAG, "crossLink cross start");
-//                for (LatLngOutSide latlng : link) {
-//                    HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
-//                }
-//                HaloLogger.logE(TAG, "crossLink cross end");
-//                HaloLogger.logE(TAG, "crossLink cross start");
-//                for (LatLngOutSide latlng : mainRoad) {
-//                    HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
-//                }
-//                HaloLogger.logE(TAG, "crossLink cross end");*/
-//                //2.2处理新的中心点角标,以及重新调整保存主路与岔路的交点所在的数组
-//                int newCenterIndex = crossPointIndexs.remove(crossPointIndexs.size() - 1);
-//                if (!crossPointIndexs.contains(newCenterIndex)) {
-//                    for (int i = 0; i < crossPointIndexs.size(); i++) {
-//                        if (crossPointIndexs.get(i) > newCenterIndex) {
-//                            crossPointIndexs.add(i, newCenterIndex);
-//                        }
-//                    }
-//                }
-//                HaloLogger.logE(TAG, "new center index = " + newCenterIndex);
-//                //2.2处理主路以及对主路部分进行抽析
-//                //preCrossPoints
-//                mProportionMappingEngine.mapping(mainRoad, breakStart + 1, breakEnd, crossPointIndexs);
-//                HaloLogger.logE("ProportionMappingEngine", "cross start");
-//                for (LatLngOutSide latlng : mProportionMappingEngine.mapping(breakStart + 1, breakEnd)) {
-//                    HaloLogger.logE("ProportionMappingEngine", latlng.lat + "," + latlng.lng);
-//                }
-//                HaloLogger.logE("ProportionMappingEngine", "cross end");
-//                //HaloLogger.logE("daoge", "mainRoad_render");
-//                //HaloLogger.logE("daoge","\t"+mProportionMappingEngine.getRenderPath(breakStart, breakEnd));
-//
-//                //2.3对岔路数据进行前一个点的填充
-//                /*for(int i=0;i<mBranchPaths.get(mBranchPaths.size()-1).size();i++){
-//                    List<LatLngOutSide> latlngs = crossLinks.get(i);
-//                    int pre_start = mProportionMappingEngine.mapping(latlngs.get(0))-1;
-//                    if(pre_start!=-1) {
-//                        int end = pre_start + 1;
-//                        LatLngOutSide latlng = mProportionMappingEngine.getRenderPart(pre_start, end).get(0);
-//                        mBranchPaths.get(mBranchPaths.size() - 1).get(i).add(0, parseLatlng(latlng.lat, latlng.lng));
-//                    }
-//                }*/
-//                /*HaloLogger.logE(TAG, "jiaodian cross start");
-//                for (int i = 0; i < crossPointIndexs.size(); i++) {
-//                    HaloLogger.logE(TAG, mainRoad.get(crossPointIndexs.get(i)).lat + "," + mainRoad.get(crossPointIndexs.get(i)).lng);
-//                }
-//                HaloLogger.logE(TAG, "jiaodian cross end");*/
-//            }
-//        }
-//        Log.e("ylq", "add end");
-//        HaloLogger.logE(TAG, "process steps end");
+        HaloLogger.logE(TAG, "process steps start " + (count + 1));
+        Log.e("ylq", "add start");
+        for (Integer stepIndex : stepIndexs) {
+            if (mAlreadyLoadStep.contains(stepIndex)) {
+                continue;
+            }
+            mAlreadyLoadStep.add(stepIndex);
+            //1.根据stepIndex构建数据
+            //  1.机动点前后道路link形式(暂时由一条link表示整个导航路)
+            //  2.每个link的info
+            //  3.机动点经纬度
+            //  4.切割机动点前后N*N范围的点,且取到边缘点
+            //  5.使用返回的数据替代原先的数据(主路部分)
+            Size2iOutside szCover = new Size2iOutside();
+            szCover.width = 800;
+            szCover.height = 800;
+
+            List<List<LatLngOutSide>> links = new ArrayList<>();
+            List<LatLngOutSide> link = new ArrayList<>();
+            LatLngOutSide centerLatLng = new LatLngOutSide();
+            centerLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lat;
+            centerLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(stepIndex)).lng;
+            LatLng[] point8 = new LatLng[8];
+            int[] se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
+            int breakStart = se[0];
+            int breakEnd = se[1];
+            if (breakStart < mPreEndBreak) {
+                //1.合并两个step,问题是按照当前算法路线越长越复杂,越容易匹配到错误的道路
+                /*LatLng lastEnd = mPathLatLng.get(mPreEndBreak);
+                LatLng thisStart = mPathLatLng.get(breakStart);
+                szCover.width = (int) (szCover.width*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
+                szCover.height = (int) (szCover.height*2-(Math.max(Math.abs(lastEnd.latitude - thisStart.latitude), Math.abs(lastEnd.longitude - thisStart.longitude)))/PIXEL_2_LATLNG);
+                HaloLogger.logE(TAG,"width="+szCover.width);
+                HaloLogger.logE(TAG,"height="+szCover.height);
+                //将扩充后的窗口中的点也添加到link中
+                for(int i=breakStart;i>=mPreStartBreak;i--){
+                    link.add(0,new LatLngOutSide(mPathLatLng.get(i).latitude,mPathLatLng.get(i).longitude));
+                }
+                breakStart = mPreStartBreak;
+                mPreEndBreak = breakEnd;*/
+                //2.暂时先跳过该路口不做处理,因为合并处理时得不到岔路,问题是可能会跳过多个路口,导致路口显示过少
+                //continue;
+                //3.当覆盖时,缩小窗口,同时缩短Path到新窗口的边缘
+                LatLngOutSide preCenterLatLng = new LatLngOutSide();
+                preCenterLatLng.lat = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lat;
+                preCenterLatLng.lng = mPathLatLng.get(mStepPointIndexs.get(mPreStepIndex)).lng;
+                double offsetCover = szCover.width - (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG;
+                HaloLogger.logE(TAG, "szCover.width=" + szCover.width);
+                HaloLogger.logE(TAG, "max=" + (Math.max(Math.abs(centerLatLng.lat - preCenterLatLng.lat), Math.abs(centerLatLng.lng - preCenterLatLng.lng))) / PIXEL_2_LATLNG);
+                HaloLogger.logE(TAG, "offsetCover=" + offsetCover);
+                HaloLogger.logE(TAG, "pre center=" + preCenterLatLng.lat + "," + preCenterLatLng.lng);
+                HaloLogger.logE(TAG, "cur center=" + centerLatLng.lat + "," + centerLatLng.lng);
+                //TODO : 为什么会有明明很远的两个点,但是却判断到了相交导致offsetCover算出来是个负数的情况??????
+                if (offsetCover < 0 || offsetCover >= szCover.width / 2) {
+                    continue;
+                }
+                szCover.width -= 2 * offsetCover;
+                szCover.height -= 2 * offsetCover;
+                se = getPartPathFromCover(szCover, stepIndex, mPathLatLng, centerLatLng, link, point8);
+                breakStart = se[0];
+                breakEnd = se[1];
+
+            }
+            HaloLogger.logE("cover", "szCover : " + szCover.width + "," + szCover.height);
+            HaloLogger.logE("cover", "breakStart : " + breakStart);
+            HaloLogger.logE("cover", "breakEnd : " + breakEnd);
+            HaloLogger.logE("cover", "cover cross start");
+            for (LatLng latlng : point8) {
+                HaloLogger.logE("cover", latlng.latitude + "," + latlng.longitude);
+            }
+            HaloLogger.logE("cover", "cover cross end");
+            HaloLogger.logE("cover", "main cross start");
+            for (LatLngOutSide latlng : link) {
+                HaloLogger.logE("cover", latlng.lat + "," + latlng.lng);
+            }
+            HaloLogger.logE("cover", "main cross end");
+
+            HaloLogger.logE(TAG, "width=" + szCover.width + ",height=" + szCover.height);
+            if (breakEnd == 0) {
+                breakEnd = mPathLatLng.size() - 1;
+            }
+            HaloLogger.logE(TAG, "breakStart=" + breakStart + ",breakEnd=" + breakEnd);
+            links.add(link);
+
+            List<LinkInfoOutside> linkInfos = new ArrayList<>();
+
+            LatLngOutSide centerPoint = new LatLngOutSide();
+            centerPoint.lat = centerLatLng.lat;
+            centerPoint.lng = centerLatLng.lng;
+
+            List<List<LatLngOutSide>> crossLinks = new ArrayList<>();
+            List<LatLngOutSide> mainRoad = new ArrayList<>();
+            List<Integer> crossPointIndexs = new ArrayList<>();
+
+
+            //TODO : data for daoge
+
+            StringBuilder sb = new StringBuilder();
+            sb.append((++count) + " ");
+            sb.append(centerPoint.lat + " ");
+            sb.append(centerPoint.lng + " ");
+            sb.append(szCover.width + " ");
+            sb.append(szCover.height + " ");
+            for (LatLngOutSide latlng : links.get(0)) {
+                sb.append(latlng.lat + " ");
+                sb.append(latlng.lng + " ");
+            }
+            HaloLogger.logE("daoge", sb.toString().trim());
+            sb_daoge.append(sb.toString() + "\n");
+
+
+            HaloLogger.logE(TAG, "into jni");
+            int res = mEnlargedCrossProcess.updateCrossLinks(links, linkInfos, centerPoint, szCover, crossLinks, mainRoad, crossPointIndexs);
+            HaloLogger.logE(TAG, "outto jni");
+            HaloLogger.logE(TAG, "res=" + res + ",and cross links size=" + crossLinks.size());
+
+            if (res == 0) {
+                HaloLogger.logE("daoge", "mainRoad point size = " + mainRoad.size());
+                sb_daoge.append("mainRoad point size = " + mainRoad.size() + "\n");
+                HaloLogger.logE("daoge", "\t" + mainRoad);
+                sb_daoge.append("\t" + mainRoad + "\n");
+                HaloLogger.logE("daoge", "crossLinks.size = " + crossLinks.size());
+                sb_daoge.append("crossLinks.size = " + crossLinks.size() + "\n");
+                for (List<LatLngOutSide> cross : crossLinks) {
+                    HaloLogger.logE("daoge", "\t" + cross);
+                    sb_daoge.append("\t" + cross + "\n");
+                }
+                HaloLogger.logE("daoge", "main and road inter points size = " + crossPointIndexs.size());
+                sb_daoge.append("main and road inter points size = " + crossPointIndexs.size() + "\n");
+                HaloLogger.logE("daoge", "\t" + crossPointIndexs.subList(0, crossPointIndexs.size() - 1));
+                sb_daoge.append("\t" + crossPointIndexs.subList(0, crossPointIndexs.size() - 1) + "\n");
+            } else {
+                sb_daoge.append("mainRoad point size = " + 0 + "\n");
+                sb_daoge.append("crossLinks.size = " + 0 + "\n");
+                sb_daoge.append("main and road inter points size = " + 0 + "\n");
+                sb_daoge.append("\t[]" + "\n");
+            }
+            if (res == 0 && crossLinks.size() > 0) {
+                HaloLogger.logE(TAG, "jni get road net success,crossLinks size=" + crossLinks.size() + ",mainRoad size=" + mainRoad.size());
+                mPreStartBreak = breakStart;
+                mPreEndBreak = breakEnd;
+                mPreStepIndex = stepIndex;
+                //2.将经纬度数据处理转换成Vector3数据,将主路拼接到原主路上,将其他link添加到路网中
+                //2.1处理岔路--抽析--转换--填充到集合中
+                List<List<Vector3>> branchPaths = new ArrayList<>();
+                for (int i = 0; i < crossLinks.size(); i++) {
+                    List<LatLngOutSide> crossLink = crossLinks.get(i);
+                    //抽析岔路
+                    List<Vector3> crossLinkVector3 = new ArrayList<>();
+                    List<PointF> returnPath = new ArrayList<>();
+                    List<PointF> originalPath = new ArrayList<>();
+                    List<Vector3> pathV3 = new ArrayList<>();
+                    for (LatLngOutSide latlng : crossLink) {
+                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(latlng, DEFAULT_LEVEL);
+                        pathV3.add(new Vector3(pd.x, -pd.y, DEFAULT_OPENGL_Z));
+                    }
+                    for (Vector3 v : pathV3) {
+                        originalPath.add(new PointF((float) v.x, (float) v.y));
+                    }
+                    Douglas.rarefyGetPointFs(new ArrayList<Integer>(), returnPath, originalPath, RAREFY_PIXEL_COUNT / ARWayProjection.K);
+                    HaloLogger.logE(TAG, "ori size = " + originalPath.size());
+                    HaloLogger.logE(TAG, "ret size = " + returnPath.size());
+                    for (PointF p : returnPath) {
+                        crossLinkVector3.add(new Vector3((p.x - mOffsetX) * TIME_15_20, (p.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
+                    }
+                    /*List<Vector3> crossLinkVector3 = new ArrayList<>();
+                    for (LatLngOutSide latlng : crossLink) {
+                        ARWayProjection.PointD pd = ARWayProjection.toOpenGLLocation(new LatLng(latlng.lat, latlng.lng), DEFAULT_LEVEL);
+                        crossLinkVector3.add(new Vector3((pd.x - mOffsetX) * TIME_15_20, (-pd.y - mOffsetY) * TIME_15_20, DEFAULT_OPENGL_Z));
+                    }*/
+                    HaloLogger.logE(TAG, "crossLink cross start");
+                    sb_helong.append("crossLink cross start" + "\n");
+                    for (LatLngOutSide latlng : crossLink) {
+                        HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+                        sb_helong.append(latlng.lat + "," + latlng.lng + "\n");
+                    }
+                    HaloLogger.logE(TAG, "crossLink cross end");
+                    sb_helong.append("crossLink cross end" + "\n");
+
+                    //此links代表的是岔路
+                    branchPaths.add(crossLinkVector3);
+                }
+                mBranchPaths.add(branchPaths);
+                mBranchInPathIndexs.add(mStepPointIndexs.get(stepIndex));
+                /*HaloLogger.logE(TAG, "crossLink cross start");
+                for (LatLngOutSide latlng : link) {
+                    HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+                }
+                HaloLogger.logE(TAG, "crossLink cross end");
+                HaloLogger.logE(TAG, "crossLink cross start");
+                for (LatLngOutSide latlng : mainRoad) {
+                    HaloLogger.logE(TAG, latlng.lat + "," + latlng.lng);
+                }
+                HaloLogger.logE(TAG, "crossLink cross end");*/
+                //2.2处理新的中心点角标,以及重新调整保存主路与岔路的交点所在的数组
+                int newCenterIndex = crossPointIndexs.remove(crossPointIndexs.size() - 1);
+                if (!crossPointIndexs.contains(newCenterIndex)) {
+                    for (int i = 0; i < crossPointIndexs.size(); i++) {
+                        if (crossPointIndexs.get(i) > newCenterIndex) {
+                            crossPointIndexs.add(i, newCenterIndex);
+                        }
+                    }
+                }
+                HaloLogger.logE(TAG, "new center index = " + newCenterIndex);
+                //2.2处理主路以及对主路部分进行抽析
+                //preCrossPoints
+                mProportionMappingEngine.mapping(mainRoad, breakStart + 1, breakEnd, crossPointIndexs);
+                HaloLogger.logE("ProportionMappingEngine", "cross start");
+                for (LatLngOutSide latlng : mProportionMappingEngine.mapping(breakStart + 1, breakEnd)) {
+                    HaloLogger.logE("ProportionMappingEngine", latlng.lat + "," + latlng.lng);
+                }
+                HaloLogger.logE("ProportionMappingEngine", "cross end");
+                //HaloLogger.logE("daoge", "mainRoad_render");
+                //HaloLogger.logE("daoge","\t"+mProportionMappingEngine.getRenderPath(breakStart, breakEnd));
+
+                //2.3对岔路数据进行前一个点的填充
+                /*for(int i=0;i<mBranchPaths.get(mBranchPaths.size()-1).size();i++){
+                    List<LatLngOutSide> latlngs = crossLinks.get(i);
+                    int pre_start = mProportionMappingEngine.mapping(latlngs.get(0))-1;
+                    if(pre_start!=-1) {
+                        int end = pre_start + 1;
+                        LatLngOutSide latlng = mProportionMappingEngine.getRenderPart(pre_start, end).get(0);
+                        mBranchPaths.get(mBranchPaths.size() - 1).get(i).add(0, parseLatlng(latlng.lat, latlng.lng));
+                    }
+                }*/
+                /*HaloLogger.logE(TAG, "jiaodian cross start");
+                for (int i = 0; i < crossPointIndexs.size(); i++) {
+                    HaloLogger.logE(TAG, mainRoad.get(crossPointIndexs.get(i)).lat + "," + mainRoad.get(crossPointIndexs.get(i)).lng);
+                }
+                HaloLogger.logE(TAG, "jiaodian cross end");*/
+            }
+        }
+        Log.e("ylq", "add end");
+        HaloLogger.logE(TAG, "process steps end");
     }
 
     /**
