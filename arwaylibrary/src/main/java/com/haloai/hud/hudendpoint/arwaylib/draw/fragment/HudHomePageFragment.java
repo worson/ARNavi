@@ -230,6 +230,8 @@ public class HudHomePageFragment extends Fragment{
         mCompassManager.init(context);
         mCompassManager.setRotation(270);
         mCompassManager.addCompassLister(mCompassLister);
+
+        
     }
     private float normalizeDegree(float degree) {
         return (degree + 720) % 360;
