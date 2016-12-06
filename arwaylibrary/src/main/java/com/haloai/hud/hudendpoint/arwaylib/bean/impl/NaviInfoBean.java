@@ -20,10 +20,15 @@ public class NaviInfoBean extends SuperBean {
     private String mCurrentRoadName  = "";
     private String mNextRoadName     = "";
     private int mSpeed;
+    private int mLimitSpeed;
+    private int mServiceAreaDistance;
 
     //道路向导信息
+    private int mStepRetainDistance;//获取路线剩余时间 min
     private int mPathRetainTime;//获取路线剩余时间 min
     private int mPathRetainDistance;//获取路线剩余距离 m
+
+    private int mPathTotalDistance = 0;//获取路线总距离 m
 
     private String mNaviText;
 
@@ -38,6 +43,31 @@ public class NaviInfoBean extends SuperBean {
         mNextRoadName = "";
         mSpeed=0;
         mNaviText = "";
+        mPathTotalDistance = 0;
+        mPathRetainDistance = 0;
+        mPathRetainTime = 0;
+        mStepRetainDistance=0;
+        mNextRoadName = "";
+//        mSpeed=0;
+        mLimitSpeed=0;
+        mServiceAreaDistance=0;
+    }
+
+    public int getPathTotalDistance() {
+        return mPathTotalDistance;
+    }
+
+    public void setPathTotalDistance(int pathTotalDistance) {
+        mPathTotalDistance = pathTotalDistance;
+    }
+
+    public int getStepRetainDistance() {
+        return mStepRetainDistance;
+    }
+
+    public NaviInfoBean setStepRetainDistance(int stepRetainDistance) {
+        mStepRetainDistance = stepRetainDistance;
+        return this;
     }
 
     public NaviInfoBean setNaviText(String beginNaviText) {
@@ -85,16 +115,35 @@ public class NaviInfoBean extends SuperBean {
         return this;
     }
 
+    public int getServiceAreaDistance() {
+        return mServiceAreaDistance;
+    }
+
+    public NaviInfoBean setServiceAreaDistance(int serviceAreaDistance) {
+        mServiceAreaDistance = serviceAreaDistance;
+        return this;
+    }
+
     public Bitmap getCrossBitmap() {
         return mCrossBitmap;
+    }
+
+    public int getLimitSpeed() {
+        return mLimitSpeed;
+    }
+
+    public NaviInfoBean setLimitSpeed(int limitSpeed) {
+        mLimitSpeed = limitSpeed;
+        return this;
     }
 
     public int getSpeed() {
         return mSpeed;
     }
 
-    public void setSpeed(int speed) {
+    public NaviInfoBean setSpeed(int speed) {
         mSpeed = speed;
+        return this;
     }
 
     public NaviInfoBean setCrossBitmap(Bitmap crossBitmap) {

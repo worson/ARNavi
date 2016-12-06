@@ -9,7 +9,7 @@ package com.haloai.hud.hudendpoint.arwaylib.bean;
  */
 public abstract class SuperBean {
     /**
-     * let the bean back to init status.
+     * let the bean back to reset status.
      */
     public abstract void reset();
 

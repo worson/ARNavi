@@ -1,15 +1,19 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw;
 
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCompass;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawCrossImage;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawExit;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawIcon;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawMusic;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNaviInfo;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawNextRoadName;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawRoute;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawSpeed;
-import com.haloai.hud.hudendpoint.arwaylib.draw.impl_greenline_surfaceview.DrawTurnInfo;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.ARwayAnimationPresenter;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.DrawScene;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.FlatNaviInfoPanel;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawCompass;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawNaviInfo;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawRetainDistance;
+import com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl.GlDrawSpeedDial;
+
 
 /**
  * author       : 龙;
@@ -30,43 +34,76 @@ public class DrawObjectFactory {
         NAVI_INFO,
         NETWORK,
         SPEED,
-        COMPASS
+        RETAIN_DISTANCE,
+        COMPASS,
+        GL_SCENE,
+        GL_CAMERA,
     }
-    public static DrawObject getDrawObject(DrawType drawType){
+    /**
+     * 得到ARway的layout的总布局的View
+     * 并相关View的实例到相关的DrawObject中
+     * @param context
+     * @return
+     */
+    public static View createGlDrawObjectLayoutIntance(Context context,ViewGroup container,int layoutid){
+        View drawView = null;
+        LayoutInflater inflater  = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        ViewGroup mLayout = (ViewGroup) inflater.inflate(layoutid, container, true);
+
+        DrawScene drawScene = (DrawScene)getGlDrawObject(DrawType.GL_SCENE);
+        drawScene.setView(context,mLayout);
+
+        ViewGroup glSurfaceViewgroup = (ViewGroup)mLayout.findViewById(R.id.opengl_viewgroup);
+        drawView = drawScene.getViewInstance(context);
+
+        if (drawView != null && drawView.getParent()!=null){
+            ViewGroup vg = (ViewGroup) drawView.getParent();
+            if (vg != null) {
+                vg.removeView(drawView);
+            }
+        }
+        if (drawView != null && drawView.getParent() ==null && glSurfaceViewgroup != null) {
+            glSurfaceViewgroup.addView(drawView,0);
+        }
+
+        GlDrawCompass glDrawCompass = GlDrawCompass.getInstance();
+        glDrawCompass.setView(context,null);
+
+
+        GlDrawSpeedDial glDrawSpeedDial = GlDrawSpeedDial.getInstance();
+        glDrawSpeedDial.setView(context,null);
+
+
+
+        GlDrawRetainDistance glDrawRetainDistance = GlDrawRetainDistance.getInstance();
+        glDrawRetainDistance.setView(context,null);
+
+        FlatNaviInfoPanel.getInstance().setView(context,mLayout);
+
+        ARwayAnimationPresenter.getInstance().setView(context,mLayout);
+
+        return mLayout;
+    }
+
+    public static DrawObject getGlDrawObject(DrawType drawType) {
         DrawObject drawObject = null;
-        switch(drawType) {
+        switch (drawType) {
             case CROSS_IMAGE:
-                drawObject = DrawCrossImage.getInstance();
-                break;
-            case EXIT:
-                drawObject = DrawExit.getInstance();
-                break;
-            case MUSIC:
-                drawObject = DrawMusic.getInstance();
-                break;
-            case NEXT_ROAD_NAME:
-                drawObject = DrawNextRoadName.getInstance();
-                break;
-            case ROUTE:
-                drawObject = DrawRoute.getInstance();
                 break;
             case NAVI_INFO:
-                drawObject = DrawNaviInfo.getInstance();
-                break;
-            case TURN_INFO:
-                drawObject = DrawTurnInfo.getInstance();
-                break;
-            case SATELLITE:
-                drawObject = DrawIcon.getInstance(DrawType.SATELLITE);
-                break;
-            case NETWORK:
-                drawObject = DrawIcon.getInstance(DrawType.NETWORK);
+                drawObject = GlDrawNaviInfo.getInstance();
                 break;
             case SPEED:
-                drawObject = DrawSpeed.getInstance();
+                drawObject = GlDrawSpeedDial.getInstance();
                 break;
             case COMPASS:
-                drawObject = DrawCompass.getInstance();
+                drawObject = GlDrawCompass.getInstance();
+                break;
+            case GL_SCENE:
+                drawObject = DrawScene.getInstance();
+                break;
+            case RETAIN_DISTANCE:
+                drawObject = GlDrawRetainDistance.getInstance();
                 break;
             default:
                 break;

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="compass_driving_width">128dp</dimen>
+    <dimen name="compass_driving_height">80dp</dimen>
+    <dimen name="compass_pause_width">169.3dp</dimen>
+    <dimen name="compass_pause_height">169.3dp</dimen>
+
+    <dimen name="speed_view_pause_margin_top">75.67dp</dimen>
+    <dimen name="speed_view_driving_margin_top">130.67dp</dimen>
+
+    <dimen name="distance_view_pause_margin_top">80.67dp</dimen>
+    <dimen name="distance_view_driving_margin_top">130.67dp</dimen>
+
+
+    <dimen name="speed_view_pause_width">85.3dp</dimen>
+    <dimen name="speed_view_pause_height">85.3dp</dimen>
+    <dimen name="speed_view_driving_width">84dp</dimen>
+    <dimen name="speed_view_driving_height">70dp</dimen>
+
+    <dimen name="distance_view_pause_width">85.3dp</dimen>
+    <dimen name="distance_view_pause_height">85.3dp</dimen>
+    <dimen name="distance_view_driving_width">84dp</dimen>
+    <dimen name="distance_view_driving_height">70dp</dimen>
+
+    <dimen name="digital_speed_width">11dp</dimen>
+    <dimen name="digital_speed_height">17dp</dimen>
+
+    <dimen name="digital_time_width">12dp</dimen>
+    <dimen name="digital_time_height">15dp</dimen>
+    <dimen name="digital_time_margin_start">1dp</dimen>
+
+    <dimen name="flat_arway_left_margin">10dp</dimen>
+    <dimen name="flat_arway_bottom_margin">2dp</dimen>
+    <dimen name="flat_arway_right_margin">2dp</dimen>
+    <dimen name="flat_arway_up_margin">2dp</dimen>
+
+    <dimen name="flat_speed_circle_width">282dp</dimen>
+    <dimen name="flat_speed_circle_height">186dp</dimen>
+
+</resources>

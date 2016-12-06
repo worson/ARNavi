@@ -9,7 +9,6 @@ import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.NaviLatLng;
 import com.haloai.hud.hudendpoint.arwaylib.bean.SuperBean;
-import com.haloai.hud.hudendpoint.arwaylib.calculator.CalculatorFactory;
 import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -133,7 +132,6 @@ public class RouteBean extends SuperBean {
 
     public RouteBean setPath(AMapNaviPath AMapNaviPath) {
         reset();
-        CalculatorFactory.getCalculator(CalculatorFactory.CalculatorType.ROUTE).reset();
         mAMapNaviPath = AMapNaviPath;
         List<AMapNaviStep> naviStepList = AMapNaviPath.getSteps();
         for (int i = 0; i < naviStepList.size(); i++) {
