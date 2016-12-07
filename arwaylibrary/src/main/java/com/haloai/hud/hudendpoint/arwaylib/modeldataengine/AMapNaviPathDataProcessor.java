@@ -170,8 +170,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //0.reset all data
         reset();
         //1.check data legal
-        HaloLogger.logE(TAG, "initPath check data legal");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "AMapNaviPathDataProcessor setpath");
         if (amapNavi == null || aMapNaviPath == null) {
+            HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"setPath error path ");
             return -1;
         }
         mAMapNavi = amapNavi;

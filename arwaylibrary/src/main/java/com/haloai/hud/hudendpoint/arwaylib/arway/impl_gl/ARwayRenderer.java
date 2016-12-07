@@ -671,6 +671,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathInit() {
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "arrender onPathInit");
         if (mNaviPathDataProvider != null) {
             //啊奇
             IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
@@ -711,7 +712,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             mIsRenderEndPath = true;
             return;
         }
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onEndPath called ");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "onEndPath called ");
         mRenderPath = mRenderPaths.get(0);
         if (mRenderPath.size() >= 2) {
             mSceneUpdater.renderEndScene(mRenderPath);
@@ -720,7 +721,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathUpdate() {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "onPathUpdate called");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "onPathUpdate called");
         Vector3 curObjPos = new Vector3(0, 0, 0);
         if (mIsMyInitScene) {
             curObjPos.setAll(mObject4Chase.getPosition());

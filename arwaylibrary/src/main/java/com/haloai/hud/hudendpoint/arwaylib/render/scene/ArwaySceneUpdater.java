@@ -517,7 +517,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
 //        renderTrafficLight(path);
         boolean result = true;
-
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         if (IS_DEBUG_MODE) {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         }

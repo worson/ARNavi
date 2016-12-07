@@ -1122,17 +1122,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private int rUpdatePath(AMapNavi aMapNavi) {
         int result = -1;
         if (aMapNavi == null) {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "rUpdatePath,aMapNavi is null ");
+            HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "rUpdatePath,aMapNavi is null ");
             return result;
         }
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
-        HaloLogger.logE("helong_debug", "updatePath");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "fragment updatePath");
         if (naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
                 //                mDrawScene.animShowHide(false);
                 mGlDrawCompass.showHide(true);
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath initPath,mode is " + aMapNavi.getNaviPath().getStrategy());
+                HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "arway rUpdatePath initPath,mode is " + aMapNavi.getNaviPath().getStrategy());
                 if (ARWayConst.ENABLE_LOG_OUT) {
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
                 }
@@ -1159,7 +1159,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 onNavingView();
             } else {
                 result = -3;
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath Renderer is null");
+                HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath Renderer is null");
             }
             // TODO: 16/9/5 此处不能重置所有数据，这样会造成显示成功的naviinfo信息被清空
             //            ARWayController.ARWayStatusUpdater.resetData();
@@ -1171,7 +1171,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             mMapProjectionMachine.setNeedUpdatePath(false);
 
         } else {
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed," + "path is null " + (naviPath == null));
+            HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed," + "path is null " + (naviPath == null));
             mMapProjectionMachine.setNeedUpdatePath(true);
         }
 
