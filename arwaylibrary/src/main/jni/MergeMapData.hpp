@@ -437,6 +437,10 @@ public:
 	// 判断点是否属于集合
 	bool isHamapPtBelongToSet(vector<HAMapPoint>& vecHamPt, HAMapPoint hamPt, int& nSite);
 
+	// 判断两容器是否相交
+	template<typename T>
+	bool isIntersection(const vector<T>& vecT1, const vector<T>& vecT2);
+
 	//template<typename T>
 	//bool isEelmentBelongToSet(vector<T>& vecElement, T element, int& nSite);
 
@@ -500,7 +504,11 @@ public:
 	void drawNode(cv::Mat matImg, const vector<LinkEndPointNode> vecLinkEndPtnode,
 				const std::vector<std::vector<HAMapPoint> >& vecRoadNetLink);
 
-	// 绘制路网
+	// 绘制路网、主路
+	void drawRoadNetAndMainRoad(const std::vector< std::vector<HAMapPoint> >& vecRoadNetLink,
+								const std::vector<HAMapPoint>& vecMainRoadPt,
+								cv::Size2i szCover,	HAMapPoint hamPixelCenter,cv::Mat& matRoadNetImg);
+
 	void drawRoadNet(const std::vector< std::vector<HAMapPoint> >& vecRoadNetLink,
 		cv::Size2i szCover,	HAMapPoint hamPixelCenter,cv::Mat& matRoadNetImg);
 #endif
