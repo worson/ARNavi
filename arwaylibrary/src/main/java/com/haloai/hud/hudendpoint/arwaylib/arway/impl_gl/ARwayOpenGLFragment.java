@@ -1126,7 +1126,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             return result;
         }
         AMapNaviPath naviPath = aMapNavi.getNaviPath();
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "fragment updatePath");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "fragment updatePath enter");
         if (naviPath != null) {//mCameraChangeFinish &&  mMapLoaded &&
             if (mRenderer != null) {
                 hideARWay();
@@ -1137,6 +1137,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
                 }
                 if (ARWayConst.NAVI_ENABLE_RESTRICT_DISTANCE && naviPath.getCoordList().size() > ARWayConst.NAVI_MAX_RESTRICT_POINT_NUMBER) {
+                    HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "rUpdatePath,path too big ");
                     return -2;
                 }
                 if (ARWayConst.IS_DARW_ARWAY) {
@@ -1149,6 +1150,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                         mUpdatePathRecorder.start();
                     }
                     //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
+                    HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("fragment updatePath , start %s , end %s ,path size %s",naviPath.getStartPoint(),naviPath.getEndPoint(),naviPath.getCoordList().size()));
                     mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
                     mRenderer.naviStartAnimation();
@@ -1174,6 +1176,8 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath failed," + "path is null " + (naviPath == null));
             mMapProjectionMachine.setNeedUpdatePath(true);
         }
+
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "fragment updatePath exit");
 
         return result;
 

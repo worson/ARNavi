@@ -742,19 +742,54 @@ public class MathUtils {
                     Vector3 p2 = path.get(i+1);
                     translateLine(p0.x,p0.y,p1.x,p1.y,r0,r1,dist);
                     translateLine(p1.x,p1.y,p2.x,p2.y,r2,r3,dist);
-                    inter = getIntersection(r0,r1,r2,r3,v);
+                    inter = getLineIntersection(r0,r1,r2,r3,v);
                 }
             }
             if (inter != 0) {
                 result.add(new Vector3(v));
             }else {
-                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"translateLine no intersection ");
+                HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"translateLine no intersection ");
             }
         }
         return 0;
     }
+    public static class Line
+    {
+        private double a,b,c;
+        public Line(Vector3 pt1,Vector3 pt2){
+            double fX1=pt1.x;
+            double fY1=pt1.y;
+            double fX2=pt2.x;
+            double fY2=pt2.y;
+            a = fY1 - fY2;			// a = y1 - y2
+            b = fX2 - fX1;			// b = x2 - x1
+            c = fX1*fY2 - fX2*fY1;		// c = x1*y2 - x2*y1
+        }
+    }
     /**
-     * 使用了double型不会造成误差
+     * 阿星写法，使用了double型不会造成误差
+     * @param line1Start
+     * @param line1End
+     * @param line2Start
+     * @param line2End
+     * @param intersectionPoint
+     * @return 0:无交点 1:相交,交点在线上 -1相交,交点不再线上
+     */
+    public static int getLineIntersection(Vector3 line1Start, Vector3 line1End, Vector3 line2Start, Vector3 line2End, Vector3 intersectionPoint) {
+        Line lin1 = new Line(line1Start,line1End);
+        Line lin2 = new Line(line2Start,line2End);
+        if ((lin1.a*lin2.b - lin2.a*lin1.b)<0.00001){//两直线平行
+            return 0;
+        }
+        Vector3 p = new Vector3(0, 0, 0);
+        double uD=lin1.a*lin2.b-lin2.a*lin1.b;
+        p.x=(lin1.b*lin2.c-lin2.b*lin1.c)/uD;
+        p.y=(lin1.c*lin2.a-lin2.c*lin1.a)/uD;
+        intersectionPoint.setAll(p);
+        return 1;
+    }
+    /**
+     * 何龙写法，使用了double型不会造成误差
      * @param line1Start
      * @param line1End
      * @param line2Start

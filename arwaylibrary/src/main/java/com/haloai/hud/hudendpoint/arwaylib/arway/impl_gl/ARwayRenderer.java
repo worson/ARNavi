@@ -119,7 +119,12 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
 
     //time recorder
-    private TimeRecorder mRenderTimeRecorder = new TimeRecorder();
+    private TimeRecorder mRenderTimeRecorder = null;{
+        mRenderTimeRecorder = new TimeRecorder();
+        mRenderTimeRecorder.enableTimeFilter(true);
+        mRenderTimeRecorder.setLogFilterTime(5000);
+
+    }
 
     //新架构
     private INaviPathDataProvider        mNaviPathDataProvider;
@@ -415,6 +420,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     private void myInitScene() {
         HaloLogger.logE("ylq__", "myInitScene");
+        if (mRenderTimeRecorder != null) {
+            mRenderTimeRecorder.reset();
+        }
         clearScene();
         mSceneUpdater.reset();
         if(ARWayConst.IS_ADAS){
@@ -671,7 +679,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathInit() {
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "arrender onPathInit");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "render onPathInit enter");
         if (mNaviPathDataProvider != null) {
             //啊奇
             IRenderStrategy.DataLevel level = IRenderStrategy.DataLevel.LEVEL_20;
@@ -704,6 +712,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             }
 
         }
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("render onPathInit exit, path size %s",mRenderPath.size()));
     }
 
     @Override
@@ -721,7 +730,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 
     @Override
     public void onPathUpdate() {
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "onPathUpdate called");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "onPathUpdate called enter");
         Vector3 curObjPos = new Vector3(0, 0, 0);
         if (mIsMyInitScene) {
             curObjPos.setAll(mObject4Chase.getPosition());
@@ -747,6 +756,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             addRoadNet2Scene();
             addNaviPath2Scene();
         }
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("onPathUpdate called eixt,path size %s",mRenderPath.size()));
     }
 
     @Override

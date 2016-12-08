@@ -170,7 +170,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         //0.reset all data
         reset();
         //1.check data legal
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "AMapNaviPathDataProcessor setpath");
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "AMapNaviPathDataProcessor setpath enter");
         if (amapNavi == null || aMapNaviPath == null) {
             HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"setPath error path ");
             return -1;
@@ -421,6 +421,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mNaviPathDataProvider.setEndPath();
         }
         mIsPathInited = true;
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "AMapNaviPathDataProcessor setpath eixt,total size "+mPathLatLng.size());
         return 1;
     }
 
@@ -568,30 +569,66 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         AMapNaviPath path = mAMapNavi.getNaviPath();
         int linkIndex = absoluteLinkIndex(path, curStep, curLink);
-        if ((linkIndex - mLastLink) > NUMBER_TRAFFIC_LIGHT || mLastLink == 0) {
-            List<AMapNaviLink> links = findLinks(path, curStep, curLink, NUMBER_TRAFFIC_LIGHT);
+        if ((linkIndex - mLastLink) > 1 || mLastLink == 0) {
+            List<AMapNaviLink> links = new ArrayList<>();
+            mLastLink = findLinks(path, curStep, curLink, NUMBER_TRAFFIC_LIGHT,links);
             List<Vector3> lights = new ArrayList<>();
 
-            for(AMapNaviLink link:links){
+            for(int i = 0; i < links.size(); i++){//最后一个一般link不渲染，作为判断，只有一个值时当到达目的地处理
+                AMapNaviLink link=links.get(i);
                 if (link.getCoords().size()>1 && link.getTrafficLights()) {
                     int start = link.getCoords().size()-2;
                     int end = link.getCoords().size()-1;
-                    NaviLatLng latlng0 = link.getCoords().get(start);
-                    NaviLatLng latlng1 = link.getCoords().get(end);
-                    Vector3 p0 = parseLatlng(latlng0.getLatitude(),latlng0.getLongitude());
-                    Vector3 p1 = parseLatlng(latlng1.getLatitude(),latlng1.getLongitude());
+                    NaviLatLng startLatlng = link.getCoords().get(start);
+                    NaviLatLng endLatlng = link.getCoords().get(end);
+                    Vector3 p1 = parseLatlng(startLatlng.getLatitude(),startLatlng.getLongitude());
+                    Vector3 p0 = parseLatlng(endLatlng.getLatitude(),endLatlng.getLongitude());
+                    List<Vector3> posList = new ArrayList<>();
+                    List<Vector3> resultList = new ArrayList<>();
+                    posList.add(p1);
+                    posList.add(p0);
                     float radius = RoadRenderOption.TRAFFIC_DEVIATION_DISTANCE;
+                    Vector3 trafficPos = new Vector3();
+                    if(i < links.size()-1){
+                        AMapNaviLink nextLink = links.get(i+1);
+                        Vector3 p3 = null;
+                        if (nextLink != null && nextLink.getCoords().size()>0) {
+                            NaviLatLng netLatLng = nextLink.getCoords().get(0);
+                            p3 = parseLatlng(netLatLng.getLatitude(),netLatLng.getLongitude());
+                        }
+                        if (p3 != null) {
+                            posList.add(p3);
+                            MathUtils.translatePath(posList,resultList,radius);
+                            if (resultList.size() >= 2){
+                                trafficPos.setAll(resultList.get(1));
+                            }else {
+                                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("processTrafficLight called , traffic error,resultList %s,posList %s",resultList.size(),posList));
+                            }
+                        }
+                    }else {
+                        MathUtils.translatePath(posList,resultList,radius);
+                        if (resultList.size() >= 2){
+                            trafficPos.setAll(resultList.get(1));
+                        }else {
+                            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("processTrafficLight called , last path traffic error ,resultList %s , posList %s",resultList.size(),posList));
+                        }
+                    }
+                    lights.add(trafficPos);
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("processTrafficLight called ,absolute index %s,curStep %s, curLink %s, lanlng %s , position is %s",mLastLink,curStep, curLink,endLatlng,trafficPos));
+                    /*
                     double distance = Vector3.distanceTo(p0, p1);
                     PointD position = new PointD();
                     position.x = p0.x + (p1.x - p0.x) * radius / distance;
                     position.y = p0.y + (p1.y - p0.y) * radius / distance;
-                    MathUtils.rotateAround(p0.x, p0.y, position.x, position.y, position, -90);
+                    MathUtils.rotateAround(p0.x, p0.y, position.x, position.y, position, 90);
+                    lights.add(new Vector3(position.x, position.y, DEFAULT_OPENGL_Z));*/
 
-                    lights.add(new Vector3(position.x, position.y, DEFAULT_OPENGL_Z));
+
                 }
             }
             mNaviPathDataProvider.setTrafficLight(lights);
-            mLastLink = linkIndex;
+//            mLastLink = linkIndex>0 ? linkIndex-1:linkIndex;
+            mLastLink = mLastLink>0 ? mLastLink-1:0;
         }
 
     }
@@ -602,28 +639,36 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         return position;
     }
 
-    private List<AMapNaviLink> findLinks(AMapNaviPath path, int curStep, int curLink, int cnt) {
-        List<AMapNaviLink> validLinks = new ArrayList<>();
+    private int  findLinks(AMapNaviPath path, int curStep, int curLink, int cnt,List<AMapNaviLink> links) {
+        int linkIndex = 0;
         int has = 0;
         int startLink = curLink;
         int linkCnt = 0;
         boolean over = false;
-        for (int i = curStep; i < path.getStepsCount(); i++) {
+        int i=0,j=0;
+        for (i = curStep; i < path.getStepsCount(); i++) {
             AMapNaviStep step = path.getSteps().get(i);
             linkCnt = step.getLinks().size();
-            for (int j = startLink; j < linkCnt; j++) {
+            for (j = startLink; j < linkCnt; j++) {
                 startLink = 0;
                 if (has++ > cnt) {
                     over = true;
                     break;
                 }
-                validLinks.add(step.getLinks().get(j));
+                links.add(step.getLinks().get(j));
             }
             if (over) {
                 break;
             }
         }
-        return validLinks;
+        int stepIndice = i>curStep?i-1:curStep;
+        int linkIndice = j>0?j-1:0;
+        if (over){
+            stepIndice = i;
+            linkIndice = j;
+        }
+        linkIndex  = absoluteLinkIndex(path, stepIndice, linkIndice);
+        return linkIndex;
     }
 
     private int absoluteLinkIndex(AMapNaviPath path, int curStep, int curLink) {

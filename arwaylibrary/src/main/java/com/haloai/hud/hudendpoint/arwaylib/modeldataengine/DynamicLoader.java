@@ -4,7 +4,9 @@ import android.util.Log;
 
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
+import com.haloai.hud.utils.HaloLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +56,9 @@ public class  DynamicLoader implements IDynamicLoader {
             curStartIndex = lookForStartIndex(realPointIndex);
             updateIndex = 0;
             lookForSuitableValues();
-            Log.e("YLQINDEX","startindex:"+curStartIndex +"endIndex:"+curEndIndex);
+            String string = "startindex:"+curStartIndex +"endIndex:"+curEndIndex;
+            HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("DynamicLoader updateCurPoint  "+string));
+            Log.e("YLQINDEX",string);
             mDynamicLoadNotifer.loadNewRoad(curStartIndex,curEndIndex);
         }
     }

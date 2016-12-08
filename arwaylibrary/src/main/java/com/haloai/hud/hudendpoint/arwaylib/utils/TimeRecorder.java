@@ -9,20 +9,34 @@ import com.haloai.hud.utils.HaloLogger;
  * Created by wangshengxing on 16/9/27.
  */
 public class TimeRecorder {
-    private int cnt = 0;
-    private double cTime;//当前时间
-    private double lTime;//上次时间
-    private double sTime;//开始时间
-    private double interval;//间隔时间
-    private double tTime = 0;//总时间
+    private boolean mIsLogFilter = false;
+    private int mLogFilterTime = 1000;
+    private double mLogTime = 0;
+    private int    cnt      = 0;
+    private double cTime    = 0;//当前时间
+    private double lTime    = 0;//上次时间
+    private double sTime    = 0;//开始时间
+    private double interval = 0;//间隔时间
+    private double tTime    = 0;//总时间
 
-    private float frame = 0;
+    private float  frame  = 0;
     private double tFrame = 0;
 
     private double MAX_LOG_FRAME = 3;
-    private double mLastLogTime = System.currentTimeMillis();
     public void start(){
         sTime = System.currentTimeMillis();
+    }
+
+    public void reset(){
+        mLogTime = 0;
+        cnt      = 0;
+        cTime    = 0;//当前时间
+        lTime    = 0;//上次时间
+        sTime    = 0;//开始时间
+        interval = 0;//间隔时间
+        tTime    = 0;//总时间
+        frame  = 0;
+        tFrame = 0;
     }
 
     public void recorde(){
@@ -33,8 +47,16 @@ public class TimeRecorder {
         frame = (int)(1000/(cTime-lTime));
         tFrame += frame;
         lTime = cTime;
-
     }
+
+    public void enableTimeFilter(boolean timeFilter) {
+        mIsLogFilter = timeFilter;
+    }
+
+    public void setLogFilterTime(int logFilterTime) {
+        mLogFilterTime = logFilterTime;
+    }
+
     public double getInterval() {
         return interval;
     }
@@ -56,7 +78,10 @@ public class TimeRecorder {
     }
     public void recordeAndLog(String tag,String name){
         recorde();
-        HaloLogger.logE(tag,getLog(name));
+        if(!mIsLogFilter || (cTime-mLogTime)>=mLogFilterTime) {
+            mLogTime = cTime;
+            HaloLogger.logE(tag, getLog(name));
+        }
     }
     public void recordeAndPrint(String name){
         recorde();

@@ -156,7 +156,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
 
     public void initScene(){
-        RajLog.setDebugEnabled(false);
+        RajLog.setDebugEnabled(true);
         initRoadMaterial();
         initTextureMaterial();
 
@@ -485,6 +485,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     private RoadLayers rRenderNaviPath(RoadLayers roadLayers,List<Vector3> path){
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("renderNaviPath enter,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         // TODO: 2016/11/2
         final Vector3 offset = new Vector3(path.get(0));
 //        mNaviRoadList.clear();
@@ -500,6 +501,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         roadLayers.road.updateBufferedRoad(path, offset);
         roadLayers.navi.updateBufferedRoad(path, offset);
         roadLayers.refLine.updateReferenceLine(path, offset);
+
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("renderNaviPath eixt"));
         return roadLayers;
     }
     /**
@@ -517,7 +520,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         }
 //        renderTrafficLight(path);
         boolean result = true;
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         if (IS_DEBUG_MODE) {
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("renderNaviPath,path size is %s,origin child is %s", path.size(),mNaviRoadList.size()));
         }

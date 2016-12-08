@@ -16,15 +16,15 @@ public class ARWayConst {
     public static final boolean IS_CAT_MULL_ROM = false; //
 
     // debug log
-    public static final String  NECESSARY_LOG_TAG = "arway_necessary";
-    public static final String  INDICATE_LOG_TAG = "arway_indication";
-    public static final String  ERROR_LOG_TAG = "arway_error";
-    public static final String  SPECIAL_LOG_TAG = "arway_special";
+    public static final String  NECESSARY_LOG_TAG = "ARWAY_NECESSARY";
+    public static final String  INDICATE_LOG_TAG = "ARRWAY_INDICATION";
+    public static final String  ERROR_LOG_TAG = "ARWAY_ERROR";
+    public static final String  SPECIAL_LOG_TAG = "ARWAY_SPECIAL";
     public static final boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
     public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
     public static final boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log
     public static final boolean ENABLE_TEST_LOG = false;//ARWAY 输出测试log
-    public static final boolean ENABLE_PERFORM_TEST = false;//ARWAY 输出测试log
+    public static final boolean ENABLE_PERFORM_TEST = true;//ARWAY 输出测试log
 
 
     //camera
