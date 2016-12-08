@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
+import com.haloai.hud.hudendpoint.arwaylib.draw.view.CompassManager;
 import com.haloai.hud.hudendpoint.arwaylib.draw.view.SpeedPanelView;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HudHomePageFragment extends Fragment implements SensorEventListener {
+public class HudHomePageFragment extends Fragment{
+    public static final String TAG = HudHomePageFragment.class.getSimpleName();
     private Context mContext;
 
     private ViewGroup      mNaviPanelViewgroup;
@@ -57,6 +59,10 @@ public class HudHomePageFragment extends Fragment implements SensorEventListener
     private IntentFilter mTimeFilter      = null;
     private float        mTargetDirection = 0;
     private List<ObjectAnimator> mAnimators = new ArrayList<>();
+
+    private CompassManager mCompassManager;
+    private String mOrientaionText[] = new String[]{"北","东北","东","东南","南","西南","西","西北"};
+
 
     class TimeReceiver extends BroadcastReceiver {
 
@@ -99,13 +105,6 @@ public class HudHomePageFragment extends Fragment implements SensorEventListener
         prepareSpeedPanelAnim();
 
         updatePanelSpeed(120);
-
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                hideSpeedPanelAnim();
-            }
-        },3000);
         return mMainLayout;
     }
 
@@ -189,6 +188,17 @@ public class HudHomePageFragment extends Fragment implements SensorEventListener
         mSystemTimeMinuteOneImageview.setImageResource(mSpeedNumImg[(minute) % 10]);
     }
 
+    private CompassManager.CompassLister mCompassLister = new CompassManager.CompassLister() {
+        @Override
+        public void onOrientationChange(float orientation) {
+            Log.e(TAG, "onOrientationChange: orientation "+ orientation);
+            if (mDirectionTextview != null) {
+                mDirectionTextview.setText(mOrientaionText[((int) (orientation+22.5f)%360)/45]);
+            }
+
+        }
+    };
+
     public void updatePanelDirection() {
         float direction = normalizeDegree(mTargetDirection * -1.0f);
         String text = "";
@@ -216,31 +226,15 @@ public class HudHomePageFragment extends Fragment implements SensorEventListener
     }
 
     private void initCompassSensor(Context context) {
-        // 传感器管理器
-        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        // 注册传感器(Sensor.TYPE_ORIENTATION(方向传感器);SENSOR_DELAY_FASTEST(0毫秒延迟);
-        // SENSOR_DELAY_GAME(20,000毫秒延迟)、SENSOR_DELAY_UI(60,000毫秒延迟))
-        // 如果不采用SENSOR_DELAY_FASTEST的话,在0度和360左右之间做动画会有反向转一大圈的感觉
-        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_UI);
-    }
+        mCompassManager = CompassManager.getInstance();
+        mCompassManager.init(context);
+        mCompassManager.setRotation(270);
+        mCompassManager.addCompassLister(mCompassLister);
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-            float direction = event.values[0] * -1.0f;
-            Log.e("compass", "direction is " + direction);
-            mTargetDirection = normalizeDegree(direction);
-            updatePanelDirection();
-        }
+        
     }
-
     private float normalizeDegree(float degree) {
         return (degree + 720) % 360;
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-
     }
 
 }
