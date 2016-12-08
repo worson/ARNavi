@@ -147,7 +147,7 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 
 #if 0		// 绘制路网	
 	cv::Mat matRoadNetImg;
-	merMapdata.drawRoadNet(vecRoadNetLink, cv::Size2i(6400,6400), hamPixelCenter, matRoadNetImg);		
+	merMapdata.drawRoadNet(vecRoadNetLink, cv::Size2i(6400,6400), hamPixelCenter, matRoadNetImg);
 // 	merMapdata.drawImage(matRoadNetImg,hamPixelCenter, vecMainRoadPixelPt, 
 // 		cv::Scalar(255,0,0),50);
 
@@ -265,6 +265,8 @@ int CrossRoad::getCrossLinks(const std::vector<std::vector<HALocationCoordinate2
 // 确定字典
 int CrossRoad::confirmDict(std::string strDictPath, HALocationCoordinate2D halGpsCenterPoint)
 {
+	LOGD("===========confirmDict - enter!!=========\n");
+
 	// 在指定路径中获取符合后缀要求的所有文件
 	std::string strSuffix = ".hmd";
 	std::vector<std::string> vecFileNames;
@@ -301,6 +303,8 @@ int CrossRoad::confirmDict(std::string strDictPath, HALocationCoordinate2D halGp
 	}
 	m_IsReadDictionary = true;
 
+	LOGD("===========confirmDict - leave!!=========\n\n");
+
 	return 0;
 }
 
@@ -314,6 +318,8 @@ int CrossRoad::mainGps2Pixel(const std::vector<std::vector<HALocationCoordinate2
 							 vector<HAMapPoint>& vecMainRoadPixelPt,		// 主路像素坐标
 							 HAMapPoint& hamPixelCenter)		// 中心点像素坐标
 {
+	LOGD("===========mainGps2Pixel - enter!!=========\n");
+	
 	int nNumLink = vecMainRoadGpslinks.size();
 
 	// 参数自检
@@ -348,6 +354,8 @@ int CrossRoad::mainGps2Pixel(const std::vector<std::vector<HALocationCoordinate2
 	hamPixelCenter.x -= hamOffset.x;
 	hamPixelCenter.y -= hamOffset.y;
 
+	LOGD("===========mainGps2Pixel - leave!!=========\n\n");
+
 	return 0;
 }
 
@@ -355,6 +363,8 @@ int CrossRoad::pixel2Gps(const std::vector<HAMapPoint>& vecPixelPoint,
 						 HAMapPoint hamOffset,
 						 std::vector<HALocationCoordinate2D>& vecGpsPoint)
 {
+	LOGD("===========pixel2Gps - enter!!=========\n");
+	
 	// 参数自检
 	int nNumPt = vecPixelPoint.size();
 	if (nNumPt<=0)
@@ -373,17 +383,21 @@ int CrossRoad::pixel2Gps(const std::vector<HAMapPoint>& vecPixelPoint,
 		vecGpsPoint.push_back(halTempGpsPt);
 	}
 
+	LOGD("===========pixel2Gps - leave!!=========\n\n");
+
 	return 0;
 }
 
 // 在指定文件夹中获取符合后缀要求的文件
 int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std::vector<std::string>& vecFileNames)
 {
+	LOGD("===========getSuffixFiles - enter!!=========\n");
+	
 	// 当输入的路径包括文件名时，如：..\\..\\xx.hmd，去除文件名，获取路径
 	struct stat st;	
 	stat(strFolder.c_str(), &st);     //返回 文件, windows - 33206, android - 33200
 
-	LOGD("getSuffixFiles st.st_mode=%d\n",st.st_mode);
+	//LOGD("getSuffixFiles st.st_mode=%d\n",st.st_mode);
 
 	if (st.st_mode==FILE_MODE)
 	{
@@ -399,7 +413,7 @@ int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std:
 		strFolder = strFolder.substr(0,nSi);*/
 	} 
 	
-	LOGD("getSuffixFiles strFolder=%s\n",strFolder.c_str());
+	//LOGD("getSuffixFiles strFolder=%s\n",strFolder.c_str());
 
 	
 	DIR * pDir = NULL;
@@ -425,6 +439,8 @@ int CrossRoad::getSuffixFiles(std::string strFolder, std::string strSuffix, std:
 	}
 	closedir (pDir);
 	
+	LOGD("===========getSuffixFiles - leave!!=========\n\n");
+
 	if (vecFileNames.size()>0)
 	{
 		return 0;
@@ -440,6 +456,8 @@ bool CrossRoad::getDictFileName(HALocationCoordinate2D halGpsCenterPoint,
 					const std::vector<std::string>& vecFileNames,
 					std::string& strDictFileName)
 {
+	LOGD("===========getDictFileName - enter!!=========\n");
+
 	// 参数自检
 	int nNum = vecFileNames.size();
 	if (nNum<=0)
@@ -479,13 +497,19 @@ bool CrossRoad::getDictFileName(HALocationCoordinate2D halGpsCenterPoint,
 		}		
 	}
 
+	LOGD("===========getDictFileName - leave!!=========\n\n");
+
 	return bIsGot;
 }
 
 // 清空历史岔路起点
 void CrossRoad::clearHistoryCrossPoint()
 {
+	LOGD("===========clearHistoryCrossPoint - enter!!=========\n");
+	
 	m_vecHistoryCrossPt.clear();
+
+	LOGD("===========clearHistoryCrossPoint - leave!!=========\n\n");
 }
 
 // 控制打印log

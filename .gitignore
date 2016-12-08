@@ -15,6 +15,7 @@ tags
 # built application files
 *.apk
 *.ap_
+Android.mk
 
 # files for the dex VM
 *.class
