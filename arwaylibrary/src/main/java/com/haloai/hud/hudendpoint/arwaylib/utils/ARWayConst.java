@@ -20,6 +20,7 @@ public class ARWayConst {
     public static final String  INDICATE_LOG_TAG = "ARRWAY_INDICATION";
     public static final String  ERROR_LOG_TAG = "ARWAY_ERROR";
     public static final String  SPECIAL_LOG_TAG = "ARWAY_SPECIAL";
+    public static final String  RENDER_LOG_TAG = "ARWAY_RENDER";
     public static final boolean ENABLE_LOG_OUT = true;//ARWAY 输出log
     public static final boolean ENABLE_FAST_LOG = false;//ARWAY 输出log
     public static final boolean ENABLE_SPECIAL_LOG = true;//ARWAY 输出紧要log

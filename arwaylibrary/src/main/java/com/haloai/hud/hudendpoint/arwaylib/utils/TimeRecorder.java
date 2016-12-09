@@ -83,6 +83,13 @@ public class TimeRecorder {
             HaloLogger.logE(tag, getLog(name));
         }
     }
+    public void timerLog(String tag,String msg){
+        recorde();
+        if((cTime-mLogTime)>=mLogFilterTime){
+            mLogTime = cTime;
+            HaloLogger.logE(tag, msg);
+        }
+    }
     public void recordeAndPrint(String name){
         recorde();
         System.out.print(getLog(name)+"\n");

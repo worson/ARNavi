@@ -205,6 +205,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
      * @return
      */
     public static GeometryData getGeometryData(List<Vector3> path,Vector3 offset, float width, int color){
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"getGeometryData enter!");
         if (path == null || path.size() <=1) {
             return null;
         }
@@ -247,7 +248,7 @@ public class TextureRoadGeometryProcessor extends GeometryProcessor{
             element.normals = normals;
         }
         /*element.colors = colors;*/
-
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"getGeometryData exit!");
         return element;
     }
 

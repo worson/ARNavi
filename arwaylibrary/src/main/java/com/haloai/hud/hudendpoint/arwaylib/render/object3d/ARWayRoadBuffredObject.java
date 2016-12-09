@@ -33,7 +33,7 @@ import static android.R.attr.path;
 public class ARWayRoadBuffredObject extends SuperRoadObject {
     //debug
     public static final boolean LOG_OUT = false;
-    public static final String  TAG     = SuperRoadObject.class.getSimpleName();
+    public static final String  TAG     = ARWayRoadBuffredObject.class.getSimpleName();
 
     //configuration
     protected static final boolean IS_VBOS_MODE       = false;
@@ -161,7 +161,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             if (textureElement != null) {
                 addVerties(textureElement);
                 result = true;
-                HaloLogger.logE("textureElement","textureElement add ok !");
+                HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"textureElement add ok !");
             }else {
                 result = false;
             }
@@ -590,7 +590,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         material.setCurrentObject(this);*/
     }
 
-    TimeRecorder timeRecorder = new TimeRecorder();
+    private static TimeRecorder mTimeRecorder = null;{
+        mTimeRecorder = new TimeRecorder();
+        mTimeRecorder.setLogFilterTime(3000);
+    }
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
         if(!mNeedRender){
             return;
@@ -704,6 +707,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mGeometry.getIndexBufferInfo().bufferHandle);
                     GLES20.glDrawElements(mDrawingMode, mGeometry.getNumIndices(), bufferType, 0);
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+                    mTimeRecorder.timerLog(ARWayConst.NECESSARY_LOG_TAG,TAG+" render draw !");
                 }
                 if (!mIsPartOfBatch && !mRenderChildrenAsBatch && sceneMaterial == null) {
                     material.unbindTextures();

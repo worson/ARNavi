@@ -424,7 +424,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arway fragmnent onHiddenChanged enter,hidden %s",hidden));
         mIsOnNaviStartAnimation = !hidden;
         if (!hidden) {
             HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG, "onHiddenChanged " + hidden);
@@ -449,6 +449,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 addAMapNaviView();
             }
         }
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arway fragmnent onHiddenChanged exit,hidden %s",hidden));
     }
 
     @Override

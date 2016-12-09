@@ -1127,6 +1127,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviRoad.addChild(roadLayers.navi);
         mNaviRoadTop.addChild(roadLayers.road);
         mNaviRoadRefLine.addChild(roadLayers.refLine);
+        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("render commitNaviPath ,scene size %s, object size %s",mScene.getNumChildren(),mNaviRoadTop.getNumChildren()));
     }
 
     private boolean initAllLayer(){

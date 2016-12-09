@@ -1,11 +1,15 @@
 package com.haloai.hud.hudendpoint.arwaylib.modeldataengine;
 
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.Log;
 
 import com.amap.api.maps.AMapUtils;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.model.AMapNaviLink;
 import com.amap.api.navi.model.AMapNaviLocation;
@@ -175,6 +179,8 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"setPath error path ");
             return -1;
         }
+        // TODO: 08/12/2016 测试
+//        findTrafficLight(aMapNaviPath);
         mAMapNavi = amapNavi;
 
         List<Vector3> path_vector3 = new ArrayList<>();
@@ -562,6 +568,30 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             processTrafficLight(naviInfo.getCurStep(), naviInfo.getCurLink());
         }
     }
+    private void findTrafficLight(AMapNaviPath path) {
+        int lightCnt = 0;
+        int linkCnt = 0;
+        if (path != null) {
+            for (int i = 0; i < path.getSteps().size(); i++) {
+                AMapNaviStep step=path.getSteps().get(i);
+                for (int j = 0; j < step.getLinks().size(); j++) {
+//                    processTrafficLight(i,j);
+                    int abIndex = absoluteLinkIndex(path,i,j);
+                    AMapNaviLink link=step.getLinks().get(j);
+                    HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("findTrafficLight step %s,link %s,link size %s ,light %s ,abIndex %s , linkCnt %s",i,j,step.getLinks().size(),link.getTrafficLights(),abIndex,linkCnt));
+                    if (link.getTrafficLights()){
+                        NaviLatLng pos = link.getCoords().get(link.getCoords().size()-1);
+                        lightCnt++;
+//                        mark.setPosition(new LatLng(pos.getLatitude(),pos.getLongitude()));
+                    }
+                    linkCnt++;
+                }
+//				linkCnt += step.getLinks().size();
+            }
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("findTrafficLight linkCnt %s,light cnt %s",linkCnt,lightCnt));
+        }
+
+    }
 
     private void processTrafficLight(int curStep, int curLink) {
         if (mAMapNavi == null) {
@@ -569,12 +599,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         }
         AMapNaviPath path = mAMapNavi.getNaviPath();
         int linkIndex = absoluteLinkIndex(path, curStep, curLink);
-        if ((linkIndex - mLastLink) > 1 || mLastLink == 0) {
+        int stepSize = path.getSteps().size();
+        int maxIndex = absoluteLinkIndex(path,stepSize-1,path.getSteps().get(stepSize-1).getLinks().size()-1);
+        if ((linkIndex - mLastLink) > 0 || mLastLink == 0) {
             List<AMapNaviLink> links = new ArrayList<>();
             mLastLink = findLinks(path, curStep, curLink, NUMBER_TRAFFIC_LIGHT,links);
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("curStep %s ,curLink %s, linkIndex %s ,mLastLink %s,link size %s,maxIndex %s",curStep,curLink,linkIndex,mLastLink,links.size(),maxIndex));
             List<Vector3> lights = new ArrayList<>();
-
-            for(int i = 0; i < links.size(); i++){//最后一个一般link不渲染，作为判断，只有一个值时当到达目的地处理
+            int linkCnt = maxIndex==mLastLink?links.size():links.size()-1;
+            for(int i = 0; i < linkCnt; i++){//path的最后一个一般link不渲染，作为判断，只有一个值时当到达目的地处理
                 AMapNaviLink link=links.get(i);
                 if (link.getCoords().size()>1 && link.getTrafficLights()) {
                     int start = link.getCoords().size()-2;
@@ -639,6 +672,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         return position;
     }
 
+    /**
+     * 找到连续的几个link
+     * @param path
+     * @param curStep
+     * @param curLink
+     * @param cnt
+     * @param links
+     * @return
+     */
     private int  findLinks(AMapNaviPath path, int curStep, int curLink, int cnt,List<AMapNaviLink> links) {
         int linkIndex = 0;
         int has = 0;
@@ -651,26 +693,34 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             linkCnt = step.getLinks().size();
             for (j = startLink; j < linkCnt; j++) {
                 startLink = 0;
-                if (has++ > cnt) {
+                links.add(step.getLinks().get(j));
+                if (++has >= cnt) {
                     over = true;
                     break;
                 }
-                links.add(step.getLinks().get(j));
+
             }
             if (over) {
                 break;
             }
         }
-        int stepIndice = i>curStep?i-1:curStep;
-        int linkIndice = j>0?j-1:0;
-        if (over){
-            stepIndice = i;
-            linkIndice = j;
-        }
-        linkIndex  = absoluteLinkIndex(path, stepIndice, linkIndice);
-        return linkIndex;
+//        int stepIndice = i>curStep?i-1:curStep;
+//        int linkIndice = j>0?j-1:0;
+//        if (over){
+//            stepIndice = i;
+//            linkIndice = j;
+//        }
+        linkIndex  = absoluteLinkIndex(path, curStep, curLink)+has;
+        return linkIndex>0?linkIndex-1:0;
     }
 
+    /**
+     * 返回绝对下标，某个结点前面的个数，不包括当前点
+     * @param path
+     * @param curStep
+     * @param curLink
+     * @return
+     */
     private int absoluteLinkIndex(AMapNaviPath path, int curStep, int curLink) {
         if (path.getStepsCount() < curStep) {
             return -1;
@@ -682,6 +732,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
         if (curLink >= 0 && curLink < path.getSteps().get(curStep).getLinks().size()) {
             index += curLink;
         }
+//        index = index>0?index-1:0;
         return index;
     }
 
