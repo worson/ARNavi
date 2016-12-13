@@ -129,7 +129,7 @@ public class GlDrawSpeedDial extends DrawViewObject implements IDriveStateLister
     @Override
     public void doDraw() {
         super.doDraw();
-        updateSpeedDisplay();
+//        updateSpeedDisplay();
     }
 
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
@@ -81,7 +82,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private boolean mIsFloorDirty     = true;
     private boolean mIsGuideLineDirty = true;
 
-
     //VERTICE_ROAD
     private RoadRenderOption             mOptions = new RoadRenderOption();
     private RoadRenderOption.LayersColor mColors  = null;
@@ -156,7 +156,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
 
     public void initScene(){
-        RajLog.setDebugEnabled(true);
+        RajLog.setDebugEnabled(false);
         initRoadMaterial();
         initTextureMaterial();
 
@@ -1069,6 +1069,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 //                }
 //            }
             if(mNaviRoadList.size()>0 || mEndNaviRoadList.size()>0){
+                HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("render commitNaviPath enter"));
                 mNaviRoadBottom.setPosition(0,0,0);
                 mNaviRoad.setPosition(0,0,0);
                 mNaviRoadTop.setPosition(0,0,0);
@@ -1080,6 +1081,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 for(RoadLayers roadLayers:mEndNaviRoadList) {
                     commitNaviPath(roadLayers);
                 }
+                Log.e(ARWayConst.NECESSARY_LOG_TAG,"render commitNaviPath exit");
+                HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("render commitNaviPath exit ,scene size %s, object size %s",mScene.getNumChildren(),mNaviRoadTop.getNumChildren()));
+            }else {
+                HaloLogger.postI(ARWayConst.ERROR_LOG_TAG,"commitNaviPath error !!");
             }
         }
         if (mIsCrossRoadDirty){
@@ -1127,7 +1132,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviRoad.addChild(roadLayers.navi);
         mNaviRoadTop.addChild(roadLayers.road);
         mNaviRoadRefLine.addChild(roadLayers.refLine);
-        HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("render commitNaviPath ,scene size %s, object size %s",mScene.getNumChildren(),mNaviRoadTop.getNumChildren()));
     }
 
     private boolean initAllLayer(){
@@ -1222,7 +1226,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return result;
     }
 
+    private TimeRecorder mRenderTimeRecorder = null;{
+        mRenderTimeRecorder = new TimeRecorder();
+        mRenderTimeRecorder.enableTimeFilter(true);
+        mRenderTimeRecorder.setLogFilterTime(5000);
+    }
+
     public void onRender(long ellapsedRealtime, double deltaTime) {
+        if(mIsNaviRoadDirty|mIsCrossRoadDirty|mIsFloorDirty){//|mIsGuideLineDirty
+            mRenderTimeRecorder.timerLog(ARWayConst.ERROR_LOG_TAG,String.format("updater , scene %s ",mArwayMap.getNumChildren()
+                    +String.format("updater need commit %s ,%s , %s, %s",mIsNaviRoadDirty,mIsCrossRoadDirty,mIsFloorDirty,mIsGuideLineDirty)));
+        }
 //        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
     }
 }

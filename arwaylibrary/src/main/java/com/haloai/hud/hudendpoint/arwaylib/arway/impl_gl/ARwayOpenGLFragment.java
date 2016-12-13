@@ -63,6 +63,7 @@ import com.haloai.hud.hudendpoint.arwaylib.utils.DrawUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.FileUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.navigation.NavigationSDKAdapter;
+import com.haloai.hud.utils.EndpointsConstants;
 import com.haloai.hud.utils.HaloLogger;
 import com.haloai.hud.utils.ShareDrawables;
 
@@ -161,11 +162,15 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     private static TimeRecorder mUpdatePathRecorder   = new TimeRecorder();
     private static TimeRecorder mGpsTimeRecorder      = null;
     private static TimeRecorder mLocationTimeRecorder = null;
+    private static TimeRecorder mNaviInfoTimeRecorder = null;
 
     static {
         if (ARWayConst.ENABLE_PERFORM_TEST) {
 //            mGpsTimeRecorder = new TimeRecorder();
 //            mLocationTimeRecorder = new TimeRecorder();
+            mNaviInfoTimeRecorder = new TimeRecorder();
+            mNaviInfoTimeRecorder.enableTimeFilter(true);
+            mNaviInfoTimeRecorder.setLogFilterTime(5000);
 
         }
     }
@@ -543,16 +548,18 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     private void rOnNaviStartAnimation() {
+//        mDrawScene.showHide(true);
+
         final long duration = 1000;
         if (mIsNeedNaviStartAnimation && mIsOnNaviStartAnimation) {
+            HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,"rOnNaviStartAnimation called");
             mIsNeedNaviStartAnimation = false;
             //            mIsOnNaviStartAnimation = false;
-
-            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "real onNaviStartAnimation called ");
+            mDrawScene.setTempAlpha(0.01f);
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("real onNaviStartAnimation called ,scene is show %s",mDrawScene.isShow()));
             //复位显示速度表盘、隐藏信息面板、隐藏arway
             mGlDrawNaviInfo.hideNaviInfoPanel();
             //            mGlDrawNaviInfo.showSpeedPanel();
-            mDrawScene.showHide(false);
             //隐藏速度表盘
             //            mGlDrawNaviInfo.hideSpeedPanelAnim(duration);
             //显示信息面板动画、显示arway
@@ -563,7 +570,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     mGlDrawNaviInfo.showNaviInfoPanel(2 * duration);
                     mGlDrawNaviInfo.roadFlipAnimation(duration);
                 }
-            }, 0);//duration/2
+            }, 10);//duration/2
         }
     }
 
@@ -1095,12 +1102,19 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
      * @param aMapNavi
      */
     public void updatePath(AMapNavi aMapNavi) {
-        this.mAMapNavi = aMapNavi;
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updatePath called");
-        if (!ARWayConst.IS_AMAP_VIEW) {//不需要绽放比例直接更新路径
-            //rUpdatePath(aMapNavi);
-            mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
+        try {
+            this.mAMapNavi = aMapNavi;
+            HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "updatePath called");
+            if (!ARWayConst.IS_AMAP_VIEW) {//不需要绽放比例直接更新路径
+                //rUpdatePath(aMapNavi);
+                mMapProjectionMachine.work(MapProjectionMachine.Operation.UPDATE_PATH);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            HaloLogger.postE(EndpointsConstants.ARWAY_TAG, "计算导航路径异常");
+            HaloLogger.uploadHaloLog("ARWAY主动上传日志"+e.getLocalizedMessage());
         }
+
     }
 
     public void onNaviStarted() {
@@ -1151,6 +1165,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                         mUpdatePathRecorder.start();
                     }
                     //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
+                    mDrawScene.showHide(true);
                     HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("fragment updatePath , start %s , end %s ,path size %s",naviPath.getStartPoint(),naviPath.getEndPoint(),naviPath.getCoordList().size()));
                     mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
@@ -1193,14 +1208,23 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         if (info == null || !mIsNaving) {
             return;
         }
-        // TODO: 2016/10/23 ARWay新架构
-        mNaviPathDataProcessor.setNaviInfo(info);
-        mNaviIcon = info.getIconType();
-        mCurPoint = info.getCurPoint();
-        mCurStep = info.getCurStep();
-        mCurIndexInPath = getIndexInPath(mAMapNavi, mCurPoint, mCurStep);
-        updateNaviInfoDate(info);
-        onNaviViewUpdate();
+        try{
+            mNaviInfoTimeRecorder.start("NaviInfo start");
+            // TODO: 2016/10/23 ARWay新架构
+            mNaviPathDataProcessor.setNaviInfo(info);
+            mNaviIcon = info.getIconType();
+            mCurPoint = info.getCurPoint();
+            mCurStep = info.getCurStep();
+            mCurIndexInPath = getIndexInPath(mAMapNavi, mCurPoint, mCurStep);
+            updateNaviInfoDate(info);
+            onNaviViewUpdate();
+            mNaviInfoTimeRecorder.recordeAndLog(ARWayConst.NECESSARY_LOG_TAG,"fragment updateNaviInfo ");
+        }catch (Exception e){
+            HaloLogger.postE(EndpointsConstants.ARWAY_TAG, "更新navi info异常");
+            e.printStackTrace();
+            HaloLogger.uploadHaloLog("ARWAY主动上传日志2"+e.getLocalizedMessage());
+        }
+
     }
 
     private void onNaviViewUpdate() {

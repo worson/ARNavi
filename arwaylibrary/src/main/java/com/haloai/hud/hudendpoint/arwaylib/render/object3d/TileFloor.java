@@ -2,9 +2,15 @@ package com.haloai.hud.hudendpoint.arwaylib.render.object3d;
 
 import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
 import com.haloai.hud.utils.HaloLogger;
 
+import org.rajawali3d.cameras.Camera;
+import org.rajawali3d.materials.Material;
+import org.rajawali3d.math.Matrix4;
+
 public class TileFloor extends BaseObject3D {
+    public static final String  TAG     = TileFloor.class.getSimpleName();
     private float mWidthRate = 0f;
 
     public TileFloor(float width,float height,float spacing) {
@@ -176,4 +182,20 @@ public class TileFloor extends BaseObject3D {
 //        System.out.print(ARWayConst.SPECIAL_LOG_TAG+msg);
     }
 
+    private static TimeRecorder mTimeRecorder = null;{
+        mTimeRecorder = new TimeRecorder();
+        mTimeRecorder.setLogFilterTime(3000);
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
+        super.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
+        mTimeRecorder.timerLog(TAG,TAG+"render called");
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        super.render(camera, vpMatrix, projMatrix, vMatrix, parentMatrix, sceneMaterial);
+        mTimeRecorder.timerLog(TAG,TAG+"render called");
+    }
 }

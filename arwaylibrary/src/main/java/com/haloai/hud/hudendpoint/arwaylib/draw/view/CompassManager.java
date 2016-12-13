@@ -100,7 +100,7 @@ public class CompassManager {
         for (CompassLister lister: mCompassListers){
             lister.onOrientationChange(orientation);
         }
-        Log.d(TAG, values[0] + "");
+//        Log.d(TAG, values[0] + "");
     }
 
     public void init(Context context){

@@ -9,6 +9,9 @@ import com.haloai.hud.utils.HaloLogger;
  * Created by wangshengxing on 16/9/27.
  */
 public class TimeRecorder {
+    private final static String START_MSG = "noStart";
+    private String mStartMsg = START_MSG;
+
     private boolean mIsLogFilter = false;
     private int mLogFilterTime = 1000;
     private double mLogTime = 0;
@@ -24,9 +27,14 @@ public class TimeRecorder {
 
     private double MAX_LOG_FRAME = 3;
     public void start(){
+        start(null);
+    }
+    public void start(String msg){
+        if (msg != null) {
+            mStartMsg = msg;
+        }
         sTime = System.currentTimeMillis();
     }
-
     public void reset(){
         mLogTime = 0;
         cnt      = 0;
@@ -39,6 +47,9 @@ public class TimeRecorder {
         tFrame = 0;
     }
 
+    /**
+     * 记录调试的时间
+     */
     public void recorde(){
         cTime = System.currentTimeMillis();
         interval = cTime-sTime;
@@ -76,15 +87,28 @@ public class TimeRecorder {
     public String getLog(String name){
         return String.format(" %s: cnt = %s , interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,cnt,interval,getAverageInterval(),frame,getAverageFrame());
     }
+
+    /**
+     * 打印调用频率和与@start的时间间隔
+     * @param tag
+     * @param name
+     */
     public void recordeAndLog(String tag,String name){
         recorde();
         if(!mIsLogFilter || (cTime-mLogTime)>=mLogFilterTime) {
             mLogTime = cTime;
-            HaloLogger.logE(tag, getLog(name));
+            HaloLogger.logE(tag, mStartMsg+" ,"+getLog(name));
+            mStartMsg = START_MSG;
         }
     }
+
+    /**
+     * 达到一个的时间才会打印log，用于过滤频率高的log
+     * @param tag
+     * @param msg
+     */
     public void timerLog(String tag,String msg){
-        recorde();
+        cTime = System.currentTimeMillis();
         if((cTime-mLogTime)>=mLogFilterTime){
             mLogTime = cTime;
             HaloLogger.logE(tag, msg);

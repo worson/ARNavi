@@ -164,6 +164,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"textureElement add ok !");
             }else {
                 result = false;
+                HaloLogger.postE(ARWayConst.RENDER_LOG_TAG,"textureElement add error !");
             }
 
         }

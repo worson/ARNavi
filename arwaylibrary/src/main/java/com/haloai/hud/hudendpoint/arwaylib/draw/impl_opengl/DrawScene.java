@@ -53,6 +53,10 @@ public class DrawScene extends DrawObject implements IViewOperation{
 
     }
 
+    /**
+     * 设置的alpha值,被用来做动画时采用
+     * @param alpha
+     */
     public void setAlpha(float alpha){
         mLastArwayAlpha=alpha;
         if (mTextureView != null) {
@@ -60,6 +64,15 @@ public class DrawScene extends DrawObject implements IViewOperation{
         }
     }
 
+    /**
+     * 设置临时的alpha值
+     * @param alpha
+     */
+    public void setTempAlpha(float alpha){
+        if (mTextureView != null) {
+            mTextureView.setAlpha(alpha);
+        }
+    }
     @Override
     public void resetView() {
 
@@ -69,7 +82,7 @@ public class DrawScene extends DrawObject implements IViewOperation{
         animShowHide(show,1000);
     }
     public void animShowHide(boolean show,long duration) {
-        View[] views = new View[]{mGlViewgroup,mTextureView};//
+        View[] views = new View[]{mTextureView};//
         ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
             View v = views[i];
@@ -83,7 +96,6 @@ public class DrawScene extends DrawObject implements IViewOperation{
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", mLastArwayAlpha,0);
                     animator.setDuration(duration);
-//                    v.setVisibility(View.INVISIBLE);
                 }
                 if (animator != null) {
                     animator.setInterpolator(new LinearInterpolator());
@@ -100,16 +112,18 @@ public class DrawScene extends DrawObject implements IViewOperation{
             View v = views[i];
             if (v != null) {
                 if (show){
-                    v.setAlpha(1);
                     v.setVisibility(View.VISIBLE);
                 }else {
-                    v.setAlpha(0);
                     v.setVisibility(View.INVISIBLE);
                 }
                 v.invalidate();
 
             }
         }
+    }
+    public boolean isShow(){
+
+        return mTextureView.isShown() && mTextureView.getAlpha()>0;
     }
 
 }
