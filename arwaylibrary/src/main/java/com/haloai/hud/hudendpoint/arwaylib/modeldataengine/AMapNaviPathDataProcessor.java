@@ -540,6 +540,19 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mDynamicLoader.updateCurPoint(mCurIndexInPath);
             //1.Calculate the distance of maneuver point and get road class.
             int distanceOfMP = naviInfo.getCurStepRetainDistance();
+            List<AMapNaviStep> steps = mAMapNavi.getNaviPath().getSteps();
+            List<AMapNaviLink> curLinks = null;
+            if (steps != null) {
+                curLinks = steps.get(naviInfo.getCurStep()).getLinks();
+                if (!(curLinks != null && curLinks.size()>naviInfo.getCurLink())) {
+                    HaloLogger.postI(ARWayConst.ERROR_LOG_TAG,TAG+" setNaviInfo "+" curLinks is null");
+                    return;
+                }
+            }else {
+                HaloLogger.postI(ARWayConst.ERROR_LOG_TAG,TAG+" setNaviInfo "+" steps is null");
+                return;
+            }
+
             AMapNaviLink curLink = mAMapNavi.getNaviPath().getSteps().get(naviInfo.getCurStep())
                     .getLinks().get(naviInfo.getCurLink());
             mRenderStrategy.updateCurrentRoadInfo(curLink.getRoadClass(), distanceOfMP, naviInfo.getPathRetainDistance());

@@ -1,5 +1,6 @@
 package com.haloai.hud.hudendpoint.arwaylib.draw.impl_opengl;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Color;
@@ -11,6 +12,8 @@ import android.widget.RelativeLayout;
 import com.haloai.hud.hudendpoint.arwaylib.R;
 import com.haloai.hud.hudendpoint.arwaylib.draw.DrawObject;
 import com.haloai.hud.hudendpoint.arwaylib.draw.IViewOperation;
+import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.view.TextureView;
 
@@ -78,14 +81,11 @@ public class DrawScene extends DrawObject implements IViewOperation{
 
     }
 
-    public void animShowHide(boolean show) {
-        animShowHide(show,1000);
-    }
     public void animShowHide(boolean show,long duration) {
         View[] views = new View[]{mTextureView};//
         ObjectAnimator animator = null;
         for (int i = 0; i <views.length ; i++) {
-            View v = views[i];
+            final View v = views[i];
             if (v != null) {
                 if (show){
                     if(!v.isShown()){
@@ -93,6 +93,29 @@ public class DrawScene extends DrawObject implements IViewOperation{
                     }
                     animator = ObjectAnimator.ofFloat(v, "Alpha", 0,mLastArwayAlpha);
                     animator.setDuration(duration);
+                    animator.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            v.setAlpha(1);
+                            v.setVisibility(View.VISIBLE);
+                            HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arway view 动画完成 ，"+getVisibaleInfo()));
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {
+
+                        }
+                    });
                 }else {
                     animator = ObjectAnimator.ofFloat(v, "Alpha", mLastArwayAlpha,0);
                     animator.setDuration(duration);
@@ -124,6 +147,10 @@ public class DrawScene extends DrawObject implements IViewOperation{
     public boolean isShow(){
 
         return mTextureView.isShown() && mTextureView.getAlpha()>0;
+    }
+
+    public String getVisibaleInfo(){
+        return String.format("visibale %s , alpha %s ",mTextureView.isShown() , mTextureView.getAlpha());
     }
 
 }

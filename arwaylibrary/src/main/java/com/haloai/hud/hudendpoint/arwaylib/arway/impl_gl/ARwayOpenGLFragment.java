@@ -762,7 +762,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
         mGlDrawNaviInfo.hideNaviInfoPanel();
         mGlDrawNaviInfo.showSpeedPanel();
 
-        mDrawScene.animShowHide(false, 500);
+        mDrawScene.setTempAlpha(0.01f);
 
         resetData();
         mIsNaving = false;
@@ -1218,7 +1218,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             mCurIndexInPath = getIndexInPath(mAMapNavi, mCurPoint, mCurStep);
             updateNaviInfoDate(info);
             onNaviViewUpdate();
-            mNaviInfoTimeRecorder.recordeAndLog(ARWayConst.NECESSARY_LOG_TAG,"fragment updateNaviInfo ");
+            mNaviInfoTimeRecorder.recordeAndLog(ARWayConst.NECESSARY_LOG_TAG,"fragment updateNaviInfo "+" arway view "+mDrawScene.getVisibaleInfo());
         }catch (Exception e){
             HaloLogger.postE(EndpointsConstants.ARWAY_TAG, "更新navi info异常");
             e.printStackTrace();
