@@ -132,6 +132,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
      * @return
      */
     public boolean updateReferenceLine(List<Vector3> path,Vector3 offset){
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"updateReferenceLine enter!");
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         GeometryData referenceLineElement = generateRectangleVerties(path,offset,mRefLineHeight,mRefLineWidth,mRoadColor);
@@ -139,11 +140,13 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
         addVerties(referenceLineElement);
         applyVerties();
         mNeedRender = true;
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"updateReferenceLine exit!");
         return true;
 
     }
 
     private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"generateObjectBuffer enter!");
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         if(roadPath == null || roadPath.size()<1){
@@ -168,6 +171,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             }
 
         }
+        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"generateObjectBuffer eixt!");
         /*GeometryData planeElement = generatePlaneVerties(mRoadWidth/2,-0.001f);
         addVerties(planeElement);*/
 

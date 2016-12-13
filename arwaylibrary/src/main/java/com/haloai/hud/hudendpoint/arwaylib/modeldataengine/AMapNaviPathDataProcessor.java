@@ -902,6 +902,9 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
      * 访问路网模块获取指定steps的路网数据
      */
     private void processSteps(int... stepIndexs) {
+        if(!ARWayConst.IS_CORSS){
+            return;
+        }
         HaloLogger.logE(TAG, "process steps start " + (count + 1));
         Log.e("ylq", "add start");
         for (Integer stepIndex : stepIndexs) {
@@ -1110,9 +1113,15 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 //preCrossPoints
                 mProportionMappingEngine.mapping(mainRoad, breakStart + 1, breakEnd, crossPointIndexs);
                 HaloLogger.logE("ProportionMappingEngine", "cross start");
-                for (LatLngOutSide latlng : mProportionMappingEngine.mapping(breakStart + 1, breakEnd)) {
-                    HaloLogger.logE("ProportionMappingEngine", latlng.lat + "," + latlng.lng);
+                List<LatLngOutSide> latLngOutSideList = mProportionMappingEngine.mapping(breakStart + 1, breakEnd);
+                if (latLngOutSideList != null) {
+                    for (LatLngOutSide latlng : latLngOutSideList) {
+                        HaloLogger.logE("ProportionMappingEngine", latlng.lat + "," + latlng.lng);
+                    }
+                }else {
+                    HaloLogger.postI("ProportionMappingEngine",String.format(" %s , processSteps ,处理主路以及对主路部分进行抽析出现异常",TAG));
                 }
+
                 HaloLogger.logE("ProportionMappingEngine", "cross end");
                 //HaloLogger.logE("daoge", "mainRoad_render");
                 //HaloLogger.logE("daoge","\t"+mProportionMappingEngine.getRenderPath(breakStart, breakEnd));
