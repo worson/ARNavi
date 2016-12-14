@@ -70,4 +70,10 @@ public class CameraParam {
     public void setCarOffset(double carOffset) {
         mCarOffset = carOffset;
     }
+
+    @Override
+    public String toString() {
+        return String.format(" mCarOffset %s , mCarRotZ %s , mScale %s , mAngel %s , mInScreenPorportion %s , mCarLocation %s , %s , %s ",mCarOffset,mCarRotZ,mScale,mAngel,mInScreenPorportion,mCarLocation.x,mCarLocation.y,mCarLocation.z);
+    }
+
 }

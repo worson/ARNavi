@@ -466,6 +466,10 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         Vector3 position = new Vector3();
         Vector3 lookAt = new Vector3();
         CameraParam param = new CameraParam(mObject4Chase.getPosition(), mObject4Chase.getRotZ(), 1.0, 60, 0, 0);
+        HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" camera info == first init  "+param.toString()));
+        Camera curCamera = getCurrentCamera();
+        HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" camera info == first init ,isInitialized %s , isLookAtEnabled %s , %s isLookAtValid ",
+                curCamera.isInitialized(),curCamera.isLookAtEnabled(),curCamera.isLookAtValid()));
         ARWayCameraCaculatorY.calculateCameraPositionAndLookAtPoint(param, position, lookAt);
         getCurrentCamera().setPosition(position);
         getCurrentCamera().setLookAt(lookAt);
@@ -546,17 +550,16 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     }
 
     private void initStartScene(List<Vector3> path) {
-        if (path.size() >= 2) {
-
-
+        if ( path != null && path.size() >= 2) {
             Vector3 tmpStart = new Vector3(path.get(0));
             final Vector3 end = new Vector3(path.get(1));
             final Vector3 start = new Vector3();
             MathUtils.longerPoint(start, tmpStart, end, -3);
-            float direction = (float) Math.atan2(end.y - start.y, end.x - start.x);
+            float direction = (float) Math.atan2(end.y - tmpStart.y, end.x - tmpStart.x);
             List<Vector3> lines = new ArrayList<>();
             lines.add(start);
             lines.add(end);
+            HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arender initStartScene , direction %s , tmpStart %s ,end %s , %s start",direction,tmpStart,end,start));
 
             mObject4Chase.setRotation(Vector3.Axis.Z, 90 - Math.toDegrees(direction));
 
@@ -566,8 +569,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
                 sphere.setMaterial(new Material());
                 getCurrentScene().addChild(sphere);
                 sphere.setPosition(end);
+            }else {
+                HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arender initStartScene ,error path is small "));
             }
-
         }
     }
 

@@ -512,6 +512,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 mFromPos = convertLocation(location, mCurIndexInPath);
                 mFromDegrees = MathUtils.convertAMapBearing2OpenglBearing(location.getBearing());
                 mPreTime = location.getTime();
+                HaloLogger.postE(ARWayConst.NECESSARY_LOG_TAG,String.format(""));
             } else {
                 long duration = location.getTime() - mPreTime;
                 if(duration <= 250){

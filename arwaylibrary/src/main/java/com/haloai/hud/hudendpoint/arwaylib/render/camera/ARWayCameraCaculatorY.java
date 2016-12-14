@@ -1,6 +1,8 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.camera;
 
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
+import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
+import com.haloai.hud.utils.HaloLogger;
 
 import org.rajawali3d.math.vector.Vector3;
 
@@ -16,6 +18,8 @@ public class ARWayCameraCaculatorY {
     public static double mNearPlaneHeight = 2.0 * Math.tan(Math.toRadians(mFieldOfView/2)) * mNearPlaneDistance;
     public static double mCarOffset = 0.;
     public static double DEFAULTP = 8.0;//在Scale为1.0时，摄像机与参考点的距离／摄像机与参考点映射到近平面上的点的距离 ＝4.0
+
+    private static TimeRecorder mTimeRecorder = null;
 
     public static void calculateCameraPositionAndLookAtPoint(CameraParam param,Vector3 position, Vector3 lookAt){
         double angelR = Math.atan(mNearPlaneHeight*(0.5-param.mInScreenPorportion)/mNearPlaneDistance);
@@ -34,6 +38,25 @@ public class ARWayCameraCaculatorY {
         lookAt.x = position.x + p2L.x;
         lookAt.y = position.y + p2L.y;
         lookAt.z = 0;
+
+        if (mTimeRecorder == null) {
+            mTimeRecorder = new TimeRecorder();
+            mTimeRecorder.enableTimeFilter(true);
+            mTimeRecorder.setUpdateLogTime(false);
+            mTimeRecorder.setLogFilterTime(5000);
+        }
+        double distance = Vector3.distanceTo(lookAt,position);
+        if(distance>10 || Double.isNaN(distance)){
+            mTimeRecorder.forceLogTime();
+            HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" camera info error "));
+            HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" angelR %s , c2NearPlaneDistance %s , c2CarDistance %s , P_Z %s , p_XY2Car %s  ",
+                    angelR,c2NearPlaneDistance, c2CarDistance,P_Z,p_XY2Car));
+
+        }
+        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,"CameraParam is "+param.toString());
+        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , distance %s , position %s ,%s , %s",distance,position.x,position.y,position.z));
+        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , lookat %s ,%s , %s",distance,lookAt.x,lookAt.y,lookAt.z));
+        mTimeRecorder.updateLogTime();
     }
 
     public static void setmCarOffset(double mCarOffset) {

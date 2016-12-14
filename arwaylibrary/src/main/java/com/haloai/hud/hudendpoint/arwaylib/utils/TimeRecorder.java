@@ -13,6 +13,7 @@ public class TimeRecorder {
     private String mStartMsg = START_MSG;
 
     private boolean mIsLogFilter = false;
+    private boolean mUpdateLogTime =true;
     private int mLogFilterTime = 1000;
     private double mLogTime = 0;
     private int    cnt      = 0;
@@ -101,7 +102,6 @@ public class TimeRecorder {
             mStartMsg = START_MSG;
         }
     }
-
     /**
      * 达到一个的时间才会打印log，用于过滤频率高的log
      * @param tag
@@ -110,9 +110,22 @@ public class TimeRecorder {
     public void timerLog(String tag,String msg){
         cTime = System.currentTimeMillis();
         if((cTime-mLogTime)>=mLogFilterTime){
-            mLogTime = cTime;
+            if (mUpdateLogTime){
+                updateLogTime();
+            }
             HaloLogger.logE(tag, msg);
         }
+    }
+
+    public void setUpdateLogTime(boolean updateLogTime) {
+        mUpdateLogTime = updateLogTime;
+    }
+
+    public void forceLogTime(){
+        mLogTime = cTime-2*mLogFilterTime;
+    }
+    public void updateLogTime(){
+        mLogTime = cTime;
     }
     public void recordeAndPrint(String name){
         recorde();

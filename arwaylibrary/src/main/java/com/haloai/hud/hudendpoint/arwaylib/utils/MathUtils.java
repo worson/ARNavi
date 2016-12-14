@@ -321,19 +321,36 @@ public class MathUtils {
 
         //y=kx+b
         // TODO: 15/11/2016 处理异常
-        double k = (end.y-start.y)/(end.x-start.x);
-        double b = start.y-k*start.x;
+        /*double k = (end.y-start.y)/(end.x-start.x);
+        if(Double.isNaN(k)){//没有斜率
+            result.x = (start.x + end.x)/2;
+            double distance=Vector3.distanceTo(start,end);
+            result.y = start.y + (end.y - start.y) * dist / distance;
+            if(Double.isNaN(result.y)){//两点的距离为0
+                result.y = (start.y + end.y)/2;
+            }
 
-        double angle = Math.atan2((end.y-start.y),(end.x-start.x));
-        double deltaX = Math.cos(angle)*dist;
+        }else {
+            double b = start.y - k * start.x;
 
-        result.x = start.x+deltaX;
-        result.y = result.x*k+b;
+            double angle = Math.atan2((end.y - start.y), (end.x - start.x));
+            double deltaX = Math.cos(angle) * dist;
+            result.x = start.x + deltaX;
+            result.y = result.x * k + b;
+        }*/
 
-//        double distance=Vector3.distanceTo(start,end);
-//        result.x = start.x + (end.x - start.x) * dist / distance;
-//        result.y = start.y + (end.y - start.y) * dist / distance;
+        double dy = end.y - start.y;
+        double dx = end.x - start.x;
+        double dz = end.z - start.z;
 
+        double distance=Vector3.distanceTo(start,end);
+        if (distance<=Double.MIN_NORMAL){
+            result.setAll(start);
+            return result;
+        }
+        result.x = start.x + (dx) * dist / distance;
+        result.y = start.y + (dy) * dist / distance;
+        result.z = start.z + (dz) * dist / distance;
         return result;
     }
 
@@ -756,6 +773,7 @@ public class MathUtils {
     public static class Line
     {
         private double a,b,c;
+
         public Line(Vector3 pt1,Vector3 pt2){
             double fX1=pt1.x;
             double fY1=pt1.y;
@@ -764,6 +782,12 @@ public class MathUtils {
             a = fY1 - fY2;			// a = y1 - y2
             b = fX2 - fX1;			// b = x2 - x1
             c = fX1*fY2 - fX2*fY1;		// c = x1*y2 - x2*y1
+        }
+
+        public Line(double x1,double y1,double x2,double y2){
+            a = y1 - y2;			// a = y1 - y2
+            b = x2 - x1;			// b = x2 - x1
+            c = x1*y2 - x2*y1;		// c = x1*y2 - x2*y1
         }
     }
     /**
