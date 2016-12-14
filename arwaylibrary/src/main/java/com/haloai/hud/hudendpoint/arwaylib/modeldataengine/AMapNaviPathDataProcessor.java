@@ -7,6 +7,7 @@ import android.util.Log;
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.navi.AMapNavi;
+import com.amap.api.navi.enums.CameraType;
 import com.amap.api.navi.model.AMapNaviLink;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviPath;
@@ -73,6 +74,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
     //real-time data
     private int mCurIndexInPath;
     private int mCurStep;
+    private LatLng mLastCameraCoord = null;
 
     //animation
     private Vector3 mFromPos     = null;
@@ -578,10 +580,37 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                 processGuildLine(mStepPointIndexs.get(naviInfo.getCurStep()));
                 mCurStep = naviInfo.getCurStep();
             }
-            testProcessTrafficLight(naviInfo.getCurStep(), naviInfo.getCurLink());
+            processTrafficLightByOriginPath(naviInfo.getCurStep(), naviInfo.getCurLink());
+            processTrafficCamera(naviInfo);
         }
     }
 
+    private void processTrafficCamera(NaviInfo naviInfo) {
+        if (naviInfo == null) {
+            return;
+        }
+        NaviLatLng cameraLatLng =  naviInfo.getCameraCoord();
+        if (cameraLatLng == null) {
+            return;
+        }
+        LatLng latLng = new LatLng(cameraLatLng.getLatitude(),cameraLatLng.getLongitude());
+        double cameraDistance = 0;
+        final double DISTANCE = 10;//定义两个超过10米的摄像头才再次显示
+        if (mLastCameraCoord == null) {
+            cameraDistance = 2*DISTANCE;
+        }else {
+            cameraDistance = AMapUtils.calculateLineDistance(mLastCameraCoord,latLng);
+        }
+        int cameraType = naviInfo.getCameraType();
+        if ((cameraDistance>= DISTANCE) && (cameraType & (CameraType.CAMERATYPE_BREAKRULE | CameraType.CAMERATYPE_BUSWAY | CameraType.CAMERATYPE_EMERGENCY
+                | CameraType.CAMERATYPE_SPEED | CameraType.CAMERATYPE_SURVEILLANCE | CameraType.CAMERATYPE_TRAFFICLIGHT)) != 0){
+            mLastCameraCoord = latLng;
+//            HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,String.format("processTrafficCamera  postion %s , %s ,type %s",cameraLatLng.getLatitude(),cameraLatLng.getLongitude(),cameraType));
+            HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,String.format("processTrafficCamera type "+cameraType+" , "+latLng));
+            Vector3 cameraPostion = parseLatlng(cameraLatLng.getLatitude(),cameraLatLng.getLongitude());
+            mNaviPathDataProvider.setTrafficCamera(cameraPostion,cameraType);
+        }
+    }
     private void processTrafficLight(int curStep, int curLink) {
         if (mAMapNavi == null) {
             return;
@@ -685,7 +714,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             Log.e(record_tag,"light start");
             mLastStep=-1;
             for (int i = 0; i < path.getSteps().size(); i++) {
-                calLightCnt += testProcessTrafficLight(i,0);
+                calLightCnt += processTrafficLightByOriginPath(i,0);
                 AMapNaviStep step=path.getSteps().get(i);
                 for (int j = 0; j < step.getLinks().size(); j++) {
                     int abIndex = absoluteLinkIndex(path,i,j);
@@ -705,7 +734,95 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
     }
 
-    private int testProcessTrafficLight(int curStep, int curLink) {
+    /**
+     * 取将要渲染的path作为红绿灯的不相交判断
+     * @param curStep
+     * @param curPoint
+     * @return
+     */
+    private int processTrafficLightByRenderPath(int curStep, int curPoint) {
+        int lightCnt = 0;
+        if (mAMapNavi == null) {
+            return lightCnt;
+        }
+        String tag = "trafficLight_tag";
+        AMapNaviPath path = mAMapNavi.getNaviPath();
+        int callCnt =0;
+        if(curStep>mLastStep){
+            mLastStep = curStep;
+            String record_tag = "light_record_tag";
+            String split_tag = "python";
+            int startBreak = getIndexInPath(0,curStep);
+            int endBreak = getIndexInPath(0,curStep);
+
+            List<Vector3> lights = new ArrayList<>();
+            int stepSize = path.getSteps().size();
+            AMapNaviStep step = path.getSteps().get(curStep);
+            int linkSize = step.getLinks().size();
+            for (int j = 0; j < linkSize; j++) {
+                AMapNaviLink link=step.getLinks().get(j);
+                if(!link.getTrafficLights()){
+                    continue;
+                }
+                int end = link.getCoords().size()-1;
+                int start = link.getCoords().size()-2;
+                NaviLatLng startLatlng = link.getCoords().get(start);
+                NaviLatLng endLatlng = link.getCoords().get(end);
+                Vector3 prePos = parseLatlng(startLatlng.getLatitude(),startLatlng.getLongitude());
+                Vector3 arround = parseLatlng(endLatlng.getLatitude(),endLatlng.getLongitude());
+
+                Vector3 position = new Vector3();
+                final double radius = RoadRenderOption.TRAFFIC_DEVIATION_DISTANCE;
+                double distance = Vector3.distanceTo(prePos, arround);
+                position.x = arround.x + (prePos.x - arround.x) * radius / distance;
+                position.y = arround.y + (prePos.y - arround.y) * radius / distance;
+//                MathUtils.rotateAround(arround.x, arround.y, position.x, position.y, position, Math.PI/2);
+
+                List<AMapNaviLink> links = new ArrayList<>();
+                links.add(link);
+                AMapNaviLink nextLink= null;
+                if (j+1<linkSize){
+                    nextLink = step.getLinks().get(j+1);
+                    links.add(nextLink);
+                }else if(curStep+1<stepSize){
+                    nextLink = path.getSteps().get(curStep+1).getLinks().get(0);
+                    links.add(nextLink);
+                }
+                int  distCnt = 0;
+                for (int i = 0; i < 8; i++) {
+                    boolean postionOk = true;
+                    MathUtils.rotateAround(arround.x, arround.y, position.x, position.y, position, Math.PI/4);
+                    for(AMapNaviLink lightLink:links){
+                        for (NaviLatLng latLng :lightLink.getCoords()){
+                            Vector3 vector = parseLatlng(latLng.getLatitude(),latLng.getLongitude());
+                            double vDistance = Vector3.distanceTo(vector,position);
+                            distCnt++;
+                            if((vDistance-radius) < -0.1){
+//                                Log.e(tag, "processTrafficLightByRenderPath: distance is "+vDistance);
+                                postionOk = false;
+                            }
+                            if(!postionOk){
+                                break;
+                            }
+                        }
+                        if(!postionOk){
+                            break;
+                        }
+                    }
+                    if(postionOk){
+                        lightCnt++;
+                        Log.e(record_tag,String.format(" %s %s , %s , %s",split_tag,position.x,position.y,position.z));
+                        lights.add(position);
+                        break;
+                    }
+                }
+//                Log.e(tag,String.format(" step %s call cnt %s ",curStep,++callCnt));
+            }
+            mNaviPathDataProvider.setTrafficLight(lights);
+        }
+        return lightCnt;
+    }
+    private int processTrafficLightByOriginPath(int curStep, int curLink) {
         int lightCnt = 0;
         if (mAMapNavi == null) {
             return lightCnt;
@@ -760,7 +877,7 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
                             double vDistance = Vector3.distanceTo(vector,position);
                             distCnt++;
                             if((vDistance-radius) < -0.1){
-//                                Log.e(tag, "testProcessTrafficLight: distance is "+vDistance);
+//                                Log.e(tag, "processTrafficLightByOriginPath: distance is "+vDistance);
                                 postionOk = false;
                             }
                             if(!postionOk){

@@ -561,7 +561,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             lines.add(end);
             HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG,String.format("arender initStartScene , direction %s , tmpStart %s ,end %s , %s start",direction,tmpStart,end,start));
 
-            mObject4Chase.setRotation(Vector3.Axis.Z, 90 - Math.toDegrees(direction));
+            if (!Double.isNaN(direction)){
+                mObject4Chase.setRotation(Vector3.Axis.Z, 90 - Math.toDegrees(direction));
+            }else {
+                HaloLogger.postE(ARWayConst.NECESSARY_LOG_TAG,String.format("arender initStartScene , direction is NAN"));
+            }
 
             mSceneUpdater.renderNaviPath(lines, 10);
             if (false && ARWayConst.IS_DEBUG_MODE) {
@@ -806,6 +810,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void onTrafficLight(List<Vector3> lights) {
         if (mIsMyInitScene) {
             mSceneUpdater.renderTrafficLight(lights);
+        }
+    }
+
+    @Override
+    public void onTrafficCamera(Vector3 postion, int type) {
+        if (mIsMyInitScene) {
+            mSceneUpdater.renderTrafficCamera(postion,type);
         }
     }
 

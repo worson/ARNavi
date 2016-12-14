@@ -33,6 +33,7 @@ public interface INaviPathDataProvider{
         void onEndPath();
         void onGuideLineUpdate(List<Vector3> guideLineUpdate);
         void onTrafficLight(List<Vector3> lights);
+        void onTrafficCamera(Vector3 postion ,int type);
     }
     void setNaviPathChangeNotifier(INaviPathDataChangeNotifer naviPathChangeNotifier);
 
@@ -43,6 +44,7 @@ public interface INaviPathDataProvider{
     void setObjStartOrientation(double rotateZ);
     void setGuildLine(List<Vector3> guildLine);
     void setTrafficLight(List<Vector3> lights);
+    void setTrafficCamera(Vector3 postion ,int type);
     void setEndPath();
 
     List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level,double offsetX,double offsetY);

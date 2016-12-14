@@ -1,6 +1,5 @@
 package com.haloai.hud.hudendpoint.arwaylib.render.scene;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.opengl.GLES20;
@@ -29,7 +28,6 @@ import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Plane;
-import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.scene.Scene;
 import org.rajawali3d.util.RajLog;
 
@@ -60,6 +58,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private BaseObject3D mNaviRoadRefLine    = null;
     private BaseObject3D mNaviGuideLineLayer = null;
     private BaseObject3D mNaviSymbolLayer    = null;
+    private BaseObject3D mNaviCameraLayer    = null;
     private BaseObject3D mCarObject          = null;
     private BaseObject3D mStarEndLayer        = null;
 
@@ -99,6 +98,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private Material mCarMaterial             = null;
     private Material mNaviSymbolMaterial      = null;
     private Material mNaviIconMaterial      = null;
+    private Material mCameraIconMaterial      = null;
     private List<Material> mMaterialList            = new ArrayList<>();
 
     private Texture mCrossNetTexture = null;
@@ -271,7 +271,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         int[] textureIds = new int[]{R.drawable.road_circle_alpha_change,R.drawable.triangle_arrow,
                 R.drawable.road_circle_alpha_change,R.drawable.road_navi_arrow,R.drawable.arway_tile_floor,
                 R.drawable.arway_tex_car_1,R.drawable.road_circle_alpha_change,R.drawable.scene_traffic_light,
-                R.drawable.road_circle_alpha_change};
+                R.drawable.road_circle_alpha_change,R.drawable.scene_camera_iocn};
         List<Material> materialList = new LinkedList();
         List<Texture> texturelList = new LinkedList();
         float colorInfluence = 1;
@@ -322,6 +322,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviIconMaterial.setColorInfluence(0);
 
         mCrossNetTexture = texturelList.get(8);
+
+        mCameraIconMaterial = materialList.get(9);
+        mCameraIconMaterial.setColorInfluence(0);
 
         mRoadMaterial = new Material();
         mTestMaterial = new Material();
@@ -591,14 +594,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return baseObject3D;
     }
 
-    private Object3D createTrafficLight(){
+    private Object3D createSymbolPlane(Material material){
         Plane plane = new Plane(1f,1f,10,10, Vector3.Axis.Z,
                 true,false,1,true);//,Color.BLACK
 //            plane.setDoubleSided(true);
         plane.setTransparent(true);
         plane.setPosition(0,0,0.5);
         // plane.setAlpha(0.1f);//不作用于顶点颜色
-        plane.setMaterial(mNaviIconMaterial);
+        plane.setMaterial(material);
 
         BaseObject3D baseObject3D = new BaseObject3D();
         baseObject3D.setOrthographic(true,0.04f);
@@ -721,11 +724,21 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mIsNaviTailRoadDirty = true;
 
     }
+
+    public void renderTrafficCamera(Vector3 postion, int type) {
+        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,String.format("renderTrafficCamera , postion %s ",postion));
+        mNaviCameraLayer.setPosition(0,0,0);
+        mNaviCameraLayer.clearChildren();
+        Object3D object3D = createSymbolPlane(mCameraIconMaterial);
+        object3D.setPosition(postion);
+        mNaviCameraLayer.addChild(object3D);
+    }
+
     public void renderTrafficLight(List<Vector3> lights) {
         if (lights == null || lights.size()<=0) {
             return;
         }
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,"renderTrafficLight");
+        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,"renderTrafficLight");
         mNaviSymbolLayer.setPosition(0,0,0);
         mNaviSymbolLayer.clearChildren();
         Object3D object3D = null;
@@ -734,13 +747,13 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mTrafficLightObjects.clear();
         for (int i = 0; i < cnt; i++) {
             Vector3 position = lights.get(i);
-            object3D = createTrafficLight();
+            object3D = createSymbolPlane(mNaviIconMaterial);
             mTrafficLightObjects.add(object3D);
 
             /*if(mTrafficLightObjects.size()>i){
                 object3D = mTrafficLightObjects.get(i);
             }else {
-                object3D = createTrafficLight();
+                object3D = createSymbolPlane();
                 mTrafficLightObjects.add(object3D);
             }*/
 
@@ -1146,6 +1159,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviRoadRefLine = new BaseObject3D();
         mNaviGuideLineLayer = new BaseObject3D();
         mNaviSymbolLayer = new BaseObject3D();
+        mNaviCameraLayer = new BaseObject3D();
         mCarObject = new BaseObject3D();
         mStarEndLayer = new BaseObject3D();
 
@@ -1175,7 +1189,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         Object3D[] layers = new Object3D[]{
                 mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mYawLaneLayer,mCrossRoad,
                 mCrossRefLine, mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
-                mNaviGuideLineLayer,mNaviSymbolLayer,
+                mNaviGuideLineLayer,mNaviCameraLayer,mNaviSymbolLayer,
                 mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};
         for(Object3D layer:layers){
             if (layer != null) {

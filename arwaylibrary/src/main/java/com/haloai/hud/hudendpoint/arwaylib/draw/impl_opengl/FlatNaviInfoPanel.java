@@ -201,9 +201,9 @@ public class FlatNaviInfoPanel extends DrawObject implements IViewOperation ,Sen
     private void updateSpeedInfo() {
         if (mNaviSpeedextView != null) {
             if (mNaviInfoBean.getLimitSpeed()>0 && mNaviInfoBean.getLimitSpeed()<=mNaviInfoBean.getSpeed()){
-                mSpeedTextview.setTextColor(Color.RED);
+                mNaviSpeedextView.setTextColor(Color.RED);
             }else {
-                mSpeedTextview.setTextColor(Color.rgb(0x27,0xa8,0xc2));
+                mNaviSpeedextView.setTextColor(Color.rgb(0x27,0xa8,0xc2));
             }
             mNaviSpeedextView.setText("" + mNaviInfoBean.getSpeed() % 300);
         }

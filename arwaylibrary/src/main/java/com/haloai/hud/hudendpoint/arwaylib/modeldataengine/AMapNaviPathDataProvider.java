@@ -109,6 +109,13 @@ public class AMapNaviPathDataProvider implements INaviPathDataProvider {
     }
 
     @Override
+    public void setTrafficCamera(Vector3 postion, int type) {
+        if (mNaviPathChangeNotifier != null) {
+            mNaviPathChangeNotifier.onTrafficCamera(postion,type);
+        }
+    }
+
+    @Override
     public List<List<Vector3>> getNaviPathByLevel(IRenderStrategy.DataLevel level, double curPointX, double curPointY) {
 
         double add_Width = ARWayProjection.NEAR_PLANE_WIDTH/2 * 20;
