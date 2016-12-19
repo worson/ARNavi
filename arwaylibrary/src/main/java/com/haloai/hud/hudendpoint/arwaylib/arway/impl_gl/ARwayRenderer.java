@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib.arway.impl_gl;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
@@ -42,7 +41,6 @@ import org.rajawali3d.animation.RotateOnAxisAnimation;
 import org.rajawali3d.animation.TranslateAnimation3D;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
@@ -335,7 +333,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
         super.onRender(ellapsedRealtime, deltaTime);
-        {
+        //打印摄像头信息
+        /*{
             Camera camera = getCurrentCamera();
             Vector3 lookat = camera.getLookAt();
             Vector3 postion = camera.getPosition();
@@ -346,7 +345,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             }
             mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , distance %s , orientation %s ,%s , %s",distance,orientation.getRoll(),orientation.getPitch(),orientation.getYaw()));
 //            mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , lookat %s,%s,%s , postion %s %s %s , distance %s ",lookat.x,lookat.y,lookat.z,postion.x,postion.y,postion.z,Vector3.distanceTo(lookat,postion)));
-        }
+        }*/
         if (ARWayConst.ENABLE_PERFORM_TEST) {
             mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s",getCurrentScene().getNumChildren()));
         }

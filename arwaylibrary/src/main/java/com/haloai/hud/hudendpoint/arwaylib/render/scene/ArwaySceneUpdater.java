@@ -301,6 +301,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 e.printStackTrace();
             }
         }
+        ATexture texture = null;
         mCommonRoadMaterial = materialList.get(0);
         mMainRoadMaterial = mCommonRoadMaterial;
 
@@ -313,6 +314,11 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mRoadReflineMaterial = materialList.get(3);
 
         mFloorMaterial =materialList.get(4);
+
+        texture = mFloorMaterial.getTextureList().get(0);
+        if (texture != null) {
+            texture.setInfluence(0.25f);
+        }
         mCarMaterial =materialList.get(5);
         mCarMaterial.setColorInfluence(0);
 
@@ -447,7 +453,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         return  tileFloor;
     }
     private RoadLayers createNetRoadLayer(){
-        float roadRate = 0.9f;
+        float roadRate = 0.8f;
         float roadWidth = mOptions.netRoadWidth;
         ARWayRoadBuffredObject bottom = new ARWayRoadBuffredObject(roadWidth, mColors.netRoadBottom);
         bottom.setColor(mColors.netRoadBottom);

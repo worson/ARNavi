@@ -53,10 +53,13 @@ public class ARWayCameraCaculatorY {
                     angelR,c2NearPlaneDistance, c2CarDistance,P_Z,p_XY2Car));
 
         }
-        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,"CameraParam is "+param.toString());
-        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , distance %s , position %s ,%s , %s",distance,position.x,position.y,position.z));
-        mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , lookat %s ,%s , %s",distance,lookAt.x,lookAt.y,lookAt.z));
-        mTimeRecorder.updateLogTime();
+        if (mTimeRecorder.isTimeLoggable()) {
+            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,"CameraParam is "+param.toString());
+            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , distance %s , position %s ,%s , %s",distance,position.x,position.y,position.z));
+            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , lookat %s ,%s , %s",distance,lookAt.x,lookAt.y,lookAt.z));
+            mTimeRecorder.updateLogTime();
+        }
+
     }
 
     public static void setmCarOffset(double mCarOffset) {

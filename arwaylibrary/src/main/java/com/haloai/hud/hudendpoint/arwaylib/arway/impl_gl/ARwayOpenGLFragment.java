@@ -14,7 +14,6 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMap.OnCameraChangeListener;
@@ -557,17 +556,17 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             //            mIsOnNaviStartAnimation = false;
             HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, String.format("real onNaviStartAnimation called ,scene is show %s",mDrawScene.isShow()));
 
-            //关闭开始导航的动画
+            /*//关闭开始导航的动画
             mDrawScene.setTempAlpha(1);
             //复位显示速度表盘、隐藏信息面板、隐藏arway
             mGlDrawNaviInfo.hideNaviInfoPanel();
 
             //显示信息面板动画、显示arway
             mGlDrawNaviInfo.showNaviInfoPanel(2 * duration);
-            mGlDrawNaviInfo.roadFlipAnimation(duration);
+            mGlDrawNaviInfo.roadFlipAnimation(duration);*/
 
             //开启导航时的动画
-            /*mDrawScene.setTempAlpha(0.01f);
+            mDrawScene.setTempAlpha(0.01f);
             //复位显示速度表盘、隐藏信息面板、隐藏arway
             mGlDrawNaviInfo.hideNaviInfoPanel();
 
@@ -579,7 +578,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                     mGlDrawNaviInfo.showNaviInfoPanel(2 * duration);
                     mGlDrawNaviInfo.roadFlipAnimation(duration);
                 }
-            }, 10);//duration/2*/
+            }, 10);//duration/2
         }
     }
 

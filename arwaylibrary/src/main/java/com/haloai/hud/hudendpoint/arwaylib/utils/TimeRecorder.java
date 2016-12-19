@@ -102,6 +102,11 @@ public class TimeRecorder {
             mStartMsg = START_MSG;
         }
     }
+
+    public boolean isTimeLoggable(){
+        cTime = System.currentTimeMillis();
+        return (cTime-mLogTime)>=mLogFilterTime;
+    }
     /**
      * 达到一个的时间才会打印log，用于过滤频率高的log
      * @param tag

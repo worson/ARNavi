@@ -5,7 +5,7 @@ package com.haloai.hud.hudendpoint.arwaylib.utils;
  */
 public class ARWayConst {
     public static final boolean IS_DEBUG_MODE = true;
-    public static final boolean IS_CORSS = false;
+    public static final boolean IS_CORSS = true;
     public static final boolean IS_ADAS = false;
     public static boolean IS_DARW_ARWAY = true; //是否偏航时清空显示数据
     //disiplay
