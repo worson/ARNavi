@@ -175,6 +175,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
     }
 
     private static final int     ANIMATION_NAVI_START_ID = 3;
+    private static final int     NAVI_SETPATH_VIEW_ID = 4;
     private              Handler mHandler                = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -182,6 +183,10 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             switch (msg.what) {
                 case ANIMATION_NAVI_START_ID:
                     onNaviStartAnimation(1 * 500);
+                    break;
+                case NAVI_SETPATH_VIEW_ID:
+                    mDrawScene.showHide(true);
+                    onNavingView();
                     break;
                 default:
                     break;
@@ -1197,7 +1202,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
             if (mRenderer != null) {
                 hideARWay();
                 //                mDrawScene.animShowHide(false);
-                mGlDrawCompass.showHide(true);
                 HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "arway rUpdatePath initPath,mode is " + aMapNavi.getNaviPath().getStrategy());
                 if (ARWayConst.ENABLE_LOG_OUT) {
                     HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath total poinst size is " + naviPath.getCoordList().size());
@@ -1216,7 +1220,6 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                         mUpdatePathRecorder.start();
                     }
                     //mRenderer.initPath(projection, naviPath, (!mMapProjectionMachine.isNeedUpdatePath()));
-                    mDrawScene.showHide(true);
                     HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, String.format("fragment updatePath , start %s , end %s ,path size %s",naviPath.getStartPoint(),naviPath.getEndPoint(),naviPath.getCoordList().size()));
                     mNaviPathDataProcessor.setPath(mAMapNavi, naviPath);
                     mHandler.sendEmptyMessage(ANIMATION_NAVI_START_ID);
@@ -1225,7 +1228,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
                 }
                 result = 0;
                 // TODO: 16/9/13 测试直接起步
-                onNavingView();
+                mHandler.sendEmptyMessage(NAVI_SETPATH_VIEW_ID);
             } else {
                 result = -3;
                 HaloLogger.postE(ARWayConst.ERROR_LOG_TAG, "arway rUpdatePath Renderer is null");

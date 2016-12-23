@@ -1,9 +1,13 @@
 package com.haloai.hud.hudendpoint.arwaylib.utils;
 
+import com.haloai.hud.utils.EndpointsConstants;
+
 /**
  * Created by wangshengxing on 16/7/12.
  */
 public class ARWayConst {
+    public static final String ARWAY_MAP_PATH = EndpointsConstants.BasePath+"/Map";
+
     public static final boolean IS_DEBUG_MODE = true;
     public static final boolean IS_CORSS = true;
     public static final boolean IS_ADAS = false;
@@ -34,7 +38,7 @@ public class ARWayConst {
     public static final double CAMERA_FAR_PLANE  = 25;
 
     //open gl
-    public static final int     FRAME_RATE             = 30;
+    public static final int     FRAME_RATE             = 20;
     public static final double DEFAULT_CAMERA_Z           = 15;
     public static final float  REAL_TO_AMAP_GL_RATE       = 9027.669311696285f;//61.720116/0.0068367719141013686
     public static final float  AMAP_TO_ARWAY_GL_RATE      = 1170.1428832954605F;
