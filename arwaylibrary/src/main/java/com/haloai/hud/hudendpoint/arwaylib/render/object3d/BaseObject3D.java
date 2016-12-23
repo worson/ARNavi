@@ -60,46 +60,64 @@ public class BaseObject3D extends Object3D {
     public void setHasVerticesColor(boolean hasVerticesColor) {
         this.hasVerticesColor = hasVerticesColor;
     }
-    protected void replaceGeometry3D(Geometry3D geometry3D){
+    protected void replaceGeometry3D( final Geometry3D geometry3D){
         if (geometry3D == null) {
             return;
         }
-        synchronized (mLock) {
-            if (mGeometry != null) {
-                mGeometry.destroy();
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                if (mGeometry != null) {
+                    mGeometry.destroy();
+                }
+                mGeometry = geometry3D;
             }
-            mGeometry = geometry3D;
-        }
+        };
+        internalOfferTask(task);
     }
 
-    protected void addVerties(GeometryData element){
+    protected void addVerties(final GeometryData element){
         if(element == null || !element.isDataValid()){
             return;
         }
-        List<GeometryData> elements = new LinkedList<>();
-        if (mGeometryData != null && mGeometryData.isDataValid()){
-            elements.add(mGeometryData);
-        }
-        elements.add(element);
-        GeometryData totalElement = GeometryData.addAllElement(elements);
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("addVerties called ,verties size is %s",totalElement.vertices.length));
+
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                List<GeometryData> elements = new LinkedList<>();
+                if (mGeometryData != null && mGeometryData.isDataValid()){
+                    elements.add(mGeometryData);
+                }
+                elements.add(element);
+                GeometryData totalElement = GeometryData.addAllElement(elements);
+                if (totalElement != null && totalElement.isDataValid()) {
+                    if(LOG_OUT){
+                        Log.e(TAG, String.format("addVerties called ,verties size is %s",totalElement.vertices.length));
+                    }
+                    mGeometryData = totalElement;
+                }
             }
-            mGeometryData = totalElement;
-        }
+        };
+        internalOfferTask(task);
+
     }
     protected void applyVerties(){
-        GeometryData totalElement = mGeometryData;
-        if (totalElement != null && totalElement.isDataValid()) {
-            if(LOG_OUT){
-                Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
+        final AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                GeometryData totalElement = mGeometryData;
+                if (totalElement != null && totalElement.isDataValid()) {
+                    if(LOG_OUT){
+                        Log.e(TAG, String.format("applyVerties called ,verties size is %s",totalElement.vertices.length));
+                    }
+                    mGeometryData = totalElement;
+                    setData(totalElement.vertices, totalElement.normals,
+                            totalElement.textureCoords, totalElement.colors, totalElement.indices, true);
+                    mGeometryData.free();
+                }
             }
-            mGeometryData = totalElement;
-            setData(totalElement.vertices, totalElement.normals,
-                    totalElement.textureCoords, totalElement.colors, totalElement.indices, true);
-            mGeometryData.free();
-        }
+        };
+        internalOfferTask(task);
     }
 
     @Override

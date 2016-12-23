@@ -20,6 +20,7 @@ import com.haloai.hud.hudendpoint.arwaylib.modeldataengine.IRoadNetDataProvider;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.ARWayCameraCaculatorY;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraModel;
 import com.haloai.hud.hudendpoint.arwaylib.render.camera.CameraParam;
+import com.haloai.hud.hudendpoint.arwaylib.render.object3d.ARWayRoadBuffredObject;
 import com.haloai.hud.hudendpoint.arwaylib.render.object3d.BaseObject3D;
 import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.refresher.RenderParamsInterpolator;
@@ -121,8 +122,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //time recorder
     private TimeRecorder mRenderTimeRecorder = null;{
         mRenderTimeRecorder = new TimeRecorder();
-        mRenderTimeRecorder.enableTimeFilter(true);
-        mRenderTimeRecorder.setLogFilterTime(5000);
+        mRenderTimeRecorder.enableTimeFilter(false);
+        mRenderTimeRecorder.setLogFilterTime(0);
 
     }
 
@@ -181,6 +182,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     public void initScene() {
         HaloLogger.logE(ARWayConst.ERROR_LOG_TAG, "ARRender init called! ,thread id = " + Thread.currentThread().getId());
+//        replaceAndSwitchScene(getCurrentScene(),new ARWayScene(this));
         getCurrentScene().setBackgroundColor(0, 0, 0, 0);
         if(ARWayConst.IS_DEBUG_MODE){
 //            getCurrentScene().setBackgroundColor(Color.GRAY);
@@ -347,8 +349,9 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
 //            mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , lookat %s,%s,%s , postion %s %s %s , distance %s ",lookat.x,lookat.y,lookat.z,postion.x,postion.y,postion.z,Vector3.distanceTo(lookat,postion)));
         }*/
         if (ARWayConst.ENABLE_PERFORM_TEST) {
-            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s",getCurrentScene().getNumChildren()));
+            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s , buffredobjcet %s ,",getCurrentScene().getNumChildren(), ARWayRoadBuffredObject.totalTime));
         }
+        ARWayRoadBuffredObject.totalTime =0;
     }
 
     @Override
@@ -616,6 +619,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
      * @param duration
      */
     private void startAnim(Vector3 from, Vector3 to, double degrees, long duration) {
+        // FIXME: 22/12/2016 动画没有清除
+        if (mTransAnim != null) {
+            getCurrentScene().unregisterAnimation(mTransAnim);
+        }
+        if (mRotateAnim != null) {
+            getCurrentScene().unregisterAnimation(mRotateAnim);
+        }
         mTransAnim = createTranslateAnim(from, to, duration, mObject4Chase);
         mRotateAnim = createRotateAnim(Vector3.Axis.Z,
                                        Math.abs(degrees) > 180 ? (degrees > 0 ? degrees - 360 : degrees + 360) : degrees,

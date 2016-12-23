@@ -3,7 +3,6 @@ package com.haloai.hud.hudendpoint.arwaylib.render.object3d;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
-import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 import com.haloai.hud.hudendpoint.arwaylib.render.vertices.TextureRoadGeometryProcessor;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
@@ -17,20 +16,17 @@ import org.rajawali3d.Object3D;
 import org.rajawali3d.bounds.BoundingBox;
 import org.rajawali3d.cameras.Camera;
 import org.rajawali3d.materials.Material;
-import org.rajawali3d.materials.plugins.IMaterialPlugin;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.util.RajLog;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static android.R.attr.path;
 
 /**
  * Created by wangshengxing on 16/9/10.
  */
 public class ARWayRoadBuffredObject extends SuperRoadObject {
+    public static long totalTime = 0;
     //debug
     public static final boolean LOG_OUT = false;
     public static final String  TAG     = ARWayRoadBuffredObject.class.getSimpleName();
@@ -597,18 +593,30 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
     private static TimeRecorder mTimeRecorder = null;{
         mTimeRecorder = new TimeRecorder();
-        mTimeRecorder.setLogFilterTime(3000);
+        mTimeRecorder.setLogFilterTime(0);
     }
+    private long mRenderStartTime = System.currentTimeMillis();
+    private long mRenderAllstartTime = mRenderStartTime;
+    private long mRenderCurrentTime = System.currentTimeMillis();
+
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+
+        mRenderStartTime = System.currentTimeMillis();
+        mRenderAllstartTime = mRenderStartTime;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" buffredboject render time : ");
         if(!mNeedRender){
             return;
         }
         preRenderHandle(camera);
+
+        recordTime(stringBuilder,"preHandle");
         if (!mIsVisible && !mRenderChildrenAsBatch)
             return;
-        synchronized (mLock){
+        /*synchronized (mLock)*/{
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
+            recordTime(stringBuilder,"preRender");
             /*if ( mFogEnable && material != null) {
                 RoadFogMaterialPlugin fogMaterialPlugin = null;
                 IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
@@ -671,8 +679,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 }
 
                 GLES20.glDepthMask(mEnableDepthMask);
+                recordTime(stringBuilder,"opengl prepare");
                 // TODO: 16/9/21
-                if(!IS_VBOS_MODE || true){
+                {
                     if (!mIsPartOfBatch) {
                         if (material == null) {
                             RajLog.e("[" + this.getClass().getName()
@@ -695,6 +704,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     }
                     material.setCurrentObject(this);
                 }
+                recordTime(stringBuilder,"meterial prepare");
 
                 if(mOverrideMaterialColor) {
                     material.setColor(mColor);
@@ -702,7 +712,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 material.applyParams();
 
                 GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-
+                recordTime(stringBuilder,"meterial apply");
                 material.setMVPMatrix(mMVPMatrix);
                 material.setModelMatrix(mMMatrix);
                 material.setModelViewMatrix(mMVMatrix);
@@ -712,7 +722,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mGeometry.getIndexBufferInfo().bufferHandle);
                     GLES20.glDrawElements(mDrawingMode, mGeometry.getNumIndices(), bufferType, 0);
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-                    mTimeRecorder.timerLog(ARWayConst.NECESSARY_LOG_TAG,TAG+" render draw !");
+                    recordTime(stringBuilder,"object render");
                 }
                 if (!mIsPartOfBatch && !mRenderChildrenAsBatch && sceneMaterial == null) {
                     material.unbindTextures();
@@ -754,11 +764,20 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             if (mRenderChildrenAsBatch && sceneMaterial == null) {
                 material.unbindTextures();
             }
+            recordTime(stringBuilder,"object render over");
+            stringBuilder.append(String.format(",%s,%s"," total render ",mRenderCurrentTime-mRenderAllstartTime));
+            mTimeRecorder.timerLog(ARWayConst.NECESSARY_LOG_TAG,"onRender "+stringBuilder.toString());
+            totalTime+=mRenderCurrentTime-mRenderAllstartTime;
         }
 
     }
 
 
+    private void recordTime(StringBuilder stringBuilder,String name){
+        mRenderCurrentTime = System.currentTimeMillis();
+        stringBuilder.append(String.format(",%s,%s",name,mRenderCurrentTime-mRenderStartTime));
+        mRenderStartTime = mRenderCurrentTime;
+    }
 
     @Override
     protected void finalize() throws Throwable {

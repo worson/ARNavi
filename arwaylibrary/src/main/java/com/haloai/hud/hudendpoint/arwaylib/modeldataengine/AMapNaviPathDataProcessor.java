@@ -178,6 +178,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"setPath error path ");
             return -1;
         }
+        long startTime = System.currentTimeMillis();
+        long allstart = startTime;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" processor setpath : ");
         // TODO: 08/12/2016 测试
 //        findTrafficLight(aMapNaviPath);
         mAMapNavi = amapNavi;
@@ -321,8 +325,12 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         mRenderPaths = new ArrayList<>();
         //mRenderPaths.add(mDouglasPath);
+        stringBuilder.append(String.format(" %s : %s  ,","准备数据",System.currentTimeMillis()-startTime));
+        startTime = System.currentTimeMillis();
         mProportionMappingEngine = new ProportionMappingEngine(mPathLatLng);
         mProportionMappingEngine.rarefyDouglas(mStepPointIndexs, RAREFY_PIXEL_COUNT / ARWayProjection.K, DEFAULT_LEVEL);
+        stringBuilder.append(String.format(" %s : %s  ,","抽析",System.currentTimeMillis()-startTime));
+        startTime = System.currentTimeMillis();
 
         _fileDir = "/sdcard/daoge_log/";
         long log_time = System.currentTimeMillis();
@@ -343,17 +351,17 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
         //TODO 根据动态加载的距离去拉去路网信息(真正运行时需要走的逻辑)
-        /*for (int i = 0; i < mPreDynamicEndIndex; i++) {
+        for (int i = 0; i < mPreDynamicEndIndex; i++) {
             if (mStepPointIndexs.contains(i)) {
                 HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
                 processSteps(mStepPointIndexs.indexOf(i));
             }
-        }*/
+        }
 
         //TODO 没有动态加载的情况下一次性拉去路网信息(测试时使用)
-        for (int i = 0; i < mStepPointIndexs.size(); i++) {
+        /*for (int i = 0; i < mStepPointIndexs.size(); i++) {
             processSteps(i);
-        }
+        }*/
 
         //TODO 北京演示时使用这部分,模拟一段假的但是效果更好的岔路显示出来
 //        getShowBranchLines();
@@ -426,6 +434,10 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
             mNaviPathDataProvider.setEndPath();
         }
         mIsPathInited = true;
+        stringBuilder.append(String.format(" %s : %s  ,","拉取岔路",System.currentTimeMillis()-startTime));
+        stringBuilder.append(String.format(" %s : %s  ,"," total time ",System.currentTimeMillis()-allstart));
+        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,TAG+stringBuilder.toString());
+
         HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "AMapNaviPathDataProcessor setpath eixt,total size "+mPathLatLng.size());
         return 1;
     }

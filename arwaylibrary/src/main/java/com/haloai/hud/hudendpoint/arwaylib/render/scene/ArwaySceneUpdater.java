@@ -1192,16 +1192,20 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private void reloadAllLayer(){
         mArwayMap = new BaseObject3D();
         mScene.clearChildren();
-        Object3D[] layers = new Object3D[]{
+        /*Object3D[] layers = new Object3D[]{
                 mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mYawLaneLayer,mCrossRoad,
                 mCrossRefLine, mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
                 mNaviGuideLineLayer,mNaviCameraLayer,mNaviSymbolLayer,
-                mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};
+                mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};*/
+
+        Object3D[] layers = new Object3D[]{
+                mCrossRoadBottom};
         for(Object3D layer:layers){
             if (layer != null) {
                 mArwayMap.addChild(layer);
             }
         }
+//        mScene.clearChildren();
         mScene.addChild(mArwayMap);
     }
 
@@ -1257,6 +1261,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mRenderTimeRecorder.timerLog(ARWayConst.ERROR_LOG_TAG,String.format("updater , scene %s ",mArwayMap.getNumChildren()
                     +String.format("updater need commit %s ,%s , %s, %s",mIsNaviRoadDirty,mIsCrossRoadDirty,mIsFloorDirty,mIsGuideLineDirty)));
         }
+        HaloLogger.logE(TAG,"mCrossRoadBottom size "+mCrossRoadBottom.getNumChildren());
 //        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
     }
 }
