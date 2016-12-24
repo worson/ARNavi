@@ -603,20 +603,20 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
         mRenderStartTime = System.currentTimeMillis();
         mRenderAllstartTime = mRenderStartTime;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(" buffredboject render time : ");
+//        StringBuilder stringBuilder = new StringBuilder();
+//        stringBuilder.append(" buffredboject render time : ");
         if(!mNeedRender){
             return;
         }
         preRenderHandle(camera);
 
-        recordTime(stringBuilder,"preHandle");
+//        recordTime(stringBuilder,"preHandle");
         if (!mIsVisible && !mRenderChildrenAsBatch)
             return;
         /*synchronized (mLock)*/{
             Material material = sceneMaterial == null ? mMaterial : sceneMaterial;
             preRender();
-            recordTime(stringBuilder,"preRender");
+//            recordTime(stringBuilder,"preRender");
             /*if ( mFogEnable && material != null) {
                 RoadFogMaterialPlugin fogMaterialPlugin = null;
                 IMaterialPlugin IFogPlugin =  material.getPlugin(RoadFogMaterialPlugin.class);
@@ -679,7 +679,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 }
 
                 GLES20.glDepthMask(mEnableDepthMask);
-                recordTime(stringBuilder,"opengl prepare");
+//                recordTime(stringBuilder,"opengl prepare");
                 // TODO: 16/9/21
                 {
                     if (!mIsPartOfBatch) {
@@ -704,7 +704,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     }
                     material.setCurrentObject(this);
                 }
-                recordTime(stringBuilder,"meterial prepare");
+//                recordTime(stringBuilder,"meterial prepare");
 
                 if(mOverrideMaterialColor) {
                     material.setColor(mColor);
@@ -712,7 +712,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                 material.applyParams();
 
                 GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-                recordTime(stringBuilder,"meterial apply");
+//                recordTime(stringBuilder,"meterial apply");
                 material.setMVPMatrix(mMVPMatrix);
                 material.setModelMatrix(mMMatrix);
                 material.setModelViewMatrix(mMVMatrix);
@@ -722,7 +722,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mGeometry.getIndexBufferInfo().bufferHandle);
                     GLES20.glDrawElements(mDrawingMode, mGeometry.getNumIndices(), bufferType, 0);
                     GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-                    recordTime(stringBuilder,"object render");
+//                    recordTime(stringBuilder,"object render");
                 }
                 if (!mIsPartOfBatch && !mRenderChildrenAsBatch && sceneMaterial == null) {
                     material.unbindTextures();
@@ -764,9 +764,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             if (mRenderChildrenAsBatch && sceneMaterial == null) {
                 material.unbindTextures();
             }
-            recordTime(stringBuilder,"object render over");
-            stringBuilder.append(String.format(",%s,%s"," total render ",mRenderCurrentTime-mRenderAllstartTime));
-            mTimeRecorder.timerLog(ARWayConst.NECESSARY_LOG_TAG,"onRender "+stringBuilder.toString());
+//            recordTime(stringBuilder,"object render over");
+//            stringBuilder.append(String.format(",%s,%s"," total render ",mRenderCurrentTime-mRenderAllstartTime));
+//            mTimeRecorder.timerLog(ARWayConst.NECESSARY_LOG_TAG,"onRender "+stringBuilder.toString());
             totalTime+=mRenderCurrentTime-mRenderAllstartTime;
         }
 
@@ -774,9 +774,9 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
 
 
     private void recordTime(StringBuilder stringBuilder,String name){
-        mRenderCurrentTime = System.currentTimeMillis();
-        stringBuilder.append(String.format(",%s,%s",name,mRenderCurrentTime-mRenderStartTime));
-        mRenderStartTime = mRenderCurrentTime;
+//        mRenderCurrentTime = System.currentTimeMillis();
+//        stringBuilder.append(String.format(",%s,%s",name,mRenderCurrentTime-mRenderStartTime));
+//        mRenderStartTime = mRenderCurrentTime;
     }
 
     @Override

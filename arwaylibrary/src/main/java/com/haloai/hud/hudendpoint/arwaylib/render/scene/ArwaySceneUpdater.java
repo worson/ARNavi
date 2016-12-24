@@ -1192,14 +1192,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private void reloadAllLayer(){
         mArwayMap = new BaseObject3D();
         mScene.clearChildren();
-        /*Object3D[] layers = new Object3D[]{
+        Object3D[] layers = new Object3D[]{
                 mGridfloorLayer,mCrossRoadBottom,mNaviRoadBottom,mYawLaneLayer,mCrossRoad,
                 mCrossRefLine, mNaviRoadTop,mNaviRoad,mNaviRoadRefLine,
                 mNaviGuideLineLayer,mNaviCameraLayer,mNaviSymbolLayer,
-                mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};*/
+                mStarEndLayer,mTrafficDetectionLayer,mAdasCarObject,mCarObject,};
 
-        Object3D[] layers = new Object3D[]{
-                mCrossRoadBottom};
+//        Object3D[] layers = new Object3D[]{
+//                mCrossRoadBottom};
         for(Object3D layer:layers){
             if (layer != null) {
                 mArwayMap.addChild(layer);

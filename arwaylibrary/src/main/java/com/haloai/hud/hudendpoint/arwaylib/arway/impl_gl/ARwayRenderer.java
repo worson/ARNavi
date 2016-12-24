@@ -6,6 +6,8 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -318,6 +320,13 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     protected void onRender(long ellapsedRealtime, double deltaTime) {
         mRenderTimeRecorder.start("onRender");
 
+        //======
+        mRenderStartTime = System.currentTimeMillis();
+        mRenderAllstartTime = mRenderStartTime;
+//        StringBuilder stringBuilder = new StringBuilder();
+//        stringBuilder.append(" ARWayRenderer render time : ");
+        //====
+
         if (!mIsMyInitScene) {
             return;
         }
@@ -329,12 +338,21 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
         }
+
+//        recordTime(stringBuilder,"cameraRefresh:");
+
         if(ARWayConst.IS_ADAS){
             mAdasUpdater.onRender(ellapsedRealtime,deltaTime);
             calculateTrafficDetectionObject();
         }
+
         mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
+//        recordTime(stringBuilder,"mSceneUpdater.onRender:");
+
         super.onRender(ellapsedRealtime, deltaTime);
+//        recordTime(stringBuilder,"super.onRender:");
+
+//        mRenderTimeRecorder.recordeAndLog(ARWayConst.NECESSARY_LOG_TAG,"ARWayRenderer::onRender: "+stringBuilder.toString());
         //打印摄像头信息
         /*{
             Camera camera = getCurrentCamera();
@@ -348,10 +366,19 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , distance %s , orientation %s ,%s , %s",distance,orientation.getRoll(),orientation.getPitch(),orientation.getYaw()));
 //            mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , lookat %s,%s,%s , postion %s %s %s , distance %s ",lookat.x,lookat.y,lookat.z,postion.x,postion.y,postion.z,Vector3.distanceTo(lookat,postion)));
         }*/
-        if (ARWayConst.ENABLE_PERFORM_TEST) {
-            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s , buffredobjcet %s ,",getCurrentScene().getNumChildren(), ARWayRoadBuffredObject.totalTime));
-        }
+//        if (ARWayConst.ENABLE_PERFORM_TEST) {
+//            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s , buffredobjcet %s ,",getCurrentScene().getNumChildren(), ARWayRoadBuffredObject.totalTime));
+//        }
         ARWayRoadBuffredObject.totalTime =0;
+    }
+    private long mRenderStartTime = System.currentTimeMillis();
+    private long mRenderAllstartTime = mRenderStartTime;
+    private long mRenderCurrentTime = System.currentTimeMillis();
+
+    private void recordTime(StringBuilder stringBuilder,String name){
+//        mRenderCurrentTime = System.currentTimeMillis();
+//        stringBuilder.append(String.format(",%s,%s",name,mRenderCurrentTime-mRenderStartTime));
+//        mRenderStartTime = mRenderCurrentTime;
     }
 
     @Override
