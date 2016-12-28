@@ -49,6 +49,7 @@ public class BaseObject3D extends Object3D {
 
 
     public BaseObject3D() {
+        super();
         mFrameTaskQueue = new LinkedList<>();
     }
 

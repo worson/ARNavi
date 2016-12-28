@@ -599,6 +599,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     private long mRenderAllstartTime = mRenderStartTime;
     private long mRenderCurrentTime = System.currentTimeMillis();
 
+    public void renderTest(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
+        super.render(camera, vpMatrix, projMatrix, vMatrix, parentMatrix, sceneMaterial);
+    }
+
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
 
         mRenderStartTime = System.currentTimeMillis();

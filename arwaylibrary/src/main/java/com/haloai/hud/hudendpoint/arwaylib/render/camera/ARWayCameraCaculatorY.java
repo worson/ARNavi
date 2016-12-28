@@ -45,20 +45,23 @@ public class ARWayCameraCaculatorY {
             mTimeRecorder.setUpdateLogTime(false);
             mTimeRecorder.setLogFilterTime(5000);
         }
-        double distance = Vector3.distanceTo(lookAt,position);
-        if(distance>10 || Double.isNaN(distance)){
-            mTimeRecorder.forceLogTime();
-            HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" camera info error "));
-            HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" angelR %s , c2NearPlaneDistance %s , c2CarDistance %s , P_Z %s , p_XY2Car %s  ",
-                    angelR,c2NearPlaneDistance, c2CarDistance,P_Z,p_XY2Car));
+        if (ARWayConst.IS_FRAME_LOG){
+            double distance = Vector3.distanceTo(lookAt,position);
+            if(distance>10 || Double.isNaN(distance)){
+                mTimeRecorder.forceLogTime();
+                HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" camera info error "));
+                HaloLogger.postE(ARWayConst.SPECIAL_LOG_TAG,String.format(" angelR %s , c2NearPlaneDistance %s , c2CarDistance %s , P_Z %s , p_XY2Car %s  ",
+                        angelR,c2NearPlaneDistance, c2CarDistance,P_Z,p_XY2Car));
 
+            }
+            if (mTimeRecorder.isTimeLoggable()) {
+                mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,"CameraParam is "+param.toString());
+                mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , distance %s , position %s ,%s , %s",distance,position.x,position.y,position.z));
+                mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , lookat %s ,%s , %s",distance,lookAt.x,lookAt.y,lookAt.z));
+                mTimeRecorder.updateLogTime();
+            }
         }
-        if (mTimeRecorder.isTimeLoggable()) {
-            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,"CameraParam is "+param.toString());
-            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , distance %s , position %s ,%s , %s",distance,position.x,position.y,position.z));
-            mTimeRecorder.timerLog(ARWayConst.SPECIAL_LOG_TAG,String.format("camera info , lookat %s ,%s , %s",distance,lookAt.x,lookAt.y,lookAt.z));
-            mTimeRecorder.updateLogTime();
-        }
+
 
     }
 

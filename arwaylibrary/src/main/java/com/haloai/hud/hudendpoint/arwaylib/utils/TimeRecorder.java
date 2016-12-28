@@ -86,7 +86,7 @@ public class TimeRecorder {
     }
 
     public String getLog(String name){
-        return String.format(" %s: cnt = %s , interval = %3f ms ,average interval = %3f ms ,frame = %s , average frame = %s",name,cnt,interval,getAverageInterval(),frame,getAverageFrame());
+        return String.format(", %s , cnt , %s , interval , %3f ms ,average interval , %3f ms ,frame , %s , average frame , %s",name,cnt,interval,getAverageInterval(),frame,getAverageFrame());
     }
 
     /**
@@ -105,7 +105,7 @@ public class TimeRecorder {
 
     public boolean isTimeLoggable(){
         cTime = System.currentTimeMillis();
-        return (cTime-mLogTime)>=mLogFilterTime;
+        return !mIsLogFilter || (cTime-mLogTime)>=mLogFilterTime;
     }
     /**
      * 达到一个的时间才会打印log，用于过滤频率高的log

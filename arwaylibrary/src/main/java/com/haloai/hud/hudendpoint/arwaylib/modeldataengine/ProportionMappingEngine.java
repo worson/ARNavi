@@ -6,6 +6,7 @@ import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.model.LatLng;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayProjection;
 import com.haloai.hud.hudendpoint.arwaylib.utils.Douglas;
+import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.jni_data.LatLngOutSide;
 import com.haloai.hud.utils.HaloLogger;
 
@@ -46,10 +47,15 @@ public class ProportionMappingEngine {
         List<Double> lengths = new ArrayList<>();
         lengths.add(0D);
         double totalLength = 0;
+        LatLngOutSide latlng1;
+        LatLngOutSide latlng2;
         for (int i = 1; i < mOriPath.size(); i++) {
-            totalLength += AMapUtils.calculateLineDistance(
-                    new LatLng(mOriPath.get(i - 1).lat, mOriPath.get(i - 1).lng),
-                    new LatLng(mOriPath.get(i).lat, mOriPath.get(i).lng));
+            //totalLength += AMapUtils.calculateLineDistance(
+            //        new LatLng(mOriPath.get(i - 1).lat, mOriPath.get(i - 1).lng),
+            //        new LatLng(mOriPath.get(i).lat, mOriPath.get(i).lng));
+            latlng1 = mOriPath.get(i-1);
+            latlng2 = mOriPath.get(i);
+            totalLength += MathUtils.calculateDistance(latlng1.lat,latlng1.lng,latlng2.lat,latlng2.lng);
             lengths.add(totalLength);
         }
         for (int i = 0; i < lengths.size(); i++) {

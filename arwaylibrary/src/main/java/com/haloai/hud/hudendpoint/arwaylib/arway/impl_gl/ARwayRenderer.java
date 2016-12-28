@@ -6,8 +6,6 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -124,8 +122,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     //time recorder
     private TimeRecorder mRenderTimeRecorder = null;{
         mRenderTimeRecorder = new TimeRecorder();
-        mRenderTimeRecorder.enableTimeFilter(false);
-        mRenderTimeRecorder.setLogFilterTime(0);
+        mRenderTimeRecorder.enableTimeFilter(true);
+        mRenderTimeRecorder.setLogFilterTime(2000);
 
     }
 
@@ -319,61 +317,28 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     @Override
     protected void onRender(long ellapsedRealtime, double deltaTime) {
         mRenderTimeRecorder.start("onRender");
-
-        //======
-        mRenderStartTime = System.currentTimeMillis();
-        mRenderAllstartTime = mRenderStartTime;
-//        StringBuilder stringBuilder = new StringBuilder();
-//        stringBuilder.append(" ARWayRenderer render time : ");
-        //====
-
         if (!mIsMyInitScene) {
             return;
         }
         if (mObject4Chase != null) {
             //deltaTime表示每一帧间隔的秒数,注意单位是秒
             //一帧一帧去通过车速实时计算位置角度等,作用于被追随物体的摄像头移动方式
-            //updateObject4Chase(mObject4Chase, mCarSpeed, deltaTime);
-            //updateCamera(mObject4Chase);
-            //Log.e("ylq","carPosition:"+mObject4Chase.getPosition());
             mParamsRefresher.cameraRefresh(getCurrentCamera(), mObject4Chase.getPosition(), mObject4Chase.getRotZ());
         }
-
-//        recordTime(stringBuilder,"cameraRefresh:");
-
         if(ARWayConst.IS_ADAS){
             mAdasUpdater.onRender(ellapsedRealtime,deltaTime);
             calculateTrafficDetectionObject();
         }
-
-        mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
-//        recordTime(stringBuilder,"mSceneUpdater.onRender:");
-
+        if (mSceneUpdater != null) {
+            mSceneUpdater.onRender(ellapsedRealtime, deltaTime);
+        }
         super.onRender(ellapsedRealtime, deltaTime);
-//        recordTime(stringBuilder,"super.onRender:");
 
-//        mRenderTimeRecorder.recordeAndLog(ARWayConst.NECESSARY_LOG_TAG,"ARWayRenderer::onRender: "+stringBuilder.toString());
-        //打印摄像头信息
-        /*{
-            Camera camera = getCurrentCamera();
-            Vector3 lookat = camera.getLookAt();
-            Vector3 postion = camera.getPosition();
-            Quaternion orientation =  camera.getOrientation();
-            double distance = Vector3.distanceTo(lookat,postion);
-            if(distance>10){
-                HaloLogger.postE(ARWayConst.ERROR_LOG_TAG,"camera distance error  "+distance);
-            }
-            mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , distance %s , orientation %s ,%s , %s",distance,orientation.getRoll(),orientation.getPitch(),orientation.getYaw()));
-//            mRenderTimeRecorder.timerLog(ARWayConst.INDICATE_LOG_TAG,String.format("camera info , lookat %s,%s,%s , postion %s %s %s , distance %s ",lookat.x,lookat.y,lookat.z,postion.x,postion.y,postion.z,Vector3.distanceTo(lookat,postion)));
-        }*/
-//        if (ARWayConst.ENABLE_PERFORM_TEST) {
-//            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame , scene %s , buffredobjcet %s ,",getCurrentScene().getNumChildren(), ARWayRoadBuffredObject.totalTime));
-//        }
+        if (ARWayConst.ENABLE_PERFORM_TEST) {
+            mRenderTimeRecorder.recordeAndLog(ARWayConst.ERROR_LOG_TAG, String.format("onRenderFrame "));
+        }
         ARWayRoadBuffredObject.totalTime =0;
     }
-    private long mRenderStartTime = System.currentTimeMillis();
-    private long mRenderAllstartTime = mRenderStartTime;
-    private long mRenderCurrentTime = System.currentTimeMillis();
 
     private void recordTime(StringBuilder stringBuilder,String name){
 //        mRenderCurrentTime = System.currentTimeMillis();

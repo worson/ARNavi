@@ -21,6 +21,8 @@ public class ARWayConst {
     public static final boolean IS_CAT_MULL_ROM = false; //
 
     // debug log
+    public static final boolean IS_FRAME_LOG = false;
+
     public static final String  NECESSARY_LOG_TAG = "ARWAY_NECESSARY";
     public static final String  INDICATE_LOG_TAG = "ARWAY_INDICATION";
     public static final String  ERROR_LOG_TAG = "ARWAY_ERROR";
@@ -38,7 +40,7 @@ public class ARWayConst {
     public static final double CAMERA_FAR_PLANE  = 25;
 
     //open gl
-    public static final int     FRAME_RATE             = 20;
+    public static final int     FRAME_RATE             = 30;
     public static final double DEFAULT_CAMERA_Z           = 15;
     public static final float  REAL_TO_AMAP_GL_RATE       = 9027.669311696285f;//61.720116/0.0068367719141013686
     public static final float  AMAP_TO_ARWAY_GL_RATE      = 1170.1428832954605F;

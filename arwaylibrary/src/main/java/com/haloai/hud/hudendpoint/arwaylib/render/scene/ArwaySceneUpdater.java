@@ -1257,12 +1257,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     public void onRender(long ellapsedRealtime, double deltaTime) {
-        if(mIsNaviRoadDirty|mIsCrossRoadDirty|mIsFloorDirty){//|mIsGuideLineDirty
-            mRenderTimeRecorder.timerLog(ARWayConst.ERROR_LOG_TAG,String.format("updater , scene %s ",mArwayMap.getNumChildren()
-                    +String.format("updater need commit %s ,%s , %s, %s",mIsNaviRoadDirty,mIsCrossRoadDirty,mIsFloorDirty,mIsGuideLineDirty)));
-        }
-        HaloLogger.logE(TAG,"mCrossRoadBottom size "+mCrossRoadBottom.getNumChildren());
+        if(ARWayConst.IS_FRAME_LOG){
+            if(mIsNaviRoadDirty|mIsCrossRoadDirty|mIsFloorDirty){//|mIsGuideLineDirty
+                mRenderTimeRecorder.timerLog(ARWayConst.ERROR_LOG_TAG,String.format("updater , scene %s ",mArwayMap.getNumChildren()
+                        +String.format("updater need commit %s ,%s , %s, %s",mIsNaviRoadDirty,mIsCrossRoadDirty,mIsFloorDirty,mIsGuideLineDirty)));
+            }
+            HaloLogger.logE(TAG,"mCrossRoadBottom size "+mCrossRoadBottom.getNumChildren());
 //        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
+        }
     }
 }
 

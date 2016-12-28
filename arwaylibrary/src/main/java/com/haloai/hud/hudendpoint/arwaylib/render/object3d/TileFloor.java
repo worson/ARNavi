@@ -190,12 +190,12 @@ public class TileFloor extends BaseObject3D {
     @Override
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Material sceneMaterial) {
         super.render(camera, vpMatrix, projMatrix, vMatrix, sceneMaterial);
-        mTimeRecorder.timerLog(TAG,TAG+"render called");
+       // mTimeRecorder.timerLog(TAG,TAG+"render called");
     }
 
     @Override
     public void render(Camera camera, Matrix4 vpMatrix, Matrix4 projMatrix, Matrix4 vMatrix, Matrix4 parentMatrix, Material sceneMaterial) {
         super.render(camera, vpMatrix, projMatrix, vMatrix, parentMatrix, sceneMaterial);
-        mTimeRecorder.timerLog(TAG,TAG+"render called");
+        //mTimeRecorder.timerLog(TAG,TAG+"render called");
     }
 }
