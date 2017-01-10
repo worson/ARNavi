@@ -74,7 +74,7 @@ public class BaseObject3D extends Object3D {
                 mGeometry = geometry3D;
             }
         };
-        internalOfferTask(task);
+        commitTask(task);
     }
 
     protected void addVerties(final GeometryData element){
@@ -99,7 +99,7 @@ public class BaseObject3D extends Object3D {
                 }
             }
         };
-        internalOfferTask(task);
+        commitTask(task);
 
     }
     protected void applyVerties(){
@@ -118,9 +118,10 @@ public class BaseObject3D extends Object3D {
                 }
             }
         };
-        internalOfferTask(task);
-    }
+        commitTask(task);
 
+    }
+/*
     @Override
     public boolean removeChild(final Object3D child) {
         boolean result = mChildren.contains(mChildren);
@@ -130,7 +131,7 @@ public class BaseObject3D extends Object3D {
                 mChildren.remove(child);
             }
         };
-        internalOfferTask(task);
+        commitTask(task);
         return result;
     }
 
@@ -146,19 +147,24 @@ public class BaseObject3D extends Object3D {
                 child.setParent(parent);
                 if (mRenderChildrenAsBatch)
                     child.setPartOfBatch(true);
-                mChildren.add(child);
             }
         };
-        internalOfferTask(task);
-    }
+        commitTask(task);
+    }*/
 
     public void clearChildren(){
+        mChildren.clear();
+        /*
         final AFrameTask task = new AFrameTask() {
             @Override
             protected void doTask() {
-                mChildren.clear();
+
             }
         };
+        commitTask(task);*/
+    }
+
+    protected void commitTask(AFrameTask task){
         internalOfferTask(task);
     }
 

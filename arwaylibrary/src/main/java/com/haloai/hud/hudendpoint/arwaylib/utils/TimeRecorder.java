@@ -23,7 +23,7 @@ public class TimeRecorder {
     private double interval = 0;//间隔时间
     private double tTime    = 0;//总时间
 
-    private float  frame  = 0;
+    private double  frame  = 0;
     private double tFrame = 0;
 
     private double MAX_LOG_FRAME = 3;
@@ -56,7 +56,7 @@ public class TimeRecorder {
         interval = cTime-sTime;
         tTime += interval;
         cnt++;
-        frame = (int)(1000/(cTime-lTime));
+        frame = (1000/(cTime-lTime));
         tFrame += frame;
         lTime = cTime;
     }
