@@ -165,7 +165,8 @@ public class BaseObject3D extends Object3D {
     }
 
     protected void commitTask(AFrameTask task){
-        internalOfferTask(task);
+        task.run();
+//        internalOfferTask(task);
     }
 
     public void setOrthographic(boolean isOrth, float displayScale){

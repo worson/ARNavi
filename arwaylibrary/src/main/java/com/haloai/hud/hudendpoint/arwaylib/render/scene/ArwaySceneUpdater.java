@@ -13,6 +13,7 @@ import com.haloai.hud.hudendpoint.arwaylib.render.options.RoadRenderOption;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.RoadFogMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.render.shader.TextureAlphaMaterialPlugin;
 import com.haloai.hud.hudendpoint.arwaylib.render.utils.TDrawText;
+import com.haloai.hud.hudendpoint.arwaylib.render.vertices.GeometryData;
 import com.haloai.hud.hudendpoint.arwaylib.utils.ARWayConst;
 import com.haloai.hud.hudendpoint.arwaylib.utils.MathUtils;
 import com.haloai.hud.hudendpoint.arwaylib.utils.TimeRecorder;
@@ -162,7 +163,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         initTextureMaterial();
 
         initAllLayer();
-        initStaticLayer();
+//                initStaticLayer();
         initCarObject();
     }
 
@@ -231,29 +232,34 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     public void reset() {
-        mNaviRoadList.clear();
-        mCrossRoadList.clear();
-        mFloorObjectLayerList.clear();
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                mNaviRoadList.clear();
+                mCrossRoadList.clear();
+                mFloorObjectLayerList.clear();
 
-        mNaviGuideLineLayer.clearChildren();
-        mStarEndLayer.clearChildren();
+                mNaviGuideLineLayer.clearChildren();
+                mStarEndLayer.clearChildren();
 
-        mIndicationLine = null;
-        mIndicationArrow = null;
+                mIndicationLine = null;
+                mIndicationArrow = null;
 
-        mIsNaviRoadDirty  = true;
-        mIsCrossRoadDirty = true;
-        mIsFloorDirty     = true;
-        mIsGuideLineDirty = true;
+                mIsNaviRoadDirty  = true;
+                mIsCrossRoadDirty = true;
+                mIsFloorDirty     = true;
+                mIsGuideLineDirty = true;
 
-        mCarObject = new BaseObject3D();
-        initCarObject();
 
-        mGridfloorLayer.setPosition(0,0,0);
-        reloadAllLayer();
 
+                mGridfloorLayer.setPosition(0,0,0);
+                reloadAllLayer();
+            }
+        };
+        internalOfferTask(task);
+
+        // TODO: 11/01/2017 在task内会造成死锁
         commitRender();
-
     }
 
     @Override
@@ -360,6 +366,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             mMaterialList.add(mFloorMaterial);
             mMaterialList.add(mCrossRefMaterial);
         }
+
     }
 
     private RoadLayers createNaviRoadLayer() {
@@ -421,7 +428,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 mNaviRoadList.remove(index);
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
         /*mIsNaviRoadDirty = true;
         commitRender();*/
         return 0;
@@ -437,25 +444,23 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 mCrossRoadList.remove(index);
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
         /*mIsCrossRoadDirty = true;
         commitRender();*/
         return 0;
     }
 
     private int removeFloor(final int index) {
-        if(index<0||  mFloorObjectLayerList.size()<= index){
+        if(index<0||  mGridfloorLayer.getNumChildren()<= index){
             return -1;
         }
         AFrameTask task = new AFrameTask() {
             @Override
             protected void doTask() {
-                mFloorObjectLayerList.remove(index);
+                mGridfloorLayer.removeChild(mGridfloorLayer.getChildAt(index));
             }
         };
-        mScene.internalOfferTask(task);
-        /*mIsFloorDirty = true;
-        commitRender();*/
+        internalOfferTask(task);
         return 0;
     }
 
@@ -463,6 +468,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if (width<=0 || height<=0 || spacing<=0){
             return null;
         }
+
         TileFloor tileFloor = new TileFloor(width,height,spacing,widthrate);
         tileFloor.setMaterial(mFloorMaterial);
         tileFloor.setBlendingEnabled(true);
@@ -501,15 +507,39 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         if(mMaskRenderFloor){
             return;
         }
+        final float width = right-left;
+        final float height = top-bottom;
+        if (width<=0 || height<=0 || spacing<=0){
+            return;
+        }
+        final GeometryData geometryData =  TileFloor.getGeometryData(width,height,spacing,widthrate);
+
         AFrameTask task = new AFrameTask() {
             @Override
             protected void doTask() {
-                TileFloor floor = createFloor(right-left,top-bottom,spacing,widthrate);
+                TileFloor tileFloor = new TileFloor(geometryData);
+                tileFloor.setMaterial(mFloorMaterial);
+                tileFloor.setBlendingEnabled(true);
+                tileFloor.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                tileFloor.setDepthTestEnabled(false);
+                tileFloor.setDepthMaskEnabled(false);
+                tileFloor.setColor(Color.DKGRAY);
+                tileFloor.setPosition((right+left)/2,(top+bottom)/2,0);
+                mGridfloorLayer.addChild(tileFloor);
+            }
+        };
+
+        AFrameTask task1 = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                HaloLogger.logE("renderFloor",String.format("renderFloor ,%s ,%s ,%s, %s",width,height,spacing,widthrate));
+                TileFloor floor = createFloor(width,height,spacing,widthrate);
                 if (floor != null) {
                     floor.setPosition(0,0,0);
                     ObjectLayer objectLayer = new ObjectLayer(floor);
                     // TODO: 2016/11/7 以字坐标定位，需要还调用
                     objectLayer.object.setPosition((right+left)/2,(top+bottom)/2,0);
+                    //// TODO: 11/01/2017 优化结构
                     mFloorObjectLayerList.add(objectLayer);
                     mIsFloorDirty = true;
 
@@ -526,7 +556,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 }
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
 
 //        mFloorObjectLayerList.clear();
 
@@ -587,7 +617,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 }
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
 //        renderTrafficLight(path);
         boolean result = true;
         return result;
@@ -602,6 +632,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     public void renderBoard() {
         //保持显示效果为垂直
 //        mNaviSymbolLayer.setRotation(Vector3.X,90);
+
 
         Material boadMaterial = new Material();
         boadMaterial.setColorInfluence(0.1f);
@@ -709,109 +740,126 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     @Override
-    public void renderEndScene(List<Vector3> path){
-        Vector3 start =  new Vector3(path.get(path.size()-2));
-        Vector3 end =  new Vector3(path.get(path.size()-1));
-        double angle = Math.atan2((end.y-start.y),(end.x-start.x));
-        float roadWidth = mOptions.netRoadWidth*2;
-        float floorDis = 0.3f;
-        float lineDis = floorDis+2.5f;
-        Vector3 position = new Vector3();
-        Vector3 poiPos = new Vector3();
+    public void renderEndScene(List<Vector3> list){
 
-        MathUtils.longerPoint(position,start,end,floorDis);
+        final List<Vector3> path = new ArrayList<>(list);
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                Vector3 start =  new Vector3(path.get(path.size()-2));
+                Vector3 end =  new Vector3(path.get(path.size()-1));
+                double angle = Math.atan2((end.y-start.y),(end.x-start.x));
+                float roadWidth = mOptions.netRoadWidth*2;
+                float floorDis = 0.3f;
+                float lineDis = floorDis+2.5f;
+                Vector3 position = new Vector3();
+                Vector3 poiPos = new Vector3();
 
-        List<Vector3> floorPoss = findStepPoint(end,angle,roadWidth/4,floorDis);
-        List<Vector3> extendRoad = findStepPoint(end,angle,lineDis/2,lineDis);
+                MathUtils.longerPoint(position,start,end,floorDis);
 
-        List<Vector3> lines = floorPoss;
-        Vector3 line0 = new Vector3(lines.get(lines.size()-2));
-        Vector3 line1 = new Vector3(lines.get(lines.size()-1));
+                List<Vector3> floorPoss = findStepPoint(end,angle,roadWidth/4,floorDis);
+                List<Vector3> extendRoad = findStepPoint(end,angle,lineDis/2,lineDis);
 
-        MathUtils.crossLlongerPoint(poiPos,line1,line0,RoadRenderOption.ROAD_DEVIATION_DISTANCE);
+                List<Vector3> lines = floorPoss;
+                Vector3 line0 = new Vector3(lines.get(lines.size()-2));
+                Vector3 line1 = new Vector3(lines.get(lines.size()-1));
 
-        float direction = (float) Math.atan2(end.y-start.y,end.x-start.x);
+                MathUtils.crossLlongerPoint(poiPos,line1,line0,RoadRenderOption.ROAD_DEVIATION_DISTANCE);
 
-        Material material = new Material();
-        Texture texture = new Texture(ATexture.TextureType.DIFFUSE,"end_scene_texture",R.drawable.arway_destination_floor);
-        material.setColorInfluence(0);
-        try {
-            material.addTexture(texture);
-        } catch (ATexture.TextureException e) {
-            e.printStackTrace();
-        }
+                float direction = (float) Math.atan2(end.y-start.y,end.x-start.x);
 
-        for (Vector3 pos:floorPoss) {
-            Plane plane = new Plane(roadWidth,roadWidth/4,10,10, Vector3.Axis.Z,
-                    true,false,1,true);//,Color.BLACK
-            plane.setDoubleSided(true);
-            plane.setTransparent(true);
-            plane.setMaterial(material);
-            plane.setPosition(pos);
-            plane.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
-            plane.setDepthMaskEnabled(false);
-            plane.setDepthTestEnabled(false);
-            mStarEndLayer.addChild(plane);
-        }
+                Material material = new Material();
+                Texture texture = new Texture(ATexture.TextureType.DIFFUSE,"end_scene_texture",R.drawable.arway_destination_floor);
+                material.setColorInfluence(0);
+                try {
+                    material.addTexture(texture);
+                } catch (ATexture.TextureException e) {
+                    e.printStackTrace();
+                }
 
-        Material poiMat = new Material();
-        Texture poTtexture = new Texture(ATexture.TextureType.DIFFUSE,"poTtexture",R.drawable.arway_destination_poi);
-        poiMat.setColorInfluence(0);
-        try {
-            poiMat.addTexture(poTtexture);
-        } catch (ATexture.TextureException e) {
-            e.printStackTrace();
-        }
-        Object3D endPoi =  createPlane(1,1,true,poiMat);
-        endPoi.setPosition(poiPos);
-        mStarEndLayer.addChild(endPoi);
+                for (Vector3 pos:floorPoss) {
+                    Plane plane = new Plane(roadWidth,roadWidth/4,10,10, Vector3.Axis.Z,
+                            true,false,1,true);//,Color.BLACK
+                    plane.setDoubleSided(true);
+                    plane.setTransparent(true);
+                    plane.setMaterial(material);
+                    plane.setPosition(pos);
+                    plane.setRotation(Vector3.Axis.Z,90-Math.toDegrees(direction));
+                    plane.setDepthMaskEnabled(false);
+                    plane.setDepthTestEnabled(false);
+                    mStarEndLayer.addChild(plane);
+                }
 
-        mEndNaviRoadList.clear();
-        HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"renderEndScene road "+extendRoad);
-        RoadLayers roadLayers = createNaviRoadLayer();
-        roadLayers.refLine.setStepLength(5);
-        rRenderNaviPath(roadLayers,extendRoad);
-        mEndNaviRoadList.add(roadLayers);
-        mIsNaviRoadDirty = true;
-        mIsNaviTailRoadDirty = true;
+                Material poiMat = new Material();
+                Texture poTtexture = new Texture(ATexture.TextureType.DIFFUSE,"poTtexture",R.drawable.arway_destination_poi);
+                poiMat.setColorInfluence(0);
+                try {
+                    poiMat.addTexture(poTtexture);
+                } catch (ATexture.TextureException e) {
+                    e.printStackTrace();
+                }
+                Object3D endPoi =  createPlane(1,1,true,poiMat);
+                endPoi.setPosition(poiPos);
+                mStarEndLayer.addChild(endPoi);
+
+                mEndNaviRoadList.clear();
+                HaloLogger.logE(ARWayConst.INDICATE_LOG_TAG,"renderEndScene road "+extendRoad);
+                RoadLayers roadLayers = createNaviRoadLayer();
+                roadLayers.refLine.setStepLength(5);
+                rRenderNaviPath(roadLayers,extendRoad);
+                mEndNaviRoadList.add(roadLayers);
+                mIsNaviRoadDirty = true;
+                mIsNaviTailRoadDirty = true;
+            }
+        };
+        internalOfferTask(task);
 
     }
 
-    public void renderTrafficCamera(Vector3 postion, int type) {
-        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,String.format("renderTrafficCamera , postion %s ",postion));
-        mNaviCameraLayer.setPosition(0,0,0);
-        mNaviCameraLayer.clearChildren();
-        Object3D object3D = createSymbolPlane(mCameraIconMaterial);
-        object3D.setPosition(postion);
-        mNaviCameraLayer.addChild(object3D);
+    public void renderTrafficCamera(Vector3 pos, int type) {
+        final Vector3 postion = new Vector3(pos);
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,String.format("renderTrafficCamera , postion %s ",postion));
+                mNaviCameraLayer.setPosition(0,0,0);
+                mNaviCameraLayer.clearChildren();
+                Object3D object3D = createSymbolPlane(mCameraIconMaterial);
+                object3D.setPosition(postion);
+                mNaviCameraLayer.addChild(object3D);
+            }
+        };
+        internalOfferTask(task);
+
+
     }
 
     public void renderTrafficLight(List<Vector3> lights) {
         if (lights == null || lights.size()<=0) {
             return;
         }
-        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,"renderTrafficLight");
-        mNaviSymbolLayer.setPosition(0,0,0);
-        mNaviSymbolLayer.clearChildren();
-        Object3D object3D = null;
-        int cnt = lights.size();
-        // TODO: 15/11/2016 清除动作
-        mTrafficLightObjects.clear();
-        for (int i = 0; i < cnt; i++) {
-            Vector3 position = lights.get(i);
-            object3D = createSymbolPlane(mNaviIconMaterial);
-            mTrafficLightObjects.add(object3D);
+        final List<Vector3> flights = new ArrayList<>(lights);
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,"renderTrafficLight");
+                mNaviSymbolLayer.setPosition(0,0,0);
+                mNaviSymbolLayer.clearChildren();
+                Object3D object3D = null;
+                int cnt = flights.size();
+                // TODO: 15/11/2016 清除动作
+                mTrafficLightObjects.clear();
+                for (int i = 0; i < cnt; i++) {
+                    Vector3 position = flights.get(i);
+                    object3D = createSymbolPlane(mNaviIconMaterial);
+                    mTrafficLightObjects.add(object3D);
+                    object3D.setPosition(position);//高度与红绿红的大小有关
+                    mNaviSymbolLayer.addChild(object3D);
+                }
+            }
+        };
+        internalOfferTask(task);
 
-            /*if(mTrafficLightObjects.size()>i){
-                object3D = mTrafficLightObjects.get(i);
-            }else {
-                object3D = createSymbolPlane();
-                mTrafficLightObjects.add(object3D);
-            }*/
-
-            object3D.setPosition(position);//高度与红绿红的大小有关
-            mNaviSymbolLayer.addChild(object3D);
-        }
 
     }
 
@@ -881,43 +929,49 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     @Override
-    public boolean renderGuideLine(List<Vector3> path) {
-        if ( mMaskRenderGuideLine ||path == null || path.size()<2) {
+    public boolean renderGuideLine(List<Vector3> points) {
+        if ( mMaskRenderGuideLine ||points == null || points.size()<2) {
             return false;
         }
-        int pathSize = path.size();
-        final Vector3 offset = new Vector3(path.get(0));
-        mIndicationLine = null;
-        if (mIndicationLine == null) {
-            mIndicationLine = new ARWayRoadBuffredObject(mOptions.guideLineWidth,mColors.guideLine, ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD);
-            mIndicationLine.setMaterial(mCommonRoadMaterial);
-            mIndicationLine.setColor(mColors.guideLine);
-        }
-        if (mIndicationArrow == null) {
-            mIndicationArrow = new Plane(mOptions.guideLineWidth*4, mOptions.guideLineWidth*4,10,10, Vector3.Axis.Z,
-                    true,false,1,true);
-            mIndicationArrow.setDepthTestEnabled(false);
-            mIndicationArrow.setColor(mColors.guideLine);
-            mIndicationArrow.setMaterial(mArrowMaterial);
-            mIndicationArrow.setBlendingEnabled(true);
-            mIndicationArrow.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        }
-        if (mNaviGuideLineLayer != null) {
-            mNaviGuideLineLayer.clearChildren();
-            mNaviGuideLineLayer.addChild(mIndicationLine);
-            mNaviGuideLineLayer.addChild(mIndicationArrow);
-        }
-        mNaviGuideLineLayer.setPosition(0,0,0);
-        mIndicationLine.setPosition(offset);
-        mIndicationLine.updateBufferedRoad(path,offset);
+        final List<Vector3> path = new ArrayList<>(points);
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                int pathSize = path.size();
+                final Vector3 offset = new Vector3(path.get(0));
+                mIndicationLine = null;
+                if (mIndicationLine == null) {
+                    mIndicationLine = new ARWayRoadBuffredObject(mOptions.guideLineWidth,mColors.guideLine, ARWayRoadBuffredObject.ShapeType.TEXTURE_ROAD);
+                    mIndicationLine.setMaterial(mCommonRoadMaterial);
+                    mIndicationLine.setColor(mColors.guideLine);
+                }
+                if (mIndicationArrow == null) {
+                    mIndicationArrow = new Plane(mOptions.guideLineWidth*4, mOptions.guideLineWidth*4,10,10, Vector3.Axis.Z,
+                            true,false,1,true);
+                    mIndicationArrow.setDepthTestEnabled(false);
+                    mIndicationArrow.setColor(mColors.guideLine);
+                    mIndicationArrow.setMaterial(mArrowMaterial);
+                    mIndicationArrow.setBlendingEnabled(true);
+                    mIndicationArrow.setBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                }
+                if (mNaviGuideLineLayer != null) {
+                    mNaviGuideLineLayer.clearChildren();
+                    mNaviGuideLineLayer.addChild(mIndicationLine);
+                    mNaviGuideLineLayer.addChild(mIndicationArrow);
+                }
+                mNaviGuideLineLayer.setPosition(0,0,0);
+                mIndicationLine.setPosition(offset);
+                mIndicationLine.updateBufferedRoad(path,offset);
 
-        Vector3 start = path.get(pathSize-2);
-        Vector3 end = path.get(pathSize-1);
-        float cDegree = (float) Math.toDegrees(Math.atan2((end.y-start.y),(end.x-start.x)));
+                Vector3 start = path.get(pathSize-2);
+                Vector3 end = path.get(pathSize-1);
+                float cDegree = (float) Math.toDegrees(Math.atan2((end.y-start.y),(end.x-start.x)));
 //        mIndicationArrow.setPosition(Vector3.subtractAndCreate(end,offset));
-        mIndicationArrow.setPosition(end);
-        mIndicationArrow.setRotation(Vector3.Axis.Z,-(cDegree-90));
-
+                mIndicationArrow.setPosition(end);
+                mIndicationArrow.setRotation(Vector3.Axis.Z,-(cDegree-90));
+            }
+        };
+        internalOfferTask(task);
         return true;
     }
 
@@ -1035,7 +1089,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 mIsCrossRoadDirty = true;
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
         return result;
     }
 
@@ -1201,7 +1255,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 //                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("commit cnt ,naviroad %s,cross raod %s , floor %s",mNaviRoadList.size(),crossCnt,mFloorObjectLayerList.size()));
             }
         };
-        mScene.internalOfferTask(task);
+        internalOfferTask(task);
 
     }
 
@@ -1321,14 +1375,14 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     }
 
     public void onRender(long ellapsedRealtime, double deltaTime) {
-        HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("commit cnt ,naviroad %s,cross raod %s , floor %s",mNaviRoadBottom.getNumChildren(),mCrossRoadBottom.getNumChildren(),mGridfloorLayer.getNumChildren()));
+        performFrameTasks();
+        //HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("commit cnt ,naviroad %s,cross raod %s , floor %s",mNaviRoadBottom.getNumChildren(),mCrossRoadBottom.getNumChildren(),mGridfloorLayer.getNumChildren()));
         if(ARWayConst.IS_FRAME_LOG){
             if(mIsNaviRoadDirty|mIsCrossRoadDirty|mIsFloorDirty){//|mIsGuideLineDirty
                 mRenderTimeRecorder.timerLog(ARWayConst.ERROR_LOG_TAG,String.format("updater , scene %s ",mArwayMap.getNumChildren()
                         +String.format("updater need commit %s ,%s , %s, %s",mIsNaviRoadDirty,mIsCrossRoadDirty,mIsFloorDirty,mIsGuideLineDirty)));
             }
             HaloLogger.logE(TAG,"mCrossRoadBottom size "+mCrossRoadBottom.getNumChildren());
-//        HaloLogger.logE("onRender",String.format("postion is %s",mNaviSymbolLayer.getPosition()));
         }
     }
 }

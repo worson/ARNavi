@@ -13,7 +13,12 @@ public class TileFloor extends BaseObject3D {
     public static final String  TAG     = TileFloor.class.getSimpleName();
     private float mWidthRate = 0f;
 
-    public TileFloor(float width,float height,float spacing) {
+    public TileFloor(GeometryData data) {
+        addVerties(data);
+        applyVerties();
+    }
+
+    public TileFloor(float width, float height, float spacing) {
         this(width, height, spacing, 0);
     }
     public TileFloor(float width,float height,float spacing,float widthrate) {
@@ -94,75 +99,6 @@ public class TileFloor extends BaseObject3D {
             indices[index++] = i+2;
             indices[index++] = i+3;
             indices[index++] = i+0;
-        }
-        print(String.format("indices index = %s,length=%s\n",index,indices.length));
-
-        GeometryData element = new GeometryData();
-        element.setUseTextureCoords(true);
-        element.setUseColors(false);
-        element.setUseNormals(false);
-        element.vertices = vertices;
-        element.textureCoords = coords;
-        element.indices = indices;
-
-        return element;
-    }
-
-    public static GeometryData getGeometryData(float width,float height,float spacing){
-        int widthNum = (int) (width/spacing)+1;
-        int heightNum = (int) (height/spacing)+1;
-        print(String.format("widthNum = %s,heightNum=%s \n",widthNum,heightNum));
-        if(widthNum <= 0 || heightNum <= 0){
-            return null;
-        }
-        int vertexsCnt = (widthNum)*(heightNum)*3;
-
-        float[] vertices = new float[(vertexsCnt)*3];
-        float[] coords = new float[(vertexsCnt)*2];
-        int[] indices = new int[(widthNum*heightNum)*3];
-        int index = 0;
-        float x = -width/2;
-        float y = height/2+spacing;
-        float z = 0;
-
-        for (int i = 0; i < heightNum; i++) {
-            for (int j = 0; j < widthNum; j++) {
-
-                vertices[index++] = x+spacing;
-                vertices[index++] = y;
-                vertices[index++] = z;
-
-                vertices[index++] = x;
-                vertices[index++] = y;
-                vertices[index++] = z;
-
-                vertices[index++] = x;
-                vertices[index++] = y-spacing;
-                vertices[index++] = z;
-
-                /*print(String.format("vertices x = %s,y=%s \n",x,y));
-                print(String.format("vertices x = %s,y=%s \n",x+spacing,y));
-                print(String.format("vertices x = %s,y=%s \n",x+spacing,y-spacing));*/
-
-                x += spacing;
-            }
-            x = -width/2;
-            y -= spacing;
-        }
-        print(String.format("vertices index = %s,length=%s \n",index,vertices.length));
-
-        index = 0;
-        for (int i = 0; i < heightNum; i++) {
-            for (int j = 0; j < widthNum; j++) {
-                coords[index++] = 1;coords[index++] = 1;
-                coords[index++] = 0;coords[index++] = 1;
-                coords[index++] = 0;coords[index++] = 0;
-            }
-        }
-        print(String.format("coords index = %s,length=%s\n",index,coords.length));
-
-        for (index = 0; index < indices.length; index++) {
-            indices[index] = index;
         }
         print(String.format("indices index = %s,length=%s\n",index,indices.length));
 
