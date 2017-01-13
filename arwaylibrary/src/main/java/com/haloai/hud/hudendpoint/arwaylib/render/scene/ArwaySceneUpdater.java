@@ -34,8 +34,10 @@ import org.rajawali3d.scene.Scene;
 import org.rajawali3d.util.RajLog;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 
 import static org.rajawali3d.util.RajLog.TAG;
 
@@ -73,7 +75,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private List<List<RoadLayers>>  mCrossRoadList        = new ArrayList();
     private List<RoadLayers>  mNaviRoadList         = new ArrayList();
     private List<RoadLayers>  mEndNaviRoadList         = new ArrayList();
-    private List<ObjectLayer> mFloorObjectLayerList = new ArrayList<>();
+//    private List<ObjectLayer> mFloorObjectLayerList = new ArrayList<>();
 
     private List<Object3D> mTrafficLightObjects = new ArrayList<>();
 
@@ -237,7 +239,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             protected void doTask() {
                 mNaviRoadList.clear();
                 mCrossRoadList.clear();
-                mFloorObjectLayerList.clear();
+//                mFloorObjectLayerList.clear();
 
                 mNaviGuideLineLayer.clearChildren();
                 mStarEndLayer.clearChildren();
@@ -272,6 +274,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         List<Material> materialList = new LinkedList();
         Material m = new Material();
         m.getTextureList().clear();
+        Collections.sort();
     }
 
     private void initRoadMaterial(){
@@ -409,8 +412,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public int removeFloor() {
-        return 0;
-//        return removeFloor(0);
+        return removeFloor(0);
     }
 
     @Override
@@ -529,7 +531,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             }
         };
 
-        AFrameTask task1 = new AFrameTask() {
+        /*AFrameTask task1 = new AFrameTask() {
             @Override
             protected void doTask() {
                 HaloLogger.logE("renderFloor",String.format("renderFloor ,%s ,%s ,%s, %s",width,height,spacing,widthrate));
@@ -555,7 +557,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
                 }
             }
-        };
+        };*/
         internalOfferTask(task);
 
 //        mFloorObjectLayerList.clear();
@@ -1384,6 +1386,10 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
             }
             HaloLogger.logE(TAG,"mCrossRoadBottom size "+mCrossRoadBottom.getNumChildren());
         }
+    }
+
+    public int getObjectNumber(){
+        return mArwayMap.getNumObjects();
     }
 }
 
