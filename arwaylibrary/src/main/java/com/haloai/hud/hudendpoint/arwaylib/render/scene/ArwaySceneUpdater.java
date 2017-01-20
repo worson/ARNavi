@@ -34,10 +34,8 @@ import org.rajawali3d.scene.Scene;
 import org.rajawali3d.util.RajLog;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeSet;
 
 import static org.rajawali3d.util.RajLog.TAG;
 
@@ -274,7 +272,6 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         List<Material> materialList = new LinkedList();
         Material m = new Material();
         m.getTextureList().clear();
-        Collections.sort();
     }
 
     private void initRoadMaterial(){
