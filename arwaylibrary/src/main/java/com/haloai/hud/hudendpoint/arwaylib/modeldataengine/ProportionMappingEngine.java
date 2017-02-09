@@ -354,22 +354,28 @@ public class ProportionMappingEngine {
      * @return
      */
     public List<LatLngOutSide> mapping(int start, int end) {
+        String tag = "ProportioMapping";
         double startProp = mProportionListOri.get(start >= mProportionListOri.size() - 1 ? mProportionListOri.size() - 2 : start);
         double endProp = mProportionListOri.get(end >= mProportionListOri.size() ? mProportionListOri.size() - 1 : end);
+        HaloLogger.logE(tag, String.format("mapping: start=%S,end=%s ,startProp=%s,endProp=%s",start,end,startProp,endProp));
         for (int i = 0; i < mProportionListRender.size() - 1; i++) {
             double prop = mProportionListRender.get(i);
+            HaloLogger.logE(tag, String.format("mapping: start index prop %s",prop));
             if (prop >= startProp) {
                 int startRender = prop == startProp ? i : i == 0 ? 0 : i - 1;
                 for (int j = i; j < mProportionListRender.size(); j++) {
                     prop = mProportionListRender.get(j);
+                    HaloLogger.logE(tag, String.format("mapping: end index prop %s",prop));
                     if (prop >= endProp) {
                         int endRender = j;
+                        HaloLogger.logE(tag, String.format("mapping: return ok,start=%s,end=%s",startRender,endRender));
                         return mRenderPath.subList(startRender, endRender + 1);
                     }
                 }
                 break;
             }
         }
+        HaloLogger.logE(tag, String.format("mapping: return null"));
         return null;
     }
 

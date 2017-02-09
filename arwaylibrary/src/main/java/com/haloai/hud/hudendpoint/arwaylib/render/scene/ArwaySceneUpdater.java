@@ -399,7 +399,17 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public int removeNaviPath() {
-       return removeNaviPath(0);
+        if(mNaviRoadList.size()<= 0){
+            return -1;
+        }
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                mNaviRoadList.clear();
+            }
+        };
+        internalOfferTask(task);
+        return 0;
     }
 
     @Override
@@ -409,7 +419,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
     @Override
     public int removeFloor() {
-        return removeFloor(0);
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                mGridfloorLayer.clearChildren();
+            }
+        };
+        internalOfferTask(task);
+
+        return 0;
     }
 
     @Override
