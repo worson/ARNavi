@@ -24,7 +24,7 @@ public class SuperArwaySceneUpdater {
     //basic
     protected Context                mContext;
     private   LinkedList<AFrameTask> mFrameTaskQueue;
-    private double mMaxFrameTaskTime = 15;
+    private double mMaxFrameTaskTime = 50;
 
     public SuperArwaySceneUpdater() {
         this(null);

@@ -250,7 +250,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                 mIsFloorDirty     = true;
                 mIsGuideLineDirty = true;
 
-
+                mCarObject.setVisible(false);
 
                 mGridfloorLayer.setPosition(0,0,0);
                 reloadAllLayer();
@@ -644,6 +644,18 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     public Object3D getCarObject() {
 //        initCarObject();
         return mCarObject;
+    }
+    public void setCarVisiable(final boolean visiable){
+        AFrameTask task = new AFrameTask() {
+            @Override
+            protected void doTask() {
+                if (mCarObject != null) {
+                    mCarObject.setVisible(visiable);
+                }
+            }
+        };
+        internalOfferTask(task);
+
     }
 
     public void renderBoard() {

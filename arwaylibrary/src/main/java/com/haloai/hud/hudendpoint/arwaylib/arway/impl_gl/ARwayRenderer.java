@@ -436,6 +436,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         }
         clearScene();
         mSceneUpdater.reset();
+        mSceneUpdater.setMaxFrameTaskTime(100);
         if(ARWayConst.IS_ADAS){
             mAdasUpdater.reset();
         }
@@ -479,6 +480,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         */
         initRoadNet2Scene();
         initNaviPath2Scene();
+        mSceneUpdater.setCarVisiable(true);
         if (mIsRenderEndPath) {
             mIsRenderEndPath = false;
             onEndPath();
@@ -759,6 +761,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         HaloLogger.postI(ARWayConst.NECESSARY_LOG_TAG, "onPathUpdate called enter");
         Vector3 curObjPos = new Vector3(0, 0, 0);
         if (mIsMyInitScene) {
+            mSceneUpdater.setMaxFrameTaskTime(15);
             curObjPos.setAll(mObject4Chase.getPosition());
         }
         //啊奇
