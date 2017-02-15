@@ -34,7 +34,6 @@ public interface IRoadRender {
     public void renderTrafficLight(List<Vector3> lights);
 
     public void renderEndScene(List<Vector3> path);
-    public void renderStartScene(List<Vector3> path);
 
     /**
      * 提交渲染任务

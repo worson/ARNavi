@@ -318,27 +318,6 @@ public class MathUtils {
      * @return
      */
     public static Vector3 longerPoint(Vector3 result , Vector3 start , Vector3 end, double dist){
-
-        //y=kx+b
-        // TODO: 15/11/2016 处理异常
-        /*double k = (end.y-start.y)/(end.x-start.x);
-        if(Double.isNaN(k)){//没有斜率
-            result.x = (start.x + end.x)/2;
-            double distance=Vector3.distanceTo(start,end);
-            result.y = start.y + (end.y - start.y) * dist / distance;
-            if(Double.isNaN(result.y)){//两点的距离为0
-                result.y = (start.y + end.y)/2;
-            }
-
-        }else {
-            double b = start.y - k * start.x;
-
-            double angle = Math.atan2((end.y - start.y), (end.x - start.x));
-            double deltaX = Math.cos(angle) * dist;
-            result.x = start.x + deltaX;
-            result.y = result.x * k + b;
-        }*/
-
         double dy = end.y - start.y;
         double dx = end.x - start.x;
         double dz = end.z - start.z;
@@ -618,35 +597,6 @@ public class MathUtils {
         lineRight.clear();
         lineRight.addAll(rightPoints);
 
-        /*//将点集合转成成矩形Path
-        mRectPath.reset();
-        Vector3 Vector3 = mPointsPath.get(0);
-        mRectPath.moveTo(point.x,point.y);
-        for(int i=1;i<mPointsPath.size();i++){
-            if(i<mLeftPoints.size()){
-                Vector3 = mLeftPoints.get(i);
-            }else{
-                Vector3 = mRightPoints.get(mRightPoints.size()-(i-mLeftPoints.size()+1));
-            }
-            mRectPath.lineTo(point.x, point.y);
-        }
-
-
-        //将点集合转换成Path集合，Path集合个数为原始点的个数减一(此处可表示为left或者right集合长度减一)
-        mPaths.clear();
-        for(int i=0;i<mLeftPoints.size()-1;i++){
-            Path path = new Path();
-            Vector3 leftCurrentVector3 = mLeftPoints.get(i);
-            Vector3 leftNextVector3 = mLeftPoints.get(i+1);
-            Vector3 rightCurrentVector3 = mRightPoints.get(i);
-            Vector3 rightNextVector3 = mRightPoints.get(i+1);
-            path.moveTo(leftCurrentPoint.x,leftCurrentPoint.y);
-            path.lineTo(leftNextPoint.x,leftNextPoint.y);
-            path.lineTo(rightNextPoint.x,rightNextPoint.y);
-            path.lineTo(rightCurrentPoint.x,rightCurrentPoint.y);
-            path.close();
-            mPaths.add(path);
-        }*/
     }
 
     /**
@@ -1027,25 +977,29 @@ public class MathUtils {
      * @return
      */
     public static double convertAMapBearing2OpenglBearing(double amapDegrees) {
-        /*if (amapDegrees >= 0 && amapDegrees < 180) {
-            return 180 - amapDegrees;
-        } else {
-            return (360 - amapDegrees + 180) - 360;
-        }*/
         return amapDegrees/* > 180 ? amapDegrees - 360 : amapDegrees*/;
     }
 
     /**
-     * rajawali roz 转换成 setRotation 方法
-     * @param rotz
+     * 在一个path当中截取指定累积长度的子path
+     * @param path
+     * @param distance
      * @return
      */
-    public static double rotz2Radians(double rotz){
-       return Math.PI/2-rotz;
+    public static List<Vector3> cutSubPathByDistance(List<Vector3> path,double distance){
+        double total = 0;
+        final int size=path.size();
+        int end = size-1;
+        for (int i = 0; i <size-1 ; i++) {
+            Vector3 p0 = path.get(i);
+            Vector3 p1 = path.get(i+1);
+            double d = Vector3.distanceTo(p0,p1);
+            if(total+d>distance){
+                end=i;
+                break;
+            }
+            total += d;
+        }
+        return path.subList(0,end);
     }
-
-    public static double radians2Rotz(double radians){
-        return Math.PI/2-radians;
-    }
-
 }

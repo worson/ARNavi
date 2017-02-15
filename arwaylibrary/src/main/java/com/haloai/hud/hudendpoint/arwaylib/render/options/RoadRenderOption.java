@@ -14,7 +14,7 @@ public class RoadRenderOption {
     public static final float ROAD_DEVIATION_DISTANCE = 0.75F;
 
     public boolean isRoadFog = true;
-    public float fogDistance = 6;
+    public float fogDistance = 4.5f;
     public float fogRate = 0.66f;
     //render configuration
     public float mRoadLevel         = 20;
