@@ -800,6 +800,7 @@ public class ARwayOpenGLFragment extends Fragment implements IDisplay, OnMapLoad
 
         ARWayController.CommonBeanUpdater.setNaviEnd(true);
         ARWayController.CommonBeanUpdater.setNavingStart(false);
+        stopDrawHudway();
     }
 
     /**

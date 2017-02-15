@@ -1,11 +1,11 @@
-package com.haloai.hud.hudendpoint.arwaylib.render.options;
+package com.haloai.hud.hudendpoint.arwaylib.test;
 
 import android.graphics.Color;
 
 /**
  * Created by wangshengxing on 16/10/19.
  */
-public class RoadRenderOption {
+public class TestRoadRenderOption {
 
     public static final boolean IS_ROAD_NET_REFLINE = false;
     //VERTICE_ROAD
@@ -14,7 +14,7 @@ public class RoadRenderOption {
     public static final float ROAD_DEVIATION_DISTANCE = 0.75F;
 
     public boolean isRoadFog = true;
-    public float fogDistance = 6;
+    public float fogDistance = 3;
     public float fogRate = 0.66f;
     //render configuration
     public float mRoadLevel         = 20;
@@ -33,7 +33,7 @@ public class RoadRenderOption {
     public void setLayersWidth(final float width){
         naviRoadWidth = width * 0.55f;
         roadWidth = width * 1.1f;
-        netRoadWidth = width * 0.88f;
+        netRoadWidth = width * 1.1f;
         guideLineWidth = width * 0.3f;
         refLineHeight = width * 1.485f;
         refLineWidth = width * 1.1f;
@@ -46,13 +46,13 @@ public class RoadRenderOption {
     public LayersColor mColors = new LayersColor();
 
     public class LayersColor {
-        public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);;
+       /* public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);;
         public int netRefLine    = Color.DKGRAY;
         public int refLine       = Color.BLACK;//Color.argb(0xff,0,160,233)
         public int naviLine      = Color.argb(0xff, 0x30, 0xb4, 0xcc);//Color.argb(0xff, 0, 174, 195);
         public int netRoadBottom = Color.GRAY;
         public int netRoad       = Color.BLACK;
-        public int bottomRoad    = Color.GRAY;
+        public int bottomRoad    = Color.GRAY;*/
         public int road          = Color.BLACK;
     }
 

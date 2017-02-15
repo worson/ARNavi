@@ -23,7 +23,7 @@ import java.util.List;
  * project_name : hudlauncher;
  */
 public class MathUtils {
-    private static Matrix mMatrix4Rotate = new Matrix();
+    private static Matrix mMatrix4Rotate /*= new Matrix()*/;
 
     public static <VALUE_TYPE extends Number> double getOffsetValue(VALUE_TYPE from, VALUE_TYPE to, long timeOffset, long duration) {
         double offsetValue = ((to.doubleValue() - from.doubleValue()) * (1.0 * timeOffset / duration));

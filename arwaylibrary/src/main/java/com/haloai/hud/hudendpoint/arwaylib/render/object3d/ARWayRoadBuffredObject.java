@@ -142,7 +142,7 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
     }
 
     private boolean generateObjectBuffer(List<Vector3> roadPath,Vector3 offset, ShapeType type){
-        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"generateObjectBuffer enter!");
+//        HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"generateObjectBuffer enter!");
         mNeedRender = false;
         replaceGeometry3D(new Geometry3D());
         if(roadPath == null || roadPath.size()<1){
@@ -160,10 +160,10 @@ public class ARWayRoadBuffredObject extends SuperRoadObject {
             if (textureElement != null) {
                 addVerties(textureElement);
                 result = true;
-                HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"textureElement add ok !");
+//                HaloLogger.logE(ARWayConst.RENDER_LOG_TAG,"textureElement add ok !");
             }else {
                 result = false;
-                HaloLogger.postE(ARWayConst.RENDER_LOG_TAG,"textureElement add error !");
+//                HaloLogger.postE(ARWayConst.RENDER_LOG_TAG,"textureElement add error !");
             }
 
         }

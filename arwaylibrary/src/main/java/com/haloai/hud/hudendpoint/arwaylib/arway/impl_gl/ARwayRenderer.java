@@ -402,6 +402,8 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     public void arriveDestination() {
         clearAllData();
         if (mSceneUpdater != null) {
+            HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,"arriveDestination ,hide car ...");
+            mSceneUpdater.setCarVisiable(false);
             mSceneUpdater.reset();
             mSceneUpdater.clearScene();
         }
@@ -512,9 +514,11 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
         initStartScene(mRenderPath);
         mSceneUpdater.renderStartScene(mRenderPath);
         mSceneUpdater.renderNaviPath(mRenderPath);
+        mSceneUpdater.removeFloor();
         //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);
         mSceneUpdater.renderFloor((float) mNaviPathDataProvider.getLeftborder(), (float) mNaviPathDataProvider.getTopborder(), (float) mNaviPathDataProvider.getRightborder(), (float) mNaviPathDataProvider.getBottomborder(), 1, 0.f);
         mSceneUpdater.commitRender();
+        HaloLogger.logE(ARWayConst.NECESSARY_LOG_TAG,"initNaviPath2Scene called");
         
     }
 
@@ -551,7 +555,7 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
             final Vector3 end = new Vector3(path.get(1));
             final Vector3 start = new Vector3();
             MathUtils.longerPoint(start, tmpStart, end, -3);
-            float direction = (float) Math.atan2(end.y - tmpStart.y, end.x - tmpStart.x);
+            double direction =  Math.atan2(end.y - tmpStart.y, end.x - tmpStart.x);
             List<Vector3> lines = new ArrayList<>();
             lines.add(start);
             lines.add(end);
