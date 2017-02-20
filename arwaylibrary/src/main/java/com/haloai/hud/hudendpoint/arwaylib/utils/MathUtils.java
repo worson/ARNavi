@@ -984,22 +984,95 @@ public class MathUtils {
      * 在一个path当中截取指定累积长度的子path
      * @param path
      * @param distance
+     * @param fakeTail
      * @return
      */
-    public static List<Vector3> cutSubPathByDistance(List<Vector3> path,double distance){
+    public static List<Vector3> cutSubPathByDistance(List<Vector3> path,double distance,boolean fakeTail){
+        if (path == null || path.size()<=1) {
+            return null;
+        }
         double total = 0;
         final int size=path.size();
-        int end = size-1;
+        int end = size;
+        Vector3 tail = null;
         for (int i = 0; i <size-1 ; i++) {
             Vector3 p0 = path.get(i);
             Vector3 p1 = path.get(i+1);
-            double d = Vector3.distanceTo(p0,p1);
-            if(total+d>distance){
-                end=i;
+            double a = p0.x-p1.x;
+            double b = p0.y-p1.y;
+            double d = Math.sqrt(a * a + b * b);
+            print("",String.format("index %s, d %s,total %s,distance %s",i,d,total+d,distance));
+            if(total+d>=distance){
+                if (fakeTail) {
+                    double diff = distance-total;
+                    tail = new Vector3();
+                    longerPoint(tail, p0, p1, diff);
+                }
+                end=i+1;
                 break;
             }
             total += d;
         }
-        return path.subList(0,end);
+        List<Vector3>  subPath = new ArrayList<>(path.subList(0,end));
+        if (tail != null) {
+            subPath.add(tail);
+        }
+        return subPath;
     }
+
+    public static double calculatePathDistance(List<Vector3> path){
+        if (path == null || path.size()<=1) {
+            return 0;
+        }
+        double total = 0;
+        final int size=path.size();
+        for (int i = 0; i <size-1 ; i++) {
+            Vector3 p0 = path.get(i);
+            Vector3 p1 = path.get(i+1);
+            double a = p0.x-p1.x;
+            double b = p0.y-p1.y;
+            total += Math.sqrt(a * a + b * b);
+
+        }
+        return total;
+    }
+
+
+    public static void main(String[] args) {
+        String cross = "-24.50428322260268,-102.94990820693783\n" +
+                "-24.62928322260268,-103.26240820693783\n" +
+                "-24.683339353781285,-103.38486994789643\n" +
+                "-24.745507753277558,-103.5022551856734\n" +
+                "-24.815788421091504,-103.61456392026875\n" +
+                "-24.89418062023305,-103.7217930667723\n" +
+                "-24.98068806413207,-103.82395808314855\n" +
+                "-25.082001038756122,-103.93539780470662\n" +
+                "-25.20152261778056,-104.06562154178252\n" +
+                "-25.32226162195214,-104.19468444681829\n" +
+                "-25.444218051270873,-104.32258651981394\n" +
+                "-25.567391151147113,-104.44932465545676\n" +
+                "-25.691784735325864,-104.57491442146173\n" +
+                "-25.69178322260268,-104.57490820693783\n" +
+                "-25.820758885261775,-104.69381540544052\n" +
+                "-25.95768588814021,-104.80053701584978\n" +
+                "-26.10256423123799,-104.89507303816558\n" +
+                "-26.255393141429746,-104.97742034836227\n" +
+                "-26.41617653716901,-105.04759458938861\n" +
+                "-27.12928322260268,-105.32490820693783";
+
+        List<Vector3> path = StringUtils.parseVect3s(cross);
+        List<Vector3> arrowpath = cutSubPathByDistance(path,1,true);
+
+
+        print("","cross path "+path);
+        print("","arrow path "+arrowpath);
+        print("","cross length "+calculatePathDistance(path));
+        print("","arrow length "+calculatePathDistance(arrowpath));
+
+    }
+
+    private static void print(String tag,String msg){
+        System.out.print(tag+" : "+msg+"\n");
+    }
+
 }

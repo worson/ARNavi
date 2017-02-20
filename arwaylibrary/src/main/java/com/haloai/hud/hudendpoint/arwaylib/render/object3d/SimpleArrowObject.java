@@ -9,7 +9,7 @@ import org.rajawali3d.primitives.Plane;
 import java.util.List;
 
 /**
- * 将箭头的头和身体直接合成一个箭头
+ * 将箭头的头和身体直接合成一个箭头，需要保证path至少有2个点
  * author       : wangshengxing;
  * date         : 15/02/2017;
  * email        : wangshengxing@haloai.com;
@@ -46,6 +46,15 @@ public class SimpleArrowObject {
         float cDegree = (float) Math.toDegrees(Math.atan2((end.y - start.y), (end.x - start.x)));
         mArrow.setPosition(end);
         mArrow.setRotation(Vector3.Axis.Z, -(cDegree - 90));
+    }
+
+    public void setAlpha(float alpha){
+        if (mBody != null) {
+            mBody.setAlpha(alpha);
+        }
+        if (mArrow != null) {
+            mArrow.setAlpha(alpha);
+        }
     }
 
     public Object3D getArrow() {

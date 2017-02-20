@@ -512,7 +512,6 @@ public class ARwayRenderer extends Renderer implements IAnimationListener, IRend
     private void initNaviPath2Scene() {
         //mSceneUpdater.renderModelTrafficLight(mRenderPath.get(4),0);
         initStartScene(mRenderPath);
-        mSceneUpdater.renderStartScene(mRenderPath);
         mSceneUpdater.renderNaviPath(mRenderPath);
         mSceneUpdater.removeFloor();
         //        mSceneUpdater.moveCenterFloor((float) (mNaviPathDataProvider.getLeftborder()+mNaviPathDataProvider.getRightborder())/2,(float)(mNaviPathDataProvider.getTopborder()+mNaviPathDataProvider.getBottomborder())/2);

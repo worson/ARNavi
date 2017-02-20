@@ -7,7 +7,7 @@ import android.graphics.Color;
  */
 public class RoadRenderOption {
 
-    public static final boolean IS_ROAD_NET_REFLINE = false;
+    public static final boolean IS_ROAD_NET_REFLINE = true;
     //VERTICE_ROAD
     private static final float    ROAD_WIDTH                 = 0.8f;
     public static final float TRAFFIC_DEVIATION_DISTANCE = 0.85F;//0.65
@@ -26,8 +26,9 @@ public class RoadRenderOption {
     public float refLineHeight     = ROAD_WIDTH * 1.485f;
     public float refLineWidth      = ROAD_WIDTH * 1.1f;
     public float refLineStepLength = ROAD_WIDTH * 2.75f;
-    public float netRefLineHeight  = ROAD_WIDTH * 1.1f;
-    public float netRrefLineWidth  = ROAD_WIDTH * 1.1f;
+    public float crossrefLineStepLength = ROAD_WIDTH * 0.7f;
+    public float netRefLineHeight  = ROAD_WIDTH * 1.1f/2;
+    public float netRrefLineWidth  = ROAD_WIDTH * 1.1f/2;
     public float adasWidth         = ROAD_WIDTH * 0.55f;
 
     public void setLayersWidth(final float width){
@@ -38,8 +39,9 @@ public class RoadRenderOption {
         refLineHeight = width * 1.485f;
         refLineWidth = width * 1.1f;
         refLineStepLength = width * 2.75f;
-        netRefLineHeight = width * 0.77f;
-        netRrefLineWidth = width * 0.77f;
+        crossrefLineStepLength = width * 1f;
+        netRefLineHeight = width * 0.5f/2f;
+        netRrefLineWidth = width * 0.99f/2;
         adasWidth = width * 0.75f;
     }
 
@@ -47,7 +49,7 @@ public class RoadRenderOption {
 
     public class LayersColor {
         public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);;
-        public int netRefLine    = Color.DKGRAY;
+        public int netRefLine    = Color.argb(0xff, 0x30, 0xb4, 0xcc);
         public int refLine       = Color.BLACK;//Color.argb(0xff,0,160,233)
         public int naviLine      = Color.argb(0xff, 0x30, 0xb4, 0xcc);//Color.argb(0xff, 0, 174, 195);
         public int netRoadBottom = Color.GRAY;

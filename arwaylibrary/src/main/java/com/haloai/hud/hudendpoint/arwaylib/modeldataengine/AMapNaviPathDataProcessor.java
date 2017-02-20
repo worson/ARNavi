@@ -351,17 +351,17 @@ public class AMapNaviPathDataProcessor implements INaviPathDataProcessor<AMapNav
 
         HaloLogger.logE("ylq", "step indexs size = " + mStepPointIndexs.size());
         //TODO 根据动态加载的距离去拉去路网信息(真正运行时需要走的逻辑)
-        for (int i = 0; i < mPreDynamicEndIndex; i++) {
+        /*for (int i = 0; i < mPreDynamicEndIndex; i++) {
             if (mStepPointIndexs.contains(i)) {
                 HaloLogger.logE("ylq", "i=" + i + ",index=" + mStepPointIndexs.indexOf(i));
                 processSteps(mStepPointIndexs.indexOf(i));
             }
-        }
+        }*/
 
         //TODO 没有动态加载的情况下一次性拉去路网信息(测试时使用)
-        /*for (int i = 0; i < mStepPointIndexs.size(); i++) {
+        for (int i = 0; i < mStepPointIndexs.size(); i++) {
             processSteps(i);
-        }*/
+        }
 
         //TODO 北京演示时使用这部分,模拟一段假的但是效果更好的岔路显示出来
 //        getShowBranchLines();
