@@ -55,6 +55,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
     private BaseObject3D mCrossRoad          = null;
     private BaseObject3D mCrossRefLine       = null;
     private BaseObject3D mCrossRefLineTop       = null;
+    private BaseObject3D mCrossRoadRefLine    = null;
     private BaseObject3D mNaviRoadBottom     = null;
     private BaseObject3D mNaviRoadTop        = null;
     private BaseObject3D mNaviRoad           = null;
@@ -131,6 +132,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         private ARWayRoadBuffredObject road    = null;
         private ARWayRoadBuffredObject refLine = null;
         private ARWayRoadBuffredObject navi    = null;
+        private ARWayRoadBuffredObject guideLine    = null;
 
         public RoadLayers() {
         }
@@ -296,6 +298,9 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mArrowMaterial.getTextureList().get(0).setInfluence(1f);
 
         mCrossRoadBottomMaterial = materialList.get(2);
+        Texture ttexture = createTexture(R.drawable.road_circle_alpha_change,mColors.naviRoadAlpha);
+        mCrossRoadBottomMaterial=createMaterial(useVertexColor,colorInfluence,ttexture);
+
         mCrossRoadTopMaterial = mCrossRoadBottomMaterial;
 
         mRoadReflineMaterial = materialList.get(3);
@@ -315,7 +320,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mNaviIconMaterial.setColorInfluence(0);
 
         mCrossNetTexture = texturelList.get(8);
-        mCrossNetRefLineTexture = createTexture(R.drawable.road_navi_arrow,0.5f);
+        mCrossNetRefLineTexture = createTexture(R.drawable.road_rectange,0.5f);
 
         mCameraIconMaterial = materialList.get(9);
         mCameraIconMaterial.setColorInfluence(0);
@@ -337,6 +342,8 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mFloorMaterial.addPlugin(new TextureAlphaMaterialPlugin());
         mFloorMaterial.setColorInfluence(0.7f);
         mCrossRefMaterial.addPlugin(new TextureAlphaMaterialPlugin());
+
+
         {
             mMaterialList.add(mCrossRoadBottomMaterial);
             mMaterialList.add(mCrossRoadTopMaterial);
@@ -400,12 +407,19 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         navi.setColor(mColors.naviLine);
         navi.setShapeType(type);
 
+        ARWayRoadBuffredObject guideLine = new ARWayRoadBuffredObject(mOptions.naviRoadWidth/2);
+        guideLine.setColor(0xff275659);//mColors.naviLine #265155
+        guideLine.setShapeType(type);
+
 
         bottom.setShapeType(type);
         road.setShapeType(type);
         RoadLayers roadLayers = new RoadLayers(bottom, road);
         roadLayers.refLine = refline;
         roadLayers.navi = navi;
+        roadLayers.guideLine = guideLine;
+
+
         return roadLayers;
     }
 
@@ -931,7 +945,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
 
                         Material material = new Material();
                         material.useVertexColors(false);
-                        material.setColorInfluence(1);
+                        material.setColorInfluence(mColors.crossRoadAlpha);
 
                         try {
                             material.addTexture(mCrossNetTexture);
@@ -971,12 +985,15 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                         roadLayers.road.setMaterial(material);
                         roadLayers.bottom.setMaterial(material);
 
+
                         roadLayers.road.updateBufferedRoad(road, offset);
                         roadLayers.bottom.updateBufferedRoad(road, offset);
 
 
                         roadLayers.road.setPosition(offset);
                         roadLayers.bottom.setPosition(offset);
+
+
 
                         //生成蚯蚓线箭头的方案
                         /*double pathlength = MathUtils.calculatePathDistance(road);
@@ -997,6 +1014,20 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                                 HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("arrowPath = null "));
                             }
                         }*/
+
+                        double pathlength = MathUtils.calculatePathDistance(road);
+                        List<Vector3> arrowPath = MathUtils.cutSubPathByDistance(road,0.5,true);
+                        if (arrowPath != null && arrowPath.size()>1) {
+                            roadLayers.guideLine.setMaterial(material);
+                            roadLayers.guideLine.updateBufferedRoad(arrowPath, offset);
+                            roadLayers.guideLine.setPosition(offset);
+                        }else {
+                            if (arrowPath != null ){
+                                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("arrowPath size  = %s ",arrowPath.size()));
+                            }else {
+                                HaloLogger.logE(ARWayConst.ERROR_LOG_TAG,String.format("arrowPath = null "));
+                            }
+                        }
 
                         //生成导航线的方案
                         if (RoadRenderOption.IS_ROAD_NET_REFLINE) {
@@ -1111,6 +1142,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                     mIsCrossRoadDirty = false;
                     mCrossRoadBottom.clearChildren();
                     mCrossRoad.clearChildren();
+                    mCrossRoadRefLine.clearChildren();
                     if (RoadRenderOption.IS_ROAD_NET_REFLINE) {
                         mCrossRefLineTop.clearChildren();
                         mCrossRefLine.clearChildren();
@@ -1125,6 +1157,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
                             for (RoadLayers roadLayers : roadNet) {
                                 mCrossRoadBottom.addChild(roadLayers.bottom);
                                 mCrossRoad.addChild(roadLayers.road);
+                                mCrossRoadRefLine.addChild(roadLayers.guideLine);
                                 if (RoadRenderOption.IS_ROAD_NET_REFLINE) {
                                     mCrossRefLineTop.addChild(roadLayers.refLine);
 //                                    mCrossRefLine.addChild(roadLayers.navi);
@@ -1159,6 +1192,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mCrossRoad = new BaseObject3D();
         mCrossRefLine = new BaseObject3D();
         mCrossRefLineTop = new BaseObject3D();
+        mCrossRoadRefLine = new BaseObject3D();
         mNaviRoadBottom = new BaseObject3D();
         mNaviRoadTop = new BaseObject3D();
         mNaviRoad = new BaseObject3D();
@@ -1184,7 +1218,7 @@ public class ArwaySceneUpdater extends SuperArwaySceneUpdater implements IRoadRe
         mScene.clearChildren();
         Object3D[] layers = new Object3D[]{
                 mGridfloorLayer, mCrossRoadBottom, mNaviRoadBottom, mYawLaneLayer, mCrossRoad,
-                mNaviRoadTop, mCrossRefLine, mCrossRefLineTop,mNaviRoad, mNaviRoadRefLine,
+                mNaviRoadTop, mCrossRefLine, mCrossRefLineTop,mCrossRoadRefLine,mNaviRoad, mNaviRoadRefLine,
                 mNaviGuideLineLayer, mNaviCameraLayer, mNaviSymbolLayer,
                 mStarEndLayer, mTrafficDetectionLayer, mAdasCarObject, mCarObject,};
 

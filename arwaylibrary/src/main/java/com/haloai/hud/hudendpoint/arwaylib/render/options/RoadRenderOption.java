@@ -32,15 +32,15 @@ public class RoadRenderOption {
     public float adasWidth         = ROAD_WIDTH * 0.55f;
 
     public void setLayersWidth(final float width){
-        naviRoadWidth = width * 0.55f;
+        naviRoadWidth = width * 0.45f;
         roadWidth = width * 1.1f;
         netRoadWidth = width * 0.88f;
         guideLineWidth = width * 0.3f;
         refLineHeight = width * 1.485f;
         refLineWidth = width * 1.1f;
         refLineStepLength = width * 2.75f;
-        crossrefLineStepLength = width * 1f;
-        netRefLineHeight = width * 0.5f/2f;
+        crossrefLineStepLength = width * 0.33f;
+        netRefLineHeight = width * 0.5f/6f;
         netRrefLineWidth = width * 0.99f/2;
         adasWidth = width * 0.75f;
     }
@@ -48,14 +48,16 @@ public class RoadRenderOption {
     public LayersColor mColors = new LayersColor();
 
     public class LayersColor {
-        public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);;
+        public int guideLine     = Color.argb(0xff, 0xdf, 0x7a, 0x13);
         public int netRefLine    = Color.argb(0xff, 0x30, 0xb4, 0xcc);
         public int refLine       = Color.BLACK;//Color.argb(0xff,0,160,233)
         public int naviLine      = Color.argb(0xff, 0x30, 0xb4, 0xcc);//Color.argb(0xff, 0, 174, 195);
-        public int netRoadBottom = Color.GRAY;
+        public int netRoadBottom = 0xff272727;//Color.GRAY
         public int netRoad       = Color.BLACK;
-        public int bottomRoad    = Color.GRAY;
+        public int bottomRoad    = 0xff272727;
         public int road          = Color.BLACK;
+        public float naviRoadAlpha   = 1f;
+        public float crossRoadAlpha  = 1f;
     }
 
     public LayersColor getRoadColors() {
